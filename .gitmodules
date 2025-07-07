@@ -1,0 +1,8 @@
+[submodule "vendors/SDL"]
+	path = vendors/SDL
+	url = https://github.com/libsdl-org/SDL
+	tag = 3.2.16
+[submodule "vendors/SDL_ttf"]
+	path = vendors/SDL_ttf
+	url = https://github.com/libsdl-org/SDL_ttf
+	tag = 3.2.2
