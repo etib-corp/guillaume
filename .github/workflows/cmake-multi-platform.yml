@@ -1,20 +1,26 @@
 name: CMake on multiple platforms
-
-on:
+'on':
   push:
-    branches: ["main"]
+    branches:
+      - main
   pull_request:
-    branches: ["main"]
-
+    branches:
+      - main
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
+    runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        os:
+          - ubuntu-24.04
+          - windows-2022
+          - macos-14
+        build_type:
+          - Release
+        c_compiler:
+          - gcc
+          - clang
+          - cl
         include:
           - os: windows-latest
             c_compiler: cl
@@ -32,35 +38,34 @@ jobs:
             c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
-
+          - os: macos-latest
+            c_compiler: cl
     steps:
       - uses: actions/checkout@v4.2.2
         with:
           submodules: true
-
       - name: Update APT repository cache
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update
-
-      - name: Install dependencies
+      - name: Install SDL dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y libasound2t64 libasound2-plugins libasound2-dev libdecor-0-0 libc6 libdrm2 libgbm1 libpipewire-0.3-0t64 libpulse0 libsndio7.0 libwayland-client0 libwayland-cursor0 libwayland-egl1 libx11-6 libxcursor1 libxext6 libxfixes3 libxi6 libxkbcommon0 libxrandr2 libxss1
-
+        run: >-
+          sudo apt-get install -y libasound2t64 libasound2-plugins
+          libasound2-dev libdecor-0-0 libc6 libdrm2 libgbm1 libpipewire-0.3-0t64
+          libpulse0 libsndio7.0 libwayland-client0 libwayland-cursor0
+          libwayland-egl1 libx11-6 libxcursor1 libxext6 libxfixes3 libxi6
+          libxkbcommon0 libxrandr2 libxss1
+      - name: Install SDL_ttf dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libharfbuzz-dev
       - name: Configure CMake
         run: >
-          cmake
-          -B build
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -S .
-
+          cmake -B build -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_BUILD_TYPE=${{
+          matrix.build_type }} -S .
       - name: Build
-        run: >
-          cmake
-          --build build
-          --config ${{ matrix.build_type }}
-
+        run: |
+          cmake --build build --config ${{ matrix.build_type }}
       - name: Test
         working-directory: build
-        run: ctest --build-config ${{ matrix.build_type }}
+        run: 'ctest --build-config ${{ matrix.build_type }}'
