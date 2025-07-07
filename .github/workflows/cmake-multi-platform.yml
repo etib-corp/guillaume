@@ -35,8 +35,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4.2.2
-        with:  
+        with:
           submodules: true
+
+      - name: Update APT repository cache
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update
+
+      - name: Install dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y libasound2 libasound2-plugins libasound2-dev libdecor-0-0 libc6 libdrm2 libgbm1 libpipewire-0-3-0 libpulse0 libsndio7.0 libwayland-client0 libwayland-cursor0 libwayland-egl1 libx11-6 libxcursor1 libxext6 libxfixes3 libxi6 libxkbcommon0 libxrandr2 libxss1
 
       - name: Configure CMake
         run: >
