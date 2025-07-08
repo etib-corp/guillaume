@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: "${{ matrix.os }}"
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-24.04
@@ -45,6 +46,7 @@ jobs:
             c_compiler: cl
           - os: macos-14
             c_compiler: gcc
+        
     steps:
       - uses: actions/checkout@v4.2.2
         with:
