@@ -1,11 +1,16 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "guillaume/event.hpp"
 
 namespace guigui {
 
 // Keyboard event - represents a keyboard event with key code and modifiers
 class KeyboardEvent : public Event {
+public:
     enum class KeyType {
         KEY_PRESS, // Key pressed
         KEY_RELEASE, // Key released
@@ -100,22 +105,126 @@ class KeyboardEvent : public Event {
         NP_DIVIDE,
         NP_DECIMAL,
         NP_ENTER
-
     };
 
     enum class KeyModifiers {
-        CTRL = 1 << 0, // Control key
-        ALT = 1 << 1, // Alt key
-        SHIFT = 1 << 2, // Shift key
-        SUPER = 1 << 3, // Super key (Windows key or Command key on macOS)
+        CTRL, // Control key
+        ALT, // Alt key
+        SHIFT, // Shift key
+        SUPER // Super key (Windows key on Windows, Command key on macOS)
     };
 
 private:
     KeyType _key_type; // Type of keyboard event (key down or key up)
     KeyCode _key_code; // Key code representing the pressed key
-    KeyModifiers _key_modifiers; // Modifiers applied during the key event
+    std::vector<KeyModifiers> _key_modifiers; // Modifiers applied to the key event
+
+    std::map<KeyType, std::string> _key_type_map = {
+        { KeyType::KEY_PRESS, "Key Press" },
+        { KeyType::KEY_RELEASE, "Key Release" }
+    };
+
+    std::map<KeyCode, std::string> _key_code_map {
+        { KeyCode::A, "A" },
+        { KeyCode::B, "B" },
+        { KeyCode::C, "C" },
+        { KeyCode::D, "D" },
+        { KeyCode::E, "E" },
+        { KeyCode::F, "F" },
+        { KeyCode::G, "G" },
+        { KeyCode::H, "H" },
+        { KeyCode::I, "I" },
+        { KeyCode::J, "J" },
+        { KeyCode::K, "K" },
+        { KeyCode::L, "L" },
+        { KeyCode::M, "M" },
+        { KeyCode::N, "N" },
+        { KeyCode::O, "O" },
+        { KeyCode::P, "P" },
+        { KeyCode::Q, "Q" },
+        { KeyCode::R, "R" },
+        { KeyCode::S, "S" },
+        { KeyCode::T, "T" },
+        { KeyCode::U, "U" },
+        { KeyCode::V, "V" },
+        { KeyCode::W, "W" },
+        { KeyCode::X, "X" },
+        { KeyCode::Y, "Y" },
+        { KeyCode::Z, "Z" },
+
+        // Numeric keys
+        { KeyCode::NUM_0, "0" },
+        { KeyCode::NUM_1, "1" },
+        { KeyCode::NUM_2, "2" },
+        { KeyCode::NUM_3, "3" },
+        { KeyCode::NUM_4, "4" },
+        { KeyCode::NUM_5, "5" },
+        { KeyCode::NUM_6, "6" },
+        { KeyCode::NUM_7, "7" },
+        { KeyCode::NUM_8, "8" },
+        { KeyCode::NUM_9, "9" },
+
+        // Function keys
+        { KeyCode::F1, "F1" },
+        { KeyCode::F2, "F2" },
+        { KeyCode::F3, "F3" },
+        { KeyCode::F4, "F4" },
+        { KeyCode::F5, "F5" },
+        { KeyCode::F6, "F6" },
+        { KeyCode::F7, "F7" },
+        { KeyCode::F8, "F8" },
+        { KeyCode::F9, "F9" },
+        { KeyCode::F10, "F10" },
+        { KeyCode::F11, "F11" },
+        { KeyCode::F12, "F12" },
+
+        // Navigation keys
+        { KeyCode::UP, "Up" },
+        { KeyCode::DOWN, "Down" },
+        { KeyCode::LEFT, "Left" },
+        { KeyCode::RIGHT, "Right" },
+
+        // Other keys
+        { KeyCode::SPACE, "Space" },
+        { KeyCode::ENTER, "Enter" },
+        { KeyCode::ESC, "Escape" },
+        { KeyCode::TAB, "Tab" },
+        { KeyCode::BACKSPACE, "Backspace" },
+        { KeyCode::INSERT, "Insert" },
+        { KeyCode::DELETE, "Delete" },
+        { KeyCode::HOME, "Home" },
+        { KeyCode::END, "End" },
+        { KeyCode::PAGE_UP, "Page Up" },
+        { KeyCode::PAGE_DOWN, "Page Down" },
+
+        // Numpad keys
+        { KeyCode::NP_0, "Numpad 0" },
+        { KeyCode::NP_1, "Numpad 1" },
+        { KeyCode::NP_2, "Numpad 2" },
+        { KeyCode::NP_3, "Numpad 3" },
+        { KeyCode::NP_4, "Numpad 4" },
+        { KeyCode::NP_5, "Numpad 5" },
+        { KeyCode::NP_6, "Numpad 6" },
+        { KeyCode::NP_7, "Numpad 7" },
+        { KeyCode::NP_8, "Numpad 8" },
+        { KeyCode::NP_9, "Numpad 9" },
+        { KeyCode::NP_ADD, "Numpad Add" },
+        { KeyCode::NP_SUBTRACT, "Numpad Subtract" },
+        { KeyCode::NP_MULTIPLY, "Numpad Multiply" },
+        { KeyCode::NP_DIVIDE, "Numpad Divide" },
+        { KeyCode::NP_DECIMAL, "Numpad Decimal" },
+        { KeyCode::NP_ENTER, "Numpad Enter" }
+    };
+
+    std::map<KeyModifiers, std::string> _key_modifiers_map = {
+        { KeyModifiers::CTRL, "Control" },
+        { KeyModifiers::ALT, "Alt" },
+        { KeyModifiers::SHIFT, "Shift" },
+        { KeyModifiers::SUPER, "Super" }
+    };
+
 public:
-    KeyboardEvent(KeyType key_type, KeyCode key_code, KeyModifiers key_modifiers)
+    KeyboardEvent(KeyType key_type, KeyCode key_code, std::vector<KeyModifiers> key_modifiers)
         : Event(EventType::KEYBOARD_EVENT)
         , // Initialize base event type
         _key_type(key_type)
@@ -128,15 +237,23 @@ public:
     ~KeyboardEvent() override = default;
     std::string to_string() const override
     {
-        return "KeyboardEvent(type="
-            + std::to_string(static_cast<int>(get_type())) + ", key_type="
-            + std::to_string(static_cast<int>(_key_type)) + ", key_code="
-            + std::to_string(static_cast<int>(_key_code)) + ", modifiers="
-            + std::to_string(static_cast<int>(_key_modifiers)) + ")";
+        std::string string_representation;
+
+        for (const auto& modifier : _key_modifiers) {
+            if (!string_representation.empty()) {
+                string_representation += " + "; // Add separator for multiple modifiers
+            }
+            string_representation += _key_modifiers_map.at(modifier); // Convert modifier to string
+        }
+        string_representation += " " + _key_type_map.at(_key_type) + " " + _key_code_map.at(_key_code);
+        return string_representation; // Convert to string representation
     } // Convert to string representation
     KeyType get_key_type() const { return _key_type; } // Get the type
     KeyCode get_key_code() const { return _key_code; } // Get the key
-    KeyModifiers get_key_modifiers() const { return _key_modifiers; } // Get the modifiers
+    std::vector<KeyModifiers> get_key_modifiers() const
+    {
+        return _key_modifiers; // Get the modifiers
+    } // Get the key modifiers
 };
 
 } // namespace guigui

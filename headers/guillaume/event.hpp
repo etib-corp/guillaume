@@ -1,31 +1,24 @@
 #pragma once
 
-#include <string>
+#include "guillaume/eventable.hpp"
 
 namespace guigui {
 
-enum class EventType {
-    KEYBOARD_EVENT,
-    MOUSE_EVENT,
-};
-
-class Event {
-private:
+class Event : public Eventable {
+protected:
     EventType _type;
 
-protected:
 public:
+    virtual ~Event() = default;
+
     Event(EventType type)
         : _type(type)
     {
     }
-    virtual ~Event() = default;
 
-    EventType get_type() const { return _type; }
+    EventType get_type() const override { return _type; }
 
-    virtual std::string to_string() const
-    {
-        return "Event(type=" + std::to_string(static_cast<int>(_type)) + ")";
-    } // Convert to string representation
+    virtual std::string to_string() const override = 0;
 };
+
 } // namespace guigui

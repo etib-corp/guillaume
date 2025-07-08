@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <map>
+
 #include "guillaume/event.hpp"
 #include "guillaume/vector.hpp"
 
@@ -7,11 +10,11 @@ namespace guigui {
 
 // Mouse event - represents a mouse event with position and button state
 class MouseEvent : public Event {
+public:
     enum class MouseEventType {
         MOUSE_MOTION, // Mouse movement event
         MOUSE_BUTTON_PRESS, // Mouse button press event
         MOUSE_BUTTON_RELEASE, // Mouse button release event
-        MOUSE_DEVICE_EVENT, // Mouse device event (e.g., mouse connected/disconnected)
     };
 
     enum class MouseButton {
@@ -26,12 +29,33 @@ class MouseEvent : public Event {
         WHEEL_DOWN, // Scroll wheel down
         WHEEL_LEFT, // Tilt wheel left (if supported)
         WHEEL_RIGHT, // Tilt wheel right (if supported)
+
+        NONE // No button (used for mouse motion events)
     };
 
 private:
     MouseEventType _type; // Type of mouse event
     MouseButton _button; // Mouse button state
     Vector _position; // Mouse position
+
+    std::map<MouseEventType, std::string> _mouse_event_type_map = {
+        { MouseEventType::MOUSE_MOTION, "Mouse Motion" },
+        { MouseEventType::MOUSE_BUTTON_PRESS, "Mouse Button Press" },
+        { MouseEventType::MOUSE_BUTTON_RELEASE, "Mouse Button Release" }
+    };
+
+    std::map<MouseButton, std::string> _mouse_button_map = {
+        { MouseButton::LEFT, "Left Button" },
+        { MouseButton::RIGHT, "Right Button" },
+        { MouseButton::MIDDLE, "Middle Button" },
+        { MouseButton::SIDE_1, "Side Button 1" },
+        { MouseButton::SIDE_2, "Side Button 2" },
+        { MouseButton::WHEEL_UP, "Wheel Up" },
+        { MouseButton::WHEEL_DOWN, "Wheel Down" },
+        { MouseButton::WHEEL_LEFT, "Wheel Left" },
+        { MouseButton::WHEEL_RIGHT, "Wheel Right" },
+        { MouseButton::NONE, "No Button" }
+    };
 
 public:
     MouseEvent(const MouseEventType& type, const MouseButton& button,
@@ -48,11 +72,11 @@ public:
     ~MouseEvent() override = default;
     std::string to_string() const override
     {
-        return "MouseEvent(type=" + std::to_string(static_cast<int>(get_type()))
-            + ", position=(" + std::to_string(_position.get_x()) + ", "
-            + std::to_string(_position.get_y()) + "), button="
-            + std::to_string(static_cast<int>(_button)) + ", event_type="
-            + std::to_string(static_cast<int>(_type)) + ")";
+        std::string string_representation = "MouseEvent(";
+        string_representation += "Type: " + _mouse_event_type_map.at(_type) + ", ";
+        string_representation += "Button: " + _mouse_button_map.at(_button) + ", ";
+        string_representation += "Position: " + _position.to_string() + ")";
+        return string_representation;
 
     } // Convert to string representation
     Vector get_position() const { return _position; } // Get mouse position
