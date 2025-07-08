@@ -21,7 +21,7 @@ private:
 public:
     TextPrimitive(const Font& font, const Vector& position, const Color& color,
         const std::string& content)
-        : Primitive(PrimitiveType::TEXT, sizeof(TextPrimitive))
+        : Primitive(PrimitiveType::TEXT)
         , _font(font)
         , _position(position)
         , _color(color)
@@ -36,7 +36,7 @@ public:
         // _content)
     }
 
-    std::unique_ptr<Primitive> clone() const override
+    std::unique_ptr<Primitivable> clone() const override
     {
         return std::make_unique<TextPrimitive>(*this);
     }
@@ -53,7 +53,7 @@ public:
 };
 
 // Factory function to create TextPrimitive
-inline std::unique_ptr<Primitive>
+inline std::unique_ptr<Primitivable>
 createTextPrimitive(const Font& _font, const Vector& _position,
     const Color& _color, const std::string& _content)
 {

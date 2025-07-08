@@ -3,6 +3,7 @@
 #include <functional>
 #include <map>
 #include <queue>
+#include <unordered_map>
 
 #include "guillaume/color.hpp"
 #include "guillaume/eventable.hpp"
@@ -16,8 +17,9 @@ namespace guigui {
 
 class Renderer {
 private:
-    std::queue<std::unique_ptr<Eventable>> _event_queue;
-    std::map<EventType, std::function<void(std::unique_ptr<Eventable>)>> _event_handlers;
+    std::queue<std::unique_ptr<Eventable>>
+        _event_queue;
+    std::map<Eventable::EventType, std::function<void(std::unique_ptr<Eventable>)>> _event_handlers;
     bool _is_running = true;
 
 protected:
@@ -39,7 +41,7 @@ public:
     virtual void set_clip_rect(const Rectangle& rectangle) = 0;
     virtual void clear(const Color& color) = 0;
     virtual void present() = 0;
-    virtual void register_event_handler(std::function<void(std::unique_ptr<Eventable>)> handler, const EventType& event_type)
+    virtual void register_event_handler(std::function<void(std::unique_ptr<Eventable>)> handler, const Eventable::EventType& event_type)
     {
         if (_event_handlers.find(event_type) != _event_handlers.end()) {
             throw std::runtime_error("Event handler already registered for this event type.");

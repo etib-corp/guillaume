@@ -16,7 +16,7 @@ private:
 
 public:
     RectanglePrimitive(const Rectangle& rectangle, const Color& color)
-        : Primitive(PrimitiveType::RECTANGLE, sizeof(RectanglePrimitive))
+        : Primitive(PrimitiveType::RECTANGLE)
         , _rectangle(rectangle)
         , _color(color)
     {
@@ -28,7 +28,7 @@ public:
         // This would typically call renderer->drawRect(rect, color)
     }
 
-    std::unique_ptr<Primitive> clone() const override
+    std::unique_ptr<Primitivable> clone() const override
     {
         return std::make_unique<RectanglePrimitive>(*this);
     }
@@ -43,7 +43,7 @@ public:
 };
 
 // Factory function to create RectanglePrimitive
-inline std::unique_ptr<Primitive>
+inline std::unique_ptr<Primitivable>
 createRectanglePrimitive(const Rectangle& rectangle, const Color& color)
 {
     return std::make_unique<RectanglePrimitive>(rectangle, color);

@@ -17,6 +17,7 @@ public:
     };
 
     enum class KeyCode {
+        NONE, // No key (used when no key is pressed)
         // Alphanumeric keys
         A,
         B,
@@ -125,6 +126,7 @@ private:
     };
 
     std::map<KeyCode, std::string> _key_code_map {
+        { KeyCode::NONE, "None" },
         { KeyCode::A, "A" },
         { KeyCode::B, "B" },
         { KeyCode::C, "C" },

@@ -3,45 +3,31 @@
 #include <memory>
 #include <string>
 
-#include "guillaume/color.hpp"
-#include "guillaume/font.hpp"
-#include "guillaume/rectangle.hpp"
-#include "guillaume/vector.hpp"
+#include "guillaume/primitivable.hpp"
 
 namespace guigui {
-
-enum class PrimitiveType {
-    JUMP = 0,
-    CLIP = 1,
-    RECTANGLE = 2,
-    TEXT = 3,
-};
-
-class Primitive {
+class Primitive : public Primitivable {
 protected:
     PrimitiveType _type;
-    int _size;
 
 public:
-    Primitive(PrimitiveType type, int size)
+    ~Primitive() override = default;
+
+    Primitive(PrimitiveType type)
         : _type(type)
-        , _size(size)
     {
     }
 
-    virtual ~Primitive() = default;
+    void execute() override = 0;
 
-    virtual void execute() = 0;
+    PrimitiveType get_type() const override { return _type; }
 
-    PrimitiveType get_type() const { return _type; }
-    int get_size() const { return _size; }
+    std::unique_ptr<Primitivable> clone() const override = 0;
 
-    virtual std::unique_ptr<Primitive> clone() const = 0;
-
-    virtual std::string to_string() const
+    std::string to_string() const override
     {
         return "Primitive(type=" + std::to_string(static_cast<int>(_type))
-            + ", size=" + std::to_string(_size) + ")";
+            + ")";
     }
 };
 

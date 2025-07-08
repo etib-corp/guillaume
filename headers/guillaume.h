@@ -326,5 +326,3 @@ int guigui_begin_popup(guigui_Context* ctx, const char* name);
 void guigui_end_popup(guigui_Context* ctx);
 void guigui_begin_panel_ex(guigui_Context* ctx, const char* name, int opt);
 void guigui_end_panel(guigui_Context* ctx);
-
-#endif

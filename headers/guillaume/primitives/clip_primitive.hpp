@@ -14,18 +14,16 @@ private:
 
 public:
     ClipPrimitive(const Rectangle& rectangle)
-        : Primitive(PrimitiveType::CLIP, sizeof(ClipPrimitive))
+        : Primitive(PrimitiveType::CLIP)
         , _rectangle(rectangle) // Initialize with the given rectangle
     {
     }
 
     void execute() override
     {
-        // Implementation for clipping operation
-        // This would typically call renderer->setClipRect(rect)
     }
 
-    std::unique_ptr<Primitive> clone() const override
+    std::unique_ptr<Primitivable> clone() const override
     {
         return std::make_unique<ClipPrimitive>(*this);
     }
@@ -39,7 +37,7 @@ public:
 };
 
 // Factory function to create ClipPrimitive
-inline std::unique_ptr<Primitive> createClipPrimitive(const Rectangle& rectangle)
+inline std::unique_ptr<Primitivable> createClipPrimitive(const Rectangle& rectangle)
 {
     return std::make_unique<ClipPrimitive>(rectangle);
 }
