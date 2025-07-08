@@ -12,6 +12,9 @@ add_executable(guillaume ${SOURCES})
 # Include directories
 include_directories(headers)
 
+# Set options for external libraries
+option(SDLTTF_PLUTOSVG "Use PlutoSVG for SDL_ttf" OFF)
+
 # Add subdirectories for external libraries
 add_subdirectory(external/SDL)
 add_subdirectory(external/SDL_ttf)
