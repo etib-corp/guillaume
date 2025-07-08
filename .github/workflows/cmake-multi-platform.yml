@@ -46,9 +46,10 @@ jobs:
           - os: macos-14
             c_compiler: gcc
     steps:
-      - uses: actions/check out@v4.2.2
+      - uses: actions/checkout@v4.2.2
         with:
-          submodules: true
+          submodules: recursive
+
       - name: Update APT repository cache
         if: matrix.os == 'ubuntu-24.04'
         run: sudo apt-get update
