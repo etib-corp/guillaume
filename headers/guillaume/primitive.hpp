@@ -8,7 +8,7 @@
 #include "guillaume/rectangle.hpp"
 #include "guillaume/vector.hpp"
 
-namespace guillaume {
+namespace guigui {
 
 enum class PrimitiveType {
     JUMP = 0,
@@ -45,4 +45,4 @@ public:
     }
 };
 
-} // namespace guillaume
+} // namespace guigui

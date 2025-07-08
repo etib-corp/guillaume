@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace guillaume {
+namespace guigui {
 
 // Text command - draws _content at a _position
 class TextPrimitive : public Primitive {
@@ -60,4 +60,4 @@ createTextPrimitive(const Font& _font, const Vector& _position,
     return std::make_unique<TextPrimitive>(_font, _position, _color, _content);
 }
 
-} // namespace guillaume
+} // namespace guigui

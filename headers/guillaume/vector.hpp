@@ -4,7 +4,7 @@
 #include <cmath>
 #include <string>
 
-namespace guillaume {
+namespace guigui {
 
 class Vector {
 private:
@@ -125,4 +125,4 @@ public:
     }
 };
 
-} // namespace guillaume
+} // namespace guigui

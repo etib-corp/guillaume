@@ -3,7 +3,7 @@
 #include "guillaume/event.hpp"
 #include "guillaume/vector.hpp"
 
-namespace guillaume {
+namespace guigui {
 
 // Mouse event - represents a mouse event with position and button state
 class MouseEvent : public Event {
@@ -60,4 +60,4 @@ public:
     MouseEventType get_event_type() const { return _type; } // Get mouse event type
 };
 
-} // namespace guillaume
+} // namespace guigui

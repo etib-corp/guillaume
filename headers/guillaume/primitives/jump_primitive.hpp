@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace guillaume {
+namespace guigui {
 
 class JumpPrimitive : public Primitive {
 private:
@@ -42,4 +42,4 @@ inline std::unique_ptr<Primitive> createJumpPrimitive(void* destination)
     return std::make_unique<JumpPrimitive>(destination);
 }
 
-} // namespace guillaume
+} // namespace guigui

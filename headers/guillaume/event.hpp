@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace guillaume {
+namespace guigui {
 
 enum class EventType {
     KEYBOARD_EVENT,
@@ -28,4 +28,4 @@ public:
         return "Event(type=" + std::to_string(static_cast<int>(_type)) + ")";
     } // Convert to string representation
 };
-} // namespace guillaume
+} // namespace guigui

@@ -4,7 +4,7 @@
 
 #include "guillaume/renderer.hpp"
 
-namespace guillaume {
+namespace guigui {
 
 class Context {
 
@@ -50,4 +50,4 @@ public:
         _loop();
     }
 };
-} // namespace guillaume
+} // namespace guigui

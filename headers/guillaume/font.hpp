@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace guillaume {
+namespace guigui {
 
 class Font {
 private:
@@ -43,4 +43,4 @@ public:
     }
 };
 
-} // namespace guillaume
+} // namespace guigui

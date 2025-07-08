@@ -9,7 +9,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
-class SDL3Renderer : public guillaume::Renderer {
+class SDL3Renderer : public guigui::Renderer {
 
 private:
     SDL_Window* _window;
@@ -48,7 +48,7 @@ public:
             throw std::runtime_error("Text engine could not be created!");
     }
 
-    void draw_rectangle(const guillaume::RectanglePrimitive& rectangle) override
+    void draw_rectangle(const guigui::RectanglePrimitive& rectangle) override
     {
 
         SDL_FRect sdl_rect = {
@@ -74,7 +74,7 @@ public:
         }
     }
 
-    void draw_text(const guillaume::TextPrimitive& text, const guillaume::Font& font) override
+    void draw_text(const guigui::TextPrimitive& text, const guigui::Font& font) override
     {
         TTF_Font* ttf_font = TTF_OpenFont(font.get_path().c_str(), font.get_size());
         if (!ttf_font) {
@@ -115,7 +115,7 @@ public:
         TTF_CloseFont(ttf_font);
     }
 
-    guillaume::Vector get_text_size(const guillaume::Font& font,
+    guigui::Vector get_text_size(const guigui::Font& font,
         const std::string& content) override
     {
         int width = 0, height = 0;
@@ -140,10 +140,10 @@ public:
         TTF_DestroyText(ttf_text);
         TTF_CloseFont(ttf_font);
 
-        return guillaume::Vector(static_cast<float>(width), static_cast<float>(height));
+        return guigui::Vector(static_cast<float>(width), static_cast<float>(height));
     }
 
-    void set_clip_rect(const guillaume::Rectangle& rectangle) override
+    void set_clip_rect(const guigui::Rectangle& rectangle) override
     {
         SDL_Rect sdl_rect = {
             rectangle.get_x(),
@@ -155,7 +155,7 @@ public:
             throw std::runtime_error("Failed to set clip rectangle.");
     }
 
-    void clear(const guillaume::Color& color) override
+    void clear(const guigui::Color& color) override
     {
         if (!SDL_RenderClear(_renderer))
             throw std::runtime_error("Failed to clear renderer.");
@@ -177,16 +177,16 @@ public:
                 _set_running(false);
                 break;
             case SDL_EVENT_KEY_DOWN:
-                // _push_event(guillaume::KeyboardEvent(
-                //     guillaume::KeyboardEvent::KeyType::KEY_DOWN,
-                //     static_cast<guillaume::KeyboardEvent::KeyCode>(sdl_event.key.keysym.sym),
-                //     static_cast<guillaume::KeyboardEvent::KeyModifiers>(sdl_event.key.mod)));
+                // _push_event(guigui::KeyboardEvent(
+                //     guigui::KeyboardEvent::KeyType::KEY_DOWN,
+                //     static_cast<guigui::KeyboardEvent::KeyCode>(sdl_event.key.keysym.sym),
+                //     static_cast<guigui::KeyboardEvent::KeyModifiers>(sdl_event.key.mod)));
                 break;
             case SDL_EVENT_KEY_UP:
-                // _push_event(guillaume::KeyboardEvent(
-                //     guillaume::KeyboardEvent::KeyType::KEY_UP,
-                //     static_cast<guillaume::KeyboardEvent::KeyCode>(sdl_event.key.keysym.sym),
-                //     static_cast<guillaume::KeyboardEvent::KeyModifiers>(sdl_event.key.mod)));
+                // _push_event(guigui::KeyboardEvent(
+                //     guigui::KeyboardEvent::KeyType::KEY_UP,
+                //     static_cast<guigui::KeyboardEvent::KeyCode>(sdl_event.key.keysym.sym),
+                //     static_cast<guigui::KeyboardEvent::KeyModifiers>(sdl_event.key.mod)));
                 break;
             default:
                 break;
@@ -206,8 +206,8 @@ public:
 
 int main(int argc, char* const argv[], char* const envp[])
 {
-    std::unique_ptr<guillaume::Renderer> renderer = nullptr;
-    std::unique_ptr<guillaume::Context> context = nullptr;
+    std::unique_ptr<guigui::Renderer> renderer = nullptr;
+    std::unique_ptr<guigui::Context> context = nullptr;
 
     try {
         renderer = std::make_unique<SDL3Renderer>();
@@ -217,7 +217,7 @@ int main(int argc, char* const argv[], char* const envp[])
     }
 
     try {
-        context = std::make_unique<guillaume::Context>(std::move(renderer));
+        context = std::make_unique<guigui::Context>(std::move(renderer));
     } catch (const std::runtime_error& exception) {
         fprintf(stderr, "Error initializing context: %s\n", exception.what());
         return EXIT_FAILURE;

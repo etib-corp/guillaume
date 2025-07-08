@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace guillaume {
+namespace guigui {
 
 // Rectangle command - draws a colored rectangle
 class RectanglePrimitive : public Primitive {
@@ -49,4 +49,4 @@ createRectanglePrimitive(const Rectangle& rectangle, const Color& color)
     return std::make_unique<RectanglePrimitive>(rectangle, color);
 }
 
-} // namespace guillaume
+} // namespace guigui

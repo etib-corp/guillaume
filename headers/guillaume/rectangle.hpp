@@ -2,7 +2,7 @@
 
 #include "guillaume/vector.hpp"
 
-namespace guillaume {
+namespace guigui {
 
 class Rectangle {
 private:
@@ -165,4 +165,4 @@ public:
         return Rectangle(Vector(x1, y1), Vector(x2 - x1, y2 - y1));
     }
 };
-} // namespace guillaume
+} // namespace guigui

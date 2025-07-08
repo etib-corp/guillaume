@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace guillaume {
+namespace guigui {
 
 // Clip command - defines clipping rectangle
 class ClipPrimitive : public Primitive {
@@ -44,4 +44,4 @@ inline std::unique_ptr<Primitive> createClipPrimitive(const Rectangle& rectangle
     return std::make_unique<ClipPrimitive>(rectangle);
 }
 
-} // namespace guillaume
+} // namespace guigui

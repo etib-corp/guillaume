@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace guillaume {
+namespace guigui {
 class Color {
 private:
     std::uint8_t _red;
@@ -122,4 +122,4 @@ public:
             (value >> 8) & 0xFF, value & 0xFF);
     }
 };
-} // namespace guillaume
+} // namespace guigui

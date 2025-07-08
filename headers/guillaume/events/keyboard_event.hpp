@@ -2,7 +2,7 @@
 
 #include "guillaume/event.hpp"
 
-namespace guillaume {
+namespace guigui {
 
 // Keyboard event - represents a keyboard event with key code and modifiers
 class KeyboardEvent : public Event {
@@ -139,4 +139,4 @@ public:
     KeyModifiers get_key_modifiers() const { return _key_modifiers; } // Get the modifiers
 };
 
-} // namespace guillaume
+} // namespace guigui
