@@ -14,11 +14,9 @@ include_directories(headers)
 
 # Add subdirectories for external libraries
 add_subdirectory(external/SDL)
-add_subdirectory(external/harfbuzz)
 add_subdirectory(external/SDL_ttf)
 
 include_directories(${SDL3_INCLUDE_DIRS})
-
 include_directories(${SDL3_TTF_INCLUDE_DIRS})
 
 # Link libraries

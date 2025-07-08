@@ -46,7 +46,7 @@ jobs:
           - os: macos-14
             c_compiler: gcc
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/check out@v4.2.2
         with:
           submodules: true
       - name: Update APT repository cache

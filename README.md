@@ -20,7 +20,7 @@ To install Guillaume, clone the repository and include the headers in your proje
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/etib-corp/guillaume.git
+    git clone https://github.com/etib-corp/guillaume.git --recursive
     cd guillaume
     ```
 
