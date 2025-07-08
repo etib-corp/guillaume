@@ -6,7 +6,3 @@
 	path = external/SDL_ttf
 	url = https://github.com/libsdl-org/SDL_ttf
 	tag = 3.2.2
-[submodule "external/SDL_ttf/external/harfbuzz"]
-	path = external/SDL_ttf/external/harfbuzz
-	url = https://github.com/harfbuzz/harfbuzz
-	tag = 11.2.1
