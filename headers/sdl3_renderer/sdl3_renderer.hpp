@@ -131,7 +131,7 @@ public:
 
     void init(std::string name) override;
     void draw_rectangle(const guigui::RectanglePrimitive& rectangle) override;
-    void draw_text(const guigui::TextPrimitive& text, const guigui::Font& font) override;
+    void draw_text(const guigui::TextPrimitive& text) override;
     guigui::Vector get_text_size(const guigui::Font& font, const std::string& content) override;
     void set_clip_rect(const guigui::Rectangle& rectangle) override;
     void clear(const guigui::Color& color) override;

@@ -20,6 +20,7 @@ public:
     void add_child(std::unique_ptr<guigui::Componentable> child)
     {
         _children.push_back(std::move(child));
+        _children.back()->set_renderer(_renderer);
     }
 
     void draw() override

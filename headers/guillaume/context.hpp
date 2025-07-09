@@ -30,7 +30,7 @@ namespace guigui {
 class Context {
 
 private:
-    std::unique_ptr<Renderer> _renderer;
+    std::shared_ptr<Renderer> _renderer;
     std::unique_ptr<Font> _default_font;
     std::unique_ptr<Container> _root_component;
 
@@ -47,7 +47,7 @@ private:
 
 protected:
 public:
-    Context(std::unique_ptr<Renderer> renderer)
+    Context(std::shared_ptr<Renderer> renderer)
         : _renderer(std::move(renderer))
     {
         _renderer->init("Guillaume");
@@ -90,7 +90,9 @@ public:
 
     void set_root_component(std::unique_ptr<Container> root_component)
     {
+
         _root_component = std::move(root_component);
+        _root_component->set_renderer(_renderer);
     }
 
     std::unique_ptr<Container> get_root_component()

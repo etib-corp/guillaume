@@ -153,19 +153,19 @@ void SDL3Renderer::draw_rectangle(const guigui::RectanglePrimitive& rectangle)
     }
 }
 
-void SDL3Renderer::draw_text(const guigui::TextPrimitive& text, const guigui::Font& font)
+void SDL3Renderer::draw_text(const guigui::TextPrimitive& text)
 {
-    TTF_Font* ttf_font = TTF_OpenFont(font.get_path().c_str(), font.get_size());
+    TTF_Font* ttf_font = TTF_OpenFont(text.get_font().get_path().c_str(), text.get_font().get_size());
     if (!ttf_font) {
-        throw std::runtime_error("Failed to load font: " + font.get_path());
+        throw std::runtime_error("Failed to load font: " + text.get_font().get_path());
     }
 
     SDL_Color sdl_color = { text.get_color().get_red(), text.get_color().get_green(), text.get_color().get_blue(), text.get_color().get_alpha() };
 
-    SDL_Surface* surface = TTF_RenderText_Solid(ttf_font, text.getText().c_str(), text.getText().length(), sdl_color);
+    SDL_Surface* surface = TTF_RenderText_Solid(ttf_font, text.get_text().c_str(), text.get_text().length(), sdl_color);
     if (!surface) {
         TTF_CloseFont(ttf_font);
-        throw std::runtime_error("Failed to render text: " + text.getText());
+        throw std::runtime_error("Failed to render text: " + text.get_text());
     }
 
     SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer, surface);

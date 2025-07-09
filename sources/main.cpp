@@ -8,11 +8,11 @@
 
 int main(int argc, char* const argv[], char* const envp[])
 {
-    std::unique_ptr<guigui::Renderer> renderer = nullptr;
+    std::shared_ptr<guigui::Renderer> renderer = nullptr;
     std::unique_ptr<guigui::Context> context = nullptr;
 
     try {
-        renderer = std::make_unique<SDL3Renderer>();
+        renderer = std::make_shared<SDL3Renderer>();
     } catch (const std::runtime_error& exception) {
         fprintf(stderr, "Error initializing renderer: %s\n", exception.what());
         return EXIT_FAILURE;

@@ -3,6 +3,7 @@
 #include "guillaume/color.hpp"
 #include "guillaume/font.hpp"
 #include "guillaume/primitive.hpp"
+#include "guillaume/renderer.hpp"
 #include "guillaume/vector.hpp"
 
 #include <memory>
@@ -19,9 +20,9 @@ private:
     std::string _content;
 
 public:
-    TextPrimitive(const Font& font, const Vector& position, const Color& color,
+    TextPrimitive(std::shared_ptr<Renderer> renderer, const Font& font, const Vector& position, const Color& color,
         const std::string& content)
-        : Primitive(PrimitiveType::TEXT)
+        : Primitive(PrimitiveType::TEXT, renderer)
         , _font(font)
         , _position(position)
         , _color(color)
@@ -31,9 +32,7 @@ public:
 
     void execute() override
     {
-        // Implementation for _content drawing
-        // This would typically call renderer->drawText(_font, _position, _color,
-        // _content)
+        _renderer->draw_text(*this);
     }
 
     std::unique_ptr<Primitivable> clone() const override
@@ -46,18 +45,18 @@ public:
         return "TextPrimitive(font=" + _font.to_string() + ", position=" + _position.to_string() + ", color=" + _color.to_string() + ", content=\"" + _content + "\")";
     }
 
-    const Font& getFont() const { return _font; }
-    const Vector& getPosition() const { return _position; }
+    const Font& get_font() const { return _font; }
+    const Vector& get_position() const { return _position; }
     const Color& get_color() const { return _color; }
-    const std::string& getText() const { return _content; }
+    const std::string& get_text() const { return _content; }
 };
 
 // Factory function to create TextPrimitive
 inline std::unique_ptr<Primitivable>
-createTextPrimitive(const Font& _font, const Vector& _position,
-    const Color& _color, const std::string& _content)
+createTextPrimitive(std::shared_ptr<Renderer> renderer, const Font& font, const Vector& position,
+    const Color& color, const std::string& content)
 {
-    return std::make_unique<TextPrimitive>(_font, _position, _color, _content);
+    return std::make_unique<TextPrimitive>(renderer, font, position, color, content);
 }
 
 } // namespace guigui

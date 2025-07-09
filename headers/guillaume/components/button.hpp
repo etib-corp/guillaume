@@ -31,8 +31,8 @@ public:
         , _font(font)
         , _rectangle(rectangle)
     {
-        _add_primitive("background", createRectanglePrimitive(_rectangle, _background_color));
-        _add_primitive("text", createTextPrimitive(_font, Vector(_rectangle.get_x(), _rectangle.get_y()), _text_color, _label));
+        _add_primitive("background", createRectanglePrimitive(_renderer, _rectangle, _background_color));
+        _add_primitive("text", createTextPrimitive(_renderer, _font, Vector(_rectangle.get_x(), _rectangle.get_y()), _text_color, _label));
     }
 
     void draw() override
@@ -45,13 +45,13 @@ public:
     void set_background_color(const Color& color)
     {
         _background_color = color;
-        _update_primitive("background", createRectanglePrimitive(_rectangle, _background_color));
+        _update_primitive("background", createRectanglePrimitive(_renderer, _rectangle, _background_color));
     }
 
     void set_label(const std::string& label)
     {
         _label = label;
-        _update_primitive("text", createTextPrimitive(_font, Vector(_rectangle.get_x(), _rectangle.get_y()), _text_color, _label));
+        _update_primitive("text", createTextPrimitive(_renderer, _font, Vector(_rectangle.get_x(), _rectangle.get_y()), _text_color, _label));
     }
 };
 

@@ -34,7 +34,7 @@ public:
     virtual void init(std::string name) = 0;
     virtual void draw_rectangle(const RectanglePrimitive& rectangle)
         = 0;
-    virtual void draw_text(const guigui::TextPrimitive& text, const guigui::Font& font) = 0;
+    virtual void draw_text(const guigui::TextPrimitive& text) = 0;
     virtual Vector get_text_size(const Font& font,
         const std::string& content)
         = 0;

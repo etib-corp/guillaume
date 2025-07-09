@@ -2,6 +2,7 @@
 
 #include "guillaume/componentable.hpp"
 #include "guillaume/primitive.hpp"
+#include "guillaume/renderer.hpp"
 
 #include <map>
 
@@ -12,6 +13,7 @@ private:
     std::map<std::string, std::unique_ptr<Primitivable>> _primitives;
 
 protected:
+    std::shared_ptr<Renderer> _renderer;
     bool _is_visible = true;
     bool _is_enabled = true;
     ComponentIdentifier _identifier;
@@ -42,12 +44,19 @@ protected:
 
 public:
     Component()
+        : _renderer(nullptr)
+        , _is_visible(true)
+        , _is_enabled(true)
     {
-        _is_visible = true;
-        _is_enabled = true;
+        _identifier = "Component_" + std::to_string(reinterpret_cast<std::uintptr_t>(this));
     }
 
     virtual ~Component() = default;
+
+    void set_renderer(std::shared_ptr<Renderer> renderer) override
+    {
+        _renderer = std::move(renderer);
+    }
 
     void set_visible(bool visible) override
     {

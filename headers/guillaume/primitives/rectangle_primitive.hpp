@@ -3,6 +3,7 @@
 #include "guillaume/color.hpp"
 #include "guillaume/primitive.hpp"
 #include "guillaume/rectangle.hpp"
+#include "guillaume/renderer.hpp"
 
 #include <memory>
 
@@ -15,17 +16,15 @@ private:
     Color _color;
 
 public:
-    RectanglePrimitive(const Rectangle& rectangle, const Color& color)
-        : Primitive(PrimitiveType::RECTANGLE)
+    RectanglePrimitive(std::shared_ptr<Renderer> renderer, const Rectangle& rectangle, const Color& color)
+        : Primitive(PrimitiveType::RECTANGLE, renderer)
         , _rectangle(rectangle)
         , _color(color)
     {
     }
 
-    void execute() override
-    {
-        // Implementation for rectangle drawing
-        // This would typically call renderer->drawRect(rect, color)
+    void execute() override {
+        _renderer->draw_rectangle(*this);
     }
 
     std::unique_ptr<Primitivable> clone() const override
@@ -44,9 +43,9 @@ public:
 
 // Factory function to create RectanglePrimitive
 inline std::unique_ptr<Primitivable>
-createRectanglePrimitive(const Rectangle& rectangle, const Color& color)
+createRectanglePrimitive(std::shared_ptr<Renderer> renderer, const Rectangle& rectangle, const Color& color)
 {
-    return std::make_unique<RectanglePrimitive>(rectangle, color);
+    return std::make_unique<RectanglePrimitive>(renderer, rectangle, color);
 }
 
 } // namespace guigui

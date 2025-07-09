@@ -4,17 +4,21 @@
 #include <string>
 
 #include "guillaume/primitivable.hpp"
+#include "guillaume/renderer.hpp"
 
 namespace guigui {
+
 class Primitive : public Primitivable {
 protected:
     PrimitiveType _type;
+    std::shared_ptr<Renderer> _renderer;
 
 public:
     ~Primitive() override = default;
 
-    Primitive(PrimitiveType type)
+    Primitive(PrimitiveType type, std::shared_ptr<Renderer> renderer)
         : _type(type)
+        , _renderer(renderer)
     {
     }
 
