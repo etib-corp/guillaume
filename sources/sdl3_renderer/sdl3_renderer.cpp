@@ -299,8 +299,7 @@ void SDL3Renderer::set_clip_rect(const guigui::Rectangle& rectangle)
 
 void SDL3Renderer::clear(const guigui::Color& color)
 {
-    LOG_TRACE_F("Clearing renderer with color RGBA({}, {}, {}, {})", 
-                color.get_red(), color.get_green(), color.get_blue(), color.get_alpha());
+    LOG_TRACE_F("Clearing renderer with {}", color.to_string());
     
     if (!SDL_RenderClear(_renderer)) {
         LOG_ERROR_F("Failed to clear renderer: {}", SDL_GetError());

@@ -19,48 +19,48 @@ Color::Color(const Color& other)
 {
 }
 
-Color::~Color() 
+Color::~Color()
 {
 }
 
-std::uint8_t Color::get_red() const 
-{ 
-    return _red; 
+std::uint8_t Color::get_red() const
+{
+    return _red;
 }
 
-std::uint8_t Color::get_green() const 
-{ 
-    return _green; 
+std::uint8_t Color::get_green() const
+{
+    return _green;
 }
 
-std::uint8_t Color::get_blue() const 
-{ 
-    return _blue; 
+std::uint8_t Color::get_blue() const
+{
+    return _blue;
 }
 
-std::uint8_t Color::get_alpha() const 
-{ 
-    return _alpha; 
+std::uint8_t Color::get_alpha() const
+{
+    return _alpha;
 }
 
-void Color::set_red(std::uint8_t new_red) 
-{ 
-    _red = new_red; 
+void Color::set_red(std::uint8_t new_red)
+{
+    _red = new_red;
 }
 
-void Color::set_green(std::uint8_t new_green) 
-{ 
-    _green = new_green; 
+void Color::set_green(std::uint8_t new_green)
+{
+    _green = new_green;
 }
 
-void Color::set_blue(std::uint8_t new_blue) 
-{ 
-    _blue = new_blue; 
+void Color::set_blue(std::uint8_t new_blue)
+{
+    _blue = new_blue;
 }
 
-void Color::set_alpha(std::uint8_t new_alpha) 
-{ 
-    _alpha = new_alpha; 
+void Color::set_alpha(std::uint8_t new_alpha)
+{
+    _alpha = new_alpha;
 }
 
 Color Color::operator+(const Color& other) const
@@ -91,9 +91,9 @@ bool Color::operator==(const Color& other) const
     return (_red == other._red && _green == other._green && _blue == other._blue && _alpha == other._alpha);
 }
 
-bool Color::operator!=(const Color& other) const 
-{ 
-    return !(*this == other); 
+bool Color::operator!=(const Color& other) const
+{
+    return !(*this == other);
 }
 
 Color& Color::operator=(const Color& other)
@@ -147,7 +147,7 @@ Color& Color::operator/=(std::uint8_t scalar)
 
 std::string Color::to_string() const
 {
-    return "Color(" + std::to_string(_red) + ", " + std::to_string(_green) + ", " + std::to_string(_blue) + ", " + std::to_string(_alpha) + ")";
+    return "Color(" + std::to_string(_red) + "r, " + std::to_string(_green) + "g, " + std::to_string(_blue) + "b, " + std::to_string(_alpha) + "a)";
 }
 
 std::uint32_t Color::to_int() const
