@@ -166,7 +166,7 @@ void Component::set_interaction_state(Component::InteractionState state)
         
         // Log state transition
         const char* state_names[] = {"NORMAL", "HOVERED", "PRESSED"};
-        LOG_DEBUG_F("Component {} state transition: {} → {}", 
+        LOG_DEBUG_F("Component {} state transition: {} to {}", 
                    get_identifier(), 
                    state_names[static_cast<int>(old_state)], 
                    state_names[static_cast<int>(state)]);

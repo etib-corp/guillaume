@@ -45,3 +45,6 @@ build/
 
 # Logging files
 *.log
+
+# Doxygen files
+docs/

@@ -103,14 +103,14 @@ void SDL3Renderer::init(std::string name)
     SDL_DisplayID display_id = 0;
     SDL_Rect display_bounds;
 
-    LOG_DEBUG("Initializing SDL video subsystem...");
+    LOG_DEBUG("Initializing SDL video subsystem");
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         LOG_ERROR("SDL video initialization failed");
         throw std::runtime_error("SDL could not initialize.");
     }
     LOG_DEBUG("SDL video subsystem initialized successfully");
 
-    LOG_DEBUG("Initializing SDL_ttf...");
+    LOG_DEBUG("Initializing SDL_ttf");
     if (!TTF_Init()) {
         LOG_ERROR("SDL_ttf initialization failed");
         throw std::runtime_error("SDL_ttf could not initialize.");
@@ -136,7 +136,7 @@ void SDL3Renderer::init(std::string name)
     }
     LOG_DEBUG("Window created successfully");
 
-    LOG_DEBUG("Creating SDL renderer...");
+    LOG_DEBUG("Creating SDL renderer");
     _renderer = SDL_CreateRenderer(_window, NULL);
     if (!_renderer) {
         LOG_ERROR_F("Failed to create renderer: {}", SDL_GetError());
@@ -144,7 +144,7 @@ void SDL3Renderer::init(std::string name)
     }
     LOG_DEBUG("SDL renderer created successfully");
 
-    LOG_DEBUG("Creating text engine...");
+    LOG_DEBUG("Creating text engine");
     _text_engine = TTF_CreateSurfaceTextEngine();
     if (!_text_engine) {
         LOG_ERROR_F("Failed to create text engine: {}", SDL_GetError());
