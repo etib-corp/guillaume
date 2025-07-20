@@ -148,6 +148,40 @@ cmake -S . -B build -DSDLTTF_HARFBUZZ=OFF -DSDLTTF_FREETYPE=OFF
 cmake -S . -B build -DSDLTTF_PLUTOSVG=ON
 ```
 
+#### Troubleshooting
+
+##### Windows Build Issues
+
+###### GameInput Header Not Found
+
+```text
+error C1083: Cannot open include file: 'gameinput.h': No such file or directory
+```
+
+This error occurs when the Microsoft Gaming Input API headers are not available in your Windows SDK. The project automatically disables GameInput support to resolve this issue. If you specifically need GameInput support, install the latest Windows SDK that includes the Gaming Input headers.
+
+###### MSVC Version Issues
+
+Ensure you're using MSVC 2019 or later for C++20 support.
+
+##### macOS Build Issues
+
+###### Deprecation Warnings
+
+The build may show deprecation warnings for SDL3's usage of older macOS APIs. These warnings are expected and do not affect functionality.
+
+##### Linux Build Issues
+
+###### Missing Development Libraries
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install build-essential cmake libgl1-mesa-dev
+
+# Fedora/CentOS
+sudo dnf install gcc-c++ cmake mesa-libGL-devel
+```
+
 ### Testing
 
 ```bash

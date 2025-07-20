@@ -18,6 +18,10 @@ option(SDLTTF_PLUTOSVG "Use PlutoSVG for SDL_ttf" OFF)
 option(SDLTTF_HARFBUZZ "Use HarfBuzz for SDL_ttf" OFF)
 option(SDLTTF_FREETYPE "Use FreeType for SDL_ttf" ON)
 
+# Fix for Windows build: Disable GameInput support to avoid missing gameinput.h header issues
+# GameInput requires the Microsoft Gaming Input API headers which may not be available
+# in all Windows SDK versions or CI environments
+set(HAVE_GAMEINPUT_H FALSE CACHE BOOL "Force disable GameInput header detection")
 
 # Add subdirectories for external libraries
 add_subdirectory(external/SDL)
