@@ -47,4 +47,4 @@ build/
 *.log
 
 # Doxygen files
-docs/
+doxygen_docs/

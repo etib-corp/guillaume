@@ -7,7 +7,7 @@ PROJECT_BRIEF          = "A modern C++ GUI framework with SDL3 backend"
 PROJECT_LOGO           = 
 
 # Output settings
-OUTPUT_DIRECTORY       = docs
+OUTPUT_DIRECTORY       = doxygen_docs
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 
