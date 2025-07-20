@@ -72,6 +72,7 @@ protected:
     bool _is_visible = true;                ///< Whether the component is visible
     bool _is_enabled = true;                ///< Whether the component is enabled for interaction
     ComponentIdentifier _identifier;        ///< Unique identifier for this component
+    int _z_index = 0;                       ///< Z-index for depth ordering (higher values render on top)
 
     /**
      * @brief Adds a rendering primitive to the component
@@ -334,6 +335,25 @@ public:
      * @return bool True if the component is in the PRESSED state
      */
     bool is_pressed() const;
+    
+    // Z-index management for depth ordering
+    
+    /**
+     * @brief Sets the z-index of the component
+     * 
+     * @param z_index Z-index value (higher values render on top)
+     * 
+     * @details Components with higher z-index values are rendered on top of
+     * components with lower z-index values. Default z-index is 0.
+     */
+    void set_z_index(int z_index);
+    
+    /**
+     * @brief Gets the current z-index of the component
+     * 
+     * @return int The component's current z-index
+     */
+    int get_z_index() const;
 };
 
 } // namespace guigui

@@ -253,4 +253,17 @@ void Component::_on_click_detected()
     }
 }
 
+void Component::set_z_index(int z_index)
+{
+    if (_z_index != z_index) {
+        _z_index = z_index;
+        _mark_dirty(); // Mark as dirty when z-index changes to trigger container reordering
+    }
+}
+
+int Component::get_z_index() const
+{
+    return _z_index;
+}
+
 } // namespace guigui

@@ -83,45 +83,98 @@ int main(int argc, char* const argv[], char* const envp[])
         return EXIT_FAILURE;
     }
 
-    // Set up the user interface components
-    LOG_INFO("Setting up UI components");
+    // Set up the user interface components with z-index demonstration
+    LOG_INFO("Setting up UI components with z-index demonstration");
     auto root_container = std::make_unique<guigui::Container>();
     
-    // Create a button with enhanced interaction logging and visual feedback
-    auto button = std::make_unique<guigui::Button>(
-        "Click Me",                                    // Button label text
-        guigui::Color(0, 128, 255, 255),              // Background color (blue)
-        guigui::Color(255, 255, 255, 255),            // Text color (white)
+    // Create a background button with z-index 0 (lowest/back)
+    auto background_button = std::make_unique<guigui::Button>(
+        "Background",                                 // Button label text
+        guigui::Color(100, 100, 100, 255),           // Background color (gray)
+        guigui::Color(255, 255, 255, 255),           // Text color (white)
         guigui::Font("Roboto", "assets/Roboto.ttf", 48), // Font specification
-        guigui::Rectangle(50, 50, 200, 50),           // Position and size (x, y, width, height)
-        [](guigui::Button& button) {                  // Click callback function
-            LOG_INFO_F("Button clicked: {}", button.get_identifier());
+        guigui::Rectangle(25, 25, 250, 100),         // Position and size (overlapping with others)
+        [](guigui::Button& button) {                 // Click callback function
+            LOG_INFO_F("Background button clicked: {}", button.get_identifier());
         });
+    background_button->set_z_index(0); // Lowest z-index (rendered first/behind)
     
-    // Configure visual feedback colors for different interaction states
-    // Set hover colors to provide visual feedback when mouse is over the button
-    button->set_hovered_colors(
-        guigui::Color(30, 144, 255, 255), // Lighter blue background on hover
-        guigui::Color(255, 255, 255, 255) // Keep text white on hover
+    // Configure visual feedback colors for the background button
+    background_button->set_hovered_colors(
+        guigui::Color(120, 120, 120, 255), // Lighter gray on hover
+        guigui::Color(255, 255, 255, 255)  // Keep text white on hover
     );
-    
-    // Set pressed colors to show visual feedback when button is being clicked
-    button->set_pressed_colors(
-        guigui::Color(0, 100, 200, 255),  // Darker blue background when pressed
-        guigui::Color(220, 220, 220, 255) // Slightly gray text when pressed
+    background_button->set_pressed_colors(
+        guigui::Color(80, 80, 80, 255),    // Darker gray when pressed
+        guigui::Color(220, 220, 220, 255)  // Slightly gray text when pressed
     );
-    
-    // Add hover callback for additional logging and interaction tracking
-    button->set_hover_callback([](guigui::Component& comp, bool entering) {
-        LOG_INFO_F("Button hover: {} ({})", 
+    background_button->set_hover_callback([](guigui::Component& comp, bool entering) {
+        LOG_INFO_F("Background button hover: {} ({})", 
                    comp.get_identifier(), 
                    entering ? "ENTERED" : "EXITED");
     });
     
-    // Add the button to the root container and set up the UI hierarchy
-    root_container->add_child(std::move(button));
+    // Create a middle button with z-index 1 (middle layer)
+    auto middle_button = std::make_unique<guigui::Button>(
+        "Middle",                                     // Button label text
+        guigui::Color(0, 128, 255, 255),             // Background color (blue)
+        guigui::Color(255, 255, 255, 255),           // Text color (white)
+        guigui::Font("Roboto", "assets/Roboto.ttf", 48), // Font specification
+        guigui::Rectangle(75, 75, 200, 80),          // Position and size (overlapping)
+        [](guigui::Button& button) {                 // Click callback function
+            LOG_INFO_F("Middle button clicked: {}", button.get_identifier());
+        });
+    middle_button->set_z_index(1); // Middle z-index
+    
+    // Configure visual feedback colors for the middle button
+    middle_button->set_hovered_colors(
+        guigui::Color(30, 144, 255, 255), // Lighter blue background on hover
+        guigui::Color(255, 255, 255, 255) // Keep text white on hover
+    );
+    middle_button->set_pressed_colors(
+        guigui::Color(0, 100, 200, 255),  // Darker blue background when pressed
+        guigui::Color(220, 220, 220, 255) // Slightly gray text when pressed
+    );
+    middle_button->set_hover_callback([](guigui::Component& comp, bool entering) {
+        LOG_INFO_F("Middle button hover: {} ({})", 
+                   comp.get_identifier(), 
+                   entering ? "ENTERED" : "EXITED");
+    });
+    
+    // Create a foreground button with z-index 2 (highest/front)
+    auto foreground_button = std::make_unique<guigui::Button>(
+        "Top",                                        // Button label text
+        guigui::Color(255, 100, 100, 255),           // Background color (red)
+        guigui::Color(255, 255, 255, 255),           // Text color (white)
+        guigui::Font("Roboto", "assets/Roboto.ttf", 48), // Font specification
+        guigui::Rectangle(125, 125, 150, 60),        // Position and size (overlapping)
+        [](guigui::Button& button) {                 // Click callback function
+            LOG_INFO_F("Foreground button clicked: {}", button.get_identifier());
+        });
+    foreground_button->set_z_index(2); // Highest z-index (rendered last/on top)
+    
+    // Configure visual feedback colors for the foreground button  
+    foreground_button->set_hovered_colors(
+        guigui::Color(255, 130, 130, 255), // Lighter red on hover
+        guigui::Color(255, 255, 255, 255)  // Keep text white on hover
+    );
+    foreground_button->set_pressed_colors(
+        guigui::Color(200, 80, 80, 255),   // Darker red when pressed
+        guigui::Color(220, 220, 220, 255)  // Slightly gray text when pressed
+    );
+    foreground_button->set_hover_callback([](guigui::Component& comp, bool entering) {
+        LOG_INFO_F("Foreground button hover: {} ({})", 
+                   comp.get_identifier(), 
+                   entering ? "ENTERED" : "EXITED");
+    });
+    
+    // Add all buttons to the container (order doesn't matter due to z-index sorting)
+    root_container->add_child(std::move(middle_button));    // Added second but z-index 1
+    root_container->add_child(std::move(foreground_button)); // Added third but z-index 2 (top)
+    root_container->add_child(std::move(background_button)); // Added first but z-index 0 (back)
+    
     context->set_root_component(std::move(root_container));
-    LOG_INFO("UI components setup complete");
+    LOG_INFO("UI components setup complete with z-index layering demonstration");
 
     // Run the main application loop
     try {
