@@ -1,6 +1,7 @@
 #pragma once
 
 #include "guillaume/component.hpp"
+#include "guillaume/events/mouse_event.hpp"
 
 namespace guigui {
 
@@ -18,6 +19,9 @@ public:
     void draw() override;
     void set_visible(bool visible) override;
     bool is_visible() const override;
+    
+    // Override to forward mouse events to children
+    void handle_mouse_event(const MouseEvent& event) override;
 };
 
 } // namespace guigui

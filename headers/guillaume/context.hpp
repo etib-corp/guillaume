@@ -34,6 +34,7 @@ private:
     std::shared_ptr<Renderer> _renderer;
     std::unique_ptr<Font> _default_font;
     std::unique_ptr<Container> _root_component;
+    bool _needs_redraw = true; // Start with true to render initial frame
 
     void _loop();
 
@@ -49,5 +50,9 @@ public:
     void process_frame();
     void end();
     void run();
+    
+    // Methods to control rendering state
+    void mark_dirty();
+    bool needs_redraw() const;
 };
 } // namespace guigui
