@@ -87,6 +87,50 @@ protected:
     Color _get_current_text_color() const;
     
     /**
+     * @brief Creates a hover state background color from the normal color
+     * 
+     * @param normal_color Base color to derive the hover color from
+     * @return Color Lighter/brighter version for hover state
+     */
+    Color _create_hover_color(const Color& normal_color) const;
+    
+    /**
+     * @brief Creates a pressed state background color from the normal color
+     * 
+     * @param normal_color Base color to derive the pressed color from
+     * @return Color Darker version for pressed state
+     */
+    Color _create_pressed_color(const Color& normal_color) const;
+    
+    /**
+     * @brief Creates a hover state text color that contrasts well with hover background
+     * 
+     * @param normal_text_color Base text color
+     * @param normal_bg_color Base background color
+     * @return Color Text color optimized for hover state
+     */
+    Color _create_hover_text_color(const Color& normal_text_color, const Color& normal_bg_color) const;
+    
+    /**
+     * @brief Creates a pressed state text color that contrasts well with pressed background
+     * 
+     * @param normal_text_color Base text color
+     * @param normal_bg_color Base background color
+     * @return Color Text color optimized for pressed state
+     */
+    Color _create_pressed_text_color(const Color& normal_text_color, const Color& normal_bg_color) const;
+    
+    /**
+     * @brief Calculates the centered position for text within the button bounds
+     * 
+     * @return Vector Centered position where text should be rendered
+     * 
+     * This method uses the renderer to get the text size and calculates
+     * the position needed to center the text within the button's bounds.
+     */
+    Vector _calculate_centered_text_position() const;
+    
+    /**
      * @brief Handles interaction state changes
      * 
      * @param old_state Previous interaction state
