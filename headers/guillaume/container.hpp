@@ -10,41 +10,14 @@ private:
 
 protected:
 public:
-    Container()
-        : guigui::Component()
-    {
-    }
-
+    Container();
     ~Container() override = default;
 
-    void add_child(std::unique_ptr<guigui::Componentable> child)
-    {
-        _children.push_back(std::move(child));
-        _children.back()->set_renderer(_renderer);
-    }
-
-    void draw() override
-    {
-        _execute_primitives();
-        for (const auto& child : _children) {
-            if (child->is_visible()) {
-                child->draw();
-            }
-        }
-    }
-
-    void set_visible(bool visible) override
-    {
-        _is_visible = visible;
-        for (const auto& child : _children) {
-            child->set_visible(visible);
-        }
-    }
-
-    bool is_visible() const override
-    {
-        return _is_visible;
-    }
+    void add_child(std::unique_ptr<guigui::Componentable> child);
+    void set_renderer(std::shared_ptr<Renderer> renderer) override;
+    void draw() override;
+    void set_visible(bool visible) override;
+    bool is_visible() const override;
 };
 
-} // namespace microui
+} // namespace guigui

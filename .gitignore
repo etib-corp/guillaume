@@ -42,3 +42,6 @@
 
 # Build directories
 build/
+
+# Logging files
+*.log

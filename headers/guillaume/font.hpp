@@ -12,35 +12,19 @@ private:
 
 protected:
 public:
-    Font(const std::string& name, const std::string& path,
-        float size)
-        : _name(name)
-        , _path(path)
-        , _size(size)
-    {
-    }
+    Font(const std::string& name, const std::string& path, float size);
+    Font(const Font& other);
+    ~Font();
 
-    Font(const Font& other)
-        : _name(other._name)
-        , _path(other._path)
-        , _size(other._size)
-    {
-    }
+    const std::string& get_name() const;
+    const std::string& get_path() const;
+    float get_size() const;
 
-    ~Font() { }
+    void set_name(const std::string& new_name);
+    void set_path(const std::string& new_path);
+    void set_size(float new_size);
 
-    const std::string& get_name() const { return _name; }
-    const std::string& get_path() const { return _path; }
-    float get_size() const { return _size; }
-
-    void set_name(const std::string& new_name) { _name = new_name; }
-    void set_path(const std::string& new_path) { _path = new_path; }
-    void set_size(float new_size) { _size = new_size; }
-
-    std::string to_string() const
-    {
-        return "Font(name=" + _name + ", path=" + _path + ", size=" + std::to_string(_size) + ")";
-    }
+    std::string to_string() const;
 };
 
 } // namespace guigui

@@ -19,40 +19,18 @@ private:
     Color _text_color;
     Font _font;
     Rectangle _rectangle;
+    std::function<void(Button&)> _on_click;
     bool _is_pressed = false;
 
 protected:
 public:
     Button(const std::string& label, const Color& background_color, const Color& text_color,
-        const Font& font, const Rectangle& rectangle)
-        : _label(label)
-        , _background_color(background_color)
-        , _text_color(text_color)
-        , _font(font)
-        , _rectangle(rectangle)
-    {
-        _add_primitive("background", createRectanglePrimitive(_renderer, _rectangle, _background_color));
-        _add_primitive("text", createTextPrimitive(_renderer, _font, Vector(_rectangle.get_x(), _rectangle.get_y()), _text_color, _label));
-    }
+        const Font& font, const Rectangle& rectangle, std::function<void(Button&)> on_click = nullptr);
 
-    void draw() override
-    {
-        if (is_visible()) {
-            _execute_primitives();
-        }
-    }
-
-    void set_background_color(const Color& color)
-    {
-        _background_color = color;
-        _update_primitive("background", createRectanglePrimitive(_renderer, _rectangle, _background_color));
-    }
-
-    void set_label(const std::string& label)
-    {
-        _label = label;
-        _update_primitive("text", createTextPrimitive(_renderer, _font, Vector(_rectangle.get_x(), _rectangle.get_y()), _text_color, _label));
-    }
+    void set_renderer(std::shared_ptr<Renderer> renderer) override;
+    void draw() override;
+    void set_background_color(const Color& color);
+    void set_label(const std::string& label);
 };
 
 }

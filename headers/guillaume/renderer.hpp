@@ -8,12 +8,14 @@
 #include "guillaume/color.hpp"
 #include "guillaume/eventable.hpp"
 #include "guillaume/font.hpp"
-#include "guillaume/primitives/rectangle_primitive.hpp"
-#include "guillaume/primitives/text_primitive.hpp"
 #include "guillaume/rectangle.hpp"
 #include "guillaume/vector.hpp"
 
 namespace guigui {
+
+class RectanglePrimitive;
+class TextPrimitive;
+class Renderer;
 
 class Renderer {
 private:

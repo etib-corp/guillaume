@@ -8,15 +8,17 @@
 
 namespace guigui {
 
+class Renderer;
+
 class Primitive : public Primitivable {
 protected:
     PrimitiveType _type;
-    std::shared_ptr<Renderer> _renderer;
+    std::shared_ptr<guigui::Renderer> _renderer;
 
 public:
     ~Primitive() override = default;
 
-    Primitive(PrimitiveType type, std::shared_ptr<Renderer> renderer)
+    Primitive(PrimitiveType type, std::shared_ptr<guigui::Renderer> renderer)
         : _type(type)
         , _renderer(renderer)
     {
