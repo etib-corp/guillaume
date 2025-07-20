@@ -2,7 +2,9 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <queue>
+#include <stdexcept>
 #include <unordered_map>
 
 #include "guillaume/color.hpp"
