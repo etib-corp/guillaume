@@ -115,11 +115,6 @@ public:
         SUPER // Super key (Windows key on Windows, Command key on macOS)
     };
 
-private:
-    KeyType _key_type; // Type of keyboard event (key down or key up)
-    KeyCode _key_code; // Key code representing the pressed key
-    std::vector<KeyModifiers> _key_modifiers; // Modifiers applied to the key event
-
     std::map<KeyType, std::string> _key_type_map = {
         { KeyType::KEY_PRESS, "Key Press" },
         { KeyType::KEY_RELEASE, "Key Release" }
@@ -224,6 +219,11 @@ private:
         { KeyModifiers::SHIFT, "Shift" },
         { KeyModifiers::SUPER, "Super" }
     };
+
+private:
+    KeyType _key_type; // Type of keyboard event (key down or key up)
+    KeyCode _key_code; // Key code representing the pressed key
+    std::vector<KeyModifiers> _key_modifiers; // Modifiers applied to the key event
 
 public:
     KeyboardEvent(KeyType key_type, KeyCode key_code, std::vector<KeyModifiers> key_modifiers)
