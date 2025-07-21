@@ -35,18 +35,21 @@ jobs:
           - os: macos-14
             c_compiler: clang
             cpp_compiler: clang++
+          - os: windows-2022
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: macos-14
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: windows-2022
+            c_compiler: gcc
+            cpp_compiler: g++
         exclude:
           - os: ubuntu-24.04
             c_compiler: cl
-          - os: windows-2022
-            c_compiler: gcc
-          - os: windows-2022
-            c_compiler: clang
           - os: macos-14
             c_compiler: cl
-          - os: macos-14
-            c_compiler: gcc
-        
+
     steps:
       - uses: actions/checkout@v4.2.2
         with:
