@@ -22,12 +22,12 @@ namespace guigui {
  * @brief Log level enumeration to categorize log messages by severity
  */
 enum class LogLevel {
-    TRACE = 0,
-    DEBUG = 1,
-    INFO = 2,
-    WARN = 3,
-    ERROR = 4,
-    FATAL = 5
+    TRACE_LEVEL = 0,
+    DEBUG_LEVEL = 1,
+    INFO_LEVEL = 2,
+    WARN_LEVEL = 3,
+    ERROR_LEVEL = 4,
+    FATAL_LEVEL = 5
 };
 
 /**
@@ -225,7 +225,7 @@ public:
      */
     template<typename... Args>
     void trace(const std::string& format, Args&&... args) const {
-        log(LogLevel::TRACE, format, std::forward<Args>(args)...);
+        log(LogLevel::TRACE_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
@@ -233,7 +233,7 @@ public:
      */
     template<typename... Args>
     void debug(const std::string& format, Args&&... args) const {
-        log(LogLevel::DEBUG, format, std::forward<Args>(args)...);
+        log(LogLevel::DEBUG_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
@@ -241,7 +241,7 @@ public:
      */
     template<typename... Args>
     void info(const std::string& format, Args&&... args) const {
-        log(LogLevel::INFO, format, std::forward<Args>(args)...);
+        log(LogLevel::INFO_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
@@ -249,7 +249,7 @@ public:
      */
     template<typename... Args>
     void warn(const std::string& format, Args&&... args) const {
-        log(LogLevel::WARN, format, std::forward<Args>(args)...);
+        log(LogLevel::WARN_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
@@ -257,7 +257,7 @@ public:
      */
     template<typename... Args>
     void error(const std::string& format, Args&&... args) const {
-        log(LogLevel::ERROR, format, std::forward<Args>(args)...);
+        log(LogLevel::ERROR_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
@@ -265,7 +265,7 @@ public:
      */
     template<typename... Args>
     void fatal(const std::string& format, Args&&... args) const {
-        log(LogLevel::FATAL, format, std::forward<Args>(args)...);
+        log(LogLevel::FATAL_LEVEL, format, std::forward<Args>(args)...);
     }
 
 private:

@@ -9,7 +9,7 @@ std::unique_ptr<Logger> Logger::_instance = nullptr;
 std::mutex Logger::_instance_mutex;
 
 Logger::Logger() 
-    : _current_level(LogLevel::INFO)
+    : _current_level(LogLevel::INFO_LEVEL)
     , _log_to_console(true)
     , _log_to_file(false)
     , _log_format("[{}] [{}] {}")
@@ -116,12 +116,12 @@ std::string Logger::_get_color_code(LogLevel level) const {
     }
 
     switch (level) {
-        case LogLevel::TRACE: return "\033[37m";      // White
-        case LogLevel::DEBUG: return "\033[36m";      // Cyan
-        case LogLevel::INFO:  return "\033[32m";      // Green
-        case LogLevel::WARN:  return "\033[33m";      // Yellow
-        case LogLevel::ERROR: return "\033[31m";      // Red
-        case LogLevel::FATAL: return "\033[35m\033[1m"; // Magenta + Bold
+        case LogLevel::TRACE_LEVEL: return "\033[37m";      // White
+        case LogLevel::DEBUG_LEVEL: return "\033[36m";      // Cyan
+        case LogLevel::INFO_LEVEL:  return "\033[32m";      // Green
+        case LogLevel::WARN_LEVEL:  return "\033[33m";      // Yellow
+        case LogLevel::ERROR_LEVEL: return "\033[31m";      // Red
+        case LogLevel::FATAL_LEVEL: return "\033[35m\033[1m"; // Magenta + Bold
         default: return "";
     }
 }
@@ -172,12 +172,12 @@ std::string Logger::_get_timestamp() const {
 
 std::string Logger::_level_to_string(LogLevel level) const {
     switch (level) {
-        case LogLevel::TRACE: return "TRACE";
-        case LogLevel::DEBUG: return "DEBUG";
-        case LogLevel::INFO:  return "INFO ";
-        case LogLevel::WARN:  return "WARN ";
-        case LogLevel::ERROR: return "ERROR";
-        case LogLevel::FATAL: return "FATAL";
+        case LogLevel::TRACE_LEVEL: return "TRACE";
+        case LogLevel::DEBUG_LEVEL: return "DEBUG";
+        case LogLevel::INFO_LEVEL:  return "INFO ";
+        case LogLevel::WARN_LEVEL:  return "WARN ";
+        case LogLevel::ERROR_LEVEL: return "ERROR";
+        case LogLevel::FATAL_LEVEL: return "FATAL";
         default: return "UNKNOWN";
     }
 }
@@ -197,7 +197,7 @@ void Logger::_log(LogLevel level, const std::string& message) const {
     
     // Output to console with colors
     if (_log_to_console) {
-        std::ostream& output_stream = (level >= LogLevel::WARN) ? std::cerr : std::cout;
+        std::ostream& output_stream = (level >= LogLevel::WARN_LEVEL) ? std::cerr : std::cout;
         
         if (_is_color_supported(output_stream)) {
             // Colored console output
@@ -223,27 +223,27 @@ void Logger::_log(LogLevel level, const std::string& message) const {
 }
 
 void Logger::trace(const std::string& message) const {
-    _log(LogLevel::TRACE, message);
+    _log(LogLevel::TRACE_LEVEL, message);
 }
 
 void Logger::debug(const std::string& message) const {
-    _log(LogLevel::DEBUG, message);
+    _log(LogLevel::DEBUG_LEVEL, message);
 }
 
 void Logger::info(const std::string& message) const {
-    _log(LogLevel::INFO, message);
+    _log(LogLevel::INFO_LEVEL, message);
 }
 
 void Logger::warn(const std::string& message) const {
-    _log(LogLevel::WARN, message);
+    _log(LogLevel::WARN_LEVEL, message);
 }
 
 void Logger::error(const std::string& message) const {
-    _log(LogLevel::ERROR, message);
+    _log(LogLevel::ERROR_LEVEL, message);
 }
 
 void Logger::fatal(const std::string& message) const {
-    _log(LogLevel::FATAL, message);
+    _log(LogLevel::FATAL_LEVEL, message);
 }
 
 } // namespace guigui

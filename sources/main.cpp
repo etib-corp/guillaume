@@ -53,7 +53,7 @@ int main(int argc, char* const argv[], char* const envp[])
 {
     // Initialize logger early for debugging throughout the application lifecycle
     auto& logger = guigui::Logger::get_instance();
-    logger.set_log_level(guigui::LogLevel::DEBUG);      // Enable debug output
+    logger.set_log_level(guigui::LogLevel::DEBUG_LEVEL);      // Enable debug output
     logger.set_console_logging(true);                   // Log to console
     logger.set_file_logging(true, "guillaume.log");     // Log to file
 
