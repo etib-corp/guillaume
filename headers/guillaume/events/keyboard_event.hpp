@@ -120,7 +120,7 @@ public:
         { KeyType::KEY_RELEASE, "Key Release" }
     };
 
-    std::map<KeyCode, std::string> _key_code_map {
+    std::map<KeyCode, std::string> _key_code_map = {
         { KeyCode::NONE, "None" },
         { KeyCode::A, "A" },
         { KeyCode::B, "B" },
