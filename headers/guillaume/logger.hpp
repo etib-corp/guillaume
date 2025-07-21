@@ -9,6 +9,13 @@
 #include <chrono>
 #include <iomanip>
 
+#ifdef _WIN32
+    #include <windows.h>
+    #include <io.h>
+#else
+    #include <unistd.h>
+#endif
+
 namespace guigui {
 
 /**
@@ -41,11 +48,37 @@ private:
     bool _log_to_console;
     bool _log_to_file;
     std::string _log_format;
+    bool _color_enabled;
 
     /**
      * @brief Private constructor for singleton pattern
      */
     Logger();
+
+    /**
+     * @brief Check if the output stream supports color (is a terminal)
+     * @param stream The output stream to check
+     * @return True if colors are supported
+     */
+    bool _is_color_supported(std::ostream& stream) const;
+
+    /**
+     * @brief Get ANSI color code for log level
+     * @param level The log level
+     * @return ANSI color escape sequence
+     */
+    std::string _get_color_code(LogLevel level) const;
+
+    /**
+     * @brief Get color reset sequence
+     * @return ANSI reset escape sequence
+     */
+    std::string _get_reset_code() const;
+
+    /**
+     * @brief Enable Windows console color support if on Windows
+     */
+    void _enable_windows_colors() const;
 
     /**
      * @brief Get current timestamp as formatted string
@@ -119,6 +152,18 @@ public:
      * @return True if file logging is enabled
      */
     bool is_file_logging_enabled() const;
+
+    /**
+     * @brief Enable or disable colored console output
+     * @param enable True to enable colors, false to disable
+     */
+    void set_color_output(bool enable);
+
+    /**
+     * @brief Check if colored output is enabled
+     * @return True if colored output is enabled
+     */
+    bool is_color_output_enabled() const;
 
     /**
      * @brief Log a trace message

@@ -13,7 +13,10 @@ Logger::Logger()
     , _log_to_console(true)
     , _log_to_file(false)
     , _log_format("[{}] [{}] {}")
+    , _color_enabled(true)  // Enable colors by default
 {
+    // Enable Windows console colors if on Windows
+    _enable_windows_colors();
 }
 
 Logger::~Logger() {
@@ -73,6 +76,87 @@ bool Logger::is_file_logging_enabled() const {
     return _log_to_file;
 }
 
+void Logger::set_color_output(bool enable) {
+    std::lock_guard<std::mutex> lock(_log_mutex);
+    _color_enabled = enable;
+}
+
+bool Logger::is_color_output_enabled() const {
+    std::lock_guard<std::mutex> lock(_log_mutex);
+    return _color_enabled;
+}
+
+bool Logger::_is_color_supported(std::ostream& stream) const {
+    if (!_color_enabled) {
+        return false;
+    }
+
+#ifdef _WIN32
+    // On Windows, check if we have a console handle
+    if (&stream == &std::cout) {
+        return _isatty(_fileno(stdout));
+    } else if (&stream == &std::cerr) {
+        return _isatty(_fileno(stderr));
+    }
+    return false;
+#else
+    // On Unix-like systems (Linux, macOS), check if output is a terminal
+    if (&stream == &std::cout) {
+        return isatty(STDOUT_FILENO);
+    } else if (&stream == &std::cerr) {
+        return isatty(STDERR_FILENO);
+    }
+    return false;
+#endif
+}
+
+std::string Logger::_get_color_code(LogLevel level) const {
+    if (!_color_enabled) {
+        return "";
+    }
+
+    switch (level) {
+        case LogLevel::TRACE: return "\033[37m";      // White
+        case LogLevel::DEBUG: return "\033[36m";      // Cyan
+        case LogLevel::INFO:  return "\033[32m";      // Green
+        case LogLevel::WARN:  return "\033[33m";      // Yellow
+        case LogLevel::ERROR: return "\033[31m";      // Red
+        case LogLevel::FATAL: return "\033[35m\033[1m"; // Magenta + Bold
+        default: return "";
+    }
+}
+
+std::string Logger::_get_reset_code() const {
+    if (!_color_enabled) {
+        return "";
+    }
+    return "\033[0m";  // Reset all formatting
+}
+
+void Logger::_enable_windows_colors() const {
+#ifdef _WIN32
+    // Enable ANSI escape sequence processing on Windows 10+
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE hErr = GetStdHandle(STD_ERROR_HANDLE);
+    
+    if (hOut != INVALID_HANDLE_VALUE) {
+        DWORD dwMode = 0;
+        if (GetConsoleMode(hOut, &dwMode)) {
+            dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(hOut, dwMode);
+        }
+    }
+    
+    if (hErr != INVALID_HANDLE_VALUE) {
+        DWORD dwMode = 0;
+        if (GetConsoleMode(hErr, &dwMode)) {
+            dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(hErr, dwMode);
+        }
+    }
+#endif
+}
+
 std::string Logger::_get_timestamp() const {
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
@@ -108,23 +192,32 @@ void Logger::_log(LogLevel level, const std::string& message) const {
     std::string timestamp = _get_timestamp();
     std::string level_str = _level_to_string(level);
     
-    // Format: [timestamp] [level] message
-    std::string formatted_message = "[" + timestamp + "] [" + level_str + "] " + message;
+    // Format for file output (no colors): [timestamp] [level] message
+    std::string file_message = "[" + timestamp + "] [" + level_str + "] " + message;
     
-    // Output to console
+    // Output to console with colors
     if (_log_to_console) {
-        if (level >= LogLevel::WARN) {
-            std::cerr << formatted_message << std::endl;
+        std::ostream& output_stream = (level >= LogLevel::WARN) ? std::cerr : std::cout;
+        
+        if (_is_color_supported(output_stream)) {
+            // Colored console output
+            std::string color_code = _get_color_code(level);
+            std::string reset_code = _get_reset_code();
+            
+            output_stream << "[" << timestamp << "] " 
+                         << color_code << "[" << level_str << "]" << reset_code 
+                         << " " << message << std::endl;
         } else {
-            std::cout << formatted_message << std::endl;
+            // Fallback to non-colored output
+            output_stream << file_message << std::endl;
         }
     }
     
-    // Output to file - remove const from file stream since we need to modify it
+    // Output to file (always without colors)
     if (_log_to_file && _file_stream.is_open()) {
         // Cast away const for file operations (this is safe since we're only modifying the file stream)
         auto& file_stream = const_cast<std::ofstream&>(_file_stream);
-        file_stream << formatted_message << std::endl;
+        file_stream << file_message << std::endl;
         file_stream.flush(); // Ensure immediate write
     }
 }
