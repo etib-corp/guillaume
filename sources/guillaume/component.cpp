@@ -20,6 +20,14 @@ Component::Component(const Rectangle& bounds)
     _identifier = "Component_" + std::to_string(reinterpret_cast<std::uintptr_t>(this));
 }
 
+Component::~Component()
+{
+    // Clear cached data for this component when it's destroyed
+    if (_renderer) {
+        _renderer->clear_component_cache(_identifier);
+    }
+}
+
 void Component::set_renderer(std::shared_ptr<Renderer> renderer)
 {
     _renderer = std::move(renderer);
@@ -51,13 +59,19 @@ bool Component::is_enabled() const
     return _is_enabled;
 }
 
-ComponentIdentifier Component::get_identifier() const
+std::string Component::get_identifier() const
 {
     return _identifier;
 }
 
 void Component::_add_primitive(std::string name, std::unique_ptr<Primitivable> primitive)
 {
+    // Cast to Primitive to set component information for caching
+    if (auto* prim = dynamic_cast<guigui::Primitive*>(primitive.get())) {
+        prim->set_component_id(_identifier);
+        prim->set_primitive_name(name);
+    }
+
     _primitives.emplace(name, std::move(primitive));
     _mark_dirty(); // Mark as dirty when primitive is added
 }
@@ -66,6 +80,17 @@ void Component::_update_primitive(std::string name, std::unique_ptr<Primitivable
 {
     auto it = _primitives.find(name);
     if (it != _primitives.end()) {
+        // Clear cache for this specific primitive before updating
+        if (_renderer) {
+            _renderer->clear_component_cache(_identifier);
+        }
+
+        // Cast to Primitive to set component information for caching
+        if (auto* prim = dynamic_cast<guigui::Primitive*>(primitive.get())) {
+            prim->set_component_id(_identifier);
+            prim->set_primitive_name(name);
+        }
+
         it->second = std::move(primitive);
         _mark_dirty(); // Mark as dirty when primitive is updated
     } else {
@@ -94,44 +119,44 @@ void Component::handle_mouse_event(const MouseEvent& event)
     Component::InteractionState old_state = _interaction_state;
 
     switch (event.get_event_type()) {
-        case MouseEvent::MouseEventType::MOUSE_MOTION:
-            if (mouse_inside && _interaction_state == Component::InteractionState::NORMAL) {
-                LOG_DEBUG_F("Component {} entering hover state at position ({}, {})", 
-                           get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
+    case MouseEvent::MouseEventType::MOUSE_MOTION:
+        if (mouse_inside && _interaction_state == Component::InteractionState::NORMAL) {
+            LOG_DEBUG_F("Component {} entering hover state at position ({}, {})",
+                get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
+            set_interaction_state(Component::InteractionState::HOVERED);
+        } else if (!mouse_inside && _interaction_state == Component::InteractionState::HOVERED) {
+            LOG_DEBUG_F("Component {} exiting hover state at position ({}, {})",
+                get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
+            set_interaction_state(Component::InteractionState::NORMAL);
+        }
+        break;
+
+    case MouseEvent::MouseEventType::MOUSE_BUTTON_PRESS:
+        if (mouse_inside && event.get_button() == MouseEvent::MouseButton::LEFT) {
+            LOG_INFO_F("Component {} pressed at position ({}, {})",
+                get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
+            set_interaction_state(Component::InteractionState::PRESSED);
+            _on_mouse_press(event);
+        }
+        break;
+
+    case MouseEvent::MouseEventType::MOUSE_BUTTON_RELEASE:
+        if (event.get_button() == MouseEvent::MouseButton::LEFT) {
+            if (mouse_inside && _interaction_state == Component::InteractionState::PRESSED) {
+                // Complete click detected
+                LOG_INFO_F("Component {} clicked successfully at position ({}, {})",
+                    get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
+                _on_click_detected();
                 set_interaction_state(Component::InteractionState::HOVERED);
-            } else if (!mouse_inside && _interaction_state == Component::InteractionState::HOVERED) {
-                LOG_DEBUG_F("Component {} exiting hover state at position ({}, {})", 
-                           get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
-                set_interaction_state(Component::InteractionState::NORMAL);
+            } else {
+                LOG_DEBUG_F("Component {} released at position ({}, {}) - {}click",
+                    get_identifier(), mouse_pos.get_x(), mouse_pos.get_y(),
+                    mouse_inside ? "incomplete " : "outside ");
+                set_interaction_state(mouse_inside ? Component::InteractionState::HOVERED : Component::InteractionState::NORMAL);
             }
-            break;
-
-        case MouseEvent::MouseEventType::MOUSE_BUTTON_PRESS:
-            if (mouse_inside && event.get_button() == MouseEvent::MouseButton::LEFT) {
-                LOG_INFO_F("Component {} pressed at position ({}, {})", 
-                          get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
-                set_interaction_state(Component::InteractionState::PRESSED);
-                _on_mouse_press(event);
-            }
-            break;
-
-        case MouseEvent::MouseEventType::MOUSE_BUTTON_RELEASE:
-            if (event.get_button() == MouseEvent::MouseButton::LEFT) {
-                if (mouse_inside && _interaction_state == Component::InteractionState::PRESSED) {
-                    // Complete click detected
-                    LOG_INFO_F("Component {} clicked successfully at position ({}, {})", 
-                              get_identifier(), mouse_pos.get_x(), mouse_pos.get_y());
-                    _on_click_detected();
-                    set_interaction_state(Component::InteractionState::HOVERED);
-                } else {
-                    LOG_DEBUG_F("Component {} released at position ({}, {}) - {}click", 
-                               get_identifier(), mouse_pos.get_x(), mouse_pos.get_y(),
-                               mouse_inside ? "incomplete " : "outside ");
-                    set_interaction_state(mouse_inside ? Component::InteractionState::HOVERED : Component::InteractionState::NORMAL);
-                }
-                _on_mouse_release(event);
-            }
-            break;
+            _on_mouse_release(event);
+        }
+        break;
     }
 
     // Call the general mouse event callback if set
@@ -142,10 +167,7 @@ void Component::handle_mouse_event(const MouseEvent& event)
 
 bool Component::is_point_inside(const Vector& point) const
 {
-    return point.get_x() >= _bounds.get_x() &&
-           point.get_x() <= _bounds.get_x() + _bounds.get_width() &&
-           point.get_y() >= _bounds.get_y() &&
-           point.get_y() <= _bounds.get_y() + _bounds.get_height();
+    return point.get_x() >= _bounds.get_x() && point.get_x() <= _bounds.get_x() + _bounds.get_width() && point.get_y() >= _bounds.get_y() && point.get_y() <= _bounds.get_y() + _bounds.get_height();
 }
 
 void Component::set_bounds(const Rectangle& bounds)
@@ -163,21 +185,21 @@ void Component::set_interaction_state(Component::InteractionState state)
     if (_interaction_state != state) {
         Component::InteractionState old_state = _interaction_state;
         _interaction_state = state;
-        
+
         // Log state transition
-        const char* state_names[] = {"NORMAL", "HOVERED", "PRESSED"};
-        LOG_DEBUG_F("Component {} state transition: {} to {}", 
-                   get_identifier(), 
-                   state_names[static_cast<int>(old_state)], 
-                   state_names[static_cast<int>(state)]);
-        
+        const char* state_names[] = { "NORMAL", "HOVERED", "PRESSED" };
+        LOG_DEBUG_F("Component {} state transition: {} to {}",
+            get_identifier(),
+            state_names[static_cast<int>(old_state)],
+            state_names[static_cast<int>(state)]);
+
         // Handle state transitions
         if (old_state != Component::InteractionState::HOVERED && state == Component::InteractionState::HOVERED) {
             _on_hover_enter();
         } else if (old_state == Component::InteractionState::HOVERED && state != Component::InteractionState::HOVERED) {
             _on_hover_exit();
         }
-        
+
         _on_interaction_state_changed(old_state, state);
         _mark_dirty(); // Mark as dirty when interaction state changes
     }

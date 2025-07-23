@@ -39,11 +39,11 @@ enum class InteractionState {
 class Component : public Componentable {
 public:
     // Constructor
-    Component(const ComponentIdentifier& id);
+    Component(const std::string& id);
     virtual ~Component() = default;
     
     // Core interface implementation
-    ComponentIdentifier get_identifier() const override;
+    std::string get_identifier() const override;
     void draw() override;
     void set_renderer(std::shared_ptr<Renderer> renderer) override;
     
@@ -101,7 +101,7 @@ protected:
 Creates a new component with the specified identifier.
 
 ```cpp
-Component(const ComponentIdentifier& id);
+Component(const std::string& id);
 ```
 
 **Parameters:**
@@ -109,6 +109,7 @@ Component(const ComponentIdentifier& id);
 - `id`: Unique identifier for the component
 
 **Example:**
+
 ```cpp
 class MyComponent : public guigui::Component {
 public:
@@ -130,6 +131,7 @@ Vector2 get_position() const;
 ```
 
 **Example:**
+
 ```cpp
 component->set_position({100, 50});
 auto pos = component->get_position();
@@ -145,6 +147,7 @@ Vector2 get_size() const;
 ```
 
 **Example:**
+
 ```cpp
 component->set_size({200, 30});
 auto size = component->get_size();
@@ -161,6 +164,7 @@ Rectangle get_bounds() const;
 **Returns:** Rectangle representing the component's bounds
 
 **Example:**
+
 ```cpp
 auto bounds = component->get_bounds();
 std::cout << "Component at (" << bounds.x << ", " << bounds.y 
@@ -179,6 +183,7 @@ bool is_visible() const override;
 ```
 
 **Example:**
+
 ```cpp
 component->set_visible(false); // Hide component
 if (component->is_visible()) {
@@ -196,6 +201,7 @@ bool is_enabled() const override;
 ```
 
 **Example:**
+
 ```cpp
 component->set_enabled(false); // Disable interaction
 if (component->is_enabled()) {
@@ -214,6 +220,7 @@ InteractionState get_interaction_state() const;
 **Returns:** Current interaction state
 
 **Example:**
+
 ```cpp
 auto state = component->get_interaction_state();
 switch (state) {
@@ -241,6 +248,7 @@ void on_mouse_up(std::function<void()> callback);
 ```
 
 **Example:**
+
 ```cpp
 component->on_click([]() {
     std::cout << "Component clicked!" << std::endl;
@@ -270,6 +278,7 @@ bool contains_point(const Vector2& point) const;
 **Returns:** `true` if point is within bounds
 
 **Example:**
+
 ```cpp
 Vector2 mouse_pos = get_mouse_position();
 if (component->contains_point(mouse_pos)) {
@@ -291,6 +300,7 @@ protected:
 ```
 
 **Example:**
+
 ```cpp
 class MyComponent : public Component {
 protected:
@@ -320,6 +330,7 @@ virtual void update_visual_state();
 ```
 
 **Example:**
+
 ```cpp
 void MyComponent::on_state_changed(InteractionState old_state, 
                                  InteractionState new_state) {

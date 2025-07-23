@@ -45,6 +45,14 @@ public:
     virtual void set_clip_rect(const Rectangle& rectangle) = 0;
     virtual void clear(const Color& color) = 0;
     virtual void present() = 0;
+
+    // Cache management (default no-op implementation for renderers that don't support caching)
+    virtual void clear_component_cache(const std::string& component_id) { }
+
+    // Statistics methods (default no-op implementation for renderers that don't support statistics)
+    virtual void log_primitive_statistics() const { }
+    virtual void reset_primitive_statistics() { }
+
     virtual void register_event_handler(std::function<void(std::unique_ptr<Eventable>)> handler, const Eventable::EventType& event_type)
     {
         if (_event_handlers.find(event_type) != _event_handlers.end()) {

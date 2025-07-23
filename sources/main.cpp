@@ -20,6 +20,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include "guillaume/config.hpp"
 #include "guillaume/context.hpp"
 #include "guillaume/logger.hpp"
 #include "guillaume/renderer.hpp"
@@ -51,6 +52,12 @@
  */
 int main(int argc, char* const argv[], char* const envp[])
 {
+    // Parse command line arguments first
+    auto& config = guigui::Config::get_instance();
+    if (!config.parse_command_line(argc, argv)) {
+        return EXIT_FAILURE;
+    }
+
     // Initialize logger early for debugging throughout the application lifecycle
     auto& logger = guigui::Logger::get_instance();
     logger.set_log_level(guigui::LogLevel::DEBUG_LEVEL);      // Enable debug output
@@ -58,6 +65,9 @@ int main(int argc, char* const argv[], char* const envp[])
     logger.set_file_logging(true, "guillaume.log");     // Log to file
 
     LOG_INFO("Guillaume application starting");
+    LOG_INFO_F("Window mode: {}", 
+        config.get_window_mode() == guigui::Config::WindowMode::FULLSCREEN ? "Fullscreen" : "Windowed");
+    LOG_INFO_F("Debug mouse coordinates: {}", config.is_debug_mouse_coordinates() ? "enabled" : "disabled");
 
     // Renderer and context pointers for resource management
     std::shared_ptr<guigui::Renderer> renderer = nullptr;
@@ -83,98 +93,106 @@ int main(int argc, char* const argv[], char* const envp[])
         return EXIT_FAILURE;
     }
 
-    // Set up the user interface components with z-index demonstration
-    LOG_INFO("Setting up UI components with z-index demonstration");
+    // Set up the user interface components with 1000 dynamically generated buttons
+    LOG_INFO("Setting up UI components - generating 1000 buttons with different colors");
     auto root_container = std::make_unique<guigui::Container>();
     
-    // Create a background button with z-index 0 (lowest/back)
-    auto background_button = std::make_unique<guigui::Button>(
-        "Background",                                 // Button label text
-        guigui::Color(100, 100, 100, 255),           // Background color (gray)
-        guigui::Color(255, 255, 255, 255),           // Text color (white)
-        guigui::Font("Roboto", "assets/Roboto.ttf", 48), // Font specification
-        guigui::Rectangle(25, 25, 250, 100),         // Position and size (overlapping with others)
-        [](guigui::Button& button) {                 // Click callback function
-            LOG_INFO_F("Background button clicked: {}", button.get_identifier());
-        });
-    background_button->set_z_index(0); // Lowest z-index (rendered first/behind)
+    // Generate 1000 buttons in a loop with different colors and positions
+    constexpr int num_buttons = 1000;
+    constexpr int grid_cols = 40;  // Arrange buttons in a 40x25 grid
+    constexpr int grid_rows = 25;
+    constexpr int button_width = 30;
+    constexpr int button_height = 24;
+    constexpr int button_spacing = 2;
     
-    // Configure visual feedback colors for the background button
-    background_button->set_hovered_colors(
-        guigui::Color(120, 120, 120, 255), // Lighter gray on hover
-        guigui::Color(255, 255, 255, 255)  // Keep text white on hover
-    );
-    background_button->set_pressed_colors(
-        guigui::Color(80, 80, 80, 255),    // Darker gray when pressed
-        guigui::Color(220, 220, 220, 255)  // Slightly gray text when pressed
-    );
-    background_button->set_hover_callback([](guigui::Component& comp, bool entering) {
-        LOG_INFO_F("Background button hover: {} ({})", 
-                   comp.get_identifier(), 
-                   entering ? "ENTERED" : "EXITED");
-    });
+    for (int i = 0; i < num_buttons; ++i) {
+        // Calculate grid position
+        int col = i % grid_cols;
+        int row = i / grid_cols;
+        int x = col * (button_width + button_spacing);
+        int y = row * (button_height + button_spacing);
+        
+        // Generate different colors based on position and index
+        // Use HSV-like color generation for variety
+        float hue = (float(i) / float(num_buttons)) * 360.0f;  // Full color spectrum
+        float saturation = 0.7f + (float(col) / float(grid_cols)) * 0.3f;  // Vary saturation
+        float value = 0.5f + (float(row) / float(grid_rows)) * 0.5f;       // Vary brightness
+        
+        // Convert HSV to RGB (simplified)
+        int h_i = int(hue / 60) % 6;
+        float f = hue / 60.0f - h_i;
+        float p = value * (1 - saturation);
+        float q = value * (1 - f * saturation);
+        float t = value * (1 - (1 - f) * saturation);
+        
+        float r, g, b;
+        switch (h_i) {
+            case 0: r = value; g = t; b = p; break;
+            case 1: r = q; g = value; b = p; break;
+            case 2: r = p; g = value; b = t; break;
+            case 3: r = p; g = q; b = value; break;
+            case 4: r = t; g = p; b = value; break;
+            case 5: r = value; g = p; b = q; break;
+            default: r = g = b = 0; break;
+        }
+        
+        // Convert to 0-255 range
+        uint8_t red = static_cast<uint8_t>(r * 255);
+        uint8_t green = static_cast<uint8_t>(g * 255);
+        uint8_t blue = static_cast<uint8_t>(b * 255);
+        
+        // Create button with unique properties
+        auto button = std::make_unique<guigui::Button>(
+            std::to_string(i),                           // Button label (number)
+            guigui::Color(red, green, blue, 255),        // Background color (generated)
+            guigui::Color(255, 255, 255, 255),           // Text color (white for contrast)
+            guigui::Font("Roboto", "assets/Roboto.ttf", 12), // Smaller font for grid
+            guigui::Rectangle(x, y, button_width, button_height), // Position and size
+            [i](guigui::Button& button) {                // Click callback with captured index
+                LOG_INFO_F("Button {} clicked: {}", i, button.get_identifier());
+            });
+        
+        button->set_z_index(i % 10); // Vary z-index (0-9 cycling)
+        
+        // Configure hover colors (slightly brighter)
+        button->set_hovered_colors(
+            guigui::Color(
+                std::min(255, red + 30), 
+                std::min(255, green + 30), 
+                std::min(255, blue + 30), 
+                255
+            ),
+            guigui::Color(255, 255, 255, 255)
+        );
+        
+        // Configure pressed colors (slightly darker)
+        button->set_pressed_colors(
+            guigui::Color(
+                std::max(0, red - 30), 
+                std::max(0, green - 30), 
+                std::max(0, blue - 30), 
+                255
+            ),
+            guigui::Color(220, 220, 220, 255)
+        );
+        
+        // Set hover callback for debugging (only for first 10 to avoid spam)
+        if (i < 10) {
+            button->set_hover_callback([i](guigui::Component& comp, bool entering) {
+                LOG_INFO_F("Button {} hover: {} ({})", 
+                           i, comp.get_identifier(), 
+                           entering ? "ENTERED" : "EXITED");
+            });
+        }
+        
+        // Add button to container
+        root_container->add_child(std::move(button));
+    }
     
-    // Create a middle button with z-index 1 (middle layer)
-    auto middle_button = std::make_unique<guigui::Button>(
-        "Middle",                                     // Button label text
-        guigui::Color(0, 128, 255, 255),             // Background color (blue)
-        guigui::Color(255, 255, 255, 255),           // Text color (white)
-        guigui::Font("Roboto", "assets/Roboto.ttf", 48), // Font specification
-        guigui::Rectangle(75, 75, 200, 80),          // Position and size (overlapping)
-        [](guigui::Button& button) {                 // Click callback function
-            LOG_INFO_F("Middle button clicked: {}", button.get_identifier());
-        });
-    middle_button->set_z_index(1); // Middle z-index
-    
-    // Configure visual feedback colors for the middle button
-    middle_button->set_hovered_colors(
-        guigui::Color(30, 144, 255, 255), // Lighter blue background on hover
-        guigui::Color(255, 255, 255, 255) // Keep text white on hover
-    );
-    middle_button->set_pressed_colors(
-        guigui::Color(0, 100, 200, 255),  // Darker blue background when pressed
-        guigui::Color(220, 220, 220, 255) // Slightly gray text when pressed
-    );
-    middle_button->set_hover_callback([](guigui::Component& comp, bool entering) {
-        LOG_INFO_F("Middle button hover: {} ({})", 
-                   comp.get_identifier(), 
-                   entering ? "ENTERED" : "EXITED");
-    });
-    
-    // Create a foreground button with z-index 2 (highest/front)
-    auto foreground_button = std::make_unique<guigui::Button>(
-        "Top",                                        // Button label text
-        guigui::Color(255, 100, 100, 255),           // Background color (red)
-        guigui::Color(255, 255, 255, 255),           // Text color (white)
-        guigui::Font("Roboto", "assets/Roboto.ttf", 48), // Font specification
-        guigui::Rectangle(125, 125, 150, 60),        // Position and size (overlapping)
-        [](guigui::Button& button) {                 // Click callback function
-            LOG_INFO_F("Foreground button clicked: {}", button.get_identifier());
-        });
-    foreground_button->set_z_index(2); // Highest z-index (rendered last/on top)
-    
-    // Configure visual feedback colors for the foreground button  
-    foreground_button->set_hovered_colors(
-        guigui::Color(255, 130, 130, 255), // Lighter red on hover
-        guigui::Color(255, 255, 255, 255)  // Keep text white on hover
-    );
-    foreground_button->set_pressed_colors(
-        guigui::Color(200, 80, 80, 255),   // Darker red when pressed
-        guigui::Color(220, 220, 220, 255)  // Slightly gray text when pressed
-    );
-    foreground_button->set_hover_callback([](guigui::Component& comp, bool entering) {
-        LOG_INFO_F("Foreground button hover: {} ({})", 
-                   comp.get_identifier(), 
-                   entering ? "ENTERED" : "EXITED");
-    });
-    
-    // Add all buttons to the container (order doesn't matter due to z-index sorting)
-    root_container->add_child(std::move(middle_button));    // Added second but z-index 1
-    root_container->add_child(std::move(foreground_button)); // Added third but z-index 2 (top)
-    root_container->add_child(std::move(background_button)); // Added first but z-index 0 (back)
+    LOG_INFO_F("Generated {} buttons with varied colors and positions", num_buttons);
     
     context->set_root_component(std::move(root_container));
-    LOG_INFO("UI components setup complete with z-index layering demonstration");
+    LOG_INFO("UI components setup complete with 1000 dynamically generated buttons");
 
     // Run the main application loop
     try {

@@ -9,6 +9,14 @@ RectanglePrimitive::RectanglePrimitive(std::shared_ptr<guigui::Renderer> rendere
 {
 }
 
+RectanglePrimitive::RectanglePrimitive(std::shared_ptr<guigui::Renderer> renderer, const Rectangle& rectangle, const Color& color,
+                                      const std::string& component_id, const std::string& primitive_name)
+    : Primitive(PrimitiveType::RECTANGLE, renderer, component_id, primitive_name)
+    , _rectangle(rectangle)
+    , _color(color)
+{
+}
+
 void RectanglePrimitive::execute()
 {
     if (!_renderer) {

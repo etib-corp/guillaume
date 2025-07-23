@@ -11,6 +11,16 @@ TextPrimitive::TextPrimitive(std::shared_ptr<guigui::Renderer> renderer, const F
 {
 }
 
+TextPrimitive::TextPrimitive(std::shared_ptr<guigui::Renderer> renderer, const Font& font, const Vector& position, const Color& color, const std::string& content,
+                            const std::string& component_id, const std::string& primitive_name)
+    : Primitive(PrimitiveType::TEXT, renderer, component_id, primitive_name)
+    , _font(font)
+    , _position(position)
+    , _color(color)
+    , _content(content)
+{
+}
+
 void TextPrimitive::execute()
 {
     if (!_renderer) {

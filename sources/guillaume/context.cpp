@@ -149,6 +149,9 @@ void Context::_loop()
             LOG_DEBUG_F("Processed {} frames ({} rendered) - {}% frame skip", 
                        frame_count, rendered_frame_count,
                        100.0 * (frame_count - rendered_frame_count) / frame_count);
+            
+            // Log primitive statistics
+            _renderer->log_primitive_statistics();
         }
         
         // Process one frame cycle
@@ -167,9 +170,12 @@ void Context::_loop()
     }
     
     // Log final performance statistics
-    LOG_INFO_F("Main loop ended after {} frames ({} rendered) - {}% efficiency", 
+    LOG_INFO_F("Main loop ended after {} frames ({} rendered) - {:.1f}% efficiency", 
                frame_count, rendered_frame_count,
                100.0 * rendered_frame_count / frame_count);
+    
+    // Log final primitive statistics
+    _renderer->log_primitive_statistics();
 }
 
 void Context::mark_dirty()

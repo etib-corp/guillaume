@@ -16,11 +16,82 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+// Cache structures for optimization
+struct TextCache {
+    SDL_Texture* texture;
+    int width;
+    int height;
+    std::string content;
+    std::string font_path;
+    int font_size;
+
+    TextCache()
+        : texture(nullptr)
+        , width(0)
+        , height(0)
+    {
+    }
+    ~TextCache()
+    {
+        if (texture) {
+            SDL_DestroyTexture(texture);
+        }
+    }
+
+    // Move constructor
+    TextCache(TextCache&& other) noexcept
+        : texture(other.texture)
+        , width(other.width)
+        , height(other.height)
+        , content(std::move(other.content))
+        , font_path(std::move(other.font_path))
+        , font_size(other.font_size)
+    {
+        other.texture = nullptr;
+    }
+
+    // Move assignment
+    TextCache& operator=(TextCache&& other) noexcept
+    {
+        if (this != &other) {
+            if (texture)
+                SDL_DestroyTexture(texture);
+            texture = other.texture;
+            width = other.width;
+            height = other.height;
+            content = std::move(other.content);
+            font_path = std::move(other.font_path);
+            font_size = other.font_size;
+            other.texture = nullptr;
+        }
+        return *this;
+    }
+
+    // Delete copy constructor and assignment
+    TextCache(const TextCache&) = delete;
+    TextCache& operator=(const TextCache&) = delete;
+};
+
 class SDL3Renderer : public guigui::Renderer {
 private:
     SDL_Window* _window;
     SDL_Renderer* _renderer;
     TTF_TextEngine* _text_engine;
+
+    // Cache for optimized rendering
+    std::unordered_map<std::string, TextCache> _text_cache;
+
+    // Primitive statistics tracking
+    mutable int _total_primitive_requests = 0;
+    mutable int _cached_primitive_uses = 0;
+    mutable int _new_primitive_creations = 0;
+
+    // Cache key generation
+    std::string _generate_text_cache_key(const std::string& component_id,
+        const std::string& primitive_name,
+        const std::string& content,
+        const std::string& font_path,
+        int font_size) const;
 
     std::map<SDL_Keycode, guigui::KeyboardEvent::KeyCode> _key_code_map = {
         { SDLK_A, guigui::KeyboardEvent::KeyCode::A },
@@ -137,4 +208,12 @@ public:
     void clear(const guigui::Color& color) override;
     void present() override;
     void poll_events() override;
+
+    // Cache management methods
+    void clear_cache();
+    void clear_component_cache(const std::string& component_id) override;
+
+    // Statistics methods
+    void log_primitive_statistics() const override;
+    void reset_primitive_statistics() override;
 };

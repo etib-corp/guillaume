@@ -38,6 +38,7 @@ Before contributing, ensure you have:
 ### Setting Up Development Environment
 
 1. **Fork the Repository**
+
    ```bash
    # Click "Fork" on GitHub, then clone your fork
    git clone git@github.com:YOUR_USERNAME/guillaume.git
@@ -46,17 +47,20 @@ Before contributing, ensure you have:
    ```
 
 2. **Initialize Submodules**
+
    ```bash
    git submodule update --init --recursive
    ```
 
 3. **Build in Debug Mode**
+
    ```bash
    cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
    cmake --build build
    ```
 
 4. **Verify Installation**
+
    ```bash
    ./build/guillaume
    ```
@@ -74,6 +78,7 @@ Before contributing, ensure you have:
 ### Working on Features
 
 1. **Create Feature Branch**
+
    ```bash
    git checkout develop
    git pull upstream develop
@@ -86,6 +91,7 @@ Before contributing, ensure you have:
    - Update documentation as needed
 
 3. **Test Your Changes**
+
    ```bash
    cmake --build build
    ./build/guillaume
@@ -93,12 +99,14 @@ Before contributing, ensure you have:
    ```
 
 4. **Commit Changes**
+
    ```bash
    git add .
    git commit -m "feat: add new button component"
    ```
 
 5. **Push and Create PR**
+
    ```bash
    git push origin feature/your-feature-name
    # Create PR on GitHub targeting 'develop' branch

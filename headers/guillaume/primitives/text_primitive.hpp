@@ -22,6 +22,9 @@ private:
 public:
     TextPrimitive(std::shared_ptr<guigui::Renderer> renderer, const Font& font, const Vector& position, const Color& color, const std::string& content);
 
+    TextPrimitive(std::shared_ptr<guigui::Renderer> renderer, const Font& font, const Vector& position, const Color& color, const std::string& content,
+        const std::string& component_id, const std::string& primitive_name);
+
     void execute() override;
     std::unique_ptr<Primitivable> clone() const override;
     std::string to_string() const override;

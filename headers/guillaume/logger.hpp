@@ -1,19 +1,19 @@
 #pragma once
 
-#include <iostream>
+#include <chrono>
 #include <fstream>
-#include <sstream>
-#include <string>
+#include <iomanip>
+#include <iostream>
 #include <memory>
 #include <mutex>
-#include <chrono>
-#include <iomanip>
+#include <sstream>
+#include <string>
 
 #ifdef _WIN32
-    #include <windows.h>
-    #include <io.h>
+#include <io.h>
+#include <windows.h>
 #else
-    #include <unistd.h>
+#include <unistd.h>
 #endif
 
 namespace guigui {
@@ -32,7 +32,7 @@ enum class LogLevel {
 
 /**
  * @brief Logger class providing thread-safe logging functionality
- * 
+ *
  * This logger supports multiple log levels, console and file output,
  * and automatic timestamp formatting. It follows the singleton pattern
  * to ensure a single logging instance throughout the application.
@@ -41,7 +41,7 @@ class Logger {
 private:
     static std::unique_ptr<Logger> _instance;
     static std::mutex _instance_mutex;
-    
+
     mutable std::mutex _log_mutex;
     LogLevel _current_level;
     std::ofstream _file_stream;
@@ -208,8 +208,9 @@ public:
      * @param format Format string (printf-style)
      * @param args Arguments for the format string
      */
-    template<typename... Args>
-    void log(LogLevel level, const std::string& format, Args&&... args) const {
+    template <typename... Args>
+    void log(LogLevel level, const std::string& format, Args&&... args) const
+    {
         if (level < _current_level) {
             return;
         }
@@ -223,48 +224,54 @@ public:
     /**
      * @brief Template method for trace logging with formatted strings
      */
-    template<typename... Args>
-    void trace(const std::string& format, Args&&... args) const {
+    template <typename... Args>
+    void trace(const std::string& format, Args&&... args) const
+    {
         log(LogLevel::TRACE_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
      * @brief Template method for debug logging with formatted strings
      */
-    template<typename... Args>
-    void debug(const std::string& format, Args&&... args) const {
+    template <typename... Args>
+    void debug(const std::string& format, Args&&... args) const
+    {
         log(LogLevel::DEBUG_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
      * @brief Template method for info logging with formatted strings
      */
-    template<typename... Args>
-    void info(const std::string& format, Args&&... args) const {
+    template <typename... Args>
+    void info(const std::string& format, Args&&... args) const
+    {
         log(LogLevel::INFO_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
      * @brief Template method for warning logging with formatted strings
      */
-    template<typename... Args>
-    void warn(const std::string& format, Args&&... args) const {
+    template <typename... Args>
+    void warn(const std::string& format, Args&&... args) const
+    {
         log(LogLevel::WARN_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
      * @brief Template method for error logging with formatted strings
      */
-    template<typename... Args>
-    void error(const std::string& format, Args&&... args) const {
+    template <typename... Args>
+    void error(const std::string& format, Args&&... args) const
+    {
         log(LogLevel::ERROR_LEVEL, format, std::forward<Args>(args)...);
     }
 
     /**
      * @brief Template method for fatal logging with formatted strings
      */
-    template<typename... Args>
-    void fatal(const std::string& format, Args&&... args) const {
+    template <typename... Args>
+    void fatal(const std::string& format, Args&&... args) const
+    {
         log(LogLevel::FATAL_LEVEL, format, std::forward<Args>(args)...);
     }
 
@@ -272,8 +279,9 @@ private:
     /**
      * @brief Recursive template function to format messages safely
      */
-    template<typename T>
-    void _format_message(std::ostringstream& oss, const std::string& format, T&& value) const {
+    template <typename T>
+    void _format_message(std::ostringstream& oss, const std::string& format, T&& value) const
+    {
         size_t pos = format.find("{}");
         if (pos != std::string::npos) {
             oss << format.substr(0, pos) << std::forward<T>(value) << format.substr(pos + 2);
@@ -282,8 +290,9 @@ private:
         }
     }
 
-    template<typename T, typename... Args>
-    void _format_message(std::ostringstream& oss, const std::string& format, T&& value, Args&&... args) const {
+    template <typename T, typename... Args>
+    void _format_message(std::ostringstream& oss, const std::string& format, T&& value, Args&&... args) const
+    {
         size_t pos = format.find("{}");
         if (pos != std::string::npos) {
             oss << format.substr(0, pos) << std::forward<T>(value);
@@ -311,4 +320,3 @@ private:
 #define LOG_WARN_F(fmt, ...) guigui::Logger::get_instance().warn(fmt, __VA_ARGS__)
 #define LOG_ERROR_F(fmt, ...) guigui::Logger::get_instance().error(fmt, __VA_ARGS__)
 #define LOG_FATAL_F(fmt, ...) guigui::Logger::get_instance().fatal(fmt, __VA_ARGS__)
-

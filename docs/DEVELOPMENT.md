@@ -175,7 +175,7 @@ brew install libvorbis libpng jpeg freetype
    - Doxygen Documentation Generator
 
 2. **Configure CMake:**
-   
+
    Create `.vscode/settings.json`:
 
    ```json
@@ -192,7 +192,7 @@ brew install libvorbis libpng jpeg freetype
    ```
 
 3. **Configure Tasks:**
-   
+
    Create `.vscode/tasks.json`:
 
    ```json

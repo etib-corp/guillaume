@@ -1,10 +1,10 @@
 #pragma once
 
 #include "guillaume/color.hpp"
+#include "guillaume/primitive.hpp"
 #include "guillaume/rectangle.hpp"
 #include "guillaume/renderer.hpp"
 #include <memory>
-#include "guillaume/primitive.hpp"
 
 namespace guigui {
 
@@ -16,6 +16,9 @@ private:
 
 public:
     RectanglePrimitive(std::shared_ptr<guigui::Renderer> renderer, const Rectangle& rectangle, const Color& color);
+
+    RectanglePrimitive(std::shared_ptr<guigui::Renderer> renderer, const Rectangle& rectangle, const Color& color,
+        const std::string& component_id, const std::string& primitive_name);
 
     void execute() override;
     std::unique_ptr<Primitivable> clone() const override;

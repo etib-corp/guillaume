@@ -13,6 +13,7 @@ namespace guigui {
 ```
 
 The Context class serves as the central hub for Guillaume applications, providing:
+
 - Window management and creation
 - Main rendering loop
 - Event handling and dispatch
@@ -35,7 +36,7 @@ public:
     
     // Component management
     void add_component(std::shared_ptr<Component> component);
-    void remove_component(const ComponentIdentifier& id);
+    void remove_component(const std::string& id);
     
     // Event handling
     void handle_event(const Event& event) override;
@@ -67,6 +68,7 @@ static std::unique_ptr<Context> create(const std::string& title,
 ```
 
 **Parameters:**
+
 - `title`: Window title
 - `width`: Window width in pixels
 - `height`: Window height in pixels
@@ -74,6 +76,7 @@ static std::unique_ptr<Context> create(const std::string& title,
 **Returns:** Unique pointer to the created Context
 
 **Example:**
+
 ```cpp
 auto context = guigui::Context::create("My Application", 800, 600);
 ```
@@ -89,6 +92,7 @@ void run();
 ```
 
 **Example:**
+
 ```cpp
 context->run(); // Blocks until application exits
 ```
@@ -122,9 +126,11 @@ void add_component(std::shared_ptr<Component> component);
 ```
 
 **Parameters:**
+
 - `component`: Shared pointer to the component to add
 
 **Example:**
+
 ```cpp
 auto button = Button::create("Click Me");
 context->add_component(button);
@@ -135,10 +141,11 @@ context->add_component(button);
 Removes a component from the context by its identifier.
 
 ```cpp
-void remove_component(const ComponentIdentifier& id);
+void remove_component(const std::string& id);
 ```
 
 **Parameters:**
+
 - `id`: Unique identifier of the component to remove
 
 ## Window Properties
@@ -153,6 +160,7 @@ std::string get_title() const;
 ```
 
 **Example:**
+
 ```cpp
 context->set_title("Updated Title");
 std::cout << "Current title: " << context->get_title() << std::endl;
@@ -168,6 +176,7 @@ Vector2 get_size() const;
 ```
 
 **Example:**
+
 ```cpp
 context->set_size(1024, 768);
 auto size = context->get_size();
@@ -186,6 +195,7 @@ Color get_background_color() const;
 ```
 
 **Example:**
+
 ```cpp
 context->set_background_color(Color::from_rgb(64, 128, 255));
 ```
@@ -201,6 +211,7 @@ std::shared_ptr<Renderer> get_renderer() const;
 **Returns:** Shared pointer to the renderer
 
 **Example:**
+
 ```cpp
 auto renderer = context->get_renderer();
 renderer->draw_rectangle({10, 10}, {100, 50}, Color::red());
