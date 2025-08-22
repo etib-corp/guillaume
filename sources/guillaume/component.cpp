@@ -8,7 +8,7 @@ Component::Component()
     , _is_enabled(true)
     , _bounds(0, 0, 0, 0) // Default empty bounds
 {
-    _identifier = "Component_" + std::to_string(reinterpret_cast<std::uintptr_t>(this));
+    _identifier = std::to_string(reinterpret_cast<std::uintptr_t>(this));
 }
 
 Component::Component(const Rectangle& bounds)
@@ -17,7 +17,7 @@ Component::Component(const Rectangle& bounds)
     , _is_enabled(true)
     , _bounds(bounds)
 {
-    _identifier = "Component_" + std::to_string(reinterpret_cast<std::uintptr_t>(this));
+    _identifier = std::to_string(reinterpret_cast<std::uintptr_t>(this));
 }
 
 Component::~Component()

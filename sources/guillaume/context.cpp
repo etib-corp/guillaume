@@ -170,7 +170,7 @@ void Context::_loop()
     }
     
     // Log final performance statistics
-    LOG_INFO_F("Main loop ended after {} frames ({} rendered) - {:.1f}% efficiency", 
+    LOG_INFO_F("Main loop ended after {} frames ({} rendered) - {}% efficiency", 
                frame_count, rendered_frame_count,
                100.0 * rendered_frame_count / frame_count);
     

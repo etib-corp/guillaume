@@ -243,6 +243,12 @@ void SDL3Renderer::draw_text(const guigui::TextPrimitive& text)
                 text.get_position().get_y(),
                 text.get_font().get_path());
 
+    // Skip rendering if text is empty
+    if (text.get_text().empty()) {
+        LOG_TRACE("Skipping rendering of empty text");
+        return;
+    }
+
     // Track primitive request
     _total_primitive_requests++;
 
@@ -331,6 +337,12 @@ guigui::Vector SDL3Renderer::get_text_size(const guigui::Font& font,
     const std::string& content)
 {
     LOG_TRACE_F("Getting text size for '{}' with font {}", content, font.get_path());
+    
+    // Return zero size for empty text
+    if (content.empty()) {
+        LOG_TRACE("Returning zero size for empty text");
+        return guigui::Vector(0.0f, 0.0f);
+    }
     
     int width = 0, height = 0;
 
