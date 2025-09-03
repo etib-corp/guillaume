@@ -1,5 +1,6 @@
 from typing import Dict, Optional
 
+
 class Properties:
     def __init__(self):
         self.dictionary: Dict[str, Optional[str | int | float | bool]] = {}
