@@ -1,0 +1,13 @@
+{
+    "include": [
+        "src",
+        "tests"
+    ],
+    "exclude": [],
+    "strict": [
+        "src",
+        "tests"
+    ],
+    "venvPath": ".",
+    "venv": ".venv"
+}
