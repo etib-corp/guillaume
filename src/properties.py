@@ -16,5 +16,3 @@ class Properties:
 
     def clear(self) -> None:
         self.dictionary.clear()
-    
-
