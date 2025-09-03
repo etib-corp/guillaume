@@ -1,0 +1,28 @@
+[project]
+name = "guillaume"
+version = "0.1.0"
+authors = [
+  { name="Clément Antoine XAVIER", email="clement-antoine.xavier@epitech.eu" },
+  { name="Julien FERDINAND", email="julien.ferdinand@epitech.eu" },
+  { name="Nathan MAILLOT", email="nathan.maillot@epitech.eu" },
+  { name="Léo SAUTRON", email="leo.sautron@epitech.eu" },
+]
+description = "The high-performance Python XR UI framework inspired by React, featuring custom rendering and modular architecture for AR/VR applications."
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+
+[project.urls]
+Homepage = "https://github.com/etib-corp/guillaume"
+Issues = "https://github.com/etib-corp/guillaume/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
