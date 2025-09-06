@@ -1,5 +1,5 @@
 from typing import Optional
-from uuid import UUID, SafeUUID
+from uuid import uuid1
 
 from .properties import Properties
 
@@ -7,7 +7,7 @@ from .properties import Properties
 class Component:
     def __init__(self, properties: Optional[Properties] = None):
         self.properties = properties
-        self.id = UUID(is_safe=SafeUUID.safe)
+        self.id = uuid1()
         self.parent: Optional["Component"] = None
         self.children: list["Component"] = []
 
