@@ -17,6 +17,7 @@ class TestApplication:
     def test_render_calls_children(self):
         class MockChild(Component):
             def __init__(self):
+                super().__init__()
                 self.render_called = False
 
             def render(self):
