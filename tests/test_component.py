@@ -29,5 +29,5 @@ class TestComponent:
 
     def test_render_not_implemented(self) -> None:
         comp = Component()
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(NotImplementedError):  # type: ignore
             comp.render()
