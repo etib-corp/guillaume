@@ -19,10 +19,8 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
+#include "component.hpp"
 
-#include "guillaume.hpp"
+Component::Component(void) {}
 
-Guillaume::Guillaume(void) {}
-
-Guillaume::~Guillaume(void) {}
+Component::~Component(void) {}

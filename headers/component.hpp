@@ -19,10 +19,25 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
+#pragma once
 
-#include "guillaume.hpp"
+/**
+ * @class Component
+ * @brief Represents a Component entity.
+ *
+ */
+class Component
+{
+public:
+	/**
+	 * @brief Construct a new Component object
+	 *
+	 */
+	Component(void);
 
-Guillaume::Guillaume(void) {}
-
-Guillaume::~Guillaume(void) {}
+	/**
+	 * @brief Destroy the Component object
+	 *
+	 */
+	~Component(void);
+};

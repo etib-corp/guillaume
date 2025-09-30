@@ -19,10 +19,12 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
+#include <gtest/gtest.h>
 
-#include "guillaume.hpp"
+#include "component.hpp"
+#include "test_component.hpp"
 
-Guillaume::Guillaume(void) {}
-
-Guillaume::~Guillaume(void) {}
+TEST(ComponentTest, DefaultConstructor)
+{
+	Component component;
+}
