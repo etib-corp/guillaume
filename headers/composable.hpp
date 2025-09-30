@@ -21,10 +21,20 @@
 
 #pragma once
 
+/**
+ * @class Composable
+ * @brief An abstract base class for composable components.
+ *
+ * This class defines the interface for components that can be composed
+ * together in a system.
+ */
 class Composable
 {
 private:
 protected:
+	/**
+	 * @brief A type for component IDs
+	 */
 	using ComponentID = unsigned int;
 
 public:
@@ -41,5 +51,9 @@ public:
 	 */
 	virtual ComponentID getID(void) const = 0;
 
+	/**
+	 * @brief Render the component
+	 *
+	 */
 	virtual void render(void) const = 0;
 };
