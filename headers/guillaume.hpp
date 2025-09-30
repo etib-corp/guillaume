@@ -31,6 +31,8 @@
  */
 class Guillaume
 {
+private:
+protected:
 public:
 	/**
 	 * @brief Constructs a Guillaume object.
@@ -41,6 +43,4 @@ public:
 	 * @brief Destroys the Guillaume object.
 	 */
 	~Guillaume(void);
-
-private:
 };

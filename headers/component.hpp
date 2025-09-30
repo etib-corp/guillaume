@@ -21,23 +21,44 @@
 
 #pragma once
 
+#include "composable.hpp"
+
 /**
  * @class Component
  * @brief Represents a Component entity.
  *
  */
-class Component
+class Component : public Composable
 {
+private:
+	ComponentID _id; ///< The unique identifier for the component
+
+	ComponentID generateID(void) const
+	{
+		static ComponentID currentID = 0;
+		return ++currentID;
+	}
+
+protected:
 public:
 	/**
-	 * @brief Construct a new Component object
-	 *
+	 * @brief Constructs a Component object.
 	 */
-	Component(void);
+	Component(void) : _id(this->generateID()) {}
 
 	/**
 	 * @brief Destroy the Component object
 	 *
 	 */
-	~Component(void);
+	~Component(void) = default;
+
+	/**
+	 * @brief Get the ID object
+	 *
+	 * @return ComponentID
+	 */
+	ComponentID getID(void) const override
+	{
+		return this->_id;
+	}
 };

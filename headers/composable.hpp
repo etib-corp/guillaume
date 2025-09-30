@@ -19,21 +19,27 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <gtest/gtest.h>
+#pragma once
 
-#include "component.hpp"
-#include "test_component.hpp"
-
-TEST(ComponentTest, DefaultConstructor)
+class Composable
 {
-	class TestComponent : public Component
-	{
-	public:
-		TestComponent(void) {}
-		~TestComponent(void) = default;
+private:
+protected:
+	using ComponentID = unsigned int;
 
-		void render(void) const override {}
-	};
+public:
+	/**
+	 * @brief Destroy the Composable object
+	 *
+	 */
+	virtual ~Composable(void) = default;
 
-	TestComponent component;
-}
+	/**
+	 * @brief Get the ID of the component
+	 *
+	 * @return ComponentID The unique identifier of the component
+	 */
+	virtual ComponentID getID(void) const = 0;
+
+	virtual void render(void) const = 0;
+};

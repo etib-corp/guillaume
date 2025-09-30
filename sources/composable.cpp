@@ -19,21 +19,4 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <gtest/gtest.h>
-
-#include "component.hpp"
-#include "test_component.hpp"
-
-TEST(ComponentTest, DefaultConstructor)
-{
-	class TestComponent : public Component
-	{
-	public:
-		TestComponent(void) {}
-		~TestComponent(void) = default;
-
-		void render(void) const override {}
-	};
-
-	TestComponent component;
-}
+#include "composable.hpp"
