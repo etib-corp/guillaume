@@ -20,12 +20,27 @@
  SOFTWARE.
  */
 
-#include <iostream>
+#pragma once
 
-#include "pet.hpp"
+#include <string>
 
-Pet::Pet(std::string name) : name(name) {
-  std::cout << "Pet created with name: " << name << std::endl;
-}
+/**
+ * @class Guillaume
+ * @brief Represents a Guillaume entity.
+ *
+ */
+class Guillaume
+{
+public:
+	/**
+	 * @brief Constructs a Guillaume object.
+	 */
+	Guillaume(void);
 
-Pet::~Pet(void) {}
+	/**
+	 * @brief Destroys the Guillaume object.
+	 */
+	~Guillaume(void);
+
+private:
+};

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(cpp_template
+project(guillaume
     VERSION 1.0.0
-	DESCRIPTION "A C++ project template with CMake"
-	HOMEPAGE_URL "https://etib-corp.github.io/cpp_template"
+	DESCRIPTION "Guillaume"
+	HOMEPAGE_URL "https://etib-corp.github.io/guillaume"
     LANGUAGES CXX
 )
 

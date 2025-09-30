@@ -20,13 +20,11 @@
  SOFTWARE.
  */
 
-#include "pet.hpp"
-
 #ifndef TESTING
 
-int main(int argc, char *argv[], char *envp[]) {
-  Pet pet("Guillaume");
-  return 0;
+int main(int argc, char *argv[], char *envp[])
+{
+	return 0;
 }
 
 #endif

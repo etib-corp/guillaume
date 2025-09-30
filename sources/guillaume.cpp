@@ -20,13 +20,12 @@
  SOFTWARE.
  */
 
-#include <gtest/gtest.h>
+#include <iostream>
 
-#include "pet.hpp"
-#include "test_pet.hpp"
+#include "guillaume.hpp"
 
-TEST(PetTest, DefaultConstructor) {
-  std::string name = "Buddy";
-  Pet pet(name);
-  ASSERT_EQ(pet.getName(), name);
+Guillaume::Guillaume(void)
+{
 }
+
+Guillaume::~Guillaume(void) {}
