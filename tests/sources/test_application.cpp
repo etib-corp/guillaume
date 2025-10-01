@@ -19,10 +19,7 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <iostream>
+#include <gtest/gtest.h>
 
-#include "guillaume.hpp"
-
-Guillaume::Guillaume(void) {}
-
-Guillaume::~Guillaume(void) {}
+#include "application.hpp"
+#include "test_application.hpp"

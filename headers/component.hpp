@@ -21,16 +21,19 @@
 
 #pragma once
 
-#include "composable.hpp"
+#include <memory>
+#include <vector>
 
 /**
  * @class Component
  * @brief Represents a Component entity.
  *
  */
-class Component : public Composable
+class Component : public std::enable_shared_from_this<Component>
 {
 private:
+	typedef unsigned int ComponentID; ///< Type definition for ComponentID
+
 	ComponentID _id; ///< The unique identifier for the component
 
 	ComponentID generateID(void) const
@@ -39,12 +42,25 @@ private:
 		return ++currentID;
 	}
 
+	std::shared_ptr<Component> _parent;				   ///< Pointer to the parent component
+	std::vector<std::shared_ptr<Component>> _children; ///< Vector of child components
+
 protected:
+	/**
+	 * @brief Set the Parent object
+	 *
+	 * @param parent A shared pointer to the parent component
+	 */
+	void setParent(const std::shared_ptr<Component> &parent)
+	{
+		_parent = parent;
+	}
+
 public:
 	/**
 	 * @brief Constructs a Component object.
 	 */
-	Component(void) : _id(this->generateID()) {}
+	Component(void) : _id(generateID()) {}
 
 	/**
 	 * @brief Destroy the Component object
@@ -57,8 +73,19 @@ public:
 	 *
 	 * @return ComponentID
 	 */
-	ComponentID getID(void) const override
+	ComponentID getID(void) const
 	{
-		return this->_id;
+		return _id;
+	}
+
+	/**
+	 * @brief Add a child component
+	 *
+	 * @param child A shared pointer to the child component
+	 */
+	void addChild(const std::shared_ptr<Component> &child)
+	{
+		child->setParent(shared_from_this());
+		_children.push_back(child);
 	}
 };

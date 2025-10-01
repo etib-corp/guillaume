@@ -20,3 +20,29 @@
  */
 
 #pragma once
+
+#include "component.hpp"
+
+/**
+ * @class Application
+ * @brief Represents the main application.
+ *
+ */
+class Application : public Component
+{
+private:
+protected:
+public:
+	/**
+	 * @brief Constructs an Application object.
+	 */
+	Application(void)
+	{
+		setParent(nullptr);
+	}
+
+	/**
+	 * @brief Destroys the Application object.
+	 */
+	~Application(void) = default;
+};

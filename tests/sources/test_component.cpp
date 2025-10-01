@@ -26,14 +26,6 @@
 
 TEST(ComponentTest, DefaultConstructor)
 {
-	class TestComponent : public Component
-	{
-	public:
-		TestComponent(void) {}
-		~TestComponent(void) = default;
-
-		void render(void) const override {}
-	};
-
-	TestComponent component;
+	Component component;
+	EXPECT_EQ(component.getID(), 1);
 }

@@ -19,10 +19,30 @@
  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "application.hpp"
+#include "component.hpp"
+
+class MyApplication : public Application
+{
+public:
+	MyApplication(void) : Application() {}
+	~MyApplication(void) = default;
+};
+
+class MyComponent : public Component
+{
+public:
+	MyComponent(void) : Component() {}
+	~MyComponent(void) = default;
+};
+
 #ifndef TESTING
 
 int main(int argc, char *argv[], char *envp[])
 {
+	MyApplication my_application;
+	std::shared_ptr<MyComponent> my_component = std::make_shared<MyComponent>();
+	my_application.addChild(my_component);
 	return 0;
 }
 
