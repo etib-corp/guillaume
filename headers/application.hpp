@@ -22,6 +22,7 @@
 #pragma once
 
 #include "component.hpp"
+#include "renderer.hpp"
 
 /**
  * @class Application
@@ -31,12 +32,13 @@
 class Application : public Component
 {
 private:
+	std::unique_ptr<Renderer> _renderer; ///< Unique pointer to the renderer
 protected:
 public:
 	/**
 	 * @brief Constructs an Application object.
 	 */
-	Application(void)
+	Application(std::unique_ptr<Renderer> renderer) : Component(), _renderer(std::move(renderer))
 	{
 		setParent(nullptr);
 	}
