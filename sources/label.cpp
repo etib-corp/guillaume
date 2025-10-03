@@ -20,4 +20,4 @@
  SOFTWARE.
  */
 
-#include "component.hpp"
+#include "label.hpp"
