@@ -32,8 +32,8 @@ class Component;
  * @brief Represents a UI event with type, target, and optional data
  *
  * The Event class encapsulates user interactions and system events that can
- * be propagated through the component hierarchy. Events have a type (e.g., "click"),
- * a target component, and optional type-erased data payload.
+ * be propagated through the component hierarchy. Events have a type (e.g.,
+ * "click"), a target component, and optional type-erased data payload.
  */
 class Event {
 private:

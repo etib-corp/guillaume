@@ -31,10 +31,10 @@
  * @brief Manages immutable component properties
  *
  * The Properties class provides read-only access to component configuration
- * data passed from parent components. Properties cannot be modified after construction.
+ * data passed from parent components. Properties cannot be modified after
+ * construction.
  */
-class Properties
-{
+class Properties {
 private:
   std::map<std::string, std::any> _attributes;
 
@@ -56,7 +56,8 @@ public:
    * @brief Get a property value by key with type casting
    * @tparam T The type to cast the value to
    * @param key The key to retrieve
-   * @return The value cast to type T, or default-constructed T if key doesn't exist
+   * @return The value cast to type T, or default-constructed T if key doesn't
+   * exist
    */
   template <typename T> T get(const std::string &key) const {
     auto it = _attributes.find(key);

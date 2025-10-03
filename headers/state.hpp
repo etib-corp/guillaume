@@ -31,7 +31,8 @@
  * @brief Manages dynamic component state with type-safe storage
  *
  * The State class provides a key-value store for component data that can change
- * over time. It supports type-safe getters/setters and callbacks for state changes.
+ * over time. It supports type-safe getters/setters and callbacks for state
+ * changes.
  */
 class State {
 private:
@@ -59,7 +60,8 @@ public:
    * @brief Get a state value by key with type casting
    * @tparam T The type to cast the value to
    * @param key The key to retrieve
-   * @return The value cast to type T, or default-constructed T if key doesn't exist
+   * @return The value cast to type T, or default-constructed T if key doesn't
+   * exist
    */
   template <typename T> T get(const std::string &key) const {
     auto it = _data.find(key);
