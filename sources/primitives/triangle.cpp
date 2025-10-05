@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2025 ETIB
+ Copyright (c) 2025 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
@@ -20,13 +20,4 @@
  SOFTWARE.
  */
 
-#include <gtest/gtest.h>
-
-#include "pet.hpp"
-#include "test_pet.hpp"
-
-TEST(PetTest, DefaultConstructor) {
-  std::string name = "Buddy";
-  Pet pet(name);
-  ASSERT_EQ(pet.getName(), name);
-}
+#include "primitives/triangle.hpp"

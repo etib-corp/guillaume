@@ -20,49 +20,46 @@
  SOFTWARE.
  */
 
+#pragma once
+
 #include <memory>
 
-#include "application.hpp"
-#include "button.hpp"
-#include "component.hpp"
-#include "container.hpp"
-#include "label.hpp"
-#include "renderer.hpp"
+// Forward declaration
+class Component;
 
-class MyRenderer : public Renderer {
+/**
+ * @class Renderer
+ * @brief Represents the renderer of an Application.
+ *
+ * The Renderer is responsible for rendering components to the screen.
+ * It can be extended to support different rendering backends
+ * (e.g., terminal, GUI, web).
+ */
+class Renderer {
+private:
+protected:
 public:
-  MyRenderer(void) : Renderer() {}
-  ~MyRenderer(void) override = default;
+  /**
+   * @brief Constructs a Renderer object.
+   */
+  Renderer(void) {}
 
-  // Override the draw method to provide custom rendering logic
-  void draw(std::shared_ptr<Component> component) override {
-    // Example: In a real implementation, this would draw the component
-    // For now, this is a placeholder
+  /**
+   * @brief Destroys the Renderer object.
+   */
+  virtual ~Renderer(void) = default;
+
+  /**
+   * @brief Draws a component to the screen.
+   *
+   * This is a virtual method that should be overridden by derived classes
+   * to implement specific rendering logic for different backends.
+   *
+   * @param component The component to render
+   */
+  virtual void draw(std::shared_ptr<Component> component) {
+    // Default implementation does nothing
+    // Derived classes should override this method
     (void)component;
   }
 };
-
-#ifndef TESTING
-
-int main(int argc, char *argv[], char *envp[]) {
-  // Create the application with a renderer
-  Application my_application(std::make_unique<MyRenderer>());
-
-  // Get the root container
-  auto root = my_application.getRoot();
-
-  // Create some components to demonstrate the architecture
-  auto label = std::make_shared<Label>("Hello, Guillaume!");
-  auto button = std::make_shared<Button>("Click Me");
-
-  // Add components to the root container
-  root->addChild(label);
-  root->addChild(button);
-
-  // Run the application
-  my_application.run();
-
-  return 0;
-}
-
-#endif

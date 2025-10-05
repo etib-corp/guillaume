@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2025 ETIB
+ Copyright (c) 2025 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
@@ -20,40 +20,4 @@
  SOFTWARE.
  */
 
-#pragma once
-
-#include <string>
-
-/**
- * @class Pet
- * @brief Represents a pet with a name.
- *
- * The Pet class encapsulates the concept of a pet, storing its name and
- * providing basic construction and destruction functionality.
- */
-class Pet {
-
-public:
-  /**
-   * @brief Constructs a Pet with the given name.
-   * @param name The name of the pet.
-   */
-  Pet(std::string name);
-
-  /**
-   * @brief Destroys the Pet object.
-   */
-  ~Pet(void);
-
-  /**
-   * @brief Gets the name of the pet.
-   * @return The name of the pet.
-   */
-  std::string getName(void) const { return name; }
-
-private:
-  /**
-   * @brief The name of the pet.
-   */
-  std::string name;
-};
+#include "container.hpp"

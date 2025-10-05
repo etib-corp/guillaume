@@ -20,49 +20,4 @@
  SOFTWARE.
  */
 
-#include <memory>
-
 #include "application.hpp"
-#include "button.hpp"
-#include "component.hpp"
-#include "container.hpp"
-#include "label.hpp"
-#include "renderer.hpp"
-
-class MyRenderer : public Renderer {
-public:
-  MyRenderer(void) : Renderer() {}
-  ~MyRenderer(void) override = default;
-
-  // Override the draw method to provide custom rendering logic
-  void draw(std::shared_ptr<Component> component) override {
-    // Example: In a real implementation, this would draw the component
-    // For now, this is a placeholder
-    (void)component;
-  }
-};
-
-#ifndef TESTING
-
-int main(int argc, char *argv[], char *envp[]) {
-  // Create the application with a renderer
-  Application my_application(std::make_unique<MyRenderer>());
-
-  // Get the root container
-  auto root = my_application.getRoot();
-
-  // Create some components to demonstrate the architecture
-  auto label = std::make_shared<Label>("Hello, Guillaume!");
-  auto button = std::make_shared<Button>("Click Me");
-
-  // Add components to the root container
-  root->addChild(label);
-  root->addChild(button);
-
-  // Run the application
-  my_application.run();
-
-  return 0;
-}
-
-#endif

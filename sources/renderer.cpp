@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2025 ETIB
+ Copyright (c) 2025 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
@@ -20,12 +20,4 @@
  SOFTWARE.
  */
 
-#include <iostream>
-
-#include "pet.hpp"
-
-Pet::Pet(std::string name) : name(name) {
-  std::cout << "Pet created with name: " << name << std::endl;
-}
-
-Pet::~Pet(void) {}
+#include "renderer.hpp"
