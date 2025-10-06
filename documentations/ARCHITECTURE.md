@@ -65,6 +65,49 @@ classDiagram
 
 The **Event** system handles user interactions and other asynchronous operations. Events bubble up through the component hierarchy, allowing for flexible event handling patterns.
 
+## Primitive System
+
+The library includes a primitive system for low-level geometric shapes that can be used for custom rendering:
+
+```mermaid
+classDiagram
+	class Primitive {
+		<<abstract>>
+		+Primitive()
+		+~Primitive() virtual
+	}
+
+	class Polygon {
+		-_points: vector~Point~
+		+Polygon()
+		+Polygon(points: vector~Point~)
+		+addPoint(point: Point) void
+		+getPoints() vector~Point~
+	}
+
+	class Triangle {
+		+Triangle()
+		+Triangle(p1: Point, p2: Point, p3: Point)
+	}
+
+	class Rectangle {
+		+Rectangle()
+		+Rectangle(topLeft: Point, bottomRight: Point)
+	}
+
+	Primitive <|-- Polygon
+	Polygon <|-- Triangle
+	Polygon <|-- Rectangle
+```
+
+**Primitive** serves as the abstract base class for all drawing primitives. It provides a common interface for geometric shapes that can be rendered by the Renderer.
+
+**Polygon** is a fundamental primitive that represents a shape defined by a series of points (vertices). It stores the vertices and provides methods to manipulate them.
+
+**Triangle** is a specialized polygon with exactly three vertices, useful for mesh-based rendering and geometric operations.
+
+**Rectangle** is a specialized polygon defined by two corner points (top-left and bottom-right), automatically generating the four vertices of a rectangle.
+
 ## Concrete Components
 
 ```mermaid
@@ -148,3 +191,4 @@ classDiagram
 - **Separation of Concerns**: State, properties, and rendering are handled separately
 - **Flexible Rendering**: The abstract Renderer allows for multiple output targets
 - **Event-Driven**: Reactive updates through the event and state system
+- **Geometric Primitives**: Low-level primitive system enables custom rendering and advanced graphics capabilities
