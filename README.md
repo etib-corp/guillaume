@@ -5,3 +5,7 @@ Guillaume is a library for building user interfaces in XR platforms and traditio
 ## Architecture
 
 View the [Architecture Documentation](documentations/ARCHITECTURE.md) for a detailed overview of the system's design and components.
+
+## Technical Choices
+
+View the [Technical Choices Documentation](documentations/TECHNICAL_CHOICES.md) for insights into the design decisions and technologies used in Guillaume.
