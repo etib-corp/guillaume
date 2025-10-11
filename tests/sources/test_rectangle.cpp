@@ -127,11 +127,11 @@ TEST(RectangleTest, NonZeroZCoordinate) {
   Rectangle rect(topLeft, bottomRight);
   const auto &points = rect.getPoints();
 
-  // All points should have z = 0.0f as per the constructor implementation
-  EXPECT_FLOAT_EQ(points[0].z(), 5.0f);
-  EXPECT_FLOAT_EQ(points[1].z(), 0.0f);
-  EXPECT_FLOAT_EQ(points[2].z(), 5.0f);
-  EXPECT_FLOAT_EQ(points[3].z(), 0.0f);
+  // Z coordinates should be preserved for 3D positioning
+  EXPECT_FLOAT_EQ(points[0].z(), 5.0f);  // topLeft z
+  EXPECT_FLOAT_EQ(points[1].z(), 5.0f);  // topRight z (same as topLeft)
+  EXPECT_FLOAT_EQ(points[2].z(), 5.0f);  // bottomRight z
+  EXPECT_FLOAT_EQ(points[3].z(), 5.0f);  // bottomLeft z (same as bottomRight)
 }
 
 TEST(RectangleTest, DecimalCoordinates) {

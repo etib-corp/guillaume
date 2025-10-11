@@ -39,6 +39,28 @@ private:
   std::shared_ptr<Container> _root;    ///< The root container component
 
 protected:
+  /**
+   * @brief Recursively draw the component tree using the renderer.
+   *
+   * This walks the component hierarchy starting from the given component,
+   * draws all primitives in each component, and then recurses to children.
+   *
+   * @param component The starting component to draw
+   */
+  void drawTree(const std::shared_ptr<Component> &component) {
+    if (!_renderer || !component)
+      return;
+
+    // Draw all primitives in this component
+    for (const auto &primitive : component->getPrimitives()) {
+      _renderer->draw(primitive);
+    }
+
+    // Then recursively draw all children
+    for (const auto &child : component->getChildren()) {
+      drawTree(child);
+    }
+  }
 public:
   /**
    * @brief Constructs an Application object.
@@ -76,6 +98,8 @@ public:
     // Initialize the application
     if (_root) {
       _root->render();
+      // After computing the virtual tree, draw it with the renderer
+      drawTree(_root);
     }
 
     // Main application loop would go here
@@ -91,6 +115,8 @@ public:
     // Update the root component and trigger re-render
     if (_root) {
       _root->render();
+      // Re-draw after the update
+      drawTree(_root);
     }
   }
 

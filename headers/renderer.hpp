@@ -24,10 +24,15 @@
 
 #include <memory>
 
-// Forward declaration
+// Forward declarations
 class Component;
+class Primitive;
+class Text;
+class Rectangle;
+class Triangle;
+class Polygon;
 
-/**
+/** 
  * @class Renderer
  * @brief Represents the renderer of an Application.
  *
@@ -50,16 +55,73 @@ public:
   virtual ~Renderer(void) = default;
 
   /**
-   * @brief Draws a component to the screen.
+   * @brief Draws a primitive to the screen.
    *
-   * This is a virtual method that should be overridden by derived classes
-   * to implement specific rendering logic for different backends.
+   * This method dispatches to the appropriate specific draw method based on
+   * the primitive type. Derived classes can override either this method or
+   * the specific draw methods (drawText, drawRectangle, etc.).
    *
-   * @param component The component to render
+   * @param primitive The primitive to render
    */
-  virtual void draw(std::shared_ptr<Component> component) {
+  virtual void draw(std::shared_ptr<Primitive> primitive);
+
+  /**
+   * @brief Draws a text primitive in 3D space.
+   *
+   * This is a virtual method that can be overridden by derived classes
+   * to implement specific 3D text rendering logic for different backends.
+   * The text includes 3D position, rotation, and scale information.
+   *
+   * @param text The text primitive to render in 3D space
+   */
+  virtual void drawText(std::shared_ptr<Text> text) {
     // Default implementation does nothing
     // Derived classes should override this method
-    (void)component;
+    (void)text;
+  }
+
+  /**
+   * @brief Draws a rectangle primitive in 3D space.
+   *
+   * This is a virtual method that can be overridden by derived classes
+   * to implement specific 3D rectangle rendering logic for different backends.
+   * The rectangle maintains full 3D positioning for all corners.
+   *
+   * @param rectangle The rectangle primitive to render in 3D space
+   */
+  virtual void drawRectangle(std::shared_ptr<Rectangle> rectangle) {
+    // Default implementation does nothing
+    // Derived classes should override this method
+    (void)rectangle;
+  }
+
+  /**
+   * @brief Draws a triangle primitive in 3D space.
+   *
+   * This is a virtual method that can be overridden by derived classes
+   * to implement specific 3D triangle rendering logic for different backends.
+   * The triangle includes surface normal calculation and area computation.
+   *
+   * @param triangle The triangle primitive to render in 3D space
+   */
+  virtual void drawTriangle(std::shared_ptr<Triangle> triangle) {
+    // Default implementation does nothing
+    // Derived classes should override this method
+    (void)triangle;
+  }
+
+  /**
+   * @brief Draws a polygon primitive in 3D space.
+   *
+   * This is a virtual method that can be overridden by derived classes
+   * to implement specific 3D polygon rendering logic for different backends.
+   * The polygon includes surface normal calculation and centroid computation.
+   *
+   * @param polygon The polygon primitive to render in 3D space
+   */
+  virtual void drawPolygon(std::shared_ptr<Polygon> polygon) {
+    // Default implementation does nothing
+    // Derived classes should override this method
+    (void)polygon;
   }
 };

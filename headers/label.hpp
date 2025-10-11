@@ -23,6 +23,7 @@
 #pragma once
 
 #include "component.hpp"
+#include "primitives/text.hpp"
 #include <string>
 
 /**
@@ -91,6 +92,14 @@ public:
     if (_state.getData().find("text") != _state.getData().end()) {
       _text = _state.get<std::string>("text");
     }
+
+    // Clear existing primitives and regenerate
+    _primitives.clear();
+
+    // Create a text primitive for the label content
+    auto textPrimitive = std::make_shared<Text>(_text, Point(0, 0, 0));
+    _primitives.push_back(textPrimitive);
+
     return shared_from_this();
   }
 

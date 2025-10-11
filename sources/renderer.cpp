@@ -21,3 +21,22 @@
  */
 
 #include "renderer.hpp"
+#include "primitives/text.hpp"
+#include "primitives/rectangle.hpp"
+#include "primitives/triangle.hpp"
+#include "primitives/polygon.hpp"
+#include <memory>
+
+void Renderer::draw(std::shared_ptr<Primitive> primitive) {
+  // Dispatch to specific draw methods based on primitive type
+  if (auto text = std::dynamic_pointer_cast<Text>(primitive)) {
+    drawText(text);
+  } else if (auto rectangle = std::dynamic_pointer_cast<Rectangle>(primitive)) {
+    drawRectangle(rectangle);
+  } else if (auto triangle = std::dynamic_pointer_cast<Triangle>(primitive)) {
+    drawTriangle(triangle);
+  } else if (auto polygon = std::dynamic_pointer_cast<Polygon>(primitive)) {
+    drawPolygon(polygon);
+  }
+  // If no specific type matches, the base draw method does nothing
+}

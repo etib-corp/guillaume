@@ -23,6 +23,7 @@
 #pragma once
 
 #include "event.hpp"
+#include "primitive.hpp"
 #include "properties.hpp"
 #include "state.hpp"
 #include <memory>
@@ -51,6 +52,8 @@ protected:
   std::shared_ptr<Component> _parent; ///< Pointer to the parent component
   std::vector<std::shared_ptr<Component>>
       _children; ///< Vector of child components
+  std::vector<std::shared_ptr<Primitive>>
+      _primitives; ///< Vector of primitives for rendering
 
   /**
    * @brief Set the Parent object
@@ -102,6 +105,15 @@ public:
   virtual void addChild(const std::shared_ptr<Component> &child) {
     child->setParent(shared_from_this());
     _children.push_back(child);
+  }
+
+  /**
+   * @brief Add a primitive for rendering
+   *
+   * @param primitive A shared pointer to the primitive
+   */
+  virtual void addPrimitive(const std::shared_ptr<Primitive> &primitive) {
+    _primitives.push_back(primitive);
   }
 
   /**
@@ -160,4 +172,14 @@ public:
    * @return std::shared_ptr<Component> Pointer to the parent component
    */
   std::shared_ptr<Component> getParent(void) const { return _parent; }
+
+  /**
+   * @brief Gets the component's primitives.
+   *
+   * @return const std::vector<std::shared_ptr<Primitive>>& Reference to the
+   * primitives vector
+   */
+  const std::vector<std::shared_ptr<Primitive>> &getPrimitives(void) const {
+    return _primitives;
+  }
 };

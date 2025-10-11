@@ -21,12 +21,18 @@
  */
 
 #include <memory>
+#include <iostream>
+#include <typeinfo>
 
 #include "application.hpp"
 #include "button.hpp"
 #include "component.hpp"
 #include "container.hpp"
 #include "label.hpp"
+#include "primitives/text.hpp"
+#include "primitives/rectangle.hpp"
+#include "primitives/triangle.hpp"
+#include "primitives/polygon.hpp"
 #include "renderer.hpp"
 
 class MyRenderer : public Renderer {
@@ -34,11 +40,62 @@ public:
   MyRenderer(void) : Renderer() {}
   ~MyRenderer(void) override = default;
 
-  // Override the draw method to provide custom rendering logic
-  void draw(std::shared_ptr<Component> component) override {
-    // Example: In a real implementation, this would draw the component
-    // For now, this is a placeholder
-    (void)component;
+  // Override specific draw methods for each primitive type
+  void drawText(std::shared_ptr<Text> text) override {
+    std::cout << "Drawing text: \"" << text->getContent()
+              << "\" at 3D position (" << text->getPosition().getX()
+              << ", " << text->getPosition().getY()
+              << ", " << text->getPosition().getZ() << ")"
+              << " rotation (" << text->getRotation().getX()
+              << ", " << text->getRotation().getY()
+              << ", " << text->getRotation().getZ() << ")"
+              << " scale: " << text->getScale() << std::endl;
+  }
+
+  void drawRectangle(std::shared_ptr<Rectangle> rectangle) override {
+    const auto& points = rectangle->getPoints();
+    std::cout << "Drawing 3D rectangle with corners:" << std::endl;
+    for (size_t i = 0; i < points.size(); ++i) {
+      std::cout << "  Point " << i << ": (" << points[i].getX()
+                << ", " << points[i].getY() << ", " << points[i].getZ() << ")" << std::endl;
+    }
+    auto normal = rectangle->calculateNormal();
+    auto centroid = rectangle->calculateCentroid();
+    std::cout << "  Surface normal: (" << normal.getX() << ", " << normal.getY()
+              << ", " << normal.getZ() << ")" << std::endl;
+    std::cout << "  Centroid: (" << centroid.getX() << ", " << centroid.getY()
+              << ", " << centroid.getZ() << ")" << std::endl;
+  }
+
+  void drawTriangle(std::shared_ptr<Triangle> triangle) override {
+    const auto& points = triangle->getPoints();
+    std::cout << "Drawing 3D triangle with vertices:" << std::endl;
+    for (size_t i = 0; i < points.size(); ++i) {
+      std::cout << "  Vertex " << i << ": (" << points[i].getX()
+                << ", " << points[i].getY() << ", " << points[i].getZ() << ")" << std::endl;
+    }
+    auto normal = triangle->calculateNormal();
+    auto centroid = triangle->calculateCentroid();
+    std::cout << "  Surface normal: (" << normal.getX() << ", " << normal.getY()
+              << ", " << normal.getZ() << ")" << std::endl;
+    std::cout << "  Centroid: (" << centroid.getX() << ", " << centroid.getY()
+              << ", " << centroid.getZ() << ")" << std::endl;
+    std::cout << "  Area: " << triangle->calculateArea() << std::endl;
+  }
+
+  void drawPolygon(std::shared_ptr<Polygon> polygon) override {
+    const auto& points = polygon->getPoints();
+    std::cout << "Drawing 3D polygon with " << points.size() << " vertices:" << std::endl;
+    for (size_t i = 0; i < points.size(); ++i) {
+      std::cout << "  Vertex " << i << ": (" << points[i].getX()
+                << ", " << points[i].getY() << ", " << points[i].getZ() << ")" << std::endl;
+    }
+    auto normal = polygon->calculateNormal();
+    auto centroid = polygon->calculateCentroid();
+    std::cout << "  Surface normal: (" << normal.getX() << ", " << normal.getY()
+              << ", " << normal.getZ() << ")" << std::endl;
+    std::cout << "  Centroid: (" << centroid.getX() << ", " << centroid.getY()
+              << ", " << centroid.getZ() << ")" << std::endl;
   }
 };
 
@@ -51,16 +108,99 @@ int main(int argc, char *argv[], char *envp[]) {
   // Get the root container
   auto root = my_application.getRoot();
 
-  // Create some components to demonstrate the architecture
-  auto label = std::make_shared<Label>("Hello, Guillaume!");
-  auto button = std::make_shared<Button>("Click Me");
+  // Create a nested component tree
+  auto header = std::make_shared<Container>();
+  auto content = std::make_shared<Container>();
+  auto footer = std::make_shared<Container>();
 
-  // Add components to the root container
-  root->addChild(label);
-  root->addChild(button);
+  // Header components
+  auto titleLabel = std::make_shared<Label>("Guillaume UI Demo");
+  auto subtitleLabel = std::make_shared<Label>("A tiny reactive hierarchy");
 
-  // Run the application
+  // Content components
+  auto infoLabel = std::make_shared<Label>("Clicks: 0");
+  auto actionButton = std::make_shared<Button>("Increment");
+  auto resetButton = std::make_shared<Button>("Reset");
+
+  // Footer components
+  auto statusLabel = std::make_shared<Label>("Status: idle");
+
+  // Compose tree
+  header->addChild(titleLabel);
+  header->addChild(subtitleLabel);
+
+  content->addChild(infoLabel);
+  content->addChild(actionButton);
+  content->addChild(resetButton);
+
+  footer->addChild(statusLabel);
+
+  root->addChild(header);
+  root->addChild(content);
+  root->addChild(footer);
+
+  // Local counter state simulated via Label + State inside it
+  int counter = 0;
+
+  // Wire up button behaviors by mutating label states
+  actionButton->setOnClick([&]() {
+    counter += 1;
+    infoLabel->setText("Clicks: " + std::to_string(counter));
+    statusLabel->setText("Status: incremented");
+  });
+
+  resetButton->setOnClick([&]() {
+    counter = 0;
+    infoLabel->setText("Clicks: 0");
+    statusLabel->setText("Status: reset");
+  });
+
+  // Add 3D primitives to demonstrate all draw methods with depth
+  auto trianglePrimitive = std::make_shared<Triangle>(
+    Point(0, 0, 5), Point(50, 0, 10), Point(25, 43, 15)
+  );
+
+  auto polygonPrimitive = std::make_shared<Polygon>(std::vector<Point>{
+    Point(0, 0, 8), Point(30, 0, 12), Point(40, 20, 16),
+    Point(20, 30, 20), Point(-10, 20, 18)
+  });
+
+  // Create a 3D rectangle with different Z coordinates
+  auto rect3D = std::make_shared<Rectangle>(Point(10, 10, 5), Point(60, 40, 15));
+
+  // Create text with 3D positioning, rotation, and scaling
+  auto text3D = std::make_shared<Text>(
+    "3D Text Demo",
+    Point(100, 50, 25),
+    Point(0.2f, 0.5f, 0.1f), // rotation in radians
+    1.5f // scale factor
+  );
+
+  root->addPrimitive(trianglePrimitive);
+  root->addPrimitive(polygonPrimitive);
+  root->addPrimitive(rect3D);
+  root->addPrimitive(text3D);
+
+  // Initial render pass
+  std::cout << "\n-- Initial run --" << std::endl;
   my_application.run();
+
+  // Simulate some user interactions and updates
+  std::cout << "\n-- Simulate 3 clicks --" << std::endl;
+  for (int i = 0; i < 3; ++i) {
+    // Dispatch a synthetic click by directly calling the handler
+    actionButton->onEvent(Event("click", actionButton));
+    // Trigger application update and redraw
+    my_application.update();
+  }
+
+  std::cout << "\n-- Reset --" << std::endl;
+  resetButton->onEvent(Event("click", resetButton));
+  my_application.update();
+
+  std::cout << "\n-- One more click --" << std::endl;
+  actionButton->onEvent(Event("click", actionButton));
+  my_application.update();
 
   return 0;
 }

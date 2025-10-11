@@ -40,6 +40,17 @@ public:
   Point(void) : Vector<float, 3>({0.0f, 0.0f, 0.0f}) {}
 
   /**
+   * @brief Constructor from 2D coordinates
+   *
+   * Initializes the point with the specified x and y coordinates, z defaults to
+   * 0.
+   *
+   * @param x The x-coordinate of the point
+   * @param y The y-coordinate of the point
+   */
+  Point(float x, float y) : Vector<float, 3>({x, y, 0.0f}) {}
+
+  /**
    * @brief Constructor from coordinates
    *
    * Initializes the point with the specified x, y, and z coordinates.
@@ -70,4 +81,25 @@ public:
    * @return The z-coordinate
    */
   float z(void) const { return (*this)[2]; }
+
+  /**
+   * @brief Get the x-coordinate of the point (alias for x())
+   *
+   * @return The x-coordinate
+   */
+  float getX(void) const { return x(); }
+
+  /**
+   * @brief Get the y-coordinate of the point (alias for y())
+   *
+   * @return The y-coordinate
+   */
+  float getY(void) const { return y(); }
+
+  /**
+   * @brief Get the z-coordinate of the point (alias for z())
+   *
+   * @return The z-coordinate
+   */
+  float getZ(void) const { return z(); }
 };
