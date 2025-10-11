@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <cmath>
 #include "point.hpp"
 #include "primitives/polygon.hpp"
+#include <cmath>
 
 /**
  * @class Rectangle
@@ -45,21 +45,22 @@ public:
   /**
    * @brief Default constructor - initializes an empty rectangle
    */
-  Rectangle(void) : Polygon(), _center(0,0,0), _width(0), _height(0), _rotation(0,0,0) {}
+  Rectangle(void)
+      : Polygon(), _center(0, 0, 0), _width(0), _height(0), _rotation(0, 0, 0) {
+  }
 
   /**
-   * @brief Constructor from top-left and bottom-right points (legacy/compatibility)
+   * @brief Constructor from top-left and bottom-right points
+   * (legacy/compatibility)
    *
    * Computes center, width, height, and uses zero rotation.
    */
-  Rectangle(const Point& topLeft, const Point& bottomRight)
-    : Rectangle(
-        Point((topLeft.x() + bottomRight.x()) * 0.5f,
-              (topLeft.y() + bottomRight.y()) * 0.5f,
-              (topLeft.z() + bottomRight.z()) * 0.5f),
-        std::abs(bottomRight.x() - topLeft.x()),
-        std::abs(bottomRight.y() - topLeft.y()),
-        Point(0, 0, 0)) {}
+  Rectangle(const Point &topLeft, const Point &bottomRight)
+      : Rectangle(Point((topLeft.x() + bottomRight.x()) * 0.5f,
+                        (topLeft.y() + bottomRight.y()) * 0.5f,
+                        (topLeft.z() + bottomRight.z()) * 0.5f),
+                  std::abs(bottomRight.x() - topLeft.x()),
+                  std::abs(bottomRight.y() - topLeft.y()), Point(0, 0, 0)) {}
 
   /**
    * @brief Constructor using center, width, height, and rotation (Euler angles)
@@ -67,9 +68,11 @@ public:
    * @param center The center of the rectangle in 3D space
    * @param width The width of the rectangle
    * @param height The height of the rectangle
-   * @param rotation The rotation (Euler angles in radians: x=pitch, y=yaw, z=roll)
+   * @param rotation The rotation (Euler angles in radians: x=pitch, y=yaw,
+   * z=roll)
    */
-  Rectangle(const Point& center, float width, float height, const Point& rotation)
+  Rectangle(const Point &center, float width, float height,
+            const Point &rotation)
       : Polygon(computeCorners(center, width, height, rotation)),
         _center(center), _width(width), _height(height), _rotation(rotation) {}
 
@@ -86,16 +89,28 @@ public:
    * @param bottomLeft The bottom-left corner point
    */
   Rectangle(Point topLeft, Point topRight, Point bottomRight, Point bottomLeft)
-      : Polygon({topLeft, topRight, bottomRight, bottomLeft}),
-        _center(0,0,0), _width(0), _height(0), _rotation(0,0,0) {}
+      : Polygon({topLeft, topRight, bottomRight, bottomLeft}), _center(0, 0, 0),
+        _width(0), _height(0), _rotation(0, 0, 0) {}
 
   /**
    * @brief Accessors
    */
-  const Point& getCenter() const { return _center; }
+  const Point &getCenter() const { return _center; }
+
+  /**
+   * @brief Accessors
+   */
   float getWidth() const { return _width; }
+
+  /**
+   * @brief Accessors
+   */
   float getHeight() const { return _height; }
-  const Point& getRotation() const { return _rotation; }
+
+  /**
+   * @brief Accessors
+   */
+  const Point &getRotation() const { return _rotation; }
 
   /**
    * @brief Destructor
@@ -104,15 +119,17 @@ public:
 
 private:
   // Helper to compute corners from center, width, height, and rotation
-  static std::vector<Point> computeCorners(const Point& center, float width, float height, const Point& rotation) {
+  static std::vector<Point> computeCorners(const Point &center, float width,
+                                           float height,
+                                           const Point &rotation) {
     // Rectangle in local space (centered at origin, z=0)
     float hw = width * 0.5f;
     float hh = height * 0.5f;
     std::vector<Point> local = {
-      Point(-hw, -hh, 0), // top-left
-      Point(hw, -hh, 0),  // top-right
-      Point(hw, hh, 0),   // bottom-right
-      Point(-hw, hh, 0)   // bottom-left
+        Point(-hw, -hh, 0), // top-left
+        Point(hw, -hh, 0),  // top-right
+        Point(hw, hh, 0),   // bottom-right
+        Point(-hw, hh, 0)   // bottom-left
     };
 
     // Build rotation matrix from Euler angles (rotation order: ZYX)
@@ -135,7 +152,7 @@ private:
     float m22 = cx * cy;
 
     std::vector<Point> result;
-    for (const auto& p : local) {
+    for (const auto &p : local) {
       // Rotate
       float x = m00 * p.x() + m01 * p.y() + m02 * p.z();
       float y = m10 * p.x() + m11 * p.y() + m12 * p.z();
