@@ -25,6 +25,7 @@
 #include "container.hpp"
 #include "renderer.hpp"
 #include <memory>
+#include <utility>
 
 /**
  * @class Application
@@ -37,6 +38,8 @@ class Application {
 private:
   std::unique_ptr<Renderer> _renderer; ///< Unique pointer to the renderer
   std::shared_ptr<Container> _root;    ///< The root container component
+  bool _initialized = false;           ///< Tracks if renderer was initialized
+  bool _running = false;               ///< Tracks if the app is in the run loop
 
 protected:
   /**
@@ -73,7 +76,13 @@ public:
   /**
    * @brief Destroys the Application object.
    */
-  ~Application(void) = default;
+  ~Application(void) {
+    // Ensure renderer shutdown lifecycle is respected
+    if (_renderer && _initialized) {
+      _renderer->shutdown();
+      _initialized = false;
+    }
+  }
 
   /**
    * @brief Gets the root container.
@@ -92,18 +101,34 @@ public:
   /**
    * @brief Runs the application.
    *
-   * This method starts the application lifecycle and enters the main loop.
+   * This method starts the application lifecycle and performs a frame of the
+   * main loop using the renderer: initialize (once), clear, render, draw, and
+   * present. If you need continuous rendering, call this method in your own
+   * loop or extend it to manage events and timing.
    */
   void run(void) {
-    // Initialize the application
+    // Initialize renderer once
+    if (_renderer && !_initialized) {
+      _renderer->initialize();
+      _initialized = true;
+    }
+
+    _running = true;
+
+    if (_renderer) {
+      _renderer->clear();
+    }
+
     if (_root) {
+      // Compute the virtual tree for this frame
       _root->render();
-      // After computing the virtual tree, draw it with the renderer
+      // Draw the computed primitives/components
       drawTree(_root);
     }
 
-    // Main application loop would go here
-    // For now, this is a placeholder for the actual implementation
+    if (_renderer) {
+      _renderer->present();
+    }
   }
 
   /**
@@ -112,11 +137,25 @@ public:
    * This method is called to update the application and trigger re-rendering.
    */
   void update(void) {
+    // Ensure renderer is initialized before drawing
+    if (_renderer && !_initialized) {
+      _renderer->initialize();
+      _initialized = true;
+    }
+
+    if (_renderer) {
+      _renderer->clear();
+    }
+
     // Update the root component and trigger re-render
     if (_root) {
       _root->render();
       // Re-draw after the update
       drawTree(_root);
+    }
+
+    if (_renderer) {
+      _renderer->present();
     }
   }
 
@@ -126,4 +165,9 @@ public:
    * @return Renderer* Pointer to the renderer
    */
   Renderer *getRenderer(void) const { return _renderer.get(); }
+
+  /**
+   * @brief Stop the application run loop (if managed externally).
+   */
+  void stop(void) { _running = false; }
 };
