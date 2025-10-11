@@ -75,7 +75,7 @@ TEST(TriangleTest, EquilateralTriangle) {
   // Create an approximate equilateral triangle
   Point p1(0.0f, 0.0f, 0.0f);
   Point p2(1.0f, 0.0f, 0.0f);
-  Point p3(0.5f, 0.866f, 0.0f); // sqrt(3)/2 ≈ 0.866
+  Point p3(0.5f, 0.866f, 0.0f);
 
   Triangle triangle(p1, p2, p3);
   const auto &points = triangle.getPoints();

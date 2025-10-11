@@ -2,7 +2,7 @@
 
 Guillaume is a component-based UI framework built around a **3D primitive rendering system**. This guide explains the core concepts, lifecycle, and usage patterns.
 
-## 3D Rendering Capabilities ✨
+## 3D Rendering Capabilities
 
 Guillaume primitives are designed for **3D environments** with full support for:
 

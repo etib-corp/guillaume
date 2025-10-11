@@ -116,3 +116,99 @@ TEST(ButtonTest, MultipleClicks) {
 
   EXPECT_EQ(clickCount, 3);
 }
+
+TEST(ButtonTest, RenderGeneratesPrimitives) {
+  auto button = std::make_shared<Button>("Test Button");
+  button->render();
+
+  const auto& primitives = button->getPrimitives();
+  EXPECT_EQ(primitives.size(), 2); // Should have Rectangle + Text
+}
+
+TEST(ButtonTest, RenderGeneratesRectanglePrimitive) {
+  auto button = std::make_shared<Button>("Test Button");
+  button->render();
+
+  const auto& primitives = button->getPrimitives();
+  ASSERT_GE(primitives.size(), 1);
+
+  // First primitive should be Rectangle (background)
+  auto rectangle = std::dynamic_pointer_cast<Rectangle>(primitives[0]);
+  EXPECT_NE(rectangle, nullptr);
+
+  if (rectangle) {
+    // Verify Rectangle properties from Button implementation
+    EXPECT_FLOAT_EQ(rectangle->getCenter().x(), 50.0f);
+    EXPECT_FLOAT_EQ(rectangle->getCenter().y(), 15.0f);
+    EXPECT_FLOAT_EQ(rectangle->getCenter().z(), 0.0f);
+    EXPECT_FLOAT_EQ(rectangle->getWidth(), 100.0f);
+    EXPECT_FLOAT_EQ(rectangle->getHeight(), 30.0f);
+    EXPECT_FLOAT_EQ(rectangle->getRotation().x(), 0.0f);
+    EXPECT_FLOAT_EQ(rectangle->getRotation().y(), 0.0f);
+    EXPECT_FLOAT_EQ(rectangle->getRotation().z(), 0.0f);
+  }
+}
+
+TEST(ButtonTest, RenderGeneratesTextPrimitive) {
+  auto button = std::make_shared<Button>("Test Button");
+  button->render();
+
+  const auto& primitives = button->getPrimitives();
+  ASSERT_GE(primitives.size(), 2);
+
+  // Second primitive should be Text (label)
+  auto text = std::dynamic_pointer_cast<Text>(primitives[1]);
+  EXPECT_NE(text, nullptr);
+
+  if (text) {
+    // Verify Text properties from Button implementation
+    EXPECT_EQ(text->getContent(), "Test Button");
+    EXPECT_FLOAT_EQ(text->getPosition().x(), 10.0f);
+    EXPECT_FLOAT_EQ(text->getPosition().y(), 15.0f);
+    EXPECT_FLOAT_EQ(text->getPosition().z(), 0.0f);
+  }
+}
+
+TEST(ButtonTest, RenderClearsPrimitivesBeforeRegeneration) {
+  auto button = std::make_shared<Button>("Test Button");
+
+  // First render
+  button->render();
+  EXPECT_EQ(button->getPrimitives().size(), 2);
+
+  // Second render should clear and regenerate
+  button->render();
+  EXPECT_EQ(button->getPrimitives().size(), 2);
+}
+
+TEST(ButtonTest, RenderUpdatesTextWhenLabelChanges) {
+  auto button = std::make_shared<Button>("Original Label");
+  button->render();
+
+  // Change label and re-render
+  button->setLabel("New Label");
+  button->render();
+
+  const auto& primitives = button->getPrimitives();
+  ASSERT_GE(primitives.size(), 2);
+
+  auto text = std::dynamic_pointer_cast<Text>(primitives[1]);
+  ASSERT_NE(text, nullptr);
+  EXPECT_EQ(text->getContent(), "New Label");
+}
+
+TEST(ButtonTest, RenderUpdatesFromState) {
+  auto button = std::make_shared<Button>("Original");
+
+  // Modify state directly
+  button->getState().set<std::string>("label", "State Updated");
+  button->render();
+
+  const auto& primitives = button->getPrimitives();
+  ASSERT_GE(primitives.size(), 2);
+
+  auto text = std::dynamic_pointer_cast<Text>(primitives[1]);
+  ASSERT_NE(text, nullptr);
+  EXPECT_EQ(text->getContent(), "State Updated");
+  EXPECT_EQ(button->getLabel(), "State Updated"); // Internal _label should be updated
+}

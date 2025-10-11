@@ -21,6 +21,253 @@
  */
 
 #include <gtest/gtest.h>
-
+#include <memory>
 #include "renderer.hpp"
+#include "primitives/text.hpp"
+#include "primitives/rectangle.hpp"
+#include "primitives/triangle.hpp"
+#include "primitives/polygon.hpp"
 #include "test_renderer.hpp"
+
+// Mock Renderer for testing
+class MockRenderer : public Renderer {
+public:
+  mutable int drawTextCallCount = 0;
+  mutable int drawRectangleCallCount = 0;
+  mutable int drawTriangleCallCount = 0;
+  mutable int drawPolygonCallCount = 0;
+  mutable std::shared_ptr<Text> lastText = nullptr;
+  mutable std::shared_ptr<Rectangle> lastRectangle = nullptr;
+  mutable std::shared_ptr<Triangle> lastTriangle = nullptr;
+  mutable std::shared_ptr<Polygon> lastPolygon = nullptr;
+
+  void drawText(std::shared_ptr<Text> text) override {
+    drawTextCallCount++;
+    lastText = text;
+  }
+
+  void drawRectangle(std::shared_ptr<Rectangle> rectangle) override {
+    drawRectangleCallCount++;
+    lastRectangle = rectangle;
+  }
+
+  void drawTriangle(std::shared_ptr<Triangle> triangle) override {
+    drawTriangleCallCount++;
+    lastTriangle = triangle;
+  }
+
+  void drawPolygon(std::shared_ptr<Polygon> polygon) override {
+    drawPolygonCallCount++;
+    lastPolygon = polygon;
+  }
+
+  void reset() {
+    drawTextCallCount = 0;
+    drawRectangleCallCount = 0;
+    drawTriangleCallCount = 0;
+    drawPolygonCallCount = 0;
+    lastText = nullptr;
+    lastRectangle = nullptr;
+    lastTriangle = nullptr;
+    lastPolygon = nullptr;
+  }
+};
+
+TEST(RendererTest, DefaultConstructor) {
+  Renderer renderer;
+  // Should construct without issues
+  EXPECT_NO_THROW(Renderer());
+}
+
+TEST(RendererTest, DrawTextPrimitive) {
+  MockRenderer renderer;
+  auto text = std::make_shared<Text>("Hello World");
+
+  renderer.draw(text);
+
+  EXPECT_EQ(renderer.drawTextCallCount, 1);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 0);
+  EXPECT_EQ(renderer.drawTriangleCallCount, 0);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+  EXPECT_EQ(renderer.lastText, text);
+}
+
+TEST(RendererTest, DrawRectanglePrimitive) {
+  MockRenderer renderer;
+  auto rectangle = std::make_shared<Rectangle>(Point(0, 0, 0), 10.0f, 5.0f, Point(0, 0, 0));
+
+  renderer.draw(rectangle);
+
+  EXPECT_EQ(renderer.drawTextCallCount, 0);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 1);
+  EXPECT_EQ(renderer.drawTriangleCallCount, 0);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+  EXPECT_EQ(renderer.lastRectangle, rectangle);
+}
+
+TEST(RendererTest, DrawTrianglePrimitive) {
+  MockRenderer renderer;
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(1, 0, 0), Point(0.5, 1, 0));
+
+  renderer.draw(triangle);
+
+  EXPECT_EQ(renderer.drawTextCallCount, 0);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 0);
+  EXPECT_EQ(renderer.drawTriangleCallCount, 1);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+  EXPECT_EQ(renderer.lastTriangle, triangle);
+}
+
+TEST(RendererTest, DrawPolygonPrimitive) {
+  MockRenderer renderer;
+  std::vector<Point> points = {Point(0, 0, 0), Point(1, 0, 0), Point(1, 1, 0), Point(0, 1, 0)};
+  auto polygon = std::make_shared<Polygon>(points);
+
+  renderer.draw(polygon);
+
+  EXPECT_EQ(renderer.drawTextCallCount, 0);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 0);
+  EXPECT_EQ(renderer.drawTriangleCallCount, 0);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 1);
+  EXPECT_EQ(renderer.lastPolygon, polygon);
+}
+
+TEST(RendererTest, DrawMultiplePrimitives) {
+  MockRenderer renderer;
+  auto text = std::make_shared<Text>("Test");
+  auto rectangle = std::make_shared<Rectangle>(Point(0, 0, 0), 5.0f, 5.0f, Point(0, 0, 0));
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(1, 0, 0), Point(0.5, 1, 0));
+
+  renderer.draw(text);
+  renderer.draw(rectangle);
+  renderer.draw(triangle);
+
+  EXPECT_EQ(renderer.drawTextCallCount, 1);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 1);
+  EXPECT_EQ(renderer.drawTriangleCallCount, 1);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+}
+
+TEST(RendererTest, DrawNullPrimitive) {
+  MockRenderer renderer;
+  std::shared_ptr<Primitive> nullPrimitive = nullptr;
+
+  // Should not crash with null pointer
+  EXPECT_NO_THROW(renderer.draw(nullPrimitive));
+
+  // No methods should be called
+  EXPECT_EQ(renderer.drawTextCallCount, 0);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 0);
+  EXPECT_EQ(renderer.drawTriangleCallCount, 0);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+}
+
+TEST(RendererTest, DrawUnknownPrimitiveType) {
+  MockRenderer renderer;
+
+  // Create a basic Primitive (not a specific subtype)
+  auto primitive = std::make_shared<Primitive>();
+
+  renderer.draw(primitive);
+
+  // No specific draw methods should be called for unknown type
+  EXPECT_EQ(renderer.drawTextCallCount, 0);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 0);
+  EXPECT_EQ(renderer.drawTriangleCallCount, 0);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+}
+
+TEST(RendererTest, DrawTextDirectCall) {
+  MockRenderer renderer;
+  auto text = std::make_shared<Text>("Direct Call");
+
+  renderer.drawText(text);
+
+  EXPECT_EQ(renderer.drawTextCallCount, 1);
+  EXPECT_EQ(renderer.lastText, text);
+}
+
+TEST(RendererTest, DrawRectangleDirectCall) {
+  MockRenderer renderer;
+  auto rectangle = std::make_shared<Rectangle>(Point(5, 5, 5), 20.0f, 10.0f, Point(0, 0, 0));
+
+  renderer.drawRectangle(rectangle);
+
+  EXPECT_EQ(renderer.drawRectangleCallCount, 1);
+  EXPECT_EQ(renderer.lastRectangle, rectangle);
+}
+
+TEST(RendererTest, DrawTriangleDirectCall) {
+  MockRenderer renderer;
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(2, 0, 0), Point(1, 2, 0));
+
+  renderer.drawTriangle(triangle);
+
+  EXPECT_EQ(renderer.drawTriangleCallCount, 1);
+  EXPECT_EQ(renderer.lastTriangle, triangle);
+}
+
+TEST(RendererTest, DrawPolygonDirectCall) {
+  MockRenderer renderer;
+  std::vector<Point> points = {Point(0, 0, 0), Point(2, 0, 0), Point(2, 2, 0), Point(0, 2, 0), Point(-1, 1, 0)};
+  auto polygon = std::make_shared<Polygon>(points);
+
+  renderer.drawPolygon(polygon);
+
+  EXPECT_EQ(renderer.drawPolygonCallCount, 1);
+  EXPECT_EQ(renderer.lastPolygon, polygon);
+}
+
+TEST(RendererTest, TypeDispatchCorrectness) {
+  MockRenderer renderer;
+
+  // Create primitives with different content to ensure correct dispatch
+  auto text1 = std::make_shared<Text>("First Text");
+  auto text2 = std::make_shared<Text>("Second Text");
+  auto rect1 = std::make_shared<Rectangle>(Point(0, 0, 0), 10.0f, 10.0f, Point(0, 0, 0));
+  auto rect2 = std::make_shared<Rectangle>(Point(5, 5, 0), 15.0f, 20.0f, Point(0, 0, 0));
+
+  renderer.draw(text1);
+  EXPECT_EQ(renderer.lastText->getContent(), "First Text");
+
+  renderer.draw(rect1);
+  EXPECT_EQ(renderer.lastRectangle->getWidth(), 10.0f);
+
+  renderer.draw(text2);
+  EXPECT_EQ(renderer.lastText->getContent(), "Second Text");
+
+  renderer.draw(rect2);
+  EXPECT_EQ(renderer.lastRectangle->getWidth(), 15.0f);
+
+  // Total calls should be correct
+  EXPECT_EQ(renderer.drawTextCallCount, 2);
+  EXPECT_EQ(renderer.drawRectangleCallCount, 2);
+}
+
+// Test for inheritance hierarchy - Rectangle should dispatch to drawRectangle, not drawPolygon
+TEST(RendererTest, RectangleInheritanceDispatch) {
+  MockRenderer renderer;
+  auto rectangle = std::make_shared<Rectangle>(Point(0, 0, 0), 8.0f, 6.0f, Point(0, 0, 0));
+
+  // Cast to Polygon* to ensure type dispatch works correctly
+  std::shared_ptr<Polygon> polygonPtr = rectangle;
+  renderer.draw(polygonPtr);
+
+  // Should still call drawRectangle because dynamic_cast checks derived types first
+  EXPECT_EQ(renderer.drawRectangleCallCount, 1);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+}
+
+// Test for inheritance hierarchy - Triangle should dispatch to drawTriangle, not drawPolygon
+TEST(RendererTest, TriangleInheritanceDispatch) {
+  MockRenderer renderer;
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(3, 0, 0), Point(1.5, 3, 0));
+
+  // Cast to Polygon* to ensure type dispatch works correctly
+  std::shared_ptr<Polygon> polygonPtr = triangle;
+  renderer.draw(polygonPtr);
+
+  // Should still call drawTriangle because dynamic_cast checks derived types first
+  EXPECT_EQ(renderer.drawTriangleCallCount, 1);
+  EXPECT_EQ(renderer.drawPolygonCallCount, 0);
+}
