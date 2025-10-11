@@ -199,6 +199,11 @@ classDiagram
 
   class Renderer {
     <<abstract>>
+    +~Renderer() virtual
+    +initialize() void
+    +shutdown() void
+    +clear() void
+    +present() void
     +draw(primitive: shared_ptr~Primitive~) void
     +drawText(text: shared_ptr~Text~) void
     +drawRectangle(rectangle: shared_ptr~Rectangle~) void

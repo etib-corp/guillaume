@@ -40,6 +40,22 @@ public:
   MyRenderer(void) : Renderer() {}
   ~MyRenderer(void) override = default;
 
+	void initialize(void) override {
+		std::cout << "Renderer initialized." << std::endl;
+	}
+
+	void shutdown(void) override {
+		std::cout << "Renderer shutdown." << std::endl;
+	}
+
+	void clear(void) override {
+		std::cout << "Renderer cleared." << std::endl;
+	}
+
+	void present(void) override {
+		std::cout << "Renderer presented." << std::endl;
+	}
+
   // Override specific draw methods for each primitive type
   void drawText(std::shared_ptr<Text> text) override {
     std::cout << "Drawing text: \"" << text->getContent()

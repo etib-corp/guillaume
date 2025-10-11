@@ -32,7 +32,7 @@ class Rectangle;
 class Triangle;
 class Polygon;
 
-/** 
+/**
  * @class Renderer
  * @brief Represents the renderer of an Application.
  *
@@ -53,6 +53,38 @@ public:
    * @brief Destroys the Renderer object.
    */
   virtual ~Renderer(void) = default;
+
+  /**
+   * @brief Initializes the renderer.
+   *
+   * This method is called once during the application's startup
+   * to set up any necessary resources for the renderer.
+   */
+  virtual void initialize(void) {}
+
+  /**
+   * @brief Shuts down the renderer.
+   *
+   * This method is called once during the application's shutdown
+   * to clean up any resources used by the renderer.
+   */
+  virtual void shutdown(void) {}
+
+  /**
+   * @brief Clears the rendering target.
+   *
+   * This method is called to clear the current rendering target
+   * (e.g., the screen or a texture) before drawing new content.
+   */
+  virtual void clear(void) {}
+
+  /**
+   * @brief Presents the rendered content to the display.
+   *
+   * This method is called after all drawing commands have been issued
+   * to present the final rendered content to the screen.
+   */
+  virtual void present(void) {}
 
   /**
    * @brief Draws a primitive to the screen.
