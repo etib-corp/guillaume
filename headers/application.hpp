@@ -22,10 +22,12 @@
 
 #pragma once
 
-#include "container.hpp"
-#include "renderer.hpp"
+#include <iostream>
 #include <memory>
 #include <utility>
+
+#include "container.hpp"
+#include "renderer.hpp"
 
 /**
  * @class Application
@@ -34,12 +36,15 @@
  * The Application class holds the root component and manages the global
  * lifecycle.
  */
-class Application {
+
+template <typename RendererType> class Application {
+  static_assert(std::is_base_of<Renderer, RendererType>::value,
+                "RendererType must be derived from Renderer");
+
 private:
-  std::unique_ptr<Renderer> _renderer; ///< Unique pointer to the renderer
-  std::shared_ptr<Container> _root;    ///< The root container component
-  bool _initialized = false;           ///< Tracks if renderer was initialized
-  bool _running = false;               ///< Tracks if the app is in the run loop
+  std::shared_ptr<RendererType> _renderer; ///< Shared pointer to the renderer
+  std::shared_ptr<Container> _root;        ///< The root container component
+  bool _running = false; ///< Tracks if the app is in the run loop
 
 protected:
   /**
@@ -64,25 +69,33 @@ protected:
       drawTree(child);
     }
   }
+
 public:
   /**
    * @brief Constructs an Application object.
    *
-   * @param renderer Unique pointer to the renderer
    */
-  Application(std::unique_ptr<Renderer> renderer)
-      : _renderer(std::move(renderer)), _root(std::make_shared<Container>()) {}
+  Application(void) : _renderer(nullptr), _root(std::make_shared<Container>()) {
+    try {
+      _renderer = std::make_shared<RendererType>();
+    } catch (std::exception &execption) {
+      std::cerr << "Failed to create renderer: " << execption.what()
+                << std::endl;
+      throw std::runtime_error("Failed to create renderer");
+    }
+  }
 
   /**
    * @brief Destroys the Application object.
    */
-  ~Application(void) {
-    // Ensure renderer shutdown lifecycle is respected
-    if (_renderer && _initialized) {
-      _renderer->shutdown();
-      _initialized = false;
-    }
-  }
+  ~Application(void) = default;
+
+  /**
+   * @brief Gets the renderer.
+   *
+   * @return std::shared_ptr<RendererType> The renderer
+   */
+  std::shared_ptr<RendererType> getRenderer(void) const { return _renderer; }
 
   /**
    * @brief Gets the root container.
@@ -102,19 +115,12 @@ public:
    * @brief Runs the application.
    *
    * This method starts the application lifecycle and performs a frame of the
-   * main loop using the renderer: initialize (once), clear, render, draw, and
-   * present. If you need continuous rendering, call this method in your own
+   * main loop using the renderer: clear, render, draw, and present.
+   * If you need continuous rendering, call this method in your own
    * loop or extend it to manage events and timing.
    */
   void run(void) {
-    // Initialize renderer once
-    if (_renderer && !_initialized) {
-      _renderer->initialize();
-      _initialized = true;
-    }
-
     _running = true;
-
     if (_renderer) {
       _renderer->clear();
     }
@@ -137,18 +143,12 @@ public:
    * This method is called to update the application and trigger re-rendering.
    */
   void update(void) {
-    // Ensure renderer is initialized before drawing
-    if (_renderer && !_initialized) {
-      _renderer->initialize();
-      _initialized = true;
-    }
-
     if (_renderer) {
       _renderer->clear();
     }
 
-    // Update the root component and trigger re-render
     if (_root) {
+      // Update the root component and trigger re-render
       _root->render();
       // Re-draw after the update
       drawTree(_root);
@@ -158,13 +158,6 @@ public:
       _renderer->present();
     }
   }
-
-  /**
-   * @brief Gets the renderer.
-   *
-   * @return Renderer* Pointer to the renderer
-   */
-  Renderer *getRenderer(void) const { return _renderer.get(); }
 
   /**
    * @brief Stop the application run loop (if managed externally).

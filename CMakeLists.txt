@@ -64,6 +64,23 @@ foreach(LIBRARY_DIR ${LIBRARIES_DIR})
     endif()
 endforeach()
 
+# Link SDL3
+include(FetchContent)
+
+set(SDL_TEST_LIBRARY OFF)
+
+FetchContent_Declare(
+  SDL
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+  GIT_TAG release-3.2.24
+)
+
+FetchContent_MakeAvailable(SDL)
+
+target_link_libraries(${PROJECT_NAME}
+    SDL3::SDL3
+)
+
 # Add the tests
 enable_testing()
 add_subdirectory(${TESTS_DIR})

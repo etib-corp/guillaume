@@ -189,10 +189,10 @@ classDiagram
   class Application {
     +root: shared_ptr~Container~
     +renderer: unique_ptr~Renderer~
+		+getRenderer() shared_ptr~Renderer~
     +run() void
     +update() void
     # drawTree(component: shared_ptr~Component~) void
-    +getRenderer() Renderer*
     +getRoot() shared_ptr~Container~
     +setRoot(root: shared_ptr~Container~) void
   }
@@ -200,8 +200,6 @@ classDiagram
   class Renderer {
     <<abstract>>
     +~Renderer() virtual
-    +initialize() void
-    +shutdown() void
     +clear() void
     +present() void
     +draw(primitive: shared_ptr~Primitive~) void

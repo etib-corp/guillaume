@@ -55,22 +55,6 @@ public:
   virtual ~Renderer(void) = default;
 
   /**
-   * @brief Initializes the renderer.
-   *
-   * This method is called once during the application's startup
-   * to set up any necessary resources for the renderer.
-   */
-  virtual void initialize(void) {}
-
-  /**
-   * @brief Shuts down the renderer.
-   *
-   * This method is called once during the application's shutdown
-   * to clean up any resources used by the renderer.
-   */
-  virtual void shutdown(void) {}
-
-  /**
    * @brief Clears the rendering target.
    *
    * This method is called to clear the current rendering target

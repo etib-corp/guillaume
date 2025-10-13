@@ -20,60 +20,93 @@
  SOFTWARE.
  */
 
-#include <memory>
+#ifndef TESTING
+
 #include <iostream>
+#include <memory>
 #include <typeinfo>
+
+#include <SDL3/SDL.h>
 
 #include "application.hpp"
 #include "button.hpp"
 #include "component.hpp"
 #include "container.hpp"
 #include "label.hpp"
-#include "primitives/text.hpp"
-#include "primitives/rectangle.hpp"
-#include "primitives/triangle.hpp"
 #include "primitives/polygon.hpp"
+#include "primitives/rectangle.hpp"
+#include "primitives/text.hpp"
+#include "primitives/triangle.hpp"
 #include "renderer.hpp"
 
 class MyRenderer : public Renderer {
+private:
+  std::unique_ptr<SDL_Window, void (*)(SDL_Window *)> _window{
+      nullptr, SDL_DestroyWindow};
+  std::unique_ptr<SDL_Renderer, void (*)(SDL_Renderer *)> _renderer{
+      nullptr, SDL_DestroyRenderer};
+
 public:
-  MyRenderer(void) : Renderer() {}
-  ~MyRenderer(void) override = default;
+  MyRenderer(void) : Renderer() {
+    if (SDL_Init(SDL_INIT_VIDEO) == false) {
+      std::cerr << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
+      throw std::runtime_error("SDL_Init failed");
+    }
 
-	void initialize(void) override {
-		std::cout << "Renderer initialized." << std::endl;
-	}
+    try {
+      _window = std::unique_ptr<SDL_Window, void (*)(SDL_Window *)>(
+          SDL_CreateWindow("Guillaume", 800, 600,
+                           SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE),
+          SDL_DestroyWindow);
+    } catch (std::exception &execption) {
+      std::cerr << "Failed to create SDL window: " << execption.what()
+                << std::endl;
+      throw std::runtime_error("Failed to create SDL window");
+    }
 
-	void shutdown(void) override {
-		std::cout << "Renderer shutdown." << std::endl;
-	}
+    try {
+      _renderer = std::unique_ptr<SDL_Renderer, void (*)(SDL_Renderer *)>(
+          SDL_CreateRenderer(_window.get(), NULL), SDL_DestroyRenderer);
+    } catch (std::exception &execption) {
+      std::cerr << "Failed to create SDL renderer: " << execption.what()
+                << std::endl;
+      throw std::runtime_error("Failed to create SDL renderer");
+    }
 
-	void clear(void) override {
-		std::cout << "Renderer cleared." << std::endl;
-	}
+    std::cout << "Renderer initialized." << std::endl;
+  }
 
-	void present(void) override {
-		std::cout << "Renderer presented." << std::endl;
-	}
+  ~MyRenderer(void) {
+    SDL_Quit();
+
+    std::cout << "Renderer destroyed." << std::endl;
+  }
+
+  void clear(void) override { std::cout << "Renderer cleared." << std::endl; }
+
+  void present(void) override {
+    std::cout << "Renderer presented." << std::endl;
+  }
 
   // Override specific draw methods for each primitive type
   void drawText(std::shared_ptr<Text> text) override {
     std::cout << "Drawing text: \"" << text->getContent()
-              << "\" at 3D position (" << text->getPosition().getX()
-              << ", " << text->getPosition().getY()
-              << ", " << text->getPosition().getZ() << ")"
-              << " rotation (" << text->getRotation().getX()
-              << ", " << text->getRotation().getY()
-              << ", " << text->getRotation().getZ() << ")"
+              << "\" at 3D position (" << text->getPosition().getX() << ", "
+              << text->getPosition().getY() << ", "
+              << text->getPosition().getZ() << ")"
+              << " rotation (" << text->getRotation().getX() << ", "
+              << text->getRotation().getY() << ", "
+              << text->getRotation().getZ() << ")"
               << " scale: " << text->getScale() << std::endl;
   }
 
   void drawRectangle(std::shared_ptr<Rectangle> rectangle) override {
-    const auto& points = rectangle->getPoints();
+    const auto &points = rectangle->getPoints();
     std::cout << "Drawing 3D rectangle with corners:" << std::endl;
     for (size_t i = 0; i < points.size(); ++i) {
-      std::cout << "  Point " << i << ": (" << points[i].getX()
-                << ", " << points[i].getY() << ", " << points[i].getZ() << ")" << std::endl;
+      std::cout << "  Point " << i << ": (" << points[i].getX() << ", "
+                << points[i].getY() << ", " << points[i].getZ() << ")"
+                << std::endl;
     }
     auto normal = rectangle->calculateNormal();
     auto centroid = rectangle->calculateCentroid();
@@ -84,11 +117,12 @@ public:
   }
 
   void drawTriangle(std::shared_ptr<Triangle> triangle) override {
-    const auto& points = triangle->getPoints();
+    const auto &points = triangle->getPoints();
     std::cout << "Drawing 3D triangle with vertices:" << std::endl;
     for (size_t i = 0; i < points.size(); ++i) {
-      std::cout << "  Vertex " << i << ": (" << points[i].getX()
-                << ", " << points[i].getY() << ", " << points[i].getZ() << ")" << std::endl;
+      std::cout << "  Vertex " << i << ": (" << points[i].getX() << ", "
+                << points[i].getY() << ", " << points[i].getZ() << ")"
+                << std::endl;
     }
     auto normal = triangle->calculateNormal();
     auto centroid = triangle->calculateCentroid();
@@ -100,11 +134,13 @@ public:
   }
 
   void drawPolygon(std::shared_ptr<Polygon> polygon) override {
-    const auto& points = polygon->getPoints();
-    std::cout << "Drawing 3D polygon with " << points.size() << " vertices:" << std::endl;
+    const auto &points = polygon->getPoints();
+    std::cout << "Drawing 3D polygon with " << points.size()
+              << " vertices:" << std::endl;
     for (size_t i = 0; i < points.size(); ++i) {
-      std::cout << "  Vertex " << i << ": (" << points[i].getX()
-                << ", " << points[i].getY() << ", " << points[i].getZ() << ")" << std::endl;
+      std::cout << "  Vertex " << i << ": (" << points[i].getX() << ", "
+                << points[i].getY() << ", " << points[i].getZ() << ")"
+                << std::endl;
     }
     auto normal = polygon->calculateNormal();
     auto centroid = polygon->calculateCentroid();
@@ -115,14 +151,20 @@ public:
   }
 };
 
-#ifndef TESTING
-
 int main(int argc, char *argv[], char *envp[]) {
   // Create the application with a renderer
-  Application my_application(std::make_unique<MyRenderer>());
+  std::unique_ptr<Application<MyRenderer>> application = nullptr;
+
+  try {
+    application = std::make_unique<Application<MyRenderer>>();
+  } catch (std::exception &exception) {
+    std::cerr << "Failed to create Application: " << exception.what()
+              << std::endl;
+    return EXIT_FAILURE;
+  }
 
   // Get the root container
-  auto root = my_application.getRoot();
+  auto root = application->getRoot();
 
   // Create a nested component tree
   auto header = std::make_shared<Container>();
@@ -173,24 +215,22 @@ int main(int argc, char *argv[], char *envp[]) {
 
   // Add 3D primitives to demonstrate all draw methods with depth
   auto trianglePrimitive = std::make_shared<Triangle>(
-    Point(0, 0, 5), Point(50, 0, 10), Point(25, 43, 15)
-  );
+      Point(0, 0, 5), Point(50, 0, 10), Point(25, 43, 15));
 
-  auto polygonPrimitive = std::make_shared<Polygon>(std::vector<Point>{
-    Point(0, 0, 8), Point(30, 0, 12), Point(40, 20, 16),
-    Point(20, 30, 20), Point(-10, 20, 18)
-  });
+  auto polygonPrimitive = std::make_shared<Polygon>(
+      std::vector<Point>{Point(0, 0, 8), Point(30, 0, 12), Point(40, 20, 16),
+                         Point(20, 30, 20), Point(-10, 20, 18)});
 
   // Create a 3D rectangle with different Z coordinates
-  auto rect3D = std::make_shared<Rectangle>(Point(10, 10, 5), Point(60, 40, 15));
+  auto rect3D =
+      std::make_shared<Rectangle>(Point(10, 10, 5), Point(60, 40, 15));
 
   // Create text with 3D positioning, rotation, and scaling
-  auto text3D = std::make_shared<Text>(
-    "3D Text Demo",
-    Point(100, 50, 25),
-    Point(0.2f, 0.5f, 0.1f), // rotation in radians
-    1.5f // scale factor
-  );
+  auto text3D =
+      std::make_shared<Text>("3D Text Demo", Point(100, 50, 25),
+                             Point(0.2f, 0.5f, 0.1f), // rotation in radians
+                             1.5f                     // scale factor
+      );
 
   root->addPrimitive(trianglePrimitive);
   root->addPrimitive(polygonPrimitive);
@@ -199,7 +239,7 @@ int main(int argc, char *argv[], char *envp[]) {
 
   // Initial render pass
   std::cout << "\n-- Initial run --" << std::endl;
-  my_application.run();
+  application->run();
 
   // Simulate some user interactions and updates
   std::cout << "\n-- Simulate 3 clicks --" << std::endl;
@@ -207,18 +247,18 @@ int main(int argc, char *argv[], char *envp[]) {
     // Dispatch a synthetic click by directly calling the handler
     actionButton->onEvent(Event("click", actionButton));
     // Trigger application update and redraw
-    my_application.update();
+    application->update();
   }
 
   std::cout << "\n-- Reset --" << std::endl;
   resetButton->onEvent(Event("click", resetButton));
-  my_application.update();
+  application->update();
 
   std::cout << "\n-- One more click --" << std::endl;
   actionButton->onEvent(Event("click", actionButton));
-  my_application.update();
+  application->update();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 #endif
