@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.29)
 
 project(guillaume
     VERSION 1.0.0
@@ -65,21 +65,27 @@ foreach(LIBRARY_DIR ${LIBRARIES_DIR})
 endforeach()
 
 # Link SDL3
-include(FetchContent)
-
 set(SDL_TEST_LIBRARY OFF)
 
+include(FetchContent)
 FetchContent_Declare(
   SDL
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
   GIT_TAG release-3.2.24
 )
-
 FetchContent_MakeAvailable(SDL)
 
-target_link_libraries(${PROJECT_NAME}
-    SDL3::SDL3
-)
+target_include_directories(${PROJECT_NAME} PRIVATE ${SDL_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+
+# Link OpenGL
+find_package(OpenGL REQUIRED)
+if (OPENGL_FOUND)
+	target_include_directories(${PROJECT_NAME} PRIVATE ${OPENGL_INCLUDE_DIRS})
+	target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
+else()
+	message(FATAL_ERROR "OpenGL not found!")
+endif()
 
 # Add the tests
 enable_testing()
