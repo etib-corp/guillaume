@@ -3,6 +3,8 @@ name: Doxygen CD
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -28,16 +30,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y doxygen graphviz --no-install-recommends
 
-      - name: Build Doxygen Documentation
-        run: doxygen
+      - name: Configure CMake with Documentation
+        run: |
+          cmake -B build -S . -DBUILD_DOCUMENTATIONS=ON
+
+      - name: Build Documentation
+        run: |
+          cmake --build build --target documentations
 
       - name: Save build output
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: doxygen-docs
-          path: docs/html
+          name: documentations
+          path: build/documentations/generated-documentations/html
 
   publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     name: Deploy to GitHub Pages
     needs: generate
     runs-on: ubuntu-latest
@@ -50,7 +58,7 @@ jobs:
       - name: Restore build output
         uses: actions/download-artifact@v5.0.0
         with:
-          name: doxygen-docs
+          name: documentations
           path: docs/html
 
       - name: Setup Pages

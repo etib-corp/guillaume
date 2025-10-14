@@ -1,6 +1,6 @@
 # Guillaume
 
-Guillaume is a component-based UI framework built around a primitive rendering system. It's designed for building user interfaces across XR platforms and traditional platforms with custom rendering backends and input handling. The framework is lightweight, flexible, and easy to integrate into existing projects.
+Guillaume is a component-based UI framework library built around a primitive rendering system. It's designed for building user interfaces across XR platforms and traditional platforms with custom rendering backends and input handling. The framework is lightweight, flexible, and easy to integrate into existing projects.
 
 ## Key Features
 
@@ -50,7 +50,53 @@ int main() {
 
 ## Building
 
+Guillaume builds as a static library along with examples and tests:
+
 ```bash
-cmake --build build --config Release
-./build/guillaume  # Run the demo application
+mkdir build && cd build
+cmake ..
+make
 ```
+
+### Running Examples
+
+After building, you can run the examples:
+
+```bash
+# Hello World (minimal)
+./examples/hello_world/hello_world
+
+# Button Counter (interactive)
+./examples/button_counter/button_counter
+
+# Basic Demo (comprehensive)
+./examples/basic_demo/basic_demo
+```
+
+### Running Tests
+
+To run the test suite:
+
+```bash
+./tests/test_guillaume
+```
+
+### Using Guillaume in Your Project
+
+Guillaume builds as a static library (`libguillaume.a`) with minimal dependencies. To use it in your CMake project:
+
+```cmake
+# Link with Guillaume (core library has no external dependencies)
+target_link_libraries(your_target PRIVATE guillaume)
+
+# Add SDL3 and OpenGL only if you need them for your custom renderer
+# target_link_libraries(your_target PRIVATE SDL3::SDL3 ${OPENGL_LIBRARIES})
+```
+
+## Examples
+
+The `examples/` directory contains sample applications demonstrating Guillaume's features. Each example is organized in its own subdirectory:
+
+- **hello_world/**: Minimal example showing basic Guillaume usage
+- **button_counter/**: Interactive example demonstrating event handling and state management
+- **basic_demo/**: Comprehensive example showing component hierarchy, event handling, and 3D primitive rendering
