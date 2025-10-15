@@ -21,3 +21,4 @@
  */
 
 #include "button.hpp"
+#include "primitives/rectangle.hpp"

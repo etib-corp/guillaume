@@ -39,15 +39,7 @@ public:
   /**
    * @brief Default constructor - initializes an empty triangle
    */
-  Triangle(void)
-      : Polygon({
-            Vertex(Point(0.0f, 0.5f, 0.0f),
-                   Color(1.0f, 0.0f, 0.0f)), // Top vertex
-            Vertex(Point(-0.5f, -0.5f, 0.0f),
-                   Color(1.0f, 0.0f, 0.0f)), // Bottom-left vertex
-            Vertex(Point(0.5f, -0.5f, 0.0f),
-                   Color(1.0f, 0.0f, 0.0f)), // Bottom-right vertex
-        }) {}
+  Triangle(void) : Polygon() {}
 
   /**
    * @brief Constructor from three 3D points
@@ -59,11 +51,7 @@ public:
    * @param p3 The third vertex of the triangle in 3D space
    */
   Triangle(const Point &p1, const Point &p2, const Point &p3)
-      : Polygon({
-            Vertex(p1, Color(1.0f, 1.0f, 1.0f)),
-            Vertex(p2, Color(1.0f, 1.0f, 1.0f)),
-            Vertex(p3, Color(1.0f, 1.0f, 1.0f)),
-        }) {}
+         : Polygon(std::vector<Point>{p1, p2, p3}) {}
 
   /**
    * @brief Destructor
