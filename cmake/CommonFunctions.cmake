@@ -32,7 +32,6 @@ function(add_guillaume_example EXAMPLE_NAME)
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/examples"
     )
 
     # Include example headers if they exist

@@ -21,10 +21,10 @@
  */
 
 #include "renderer.hpp"
-#include "primitives/text.hpp"
-#include "primitives/rectangle.hpp"
-#include "primitives/triangle.hpp"
 #include "primitives/polygon.hpp"
+#include "primitives/rectangle.hpp"
+#include "primitives/text.hpp"
+#include "primitives/triangle.hpp"
 #include <memory>
 
 void Renderer::draw(std::shared_ptr<Primitive> primitive) {

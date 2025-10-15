@@ -128,10 +128,10 @@ TEST(RectangleTest, NonZeroZCoordinate) {
   const auto &points = rect.getPoints();
 
   // Z coordinates should be preserved for 3D positioning
-  EXPECT_FLOAT_EQ(points[0].z(), 5.0f);  // topLeft z
-  EXPECT_FLOAT_EQ(points[1].z(), 5.0f);  // topRight z (same as topLeft)
-  EXPECT_FLOAT_EQ(points[2].z(), 5.0f);  // bottomRight z
-  EXPECT_FLOAT_EQ(points[3].z(), 5.0f);  // bottomLeft z (same as bottomRight)
+  EXPECT_FLOAT_EQ(points[0].z(), 5.0f); // topLeft z
+  EXPECT_FLOAT_EQ(points[1].z(), 5.0f); // topRight z (same as topLeft)
+  EXPECT_FLOAT_EQ(points[2].z(), 5.0f); // bottomRight z
+  EXPECT_FLOAT_EQ(points[3].z(), 5.0f); // bottomLeft z (same as bottomRight)
 }
 
 TEST(RectangleTest, DecimalCoordinates) {
@@ -185,8 +185,9 @@ TEST(RectangleTest, CenterWidthHeightWithRotation) {
   EXPECT_FLOAT_EQ(rect.getRotation().z(), 1.5708f);
 
   // With 90-degree Z rotation, corners should be rotated
-  const auto& points = rect.getPoints();
-  // The exact values depend on rotation calculation, but we can verify transformation occurred
+  const auto &points = rect.getPoints();
+  // The exact values depend on rotation calculation, but we can verify
+  // transformation occurred
   EXPECT_NE(points[0].x(), -5.0f); // Not the unrotated position
 }
 
@@ -209,14 +210,15 @@ TEST(RectangleTest, CenterWidthHeightWith3DRotation) {
   EXPECT_FLOAT_EQ(rect.getRotation().z(), 1.5f);
 
   // All points should be offset by center position
-  const auto& points = rect.getPoints();
-  for (const auto& point : points) {
+  const auto &points = rect.getPoints();
+  for (const auto &point : points) {
     // Points should be near the center (within reasonable bounds)
-     // With 3D rotation, points can be outside simple bounds, so use wider tolerance
-     EXPECT_GT(point.x(), 3.0f);  // Reasonable bounds around center
-     EXPECT_LT(point.x(), 17.0f); 
-     EXPECT_GT(point.y(), 16.0f); 
-     EXPECT_LT(point.y(), 24.0f); 
+    // With 3D rotation, points can be outside simple bounds, so use wider
+    // tolerance
+    EXPECT_GT(point.x(), 3.0f); // Reasonable bounds around center
+    EXPECT_LT(point.x(), 17.0f);
+    EXPECT_GT(point.y(), 16.0f);
+    EXPECT_LT(point.y(), 24.0f);
   }
 }
 
@@ -233,8 +235,8 @@ TEST(RectangleTest, ZeroSizeRectangle) {
   EXPECT_FLOAT_EQ(rect.getHeight(), 0.0f);
 
   // All points should be at center for zero-size rectangle
-  const auto& points = rect.getPoints();
-  for (const auto& point : points) {
+  const auto &points = rect.getPoints();
+  for (const auto &point : points) {
     EXPECT_FLOAT_EQ(point.x(), 0.0f);
     EXPECT_FLOAT_EQ(point.y(), 0.0f);
     EXPECT_FLOAT_EQ(point.z(), 0.0f);
@@ -253,7 +255,7 @@ TEST(RectangleTest, UnitSquareWith3DConstructor) {
   EXPECT_FLOAT_EQ(rect.getWidth(), 1.0f);
   EXPECT_FLOAT_EQ(rect.getHeight(), 1.0f);
 
-  const auto& points = rect.getPoints();
+  const auto &points = rect.getPoints();
   // For axis-aligned unit square centered at (0.5, 0.5)
   // Points should be at corners (0,0), (1,0), (1,1), (0,1)
   EXPECT_NEAR(points[0].x(), 0.0f, 1e-5f); // top-left
@@ -275,7 +277,7 @@ TEST(RectangleTest, FourCornerConstructor) {
   Rectangle rect(topLeft, topRight, bottomRight, bottomLeft);
 
   EXPECT_EQ(rect.getPoints().size(), 4);
-  const auto& points = rect.getPoints();
+  const auto &points = rect.getPoints();
 
   EXPECT_FLOAT_EQ(points[0].x(), 0.0f);
   EXPECT_FLOAT_EQ(points[0].y(), 0.0f);
@@ -296,7 +298,7 @@ TEST(RectangleTest, FourCornerConstructorWith3DPoints) {
   Rectangle rect(topLeft, topRight, bottomRight, bottomLeft);
 
   EXPECT_EQ(rect.getPoints().size(), 4);
-  const auto& points = rect.getPoints();
+  const auto &points = rect.getPoints();
 
   EXPECT_FLOAT_EQ(points[0].z(), 5.0f);
   EXPECT_FLOAT_EQ(points[1].z(), 5.0f);
@@ -307,7 +309,7 @@ TEST(RectangleTest, FourCornerConstructorWith3DPoints) {
 TEST(RectangleTest, NegativeDimensions) {
   Point center(0.0f, 0.0f, 0.0f);
   float width = -10.0f; // Negative width
-  float height = -5.0f;  // Negative height
+  float height = -5.0f; // Negative height
   Point rotation(0.0f, 0.0f, 0.0f);
 
   Rectangle rect(center, width, height, rotation);

@@ -65,16 +65,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # Optional components
-option(BUILD_EXAMPLES "Build the examples" OFF)
-option(BUILD_TESTING "Build the tests" OFF)
+option(BUILD_TESTING "Build the tests" ON)
 option(BUILD_DOCS "Build documentation" OFF)
-
-if(BUILD_EXAMPLES)
-    message(STATUS "Building examples...")
-    add_subdirectory(examples)
-else()
-    message(STATUS "Skipping examples...")
-endif()
+option(BUILD_EXAMPLES "Build the examples" OFF)
 
 if(BUILD_TESTING)
     message(STATUS "Building tests...")
@@ -88,4 +81,11 @@ if(BUILD_DOCS)
     add_subdirectory(docs)
 else()
     message(STATUS "Skipping docs...")
+endif()
+
+if(BUILD_EXAMPLES)
+    message(STATUS "Building examples...")
+    add_subdirectory(examples)
+else()
+    message(STATUS "Skipping examples...")
 endif()

@@ -108,9 +108,10 @@ public:
     // Clear existing primitives and regenerate
     _primitives.clear();
 
-  // Create a rectangle primitive for the button background (centered at (50,15,0), width 100, height 30, no rotation)
-  auto rectPrimitive = std::make_shared<Rectangle>(Point(50, 15, 0), 100, 30, Point(0, 0, 0));
-  _primitives.push_back(rectPrimitive);
+    // Create a rectangle primitive for the button background (centered at
+    // (50,15,0), width 100, height 30, no rotation)
+    auto rectPrimitive = std::make_shared<Rectangle>();
+    _primitives.push_back(rectPrimitive);
 
     // Create a text primitive for the button label
     auto textPrimitive = std::make_shared<Text>(_label, Point(10, 15, 0));

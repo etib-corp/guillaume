@@ -25,11 +25,11 @@
 
 #include "application.hpp"
 #include "button.hpp"
-#include "label.hpp"
 #include "container.hpp"
-#include "renderer.hpp"
-#include "primitives/text.hpp"
+#include "label.hpp"
 #include "primitives/rectangle.hpp"
+#include "primitives/text.hpp"
+#include "renderer.hpp"
 
 class CounterRenderer : public Renderer {
 public:
@@ -41,9 +41,7 @@ public:
     std::cout << "Counter renderer destroyed." << std::endl;
   }
 
-  void clear(void) override {
-    std::cout << "\n=== UI Update ===" << std::endl;
-  }
+  void clear(void) override { std::cout << "\n=== UI Update ===" << std::endl; }
 
   void present(void) override {
     std::cout << "=== End Update ===\n" << std::endl;
@@ -69,7 +67,8 @@ int main() {
   try {
     application = std::make_unique<Application<CounterRenderer>>();
   } catch (std::exception &exception) {
-    std::cerr << "Failed to create Application: " << exception.what() << std::endl;
+    std::cerr << "Failed to create Application: " << exception.what()
+              << std::endl;
     return EXIT_FAILURE;
   }
 

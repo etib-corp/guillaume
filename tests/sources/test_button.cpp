@@ -121,7 +121,7 @@ TEST(ButtonTest, RenderGeneratesPrimitives) {
   auto button = std::make_shared<Button>("Test Button");
   button->render();
 
-  const auto& primitives = button->getPrimitives();
+  const auto &primitives = button->getPrimitives();
   EXPECT_EQ(primitives.size(), 2); // Should have Rectangle + Text
 }
 
@@ -129,7 +129,7 @@ TEST(ButtonTest, RenderGeneratesRectanglePrimitive) {
   auto button = std::make_shared<Button>("Test Button");
   button->render();
 
-  const auto& primitives = button->getPrimitives();
+  const auto &primitives = button->getPrimitives();
   ASSERT_GE(primitives.size(), 1);
 
   // First primitive should be Rectangle (background)
@@ -153,7 +153,7 @@ TEST(ButtonTest, RenderGeneratesTextPrimitive) {
   auto button = std::make_shared<Button>("Test Button");
   button->render();
 
-  const auto& primitives = button->getPrimitives();
+  const auto &primitives = button->getPrimitives();
   ASSERT_GE(primitives.size(), 2);
 
   // Second primitive should be Text (label)
@@ -189,7 +189,7 @@ TEST(ButtonTest, RenderUpdatesTextWhenLabelChanges) {
   button->setLabel("New Label");
   button->render();
 
-  const auto& primitives = button->getPrimitives();
+  const auto &primitives = button->getPrimitives();
   ASSERT_GE(primitives.size(), 2);
 
   auto text = std::dynamic_pointer_cast<Text>(primitives[1]);
@@ -204,11 +204,12 @@ TEST(ButtonTest, RenderUpdatesFromState) {
   button->getState().set<std::string>("label", "State Updated");
   button->render();
 
-  const auto& primitives = button->getPrimitives();
+  const auto &primitives = button->getPrimitives();
   ASSERT_GE(primitives.size(), 2);
 
   auto text = std::dynamic_pointer_cast<Text>(primitives[1]);
   ASSERT_NE(text, nullptr);
   EXPECT_EQ(text->getContent(), "State Updated");
-  EXPECT_EQ(button->getLabel(), "State Updated"); // Internal _label should be updated
+  EXPECT_EQ(button->getLabel(),
+            "State Updated"); // Internal _label should be updated
 }

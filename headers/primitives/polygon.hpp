@@ -22,38 +22,43 @@
 
 #pragma once
 
-#include <vector>
 #include <cmath>
+#include <vector>
 
-#include "point.hpp"
 #include "primitive.hpp"
+#include "vertex.hpp"
 
 /**
  * @class Polygon
  * @brief Represents a polygon primitive for 3D rendering.
  *
  * The Polygon class is a derived class of Primitive that represents a polygon
- * shape defined by a series of 3D points (vertices). It provides methods to
- * manage the points, calculate surface normals, and support 3D rendering.
+ * shape defined by a series of 3D vertices. It provides methods to manage the
+ * vertices for support 3D rendering.
  */
 class Polygon : public Primitive {
 private:
-  std::vector<Point> _points; ///< Vector of 3D points defining the polygon vertices
+  std::vector<Vertex> _vertices; ///< Vector of vertices defining the polygon
+  Vector<float, 3> _rotation;    ///< Euler angles (radians) for 3D rotation
+  Vector<float, 3> _translation; ///< Translation vector for 3D position
 
 public:
   /**
    * @brief Default constructor - initializes an empty polygon
    */
-  Polygon(void) : Primitive(), _points() {}
+  Polygon(void) : Primitive(), _vertices() {}
 
   /**
-   * @brief Constructor from a list of 3D points
+   * @brief Constructor from a list of vertices
    *
-   * Initializes the polygon with the specified 3D points.
+   * Initializes the polygon with the specified vertices.
    *
-   * @param points A vector of Point objects defining the polygon vertices in 3D space
+   * @param vertices A vector of Vertex objects defining the polygon vertices in
+   * 3D space
    */
-  Polygon(const std::vector<Point> &points) : Primitive(), _points(points) {}
+  Polygon(const std::vector<Vertex> &vertices,
+          const Vector<float, 3> &rotation = Vector<float, 3>())
+      : Primitive(), _vertices(vertices), _rotation(rotation) {}
 
   /**
    * @brief Destroy the Polygon object
@@ -61,73 +66,119 @@ public:
   ~Polygon(void) override = default;
 
   /**
-   * @brief Adds a 3D point to the polygon
+   * @brief Adds a vertex to the polygon
    *
-   * @param point The Point object to add to the polygon in 3D space
+   * @param vertex The Vertex object to add to the polygon
+   *
+   * @return Reference to the current Polygon object to allow method chaining
    */
-  void addPoint(const Point &point) { _points.push_back(point); }
-
-  /**
-   * @brief Gets the 3D points defining the polygon
-   *
-   * @return A const reference to the vector of Point objects
-   */
-  const std::vector<Point> &getPoints(void) const { return _points; }
-
-  /**
-   * @brief Calculates the surface normal for this polygon (assuming planar polygon)
-   *
-   * Uses the first three points to calculate the normal vector using cross product.
-   * This is useful for 3D rendering, lighting calculations, and back-face culling.
-   *
-   * @return Point representing the normalized surface normal (0,0,0) if less than 3 points
-   */
-  Point calculateNormal(void) const {
-    if (_points.size() < 3) {
-      return Point(0, 0, 0);
-    }
-
-    // Get vectors from first point to second and third points
-    Point v1(_points[1].x() - _points[0].x(),
-             _points[1].y() - _points[0].y(),
-             _points[1].z() - _points[0].z());
-
-    Point v2(_points[2].x() - _points[0].x(),
-             _points[2].y() - _points[0].y(),
-             _points[2].z() - _points[0].z());
-
-    // Calculate cross product to get normal
-    float nx = v1.y() * v2.z() - v1.z() * v2.y();
-    float ny = v1.z() * v2.x() - v1.x() * v2.z();
-    float nz = v1.x() * v2.y() - v1.y() * v2.x();
-
-    // Normalize the vector
-    float length = std::sqrt(nx*nx + ny*ny + nz*nz);
-    if (length > 0.0001f) { // Avoid division by zero
-      return Point(nx/length, ny/length, nz/length);
-    }
-
-    return Point(0, 0, 1); // Default to Z-up if calculation fails
+  Polygon &addVertex(const Vertex &vertex) {
+    _vertices.push_back(vertex);
+    return *this;
   }
 
   /**
-   * @brief Calculates the centroid (geometric center) of the polygon
+   * @brief Gets the vertices defining the polygon
    *
-   * @return Point representing the centroid of all vertices
+   * @return A const reference to the vector of Vertex objects
    */
-  Point calculateCentroid(void) const {
-    if (_points.empty()) {
-      return Point(0, 0, 0);
-    }
+  const std::vector<Vertex> &getVertices(void) const { return _vertices; }
 
-    float x = 0, y = 0, z = 0;
-    for (const auto& point : _points) {
-      x += point.x();
-      y += point.y();
-      z += point.z();
-    }
+  /**
+   * @brief Gets the rotation of the polygon in Euler angles (radians)
+   *
+   * @return A const reference to the Vector<float, 3> representing rotation
+   */
+  const Vector<float, 3> &getRotation(void) const { return _rotation; }
 
-    float count = static_cast<float>(_points.size());
-    return Point(x/count, y/count, z/count);
+  /**
+   * @brief Gets the translation of the polygon in 3D space
+   *
+   * @return A const reference to the Vector<float, 3> representing translation
+   */
+  const Vector<float, 3> &getTranslation(void) const { return _translation; }
+
+  /**
+   * @brief Sets the rotation of the polygon in Euler angles (radians)
+   *
+   * @param rotation A Vector<float, 3> representing the new rotation
+   *
+   * @return Reference to the current Polygon object to allow method chaining
+   */
+  Polygon &setRotation(const Vector<float, 3> &rotation) {
+    _rotation = rotation;
+    return *this;
   }
+
+  /**
+   * @brief Sets the translation of the polygon in 3D space
+   *
+   * @param translation A Vector<float, 3> representing the new translation
+   *
+   * @return Reference to the current Polygon object to allow method chaining
+   */
+  Polygon &setTranslation(const Vector<float, 3> &translation) {
+    _translation = translation;
+    return *this;
+  }
+
+  // /**
+  //  * @brief Calculates the surface normal for this polygon (assuming planar
+  //  * polygon)
+  //  *
+  //  * Uses the first three points to calculate the normal vector using cross
+  //  * product. This is useful for 3D rendering, lighting calculations, and
+  //  * back-face culling.
+  //  *
+  //  * @return Point representing the normalized surface normal (0,0,0) if less
+  //  * than 3 points
+  //  */
+  // Point calculateNormal(void) const {
+  //   if (_points.size() < 3) {
+  //     return Point(0, 0, 0);
+  //   }
+
+  //   // Get vectors from first point to second and third points
+  //   Point v1(_points[1].x() - _points[0].x(), _points[1].y() -
+  //   _points[0].y(),
+  //            _points[1].z() - _points[0].z());
+
+  //   Point v2(_points[2].x() - _points[0].x(), _points[2].y() -
+  //   _points[0].y(),
+  //            _points[2].z() - _points[0].z());
+
+  //   // Calculate cross product to get normal
+  //   float nx = v1.y() * v2.z() - v1.z() * v2.y();
+  //   float ny = v1.z() * v2.x() - v1.x() * v2.z();
+  //   float nz = v1.x() * v2.y() - v1.y() * v2.x();
+
+  //   // Normalize the vector
+  //   float length = std::sqrt(nx * nx + ny * ny + nz * nz);
+  //   if (length > 0.0001f) { // Avoid division by zero
+  //     return Point(nx / length, ny / length, nz / length);
+  //   }
+
+  //   return Point(0, 0, 1); // Default to Z-up if calculation fails
+  // }
+
+  // /**
+  //  * @brief Calculates the centroid (geometric center) of the polygon
+  //  *
+  //  * @return Point representing the centroid of all vertices
+  //  */
+  // Point calculateCentroid(void) const {
+  //   if (_points.empty()) {
+  //     return Point(0, 0, 0);
+  //   }
+
+  //   float x = 0, y = 0, z = 0;
+  //   for (const auto &point : _points) {
+  //     x += point.x();
+  //     y += point.y();
+  //     z += point.z();
+  //   }
+
+  //   float count = static_cast<float>(_points.size());
+  //   return Point(x / count, y / count, z / count);
+  // }
 };

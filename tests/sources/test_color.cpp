@@ -4,9 +4,9 @@
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
  the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
 
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
@@ -109,27 +109,27 @@ TEST(ColorTest, OverCompositing) {
 TEST(ColorTest, ToFromRGBA8) {
   Color c = Color::fromRGBA8(128, 64, 255, 0);
   auto p = c.toRGBA8();
-  EXPECT_NEAR(c.r(), 128.0f/255.0f, 1e-6f);
-  EXPECT_NEAR(c.g(),  64.0f/255.0f, 1e-6f);
-  EXPECT_NEAR(c.b(), 255.0f/255.0f, 1e-6f);
-  EXPECT_NEAR(c.a(),   0.0f/255.0f, 1e-6f);
+  EXPECT_NEAR(c.r(), 128.0f / 255.0f, 1e-6f);
+  EXPECT_NEAR(c.g(), 64.0f / 255.0f, 1e-6f);
+  EXPECT_NEAR(c.b(), 255.0f / 255.0f, 1e-6f);
+  EXPECT_NEAR(c.a(), 0.0f / 255.0f, 1e-6f);
   EXPECT_EQ(p.r, 128);
-  EXPECT_EQ(p.g,  64);
+  EXPECT_EQ(p.g, 64);
   EXPECT_EQ(p.b, 255);
-  EXPECT_EQ(p.a,   0);
+  EXPECT_EQ(p.a, 0);
 }
 
 TEST(ColorTest, HexConversions) {
   Color c(1.0f, 0.5f, 0.0f, 1.0f);
-  std::string hex = c.toHex();          // alpha omitted when opaque by default
+  std::string hex = c.toHex(); // alpha omitted when opaque by default
   EXPECT_EQ(hex, "#FF8000");
 
-  std::string hexA = c.toHex(true);     // include alpha
+  std::string hexA = c.toHex(true); // include alpha
   EXPECT_EQ(hexA, "#FF8000FF");
 
   Color c2 = Color::fromHex("#FF8000");
   EXPECT_NEAR(c2.r(), 1.0f, 1e-6f);
-  EXPECT_NEAR(c2.g(), 128.0f/255.0f, 1e-6f);
+  EXPECT_NEAR(c2.g(), 128.0f / 255.0f, 1e-6f);
   EXPECT_NEAR(c2.b(), 0.0f, 1e-6f);
   EXPECT_NEAR(c2.a(), 1.0f, 1e-6f);
 

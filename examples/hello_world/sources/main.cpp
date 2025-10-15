@@ -25,8 +25,8 @@
 
 #include "application.hpp"
 #include "label.hpp"
-#include "renderer.hpp"
 #include "primitives/text.hpp"
+#include "renderer.hpp"
 
 class SimpleRenderer : public Renderer {
 public:
@@ -42,12 +42,11 @@ public:
     std::cout << "--- Rendering Frame ---" << std::endl;
   }
 
-  void present(void) override {
-    std::cout << "--- End Frame ---" << std::endl;
-  }
+  void present(void) override { std::cout << "--- End Frame ---" << std::endl; }
 
   void drawText(std::shared_ptr<Text> text) override {
-    std::cout << "Rendering text: \"" << text->getContent() << "\"" << std::endl;
+    std::cout << "Rendering text: \"" << text->getContent() << "\""
+              << std::endl;
   }
 
   // Minimal implementations for other primitive types
@@ -63,7 +62,8 @@ int main() {
   try {
     application = std::make_unique<Application<SimpleRenderer>>();
   } catch (std::exception &exception) {
-    std::cerr << "Failed to create Application: " << exception.what() << std::endl;
+    std::cerr << "Failed to create Application: " << exception.what()
+              << std::endl;
     return EXIT_FAILURE;
   }
 

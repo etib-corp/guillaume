@@ -39,7 +39,15 @@ public:
   /**
    * @brief Default constructor - initializes an empty triangle
    */
-  Triangle(void) : Polygon() {}
+  Triangle(void)
+      : Polygon({
+            Vertex(Point(0.0f, 0.5f, 0.0f),
+                   Color(1.0f, 0.0f, 0.0f)), // Top vertex
+            Vertex(Point(-0.5f, -0.5f, 0.0f),
+                   Color(1.0f, 0.0f, 0.0f)), // Bottom-left vertex
+            Vertex(Point(0.5f, -0.5f, 0.0f),
+                   Color(1.0f, 0.0f, 0.0f)), // Bottom-right vertex
+        }) {}
 
   /**
    * @brief Constructor from three 3D points
@@ -51,39 +59,11 @@ public:
    * @param p3 The third vertex of the triangle in 3D space
    */
   Triangle(const Point &p1, const Point &p2, const Point &p3)
-      : Polygon({p1, p2, p3}) {}
-
-  /**
-   * @brief Calculates the area of the triangle in 3D space
-   *
-   * Uses the cross product formula to calculate the area regardless
-   * of the triangle's orientation in 3D space.
-   *
-   * @return float The area of the triangle
-   */
-  float calculateArea(void) const {
-    const auto& points = getPoints();
-    if (points.size() < 3) {
-      return 0.0f;
-    }
-
-    // Get vectors from first point to second and third points
-    Point v1(points[1].x() - points[0].x(),
-             points[1].y() - points[0].y(),
-             points[1].z() - points[0].z());
-
-    Point v2(points[2].x() - points[0].x(),
-             points[2].y() - points[0].y(),
-             points[2].z() - points[0].z());
-
-    // Calculate cross product magnitude
-    float nx = v1.y() * v2.z() - v1.z() * v2.y();
-    float ny = v1.z() * v2.x() - v1.x() * v2.z();
-    float nz = v1.x() * v2.y() - v1.y() * v2.x();
-
-    // Area is half the magnitude of the cross product
-    return 0.5f * std::sqrt(nx*nx + ny*ny + nz*nz);
-  }
+      : Polygon({
+            Vertex(p1, Color(1.0f, 1.0f, 1.0f)),
+            Vertex(p2, Color(1.0f, 1.0f, 1.0f)),
+            Vertex(p3, Color(1.0f, 1.0f, 1.0f)),
+        }) {}
 
   /**
    * @brief Destructor
