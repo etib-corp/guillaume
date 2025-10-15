@@ -27,57 +27,63 @@
 
 TEST(PolygonTest, DefaultConstructor) {
   Polygon polygon;
-  EXPECT_EQ(polygon.getPoints().size(), 0);
+  EXPECT_EQ(polygon.getVertices().size(), 0);
 }
 
 TEST(PolygonTest, ConstructorWithPoints) {
-  std::vector<Point> points = {Point(0.0f, 0.0f, 0.0f), Point(1.0f, 0.0f, 0.0f),
-                               Point(1.0f, 1.0f, 0.0f)};
-  Polygon polygon(points);
+  std::vector<Vertex> vertices = {
+      Vertex(Point(0.0f, 0.0f, 0.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)),
+      Vertex(Point(1.0f, 0.0f, 0.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)),
+      Vertex(Point(1.0f, 1.0f, 0.0f), Color(0.0f, 0.0f, 1.0f, 1.0f)),
+  };
+  Polygon polygon(vertices);
 
-  EXPECT_EQ(polygon.getPoints().size(), 3);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[0].x(), 0.0f);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[1].x(), 1.0f);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[2].x(), 1.0f);
+  EXPECT_EQ(polygon.getVertices().size(), 3);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[0].position.x(), 0.0f);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[1].position.x(), 1.0f);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[2].position.x(), 1.0f);
 }
 
 TEST(PolygonTest, AddPoint) {
   Polygon polygon;
   Point p1(1.0f, 2.0f, 3.0f);
+  Color c1(0.5f, 0.5f, 0.5f, 1.0f);
+  Vertex vertex(p1, c1);
+  polygon.addVertex(vertex);
 
-  polygon.addPoint(p1);
-
-  EXPECT_EQ(polygon.getPoints().size(), 1);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[0].x(), 1.0f);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[0].y(), 2.0f);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[0].z(), 3.0f);
+  EXPECT_EQ(polygon.getVertices().size(), 1);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[0].position.x(), 1.0f);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[0].position.y(), 2.0f);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[0].position.z(), 3.0f);
 }
 
 TEST(PolygonTest, AddMultiplePoints) {
   Polygon polygon;
 
-  polygon.addPoint(Point(0.0f, 0.0f, 0.0f));
-  polygon.addPoint(Point(1.0f, 0.0f, 0.0f));
-  polygon.addPoint(Point(1.0f, 1.0f, 0.0f));
-  polygon.addPoint(Point(0.0f, 1.0f, 0.0f));
+  polygon.addVertex(Vertex(Point(0.0f, 0.0f, 0.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)));
+  polygon.addVertex(Vertex(Point(1.0f, 0.0f, 0.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
+  polygon.addVertex(Vertex(Point(1.0f, 1.0f, 0.0f), Color(0.0f, 0.0f, 1.0f, 1.0f)));
+  polygon.addVertex(Vertex(Point(0.0f, 1.0f, 0.0f), Color(1.0f, 1.0f, 0.0f, 1.0f)));
 
-  EXPECT_EQ(polygon.getPoints().size(), 4);
+  EXPECT_EQ(polygon.getVertices().size(), 4);
 }
 
-TEST(PolygonTest, GetPoints) {
-  std::vector<Point> points = {Point(5.0f, 6.0f, 7.0f),
-                               Point(8.0f, 9.0f, 10.0f)};
-  Polygon polygon(points);
+TEST(PolygonTest, GetVertices) {
+  std::vector<Vertex> vertices = {
+      Vertex(Point(5.0f, 6.0f, 7.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)),
+      Vertex(Point(8.0f, 9.0f, 10.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)),
+  };
+  Polygon polygon(vertices);
 
-  const std::vector<Point> &retrievedPoints = polygon.getPoints();
+  const std::vector<Vertex> &retrievedVertices = polygon.getVertices();
 
-  EXPECT_EQ(retrievedPoints.size(), 2);
-  EXPECT_FLOAT_EQ(retrievedPoints[0].x(), 5.0f);
-  EXPECT_FLOAT_EQ(retrievedPoints[0].y(), 6.0f);
-  EXPECT_FLOAT_EQ(retrievedPoints[0].z(), 7.0f);
-  EXPECT_FLOAT_EQ(retrievedPoints[1].x(), 8.0f);
-  EXPECT_FLOAT_EQ(retrievedPoints[1].y(), 9.0f);
-  EXPECT_FLOAT_EQ(retrievedPoints[1].z(), 10.0f);
+  EXPECT_EQ(retrievedVertices.size(), 2);
+  EXPECT_FLOAT_EQ(retrievedVertices[0].position.x(), 5.0f);
+  EXPECT_FLOAT_EQ(retrievedVertices[0].position.y(), 6.0f);
+  EXPECT_FLOAT_EQ(retrievedVertices[0].position.z(), 7.0f);
+  EXPECT_FLOAT_EQ(retrievedVertices[1].position.x(), 8.0f);
+  EXPECT_FLOAT_EQ(retrievedVertices[1].position.y(), 9.0f);
+  EXPECT_FLOAT_EQ(retrievedVertices[1].position.z(), 10.0f);
 }
 
 TEST(PolygonTest, InheritsFromPrimitive) {
@@ -88,45 +94,48 @@ TEST(PolygonTest, InheritsFromPrimitive) {
   EXPECT_NO_THROW(delete new Polygon());
 }
 
-TEST(PolygonTest, EmptyPolygonGetPoints) {
+TEST(PolygonTest, EmptyPolygonGetVertices) {
   Polygon polygon;
-  const std::vector<Point> &points = polygon.getPoints();
+  const std::vector<Vertex> &vertices = polygon.getVertices();
 
-  EXPECT_TRUE(points.empty());
+  EXPECT_TRUE(vertices.empty());
 }
 
-TEST(PolygonTest, AddPointToConstructedPolygon) {
-  std::vector<Point> initialPoints = {Point(0.0f, 0.0f, 0.0f)};
-  Polygon polygon(initialPoints);
+TEST(PolygonTest, AddVertexToConstructedPolygon) {
+  std::vector<Vertex> initialVertices = {
+      Vertex(Point(0.0f, 0.0f, 0.0f), Color(1.0f, 0.0f, 0.0f, 1.0f))};
+  Polygon polygon(initialVertices);
 
-  EXPECT_EQ(polygon.getPoints().size(), 1);
+  EXPECT_EQ(polygon.getVertices().size(), 1);
 
-  polygon.addPoint(Point(1.0f, 1.0f, 1.0f));
+  polygon.addVertex(Vertex(Point(1.0f, 1.0f, 1.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
 
-  EXPECT_EQ(polygon.getPoints().size(), 2);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[1].x(), 1.0f);
+  EXPECT_EQ(polygon.getVertices().size(), 2);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[1].position.x(), 1.0f);
 }
 
 TEST(PolygonTest, PolygonWithNegativeCoordinates) {
   Polygon polygon;
-  polygon.addPoint(Point(-1.0f, -2.0f, -3.0f));
-  polygon.addPoint(Point(-4.0f, -5.0f, -6.0f));
+  polygon.addVertex(Vertex(Point(-1.0f, -2.0f, -3.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)));
+  polygon.addVertex(Vertex(Point(-4.0f, -5.0f, -6.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
 
-  EXPECT_EQ(polygon.getPoints().size(), 2);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[0].x(), -1.0f);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[1].y(), -5.0f);
+  EXPECT_EQ(polygon.getVertices().size(), 2);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[0].position.x(), -1.0f);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[1].position.y(), -5.0f);
 }
 
 TEST(PolygonTest, LargePolygon) {
   Polygon polygon;
 
   for (int i = 0; i < 100; ++i) {
-    polygon.addPoint(Point(static_cast<float>(i), static_cast<float>(i * 2),
-                           static_cast<float>(i * 3)));
+    polygon.addVertex(
+        Vertex(Point(static_cast<float>(i), static_cast<float>(i * 2),
+                     static_cast<float>(i * 3)),
+               Color(0.1f * i, 0.01f * i, 0.001f * i, 1.0f)));
   }
 
-  EXPECT_EQ(polygon.getPoints().size(), 100);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[50].x(), 50.0f);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[50].y(), 100.0f);
-  EXPECT_FLOAT_EQ(polygon.getPoints()[50].z(), 150.0f);
+  EXPECT_EQ(polygon.getVertices().size(), 100);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[50].position.x(), 50.0f);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[50].position.y(), 100.0f);
+  EXPECT_FLOAT_EQ(polygon.getVertices()[50].position.z(), 150.0f);
 }

@@ -27,7 +27,7 @@
 
 TEST(RectangleTest, DefaultConstructor) {
   Rectangle rect;
-  EXPECT_EQ(rect.getPoints().size(), 0);
+  EXPECT_EQ(rect.getVertices().size(), 4);
 }
 
 TEST(RectangleTest, ParameterizedConstructor) {
