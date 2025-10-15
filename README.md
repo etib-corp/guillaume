@@ -44,9 +44,9 @@ int main() {
 
 ## Documentation
 
-- **[How Guillaume Works](documentations/HOW_GUILLAUME_WORKS.md)** - Comprehensive guide to concepts, lifecycle, and usage patterns
-- **[Architecture Documentation](documentations/ARCHITECTURE.md)** - Detailed overview of the system's design and components
-- **[Technical Choices Documentation](documentations/TECHNICAL_CHOICES.md)** - Insights into design decisions and technologies
+- **[How Guillaume Works](docs/HOW_GUILLAUME_WORKS.md)** - Comprehensive guide to concepts, lifecycle, and usage patterns
+- **[Architecture Documentation](docs/ARCHITECTURE.md)** - Detailed overview of the system's design and components
+- **[Technical Choices Documentation](docs/TECHNICAL_CHOICES.md)** - Insights into design decisions and technologies
 
 ## Building
 

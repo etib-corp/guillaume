@@ -60,7 +60,7 @@ jobs:
           --config ${{ matrix.build_type }}
 
       - name: Test
-        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}/tests
         run: >
           ctest
           --build-config ${{ matrix.build_type }}

@@ -32,17 +32,17 @@ jobs:
 
       - name: Configure CMake with Documentation
         run: |
-          cmake -B build -S . -DBUILD_DOCUMENTATIONS=ON
+          cmake -B build -S . -DBUILD_DOCS=ON
 
       - name: Build Documentation
         run: |
-          cmake --build build --target documentations
+          cmake --build build --target docs
 
       - name: Save build output
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: documentations
-          path: build/documentations/generated-documentations/html
+          name: docs
+          path: build/docs/generated-docs/html
 
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -58,7 +58,7 @@ jobs:
       - name: Restore build output
         uses: actions/download-artifact@v5.0.0
         with:
-          name: documentations
+          name: docs
           path: docs/html
 
       - name: Setup Pages

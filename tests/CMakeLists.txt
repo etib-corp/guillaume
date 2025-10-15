@@ -28,7 +28,6 @@ set_guillaume_target_properties(test_${PROJECT_NAME})
 # Configure include directories
 target_include_directories(test_${PROJECT_NAME} PRIVATE
     ${TEST_HEADERS_DIR}
-    ${HEADERS_DIR}
 )
 
 # Link libraries
@@ -37,14 +36,6 @@ target_link_libraries(test_${PROJECT_NAME} PRIVATE
     gtest_main
 )
 
-# Set output directory
-set_target_properties(test_${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests"
-)
-
 # Discover and register tests
 include(GoogleTest)
-gtest_discover_tests(test_${PROJECT_NAME}
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests"
-    PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests"
-)
+gtest_discover_tests(test_${PROJECT_NAME})
