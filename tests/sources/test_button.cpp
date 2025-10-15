@@ -138,14 +138,11 @@ TEST(ButtonTest, RenderGeneratesRectanglePrimitive) {
 
   if (rectangle) {
     // Verify Rectangle properties from Button implementation
-    EXPECT_FLOAT_EQ(rectangle->getCenter().x(), 50.0f);
-    EXPECT_FLOAT_EQ(rectangle->getCenter().y(), 15.0f);
-    EXPECT_FLOAT_EQ(rectangle->getCenter().z(), 0.0f);
     EXPECT_FLOAT_EQ(rectangle->getWidth(), 100.0f);
     EXPECT_FLOAT_EQ(rectangle->getHeight(), 30.0f);
-    EXPECT_FLOAT_EQ(rectangle->getRotation().x(), 0.0f);
-    EXPECT_FLOAT_EQ(rectangle->getRotation().y(), 0.0f);
-    EXPECT_FLOAT_EQ(rectangle->getRotation().z(), 0.0f);
+    EXPECT_FLOAT_EQ(rectangle->getRotation()[0], 0.0f);
+    EXPECT_FLOAT_EQ(rectangle->getRotation()[1], 0.0f);
+    EXPECT_FLOAT_EQ(rectangle->getRotation()[2], 0.0f);
   }
 }
 

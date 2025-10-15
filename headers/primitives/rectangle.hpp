@@ -41,7 +41,8 @@ private:
 
 public:
   /**
-   * @brief Default constructor - initializes an empty rectangle
+   * @brief Default constructor - initializes an square centered at origin with
+   * width and height of 1 unit.
    */
   Rectangle(void)
       : Polygon({
