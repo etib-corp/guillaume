@@ -65,7 +65,8 @@ TEST(PolygonTest, AddMultiplePoints) {
 }
 
 TEST(PolygonTest, GetPoints) {
-  std::vector<Point> points = {Point(5.0f, 6.0f, 7.0f), Point(8.0f, 9.0f, 10.0f)};
+  std::vector<Point> points = {Point(5.0f, 6.0f, 7.0f),
+                               Point(8.0f, 9.0f, 10.0f)};
   Polygon polygon(points);
 
   const std::vector<Point> &retrievedPoints = polygon.getPoints();

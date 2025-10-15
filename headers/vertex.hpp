@@ -20,4 +20,16 @@
  SOFTWARE.
  */
 
-#include "primitives/text.hpp"
+#pragma once
+
+#include "color.hpp"
+#include "point.hpp"
+
+class Vertex {
+public:
+  Vertex(const Point &position, const Color &col)
+      : position(position), color(col) {}
+
+  Point position;
+  Color color;
+};

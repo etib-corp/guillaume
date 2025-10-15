@@ -44,7 +44,8 @@ TEST(VectorTest, PartialInitializerList) {
   EXPECT_FLOAT_EQ(vec[0], 1.0f);
   EXPECT_FLOAT_EQ(vec[1], 2.0f);
   // Remaining elements should be default-initialized
-  // Note: Vector uses std::array which default-initializes to 0 for built-in types
+  // Note: Vector uses std::array which default-initializes to 0 for built-in
+  // types
 }
 
 TEST(VectorTest, ElementAccess) {

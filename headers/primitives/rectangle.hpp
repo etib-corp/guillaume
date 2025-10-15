@@ -36,66 +36,30 @@
 
 class Rectangle : public Polygon {
 private:
-  Point _center;
-  float _width;
-  float _height;
-  Point _rotation; // Euler angles (radians) for 3D rotation
+  float _width;  ///< Width of the rectangle
+  float _height; ///< Height of the rectangle
 
 public:
   /**
    * @brief Default constructor - initializes an empty rectangle
    */
   Rectangle(void)
-      : Polygon(), _center(0, 0, 0), _width(0), _height(0), _rotation(0, 0, 0) {
-  }
+      : Polygon({
+            Vertex(Point(-0.5f, -0.5f, 0.0f),
+                   Color(1.0f, 0.0f, 0.0f, 1.0f)), // Top-left
+            Vertex(Point(0.5f, -0.5f, 0.0f),
+                   Color(1.0f, 0.0f, 0.0f, 1.0f)), // Top-right
+            Vertex(Point(0.5f, 0.5f, 0.0f),
+                   Color(1.0f, 0.0f, 0.0f, 1.0f)), // Bottom-right
+            Vertex(Point(-0.5f, 0.5f, 0.0f),
+                   Color(1.0f, 0.0f, 0.0f, 1.0f)), // Bottom-left
+        }),
+        _width(1), _height(1) {}
 
   /**
-   * @brief Constructor from top-left and bottom-right points
-   * (legacy/compatibility)
-   *
-   * Computes center, width, height, and uses zero rotation.
+   * @brief Destructor
    */
-  Rectangle(const Point &topLeft, const Point &bottomRight)
-      : Rectangle(Point((topLeft.x() + bottomRight.x()) * 0.5f,
-                        (topLeft.y() + bottomRight.y()) * 0.5f,
-                        (topLeft.z() + bottomRight.z()) * 0.5f),
-                  std::abs(bottomRight.x() - topLeft.x()),
-                  std::abs(bottomRight.y() - topLeft.y()), Point(0, 0, 0)) {}
-
-  /**
-   * @brief Constructor using center, width, height, and rotation (Euler angles)
-   *
-   * @param center The center of the rectangle in 3D space
-   * @param width The width of the rectangle
-   * @param height The height of the rectangle
-   * @param rotation The rotation (Euler angles in radians: x=pitch, y=yaw,
-   * z=roll)
-   */
-  Rectangle(const Point &center, float width, float height,
-            const Point &rotation)
-      : Polygon(computeCorners(center, width, height, rotation)),
-        _center(center), _width(width), _height(height), _rotation(rotation) {}
-
-  /**
-   * @brief Constructor for 3D rectangle with all four corner points
-   *
-   * Allows full control over all four corners of the rectangle in 3D space.
-   * This constructor enables creating rectangles that are not axis-aligned
-   * or have different z-coordinates at different corners.
-   *
-   * @param topLeft The top-left corner point
-   * @param topRight The top-right corner point
-   * @param bottomRight The bottom-right corner point
-   * @param bottomLeft The bottom-left corner point
-   */
-  Rectangle(Point topLeft, Point topRight, Point bottomRight, Point bottomLeft)
-      : Polygon({topLeft, topRight, bottomRight, bottomLeft}), _center(0, 0, 0),
-        _width(0), _height(0), _rotation(0, 0, 0) {}
-
-  /**
-   * @brief Accessors
-   */
-  const Point &getCenter() const { return _center; }
+  ~Rectangle(void) override = default;
 
   /**
    * @brief Accessors
@@ -108,58 +72,47 @@ public:
   float getHeight() const { return _height; }
 
   /**
-   * @brief Accessors
+   * @brief Sets the dimensions of the rectangle.
+   *
+   * This method sets the width and height of the rectangle.
+   *
+   * @param width The width of the rectangle.
+   * @param height The height of the rectangle.
+   *
+   * @return Reference to the current Rectangle object to allow method chaining
    */
-  const Point &getRotation() const { return _rotation; }
+  Rectangle &setDimensions(float width, float height) {
+    _width = width;
+    _height = height;
+
+    return *this;
+  }
 
   /**
-   * @brief Destructor
+   * @brief Sets the height of the rectangle.
+   *
+   * This method sets the height of the rectangle.
+   *
+   * @param height The height of the rectangle.
+   *
+   * @return Reference to the current Rectangle object to allow method chaining
    */
-  ~Rectangle(void) override = default;
+  Rectangle &setHeight(float height) {
+    _height = height;
+    return *this;
+  }
 
-private:
-  // Helper to compute corners from center, width, height, and rotation
-  static std::vector<Point> computeCorners(const Point &center, float width,
-                                           float height,
-                                           const Point &rotation) {
-    // Rectangle in local space (centered at origin, z=0)
-    float hw = width * 0.5f;
-    float hh = height * 0.5f;
-    std::vector<Point> local = {
-        Point(-hw, -hh, 0), // top-left
-        Point(hw, -hh, 0),  // top-right
-        Point(hw, hh, 0),   // bottom-right
-        Point(-hw, hh, 0)   // bottom-left
-    };
-
-    // Build rotation matrix from Euler angles (rotation order: ZYX)
-    float cx = std::cos(rotation.x());
-    float sx = std::sin(rotation.x());
-    float cy = std::cos(rotation.y());
-    float sy = std::sin(rotation.y());
-    float cz = std::cos(rotation.z());
-    float sz = std::sin(rotation.z());
-
-    // Rotation matrix (R = Rz * Ry * Rx)
-    float m00 = cy * cz;
-    float m01 = cz * sx * sy - cx * sz;
-    float m02 = cx * cz * sy + sx * sz;
-    float m10 = cy * sz;
-    float m11 = cx * cz + sx * sy * sz;
-    float m12 = -cz * sx + cx * sy * sz;
-    float m20 = -sy;
-    float m21 = cy * sx;
-    float m22 = cx * cy;
-
-    std::vector<Point> result;
-    for (const auto &p : local) {
-      // Rotate
-      float x = m00 * p.x() + m01 * p.y() + m02 * p.z();
-      float y = m10 * p.x() + m11 * p.y() + m12 * p.z();
-      float z = m20 * p.x() + m21 * p.y() + m22 * p.z();
-      // Translate
-      result.emplace_back(center.x() + x, center.y() + y, center.z() + z);
-    }
-    return result;
+  /**
+   * @brief Sets the width of the rectangle.
+   *
+   * This method sets the width of the rectangle.
+   *
+   * @param width The width of the rectangle.
+   *
+   * @return Reference to the current Rectangle object to allow method chaining
+   */
+  Rectangle &setWidth(float width) {
+    _width = width;
+    return *this;
   }
 };

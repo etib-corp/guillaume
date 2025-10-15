@@ -95,7 +95,7 @@ TEST(ApplicationTest, RunWithEmptyRoot) {
   Application<TestRenderer> app = Application<TestRenderer>();
 
   app.setRoot(nullptr);
-	EXPECT_NO_THROW(app.run());
+  EXPECT_NO_THROW(app.run());
 }
 
 TEST(ApplicationTest, RunWithSingleComponent) {

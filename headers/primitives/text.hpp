@@ -40,14 +40,17 @@ class Text : public Primitive {
 private:
   std::string _content; ///< The text content to display
   Point _position;      ///< 3D position where the text should be rendered
-  Point _rotation;      ///< Rotation angles (x, y, z) in radians for 3D orientation
-  float _scale;         ///< Scale factor for text size
+  Point _rotation; ///< Rotation angles (x, y, z) in radians for 3D orientation
+  float _scale;    ///< Scale factor for text size
 
 public:
   /**
-   * @brief Default constructor - initializes empty text at origin with no rotation and unit scale
+   * @brief Default constructor - initializes empty text at origin with no
+   * rotation and unit scale
    */
-  Text(void) : Primitive(), _content(""), _position(0, 0, 0), _rotation(0, 0, 0), _scale(1.0f) {}
+  Text(void)
+      : Primitive(), _content(""), _position(0, 0, 0), _rotation(0, 0, 0),
+        _scale(1.0f) {}
 
   /**
    * @brief Constructor with text content
@@ -55,7 +58,8 @@ public:
    * @param content The text content to display
    */
   Text(const std::string &content)
-      : Primitive(), _content(content), _position(0, 0, 0), _rotation(0, 0, 0), _scale(1.0f) {}
+      : Primitive(), _content(content), _position(0, 0, 0), _rotation(0, 0, 0),
+        _scale(1.0f) {}
 
   /**
    * @brief Constructor with text content and 3D position
@@ -64,18 +68,22 @@ public:
    * @param position The 3D position where the text should be rendered
    */
   Text(const std::string &content, const Point &position)
-      : Primitive(), _content(content), _position(position), _rotation(0, 0, 0), _scale(1.0f) {}
+      : Primitive(), _content(content), _position(position), _rotation(0, 0, 0),
+        _scale(1.0f) {}
 
   /**
-   * @brief Constructor with text content, position, rotation, and scale for full 3D control
+   * @brief Constructor with text content, position, rotation, and scale for
+   * full 3D control
    *
    * @param content The text content to display
    * @param position The 3D position where the text should be rendered
    * @param rotation The rotation angles (x, y, z) in radians
    * @param scale The scale factor for text size
    */
-  Text(const std::string &content, const Point &position, const Point &rotation, float scale)
-      : Primitive(), _content(content), _position(position), _rotation(rotation), _scale(scale) {}
+  Text(const std::string &content, const Point &position, const Point &rotation,
+       float scale)
+      : Primitive(), _content(content), _position(position),
+        _rotation(rotation), _scale(scale) {}
 
   /**
    * @brief Destroy the Text object

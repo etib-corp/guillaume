@@ -23,8 +23,8 @@
 #pragma once
 
 #include <algorithm>
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>

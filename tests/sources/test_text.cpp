@@ -20,9 +20,9 @@
  SOFTWARE.
  */
 
-#include <gtest/gtest.h>
-#include "primitives/text.hpp"
 #include "test_text.hpp"
+#include "primitives/text.hpp"
+#include <gtest/gtest.h>
 
 TEST(TextTest, DefaultConstructor) {
   Text text;
@@ -117,7 +117,9 @@ TEST(TextTest, EmptyString) {
 }
 
 TEST(TextTest, LongContent) {
-  std::string longText = "This is a very long text that might be used to test how the Text primitive handles longer strings with various characters and symbols!@#$%^&*()_+";
+  std::string longText = "This is a very long text that might be used to test "
+                         "how the Text primitive handles longer strings with "
+                         "various characters and symbols!@#$%^&*()_+";
   Text text(longText);
   EXPECT_EQ(text.getContent(), longText);
 }
@@ -161,7 +163,7 @@ TEST(TextTest, NegativeScale) {
 
 TEST(TextTest, InheritsFromPrimitive) {
   Text text("Inheritance Test");
-  Primitive* primitivePtr = &text;
+  Primitive *primitivePtr = &text;
 
   // Should not crash when treating as base type
   EXPECT_NO_THROW(delete new Text("Test Deletion"));

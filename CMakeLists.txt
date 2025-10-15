@@ -87,6 +87,21 @@ else()
 	message(FATAL_ERROR "OpenGL not found!")
 endif()
 
+find_package(GLEW REQUIRED)
+if (GLEW_FOUND)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${GLEW_INCLUDE_DIRS})
+else()
+    message(FATAL_ERROR "GLEW not found!")
+endif()
+
+find_package(glm CONFIG REQUIRED)
+if (glm_FOUND)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${GLM_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
+else()
+    message(FATAL_ERROR "GLM not found!")
+endif()
+
 # Add the tests
 enable_testing()
 add_subdirectory(${TESTS_DIR})

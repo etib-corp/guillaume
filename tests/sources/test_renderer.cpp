@@ -20,14 +20,14 @@
  SOFTWARE.
  */
 
+#include "test_renderer.hpp"
+#include "primitives/polygon.hpp"
+#include "primitives/rectangle.hpp"
+#include "primitives/text.hpp"
+#include "primitives/triangle.hpp"
+#include "renderer.hpp"
 #include <gtest/gtest.h>
 #include <memory>
-#include "renderer.hpp"
-#include "primitives/text.hpp"
-#include "primitives/rectangle.hpp"
-#include "primitives/triangle.hpp"
-#include "primitives/polygon.hpp"
-#include "test_renderer.hpp"
 
 // Mock Renderer for testing
 class MockRenderer : public Renderer {
@@ -94,7 +94,8 @@ TEST(RendererTest, DrawTextPrimitive) {
 
 TEST(RendererTest, DrawRectanglePrimitive) {
   MockRenderer renderer;
-  auto rectangle = std::make_shared<Rectangle>(Point(0, 0, 0), 10.0f, 5.0f, Point(0, 0, 0));
+  auto rectangle =
+      std::make_shared<Rectangle>(Point(0, 0, 0), 10.0f, 5.0f, Point(0, 0, 0));
 
   renderer.draw(rectangle);
 
@@ -107,7 +108,8 @@ TEST(RendererTest, DrawRectanglePrimitive) {
 
 TEST(RendererTest, DrawTrianglePrimitive) {
   MockRenderer renderer;
-  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(1, 0, 0), Point(0.5, 1, 0));
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(1, 0, 0),
+                                             Point(0.5, 1, 0));
 
   renderer.draw(triangle);
 
@@ -120,7 +122,8 @@ TEST(RendererTest, DrawTrianglePrimitive) {
 
 TEST(RendererTest, DrawPolygonPrimitive) {
   MockRenderer renderer;
-  std::vector<Point> points = {Point(0, 0, 0), Point(1, 0, 0), Point(1, 1, 0), Point(0, 1, 0)};
+  std::vector<Point> points = {Point(0, 0, 0), Point(1, 0, 0), Point(1, 1, 0),
+                               Point(0, 1, 0)};
   auto polygon = std::make_shared<Polygon>(points);
 
   renderer.draw(polygon);
@@ -135,8 +138,10 @@ TEST(RendererTest, DrawPolygonPrimitive) {
 TEST(RendererTest, DrawMultiplePrimitives) {
   MockRenderer renderer;
   auto text = std::make_shared<Text>("Test");
-  auto rectangle = std::make_shared<Rectangle>(Point(0, 0, 0), 5.0f, 5.0f, Point(0, 0, 0));
-  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(1, 0, 0), Point(0.5, 1, 0));
+  auto rectangle =
+      std::make_shared<Rectangle>(Point(0, 0, 0), 5.0f, 5.0f, Point(0, 0, 0));
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(1, 0, 0),
+                                             Point(0.5, 1, 0));
 
   renderer.draw(text);
   renderer.draw(rectangle);
@@ -189,7 +194,8 @@ TEST(RendererTest, DrawTextDirectCall) {
 
 TEST(RendererTest, DrawRectangleDirectCall) {
   MockRenderer renderer;
-  auto rectangle = std::make_shared<Rectangle>(Point(5, 5, 5), 20.0f, 10.0f, Point(0, 0, 0));
+  auto rectangle =
+      std::make_shared<Rectangle>(Point(5, 5, 5), 20.0f, 10.0f, Point(0, 0, 0));
 
   renderer.drawRectangle(rectangle);
 
@@ -199,7 +205,8 @@ TEST(RendererTest, DrawRectangleDirectCall) {
 
 TEST(RendererTest, DrawTriangleDirectCall) {
   MockRenderer renderer;
-  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(2, 0, 0), Point(1, 2, 0));
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(2, 0, 0),
+                                             Point(1, 2, 0));
 
   renderer.drawTriangle(triangle);
 
@@ -209,7 +216,8 @@ TEST(RendererTest, DrawTriangleDirectCall) {
 
 TEST(RendererTest, DrawPolygonDirectCall) {
   MockRenderer renderer;
-  std::vector<Point> points = {Point(0, 0, 0), Point(2, 0, 0), Point(2, 2, 0), Point(0, 2, 0), Point(-1, 1, 0)};
+  std::vector<Point> points = {Point(0, 0, 0), Point(2, 0, 0), Point(2, 2, 0),
+                               Point(0, 2, 0), Point(-1, 1, 0)};
   auto polygon = std::make_shared<Polygon>(points);
 
   renderer.drawPolygon(polygon);
@@ -224,8 +232,10 @@ TEST(RendererTest, TypeDispatchCorrectness) {
   // Create primitives with different content to ensure correct dispatch
   auto text1 = std::make_shared<Text>("First Text");
   auto text2 = std::make_shared<Text>("Second Text");
-  auto rect1 = std::make_shared<Rectangle>(Point(0, 0, 0), 10.0f, 10.0f, Point(0, 0, 0));
-  auto rect2 = std::make_shared<Rectangle>(Point(5, 5, 0), 15.0f, 20.0f, Point(0, 0, 0));
+  auto rect1 =
+      std::make_shared<Rectangle>(Point(0, 0, 0), 10.0f, 10.0f, Point(0, 0, 0));
+  auto rect2 =
+      std::make_shared<Rectangle>(Point(5, 5, 0), 15.0f, 20.0f, Point(0, 0, 0));
 
   renderer.draw(text1);
   EXPECT_EQ(renderer.lastText->getContent(), "First Text");
@@ -244,30 +254,36 @@ TEST(RendererTest, TypeDispatchCorrectness) {
   EXPECT_EQ(renderer.drawRectangleCallCount, 2);
 }
 
-// Test for inheritance hierarchy - Rectangle should dispatch to drawRectangle, not drawPolygon
+// Test for inheritance hierarchy - Rectangle should dispatch to drawRectangle,
+// not drawPolygon
 TEST(RendererTest, RectangleInheritanceDispatch) {
   MockRenderer renderer;
-  auto rectangle = std::make_shared<Rectangle>(Point(0, 0, 0), 8.0f, 6.0f, Point(0, 0, 0));
+  auto rectangle =
+      std::make_shared<Rectangle>(Point(0, 0, 0), 8.0f, 6.0f, Point(0, 0, 0));
 
   // Cast to Polygon* to ensure type dispatch works correctly
   std::shared_ptr<Polygon> polygonPtr = rectangle;
   renderer.draw(polygonPtr);
 
-  // Should still call drawRectangle because dynamic_cast checks derived types first
+  // Should still call drawRectangle because dynamic_cast checks derived types
+  // first
   EXPECT_EQ(renderer.drawRectangleCallCount, 1);
   EXPECT_EQ(renderer.drawPolygonCallCount, 0);
 }
 
-// Test for inheritance hierarchy - Triangle should dispatch to drawTriangle, not drawPolygon
+// Test for inheritance hierarchy - Triangle should dispatch to drawTriangle,
+// not drawPolygon
 TEST(RendererTest, TriangleInheritanceDispatch) {
   MockRenderer renderer;
-  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(3, 0, 0), Point(1.5, 3, 0));
+  auto triangle = std::make_shared<Triangle>(Point(0, 0, 0), Point(3, 0, 0),
+                                             Point(1.5, 3, 0));
 
   // Cast to Polygon* to ensure type dispatch works correctly
   std::shared_ptr<Polygon> polygonPtr = triangle;
   renderer.draw(polygonPtr);
 
-  // Should still call drawTriangle because dynamic_cast checks derived types first
+  // Should still call drawTriangle because dynamic_cast checks derived types
+  // first
   EXPECT_EQ(renderer.drawTriangleCallCount, 1);
   EXPECT_EQ(renderer.drawPolygonCallCount, 0);
 }
