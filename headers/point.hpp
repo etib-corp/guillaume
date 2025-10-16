@@ -62,6 +62,11 @@ public:
   Point(float x, float y, float z) : Vector<float, 3>({x, y, z}) {}
 
   /**
+   * @brief Construct from a Vector<float,3> (implicit conversion)
+   */
+  Point(const Vector<float, 3> &v) : Vector<float, 3>(v) {}
+
+  /**
    * @brief Access the x-coordinate of the point
    *
    * @return The x-coordinate

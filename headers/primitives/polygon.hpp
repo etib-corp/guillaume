@@ -27,6 +27,7 @@
 
 #include "primitive.hpp"
 #include "vertex.hpp"
+#include "point.hpp"
 
 /**
  * @class Polygon
@@ -39,14 +40,14 @@
 class Polygon : public Primitive {
 private:
   std::vector<Vertex> _vertices; ///< Vector of vertices defining the polygon
-  Vector<float, 3> _rotation;    ///< Euler angles (radians) for 3D rotation
-  Vector<float, 3> _translation; ///< Translation vector for 3D position
+  Point _rotation;    ///< Euler angles (radians) for 3D rotation (use Point for x/y/z accessors)
+  Point _translation; ///< Translation vector for 3D position
 
 public:
   /**
    * @brief Default constructor - initializes an empty polygon
    */
-  Polygon(void) : Primitive(), _vertices() {}
+  Polygon(void) : Primitive(), _vertices(), _rotation(), _translation() {}
 
   /**
    * @brief Constructor from a list of vertices
@@ -57,8 +58,19 @@ public:
    * 3D space
    */
   Polygon(const std::vector<Vertex> &vertices,
-          const Vector<float, 3> &rotation = Vector<float, 3>())
-      : Primitive(), _vertices(vertices), _rotation(rotation) {}
+          const Point &rotation = Point())
+      : Primitive(), _vertices(vertices), _rotation(rotation), _translation() {}
+
+  /**
+   * @brief Construct polygon from a list of Points (converts to vertices with default color)
+   */
+  Polygon(const std::vector<Point> &points, const Point &rotation = Point())
+      : Primitive(), _rotation(rotation), _translation() {
+    _vertices.clear();
+    for (const auto &p : points) {
+      _vertices.emplace_back(p, Color(1.0f, 1.0f, 1.0f));
+    }
+  }
 
   /**
    * @brief Destroy the Polygon object
@@ -89,14 +101,14 @@ public:
    *
    * @return A const reference to the Vector<float, 3> representing rotation
    */
-  const Vector<float, 3> &getRotation(void) const { return _rotation; }
+  const Point &getRotation(void) const { return _rotation; }
 
   /**
    * @brief Gets the translation of the polygon in 3D space
    *
    * @return A const reference to the Vector<float, 3> representing translation
    */
-  const Vector<float, 3> &getTranslation(void) const { return _translation; }
+  const Point &getTranslation(void) const { return _translation; }
 
   /**
    * @brief Sets the rotation of the polygon in Euler angles (radians)
@@ -105,7 +117,7 @@ public:
    *
    * @return Reference to the current Polygon object to allow method chaining
    */
-  Polygon &setRotation(const Vector<float, 3> &rotation) {
+  Polygon &setRotation(const Point &rotation) {
     _rotation = rotation;
     return *this;
   }
@@ -117,9 +129,26 @@ public:
    *
    * @return Reference to the current Polygon object to allow method chaining
    */
-  Polygon &setTranslation(const Vector<float, 3> &translation) {
+  Polygon &setTranslation(const Point &translation) {
     _translation = translation;
     return *this;
+  }
+
+  /**
+   * @brief Replace the internal vertex list
+   */
+  void setVertices(const std::vector<Vertex> &vertices) { _vertices = vertices; }
+
+  /**
+   * @brief Return the polygon corner positions as Points
+   */
+  std::vector<Point> getPoints(void) const {
+    std::vector<Point> pts;
+    pts.reserve(_vertices.size());
+    for (const auto &v : _vertices) {
+      pts.push_back(v.position);
+    }
+    return pts;
   }
 
   // /**

@@ -20,8 +20,6 @@
  SOFTWARE.
  */
 
-#ifndef TESTING
-
 #include <iostream>
 #include <memory>
 #include <typeinfo>
@@ -498,5 +496,3 @@ int main(int argc, char *argv[], char *envp[]) {
 
   return EXIT_SUCCESS;
 }
-
-#endif
