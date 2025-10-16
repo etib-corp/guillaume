@@ -88,7 +88,7 @@ TEST(PolygonTest, GetVertices) {
 
 TEST(PolygonTest, InheritsFromPrimitive) {
   Polygon polygon;
-  Primitive *primitivePtr = &polygon;
+  (void)polygon; // Intentionally unused local; keep test focused on behavior
 
   // Should not crash when accessed through base pointer
   EXPECT_NO_THROW(delete new Polygon());

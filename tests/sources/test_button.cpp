@@ -20,9 +20,10 @@
  SOFTWARE.
  */
 
+#include <gtest/gtest.h>
+
 #include "test_button.hpp"
 #include "button.hpp"
-#include <gtest/gtest.h>
 
 TEST(ButtonTest, ConstructorWithLabel) {
   Button button("Click Me");
