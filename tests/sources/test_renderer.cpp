@@ -20,58 +20,9 @@
  SOFTWARE.
  */
 
-#include "test_renderer.hpp"
-#include "primitives/polygon.hpp"
-#include "primitives/rectangle.hpp"
-#include "primitives/text.hpp"
-#include "primitives/triangle.hpp"
-#include "renderer.hpp"
 #include <gtest/gtest.h>
-#include <memory>
 
-// Mock Renderer for testing
-class MockRenderer : public Renderer {
-public:
-  mutable int drawTextCallCount = 0;
-  mutable int drawRectangleCallCount = 0;
-  mutable int drawTriangleCallCount = 0;
-  mutable int drawPolygonCallCount = 0;
-  mutable std::shared_ptr<Text> lastText = nullptr;
-  mutable std::shared_ptr<Rectangle> lastRectangle = nullptr;
-  mutable std::shared_ptr<Triangle> lastTriangle = nullptr;
-  mutable std::shared_ptr<Polygon> lastPolygon = nullptr;
-
-  void drawText(std::shared_ptr<Text> text) override {
-    drawTextCallCount++;
-    lastText = text;
-  }
-
-  void drawRectangle(std::shared_ptr<Rectangle> rectangle) override {
-    drawRectangleCallCount++;
-    lastRectangle = rectangle;
-  }
-
-  void drawTriangle(std::shared_ptr<Triangle> triangle) override {
-    drawTriangleCallCount++;
-    lastTriangle = triangle;
-  }
-
-  void drawPolygon(std::shared_ptr<Polygon> polygon) override {
-    drawPolygonCallCount++;
-    lastPolygon = polygon;
-  }
-
-  void reset() {
-    drawTextCallCount = 0;
-    drawRectangleCallCount = 0;
-    drawTriangleCallCount = 0;
-    drawPolygonCallCount = 0;
-    lastText = nullptr;
-    lastRectangle = nullptr;
-    lastTriangle = nullptr;
-    lastPolygon = nullptr;
-  }
-};
+#include "test_renderer.hpp"
 
 TEST(RendererTest, DefaultConstructor) {
   Renderer renderer;

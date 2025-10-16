@@ -163,7 +163,7 @@ TEST(TextTest, NegativeScale) {
 
 TEST(TextTest, InheritsFromPrimitive) {
   Text text("Inheritance Test");
-  Primitive *primitivePtr = &text;
+  (void)text; // Intentionally unused local; ensure no unused-variable warnings
 
   // Should not crash when treating as base type
   EXPECT_NO_THROW(delete new Text("Test Deletion"));

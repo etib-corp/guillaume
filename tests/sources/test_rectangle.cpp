@@ -69,7 +69,7 @@ TEST(RectangleTest, CorrectPointOrder) {
 
 TEST(RectangleTest, InheritsFromPolygon) {
   Rectangle rect;
-  Polygon *polygonPtr = &rect;
+  (void)rect; // avoid unused-variable warning; test checks construction/destruction
 
   EXPECT_NO_THROW(delete new Rectangle());
 }

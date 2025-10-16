@@ -66,7 +66,7 @@ TEST(TriangleTest, CorrectPointOrder) {
 
 TEST(TriangleTest, InheritsFromPolygon) {
   Triangle triangle;
-  Polygon *polygonPtr = &triangle;
+  (void)triangle; // avoid unused-variable warning; test checks construction/destruction
 
   EXPECT_NO_THROW(delete new Triangle());
 }

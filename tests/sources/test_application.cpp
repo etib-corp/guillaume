@@ -20,52 +20,15 @@
  SOFTWARE.
  */
 
+#include <gtest/gtest.h>
+
+#include "test_renderer.hpp"
 #include "test_application.hpp"
 #include "application.hpp"
 #include "button.hpp"
 #include "container.hpp"
 #include "label.hpp"
-#include "renderer.hpp"
-#include <gtest/gtest.h>
-#include <memory>
 
-// Mock Renderer for Application testing
-class TestRenderer : public Renderer {
-public:
-  mutable int drawCallCount = 0;
-  mutable int drawTextCallCount = 0;
-  mutable int drawRectangleCallCount = 0;
-  mutable int drawTriangleCallCount = 0;
-  mutable int drawPolygonCallCount = 0;
-
-  void draw(std::shared_ptr<Primitive> primitive) override {
-    drawCallCount++;
-    // Call parent implementation to test dispatch
-    Renderer::draw(primitive);
-  }
-
-  void drawText(std::shared_ptr<Text> text) override { drawTextCallCount++; }
-
-  void drawRectangle(std::shared_ptr<Rectangle> rectangle) override {
-    drawRectangleCallCount++;
-  }
-
-  void drawTriangle(std::shared_ptr<Triangle> triangle) override {
-    drawTriangleCallCount++;
-  }
-
-  void drawPolygon(std::shared_ptr<Polygon> polygon) override {
-    drawPolygonCallCount++;
-  }
-
-  void reset() {
-    drawCallCount = 0;
-    drawTextCallCount = 0;
-    drawRectangleCallCount = 0;
-    drawTriangleCallCount = 0;
-    drawPolygonCallCount = 0;
-  }
-};
 
 TEST(ApplicationTest, Constructor) {
   Application<TestRenderer> app = Application<TestRenderer>();
@@ -181,7 +144,6 @@ TEST(ApplicationTest, UpdateMethod) {
 
   // Initial run
   app.run();
-  int initialDrawCount = app.getRenderer()->drawCallCount;
 
   // Reset and update
   app.getRenderer()->reset();
