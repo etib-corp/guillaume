@@ -25,9 +25,7 @@
 #include "test_renderer.hpp"
 
 TEST(RendererTest, DefaultConstructor) {
-  Renderer renderer;
-  // Should construct without issues
-  EXPECT_NO_THROW(Renderer());
+  EXPECT_NO_THROW(MockRenderer());
 }
 
 TEST(RendererTest, DrawTextPrimitive) {

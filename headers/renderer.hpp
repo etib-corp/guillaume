@@ -79,7 +79,7 @@ public:
    *
    * @param primitive The primitive to render
    */
-  virtual void draw(std::shared_ptr<Primitive> primitive);
+  virtual void draw(std::shared_ptr<Primitive> primitive) = 0;
 
   /**
    * @brief Draws a text primitive in 3D space.
@@ -90,11 +90,7 @@ public:
    *
    * @param text The text primitive to render in 3D space
    */
-  virtual void drawText(std::shared_ptr<Text> text) {
-    // Default implementation does nothing
-    // Derived classes should override this method
-    (void)text;
-  }
+  virtual void drawText(std::shared_ptr<Text> text) = 0;
 
   /**
    * @brief Draws a rectangle primitive in 3D space.
@@ -105,11 +101,7 @@ public:
    *
    * @param rectangle The rectangle primitive to render in 3D space
    */
-  virtual void drawRectangle(std::shared_ptr<Rectangle> rectangle) {
-    // Default implementation does nothing
-    // Derived classes should override this method
-    (void)rectangle;
-  }
+  virtual void drawRectangle(std::shared_ptr<Rectangle> rectangle) = 0;
 
   /**
    * @brief Draws a triangle primitive in 3D space.
@@ -120,12 +112,7 @@ public:
    *
    * @param triangle The triangle primitive to render in 3D space
    */
-  virtual void drawTriangle(std::shared_ptr<Triangle> triangle) {
-    // Default implementation does nothing
-    // Derived classes should override this method
-    (void)triangle;
-  }
-
+  virtual void drawTriangle(std::shared_ptr<Triangle> triangle) = 0;
   /**
    * @brief Draws a polygon primitive in 3D space.
    *
@@ -135,9 +122,5 @@ public:
    *
    * @param polygon The polygon primitive to render in 3D space
    */
-  virtual void drawPolygon(std::shared_ptr<Polygon> polygon) {
-    // Default implementation does nothing
-    // Derived classes should override this method
-    (void)polygon;
-  }
+  virtual void drawPolygon(std::shared_ptr<Polygon> polygon) = 0;
 };

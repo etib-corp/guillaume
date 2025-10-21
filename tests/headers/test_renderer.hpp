@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include <memory>
-#include "renderer.hpp"
-#include "primitives/text.hpp"
-#include "primitives/rectangle.hpp"
-#include "primitives/triangle.hpp"
 #include "primitives/polygon.hpp"
+#include "primitives/rectangle.hpp"
+#include "primitives/text.hpp"
+#include "primitives/triangle.hpp"
+#include "renderer.hpp"
+#include <memory>
 
 class MockRenderer : public Renderer {
 public:
