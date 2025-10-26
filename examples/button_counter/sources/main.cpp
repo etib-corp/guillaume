@@ -27,8 +27,10 @@
 #include "button.hpp"
 #include "container.hpp"
 #include "label.hpp"
+#include "primitives/polygon.hpp"
 #include "primitives/rectangle.hpp"
 #include "primitives/text.hpp"
+#include "primitives/triangle.hpp"
 #include "renderer.hpp"
 
 class CounterRenderer : public Renderer {
@@ -45,6 +47,19 @@ public:
 
   void present(void) override {
     std::cout << "=== End Update ===\n" << std::endl;
+  }
+
+  void draw(std::shared_ptr<Primitive> primitive) override {
+    // Dispatch to specific draw methods based on primitive type
+    if (auto text = std::dynamic_pointer_cast<Text>(primitive)) {
+      drawText(text);
+    } else if (auto rectangle = std::dynamic_pointer_cast<Rectangle>(primitive)) {
+      drawRectangle(rectangle);
+    } else if (auto triangle = std::dynamic_pointer_cast<Triangle>(primitive)) {
+      drawTriangle(triangle);
+    } else if (auto polygon = std::dynamic_pointer_cast<Polygon>(primitive)) {
+      drawPolygon(polygon);
+    }
   }
 
   void drawText(std::shared_ptr<Text> text) override {
