@@ -22,13 +22,12 @@
 
 #include <gtest/gtest.h>
 
-#include "test_renderer.hpp"
-#include "test_application.hpp"
 #include "application.hpp"
 #include "button.hpp"
 #include "container.hpp"
 #include "label.hpp"
-
+#include "test_application.hpp"
+#include "test_renderer.hpp"
 
 TEST(ApplicationTest, Constructor) {
   Application<TestRenderer> app = Application<TestRenderer>();

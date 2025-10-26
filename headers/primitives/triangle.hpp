@@ -51,7 +51,7 @@ public:
    * @param p3 The third vertex of the triangle in 3D space
    */
   Triangle(const Point &p1, const Point &p2, const Point &p3)
-         : Polygon(std::vector<Point>{p1, p2, p3}) {}
+      : Polygon(std::vector<Point>{p1, p2, p3}) {}
 
   /**
    * @brief Destructor

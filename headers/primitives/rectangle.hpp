@@ -36,9 +36,9 @@
 
 class Rectangle : public Polygon {
 private:
-  float _width;  ///< Width of the rectangle
-  float _height; ///< Height of the rectangle
-  Point _center; ///< Center point for 3D constructor
+  float _width;                    ///< Width of the rectangle
+  float _height;                   ///< Height of the rectangle
+  Point _center;                   ///< Center point for 3D constructor
   std::vector<Point> _pointsCache; ///< Cached corner points for convenience
 
 public:
@@ -62,14 +62,15 @@ public:
   /**
    * @brief Construct from two corners: top-left and bottom-right
    */
-  Rectangle(const Point &topLeft, const Point &bottomRight)
-      : Rectangle() {
-    // compute four corner points in order: top-left, top-right, bottom-right, bottom-left
+  Rectangle(const Point &topLeft, const Point &bottomRight) : Rectangle() {
+    // compute four corner points in order: top-left, top-right, bottom-right,
+    // bottom-left
     _pointsCache.clear();
     _pointsCache.push_back(topLeft);
     _pointsCache.push_back(Point(bottomRight.x(), topLeft.y(), topLeft.z()));
     _pointsCache.push_back(bottomRight);
-    _pointsCache.push_back(Point(topLeft.x(), bottomRight.y(), bottomRight.z()));
+    _pointsCache.push_back(
+        Point(topLeft.x(), bottomRight.y(), bottomRight.z()));
 
     // update polygon vertices
     std::vector<Vertex> verts;
@@ -81,7 +82,8 @@ public:
   }
 
   /**
-   * @brief Construct from center, width, height and optional rotation (as Point: x,y,z)
+   * @brief Construct from center, width, height and optional rotation (as
+   * Point: x,y,z)
    */
   Rectangle(const Point &center, float width, float height,
             const Point &rotation = Point())
@@ -240,7 +242,9 @@ public:
   /**
    * @brief Returns the polygon vertices as stored in base class
    */
-  const std::vector<Vertex> &getVertices() const { return Polygon::getVertices(); }
+  const std::vector<Vertex> &getVertices() const {
+    return Polygon::getVertices();
+  }
 
   /**
    * @brief Returns center point (for center/width/height constructors)

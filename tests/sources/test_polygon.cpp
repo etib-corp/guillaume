@@ -60,10 +60,14 @@ TEST(PolygonTest, AddPoint) {
 TEST(PolygonTest, AddMultiplePoints) {
   Polygon polygon;
 
-  polygon.addVertex(Vertex(Point(0.0f, 0.0f, 0.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)));
-  polygon.addVertex(Vertex(Point(1.0f, 0.0f, 0.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
-  polygon.addVertex(Vertex(Point(1.0f, 1.0f, 0.0f), Color(0.0f, 0.0f, 1.0f, 1.0f)));
-  polygon.addVertex(Vertex(Point(0.0f, 1.0f, 0.0f), Color(1.0f, 1.0f, 0.0f, 1.0f)));
+  polygon.addVertex(
+      Vertex(Point(0.0f, 0.0f, 0.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)));
+  polygon.addVertex(
+      Vertex(Point(1.0f, 0.0f, 0.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
+  polygon.addVertex(
+      Vertex(Point(1.0f, 1.0f, 0.0f), Color(0.0f, 0.0f, 1.0f, 1.0f)));
+  polygon.addVertex(
+      Vertex(Point(0.0f, 1.0f, 0.0f), Color(1.0f, 1.0f, 0.0f, 1.0f)));
 
   EXPECT_EQ(polygon.getVertices().size(), 4);
 }
@@ -108,7 +112,8 @@ TEST(PolygonTest, AddVertexToConstructedPolygon) {
 
   EXPECT_EQ(polygon.getVertices().size(), 1);
 
-  polygon.addVertex(Vertex(Point(1.0f, 1.0f, 1.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
+  polygon.addVertex(
+      Vertex(Point(1.0f, 1.0f, 1.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
 
   EXPECT_EQ(polygon.getVertices().size(), 2);
   EXPECT_FLOAT_EQ(polygon.getVertices()[1].position.x(), 1.0f);
@@ -116,8 +121,10 @@ TEST(PolygonTest, AddVertexToConstructedPolygon) {
 
 TEST(PolygonTest, PolygonWithNegativeCoordinates) {
   Polygon polygon;
-  polygon.addVertex(Vertex(Point(-1.0f, -2.0f, -3.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)));
-  polygon.addVertex(Vertex(Point(-4.0f, -5.0f, -6.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
+  polygon.addVertex(
+      Vertex(Point(-1.0f, -2.0f, -3.0f), Color(1.0f, 0.0f, 0.0f, 1.0f)));
+  polygon.addVertex(
+      Vertex(Point(-4.0f, -5.0f, -6.0f), Color(0.0f, 1.0f, 0.0f, 1.0f)));
 
   EXPECT_EQ(polygon.getVertices().size(), 2);
   EXPECT_FLOAT_EQ(polygon.getVertices()[0].position.x(), -1.0f);

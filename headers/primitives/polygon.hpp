@@ -25,9 +25,9 @@
 #include <cmath>
 #include <vector>
 
+#include "point.hpp"
 #include "primitive.hpp"
 #include "vertex.hpp"
-#include "point.hpp"
 
 /**
  * @class Polygon
@@ -40,7 +40,8 @@
 class Polygon : public Primitive {
 private:
   std::vector<Vertex> _vertices; ///< Vector of vertices defining the polygon
-  Point _rotation;    ///< Euler angles (radians) for 3D rotation (use Point for x/y/z accessors)
+  Point _rotation;    ///< Euler angles (radians) for 3D rotation (use Point for
+                      ///< x/y/z accessors)
   Point _translation; ///< Translation vector for 3D position
 
 public:
@@ -57,12 +58,12 @@ public:
    * @param vertices A vector of Vertex objects defining the polygon vertices in
    * 3D space
    */
-  Polygon(const std::vector<Vertex> &vertices,
-          const Point &rotation = Point())
+  Polygon(const std::vector<Vertex> &vertices, const Point &rotation = Point())
       : Primitive(), _vertices(vertices), _rotation(rotation), _translation() {}
 
   /**
-   * @brief Construct polygon from a list of Points (converts to vertices with default color)
+   * @brief Construct polygon from a list of Points (converts to vertices with
+   * default color)
    */
   Polygon(const std::vector<Point> &points, const Point &rotation = Point())
       : Primitive(), _rotation(rotation), _translation() {
@@ -137,7 +138,9 @@ public:
   /**
    * @brief Replace the internal vertex list
    */
-  void setVertices(const std::vector<Vertex> &vertices) { _vertices = vertices; }
+  void setVertices(const std::vector<Vertex> &vertices) {
+    _vertices = vertices;
+  }
 
   /**
    * @brief Return the polygon corner positions as Points
