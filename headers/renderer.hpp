@@ -31,6 +31,7 @@ class Text;
 class Rectangle;
 class Triangle;
 class Polygon;
+class Event;
 
 /**
  * @class Renderer
@@ -69,17 +70,6 @@ public:
    * to present the final rendered content to the screen.
    */
   virtual void present(void) {}
-
-  /**
-   * @brief Draws a primitive to the screen.
-   *
-   * This method dispatches to the appropriate specific draw method based on
-   * the primitive type. Derived classes can override either this method or
-   * the specific draw methods (drawText, drawRectangle, etc.).
-   *
-   * @param primitive The primitive to render
-   */
-  virtual void draw(std::shared_ptr<Primitive> primitive) = 0;
 
   /**
    * @brief Draws a text primitive in 3D space.

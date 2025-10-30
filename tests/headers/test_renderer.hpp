@@ -1,6 +1,24 @@
 /*
- Mock utilities for renderer tests.
-*/
+ Copyright (c) 2025 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
 
 #pragma once
 
@@ -11,9 +29,8 @@
 #include "renderer.hpp"
 #include <memory>
 
-class MockRenderer : public Renderer {
+class TestRenderer : public Renderer {
 public:
-  mutable int drawCallCount = 0; // optional: total draw() calls
   mutable int drawTextCallCount = 0;
   mutable int drawRectangleCallCount = 0;
   mutable int drawTriangleCallCount = 0;
@@ -23,11 +40,6 @@ public:
   mutable std::shared_ptr<Rectangle> lastRectangle = nullptr;
   mutable std::shared_ptr<Triangle> lastTriangle = nullptr;
   mutable std::shared_ptr<Polygon> lastPolygon = nullptr;
-
-  void draw(std::shared_ptr<Primitive> primitive) override {
-    drawCallCount++;
-    Renderer::draw(primitive);
-  }
 
   void drawText(std::shared_ptr<Text> text) override {
     drawTextCallCount++;
@@ -50,7 +62,6 @@ public:
   }
 
   void reset() {
-    drawCallCount = 0;
     drawTextCallCount = 0;
     drawRectangleCallCount = 0;
     drawTriangleCallCount = 0;
@@ -61,29 +72,5 @@ public:
     lastPolygon = nullptr;
   }
 };
-
-// Keep TestRenderer alias here for test files that include this header.
-using TestRenderer = MockRenderer;
-/*
- Copyright (c) 2025 ETIB Corporation
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- of the Software, and to permit persons to whom the Software is furnished to do
- so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
- */
 
 #pragma once

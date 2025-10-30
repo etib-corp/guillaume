@@ -49,19 +49,6 @@ public:
     std::cout << "=== End Update ===\n" << std::endl;
   }
 
-  void draw(std::shared_ptr<Primitive> primitive) override {
-    // Dispatch to specific draw methods based on primitive type
-    if (auto text = std::dynamic_pointer_cast<Text>(primitive)) {
-      drawText(text);
-    } else if (auto rectangle = std::dynamic_pointer_cast<Rectangle>(primitive)) {
-      drawRectangle(rectangle);
-    } else if (auto triangle = std::dynamic_pointer_cast<Triangle>(primitive)) {
-      drawTriangle(triangle);
-    } else if (auto polygon = std::dynamic_pointer_cast<Polygon>(primitive)) {
-      drawPolygon(polygon);
-    }
-  }
-
   void drawText(std::shared_ptr<Text> text) override {
     std::cout << "Text: " << text->getContent() << std::endl;
   }

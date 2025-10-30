@@ -23,6 +23,7 @@
 #ifndef MY_RENDERER_HPP
 #define MY_RENDERER_HPP
 
+#include <map>
 #include <memory>
 
 #include <SDL3/SDL.h>
@@ -35,25 +36,44 @@
 #include <GL/glew.h>
 #endif
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#include <glm/glm.hpp>
+
 #include "primitives/polygon.hpp"
 #include "primitives/rectangle.hpp"
 #include "primitives/text.hpp"
 #include "primitives/triangle.hpp"
 #include "renderer.hpp"
 
+// Structure to hold character information
+struct Character {
+  GLuint textureID;   // ID handle of the glyph texture
+  glm::ivec2 size;    // Size of glyph
+  glm::ivec2 bearing; // Offset from baseline to left/top of glyph
+  GLuint advance;     // Horizontal offset to advance to next glyph
+};
+
 class MyRenderer : public Renderer {
 private:
-  std::unique_ptr<SDL_Window, void (*)(SDL_Window *)> _window;
+  SDL_Window *_window; // Non-owning pointer - window managed externally
   std::unique_ptr<SDL_GLContextState, bool (*)(SDL_GLContextState *)>
       _glContext;
   GLuint VBO, VAO;
   GLuint shaderProgram;
 
+  // FreeType members
+  FT_Library _ftLibrary;
+  FT_Face _ftFace;
+  std::map<char, Character> _characters;
+  GLuint _textVAO, _textVBO;
+  GLuint _textShaderProgram;
+
   // Private helper methods
-  void initializeSDL(void);
-  void createWindow(void);
   void createGLContext(void);
   void initializeShaders(void);
+  void initializeTextRendering(void);
   void setupBuffers(void);
   void cleanupResources(void);
 
@@ -71,17 +91,23 @@ private:
 
 public:
   MyRenderer(void);
+  MyRenderer(SDL_Window *window);
   ~MyRenderer(void);
+
+  // Set the window after construction
+  void setWindow(SDL_Window *window);
 
   void clear(void) override;
   void present(void) override;
-  void draw(std::shared_ptr<Primitive> primitive) override;
 
   // Override specific draw methods for each primitive type
   void drawText(std::shared_ptr<Text> text) override;
   void drawRectangle(std::shared_ptr<Rectangle> rectangle) override;
   void drawTriangle(std::shared_ptr<Triangle> triangle) override;
   void drawPolygon(std::shared_ptr<Polygon> polygon) override;
+
+  // Accessor for SDL window
+  SDL_Window *getWindow(void) const { return _window; }
 };
 
 #endif // MY_RENDERER_HPP

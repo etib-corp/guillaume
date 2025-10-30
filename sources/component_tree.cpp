@@ -20,4 +20,4 @@
  SOFTWARE.
  */
 
-#include "renderer.hpp"
+#include "component_tree.hpp"

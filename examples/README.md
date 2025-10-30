@@ -21,11 +21,11 @@ An interactive example demonstrating:
 - State management and UI updates
 - Component interaction and data flow
 
-### basic_demo
+### sdl3_opengl
 
-A comprehensive demonstration of Guillaume's features:
+An advanced example showcasing the integration of Guillaume with SDL3 and OpenGL:
 
+- Custom renderer implementation using SDL3 and OpenGL
+- 3D primitive rendering (triangles, rectangles, polygons, text)
 - Component hierarchy with containers, labels, and buttons
 - Event handling and state management
-- 3D primitive rendering (triangles, rectangles, polygons, text)
-- Custom renderer implementation using SDL3

@@ -6,6 +6,3 @@ foreach(dir ${EXAMPLE_DIRS})
         add_subdirectory(${dir})
     endif()
 endforeach()
-
-# Create examples directory in build output
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/bin/examples")
