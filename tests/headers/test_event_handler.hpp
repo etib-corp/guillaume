@@ -23,7 +23,6 @@
 #pragma once
 
 #include "button.hpp"
-#include "component_tree.hpp"
 #include "container.hpp"
 #include "event.hpp"
 #include "event_handler.hpp"
@@ -77,14 +76,12 @@ public:
 class EventHandlerTest : public ::testing::Test {
 protected:
   std::shared_ptr<MockEventHandler> handler;
-  ComponentTree componentTree;
   std::shared_ptr<Container> root;
 
   void SetUp() override {
     handler = std::make_shared<MockEventHandler>();
     root = std::make_shared<Container>();
-    componentTree.setRoot(root);
-    handler->setComponentTree(&componentTree);
+    handler->setRoot(root);
   }
 
   void TearDown() override {

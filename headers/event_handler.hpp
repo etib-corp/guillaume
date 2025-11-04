@@ -29,7 +29,7 @@
 
 // Forward declarations
 class Component;
-class ComponentTree;
+class Container;
 
 /**
  * @class EventHandler
@@ -46,13 +46,13 @@ class ComponentTree;
  */
 class EventHandler {
 protected:
-  ComponentTree *_componentTree; ///< Pointer to the component tree
+  std::shared_ptr<Container> _root; ///< Pointer to the root container component
 
 public:
   /**
    * @brief Constructs an EventHandler object.
    */
-  EventHandler(void) : _componentTree(nullptr) {}
+  EventHandler(void) : _root(nullptr) {}
 
   /**
    * @brief Destroys the EventHandler object.
@@ -60,21 +60,21 @@ public:
   virtual ~EventHandler(void) = default;
 
   /**
-   * @brief Sets the component tree for event dispatching.
+   * @brief Sets the root container for event dispatching.
    *
-   * The component tree provides access to the entire component hierarchy
+   * The root container provides access to the entire component hierarchy
    * for event propagation and component lookup.
    *
-   * @param tree Pointer to the component tree
+   * @param root Shared pointer to the root container
    */
-  void setComponentTree(ComponentTree *tree) { _componentTree = tree; }
+  void setRoot(std::shared_ptr<Container> root) { _root = root; }
 
   /**
-   * @brief Gets the component tree.
+   * @brief Gets the root container.
    *
-   * @return ComponentTree* Pointer to the component tree
+   * @return std::shared_ptr<Container> Pointer to the root container
    */
-  ComponentTree *getComponentTree(void) const { return _componentTree; }
+  std::shared_ptr<Container> getRoot(void) const { return _root; }
 
   /**
    * @brief Polls for events from the backend.
@@ -148,22 +148,12 @@ public:
    * @brief Finds a component in the hierarchy by ID.
    *
    * This utility method searches the component tree for a component
-   * with the specified ID, starting from the root of the component tree.
+   * with the specified ID, starting from the root component.
    *
    * @param componentId The ID of the component to find
    * @return std::shared_ptr<Component> The found component, or nullptr
    */
   std::shared_ptr<Component> findComponentById(unsigned int componentId);
-
-  /**
-   * @brief Gets the root component from the component tree.
-   *
-   * Convenience method to access the root component.
-   *
-   * @return std::shared_ptr<Component> The root component, or nullptr if tree
-   * is not set
-   */
-  std::shared_ptr<Component> getRoot(void) const;
 
 protected:
   /**
@@ -177,32 +167,4 @@ protected:
    * @param event The event to propagate
    */
   void propagateEvent(std::shared_ptr<Component> component, const Event &event);
-};
-
-/**
- * @class NoOpEventHandler
- * @brief Default event handler implementation that does nothing.
- *
- * This is used as a default template parameter for Application when
- * no specific event handler is needed. It implements the abstract
- * EventHandler interface with no-op methods.
- */
-class NoOpEventHandler : public EventHandler {
-public:
-  /**
-   * @brief Constructs a NoOpEventHandler object.
-   */
-  NoOpEventHandler(void) : EventHandler() {}
-
-  /**
-   * @brief Destroys the NoOpEventHandler object.
-   */
-  ~NoOpEventHandler(void) override = default;
-
-  /**
-   * @brief Returns an empty vector of events (no-op implementation).
-   *
-   * @return std::vector<Event> An empty vector
-   */
-  std::vector<Event> pollEvents(void) override { return std::vector<Event>(); }
 };

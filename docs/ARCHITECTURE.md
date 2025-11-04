@@ -77,13 +77,8 @@ classDiagram
     #propagateEvent(component: shared_ptr~Component~, event: Event) void
   }
 
-  class NoOpEventHandler {
-    +pollEvents() vector~Event~
-  }
-
   Event --> Component : "targets"
   EventHandler --> Component : "manages"
-  EventHandler <|-- NoOpEventHandler
 ```
 
 The **Event** system handles user interactions and other asynchronous operations. Events bubble up through the component hierarchy, allowing for flexible event handling patterns.
@@ -94,8 +89,6 @@ The **EventHandler** is an abstract class that provides an interface for managin
 - **processEvents()**: Virtual method that polls events and dispatches them, can be overridden for custom event processing logic
 - **dispatchEvent()**: Dispatches events to the appropriate components in the hierarchy
 - **Utility methods**: Provides helpers to find components by ID or custom predicates
-
-The **NoOpEventHandler** is the default implementation that does nothing, allowing applications to work without event handling if not needed.
 
 ## Primitive System
 
@@ -217,22 +210,14 @@ classDiagram
   class Application {
     # renderer: shared_ptr~Renderer~
     # eventHandler: shared_ptr~EventHandler~
-    -componentTree: ComponentTree
+    -root: shared_ptr~Container~
     +run() void
     +update() void
     # drawTree(component: shared_ptr~Component~) void
     +getRoot() shared_ptr~Container~
     +setRoot(root: shared_ptr~Container~) void
-    +getComponentTree() ComponentTree&
     +getRenderer() shared_ptr~Renderer~
     +getEventHandler() shared_ptr~EventHandler~
-  }
-
-  class ComponentTree {
-    -root: shared_ptr~Container~
-    +getRoot() shared_ptr~Container~
-    +setRoot(root: shared_ptr~Container~) void
-    +render() void
   }
 
   class Renderer {
@@ -248,38 +233,42 @@ classDiagram
 
   class EventHandler {
     <<abstract>>
+    # root: shared_ptr~Container~
+    +setRoot(root: shared_ptr~Container~) void
+    +getRoot() shared_ptr~Container~
     +pollEvents() vector~Event~
     +processEvents() void
     +dispatchEvent(event: Event) void
+    +findComponent(component: shared_ptr~Component~, predicate: function) shared_ptr~Component~
+    +findComponentById(componentId: unsigned int) shared_ptr~Component~
   }
 
   class Container {
   }
 
-  Application "1" *-- "1" ComponentTree : "owns"
-  ComponentTree "1" -- "1" Container : "root"
+  Application "1" *-- "1" Container : "root"
   Application "1" *-- "1" Renderer : "owns"
   Application "1" *-- "1" EventHandler : "owns"
+  EventHandler "1" --> "1" Container : "references root"
   Renderer --> Primitive : "renders"
   EventHandler --> Component : "dispatches to"
 ```
 
-**Application** serves as the entry point and manages the global lifecycle. It owns the component tree, renderer, and event handler, coordinating updates, event processing, and the rendering pipeline. The rendering pipeline is a two-phase process:
+**Application** serves as the entry point and manages the global lifecycle. It owns the root container component, renderer, and event handler, coordinating updates, event processing, and the rendering pipeline. The rendering pipeline is a two-phase process:
 
 1. **Virtual render**: `Component::render()` recursively calls `render()` on children to compute/update component state and generate primitives for the current frame.
 2. **Physical draw**: `Application::drawTree()` traverses the component hierarchy and calls specific `Renderer::draw*()` methods (drawText, drawRectangle, etc.) on each primitive to emit the actual output.
-
-**ComponentTree** encapsulates the root component of the component hierarchy. It provides a clean abstraction for managing the component tree structure and handles the rendering of the entire tree through its `render()` method.
 
 **Renderer** is an abstract class responsible for drawing primitives to the screen and handling events from the rendering backend. This abstraction allows the library to support different rendering backends (terminal, GUI frameworks, web canvas, etc.) without changing the component logic. The renderer only deals with primitives, never components directly.
 
 The Renderer provides specific methods for each primitive type (`drawText`, `drawRectangle`, `drawTriangle`, `drawPolygon`). The Application's `drawTree()` method uses dynamic casting to dispatch primitives to the appropriate specific draw method, ensuring type safety while maintaining flexibility.
 
-**EventHandler** is an abstract class responsible for capturing, processing, and dispatching events from different input sources (mouse, keyboard, touch, etc.). This abstraction allows the library to support different event backends (SDL events, terminal input, web events, etc.) without changing the component logic. The event handler provides:
+**EventHandler** is an abstract class responsible for capturing, processing, and dispatching events from different input sources (mouse, keyboard, touch, etc.). This abstraction allows the library to support different event backends (SDL events, terminal input, web events, etc.) without changing the component logic. The event handler maintains a reference to the root container for event dispatching and provides:
 
 - **pollEvents()**: Captures raw events from the backend
 - **processEvents()**: Processes and dispatches events to components
 - **dispatchEvent()**: Sends events to the component hierarchy
+- **setRoot()** / **getRoot()**: Manages the reference to the root container for event dispatching
 - **Utility methods**: Finds components by ID or custom predicates
 
 ### Lifecycle and Flow
@@ -321,6 +310,7 @@ sequenceDiagram
 ```
 
 This split allows you to:
+
 1. Process input events from the backend
 2. Update component state based on events
 3. Compute layout/state separately from concrete drawing

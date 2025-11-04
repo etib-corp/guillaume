@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "application.hpp"
+#include "event_handler.hpp"
 #include "label.hpp"
 #include "primitives/polygon.hpp"
 #include "primitives/rectangle.hpp"
@@ -58,12 +59,24 @@ public:
   void drawPolygon(std::shared_ptr<Polygon> polygon) override {}
 };
 
+class SimpleEventHandler : public EventHandler {
+public:
+  SimpleEventHandler(void) : EventHandler() {}
+  
+  std::vector<Event> pollEvents(void) override {
+    // No events to process in this simple example
+    return {};
+  }
+};
+
 int main() {
-  // Create the application with our simple renderer
-  std::unique_ptr<Application<SimpleRenderer>> application = nullptr;
+  // Create the application with our simple renderer and event handler
+  std::unique_ptr<Application<SimpleRenderer, SimpleEventHandler>> application =
+      nullptr;
 
   try {
-    application = std::make_unique<Application<SimpleRenderer>>();
+    application =
+        std::make_unique<Application<SimpleRenderer, SimpleEventHandler>>();
   } catch (std::exception &exception) {
     std::cerr << "Failed to create Application: " << exception.what()
               << std::endl;

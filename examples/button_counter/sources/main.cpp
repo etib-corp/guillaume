@@ -26,6 +26,7 @@
 #include "application.hpp"
 #include "button.hpp"
 #include "container.hpp"
+#include "event_handler.hpp"
 #include "label.hpp"
 #include "primitives/polygon.hpp"
 #include "primitives/rectangle.hpp"
@@ -62,12 +63,24 @@ public:
   void drawPolygon(std::shared_ptr<Polygon> polygon) override {}
 };
 
+class CounterEventHandler : public EventHandler {
+public:
+  CounterEventHandler(void) : EventHandler() {}
+  
+  std::vector<Event> pollEvents(void) override {
+    // No events to process in this simple example
+    return {};
+  }
+};
+
 int main() {
-  // Create the application with our counter renderer
-  std::unique_ptr<Application<CounterRenderer>> application = nullptr;
+  // Create the application with our counter renderer and event handler
+  std::unique_ptr<Application<CounterRenderer, CounterEventHandler>>
+      application = nullptr;
 
   try {
-    application = std::make_unique<Application<CounterRenderer>>();
+    application =
+        std::make_unique<Application<CounterRenderer, CounterEventHandler>>();
   } catch (std::exception &exception) {
     std::cerr << "Failed to create Application: " << exception.what()
               << std::endl;

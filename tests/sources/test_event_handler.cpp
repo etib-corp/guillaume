@@ -24,13 +24,13 @@
 
 TEST_F(EventHandlerTest, ConstructorInitializesHandler) {
   EXPECT_NE(handler, nullptr);
-  EXPECT_EQ(handler->getComponentTree(), &componentTree);
+  EXPECT_EQ(handler->getRoot(), root);
 }
 
-TEST_F(EventHandlerTest, SetAndGetComponentTree) {
-  ComponentTree newTree;
-  handler->setComponentTree(&newTree);
-  EXPECT_EQ(handler->getComponentTree(), &newTree);
+TEST_F(EventHandlerTest, SetAndGetRoot) {
+  auto newRoot = std::make_shared<Container>();
+  handler->setRoot(newRoot);
+  EXPECT_EQ(handler->getRoot(), newRoot);
 }
 
 TEST_F(EventHandlerTest, PollEventsReturnsEmpty) {
@@ -73,10 +73,7 @@ TEST_F(EventHandlerTest, DispatchEventToRootWhenNoTarget) {
   auto testRoot = std::make_shared<Container>();
   auto testChild = std::make_shared<TestComponent>();
   testRoot->addChild(testChild);
-
-  ComponentTree testTree;
-  testTree.setRoot(testRoot);
-  newHandler->setComponentTree(&testTree);
+  newHandler->setRoot(testRoot);
 
   Event event("click", nullptr);
   newHandler->dispatchEvent(event);
@@ -86,7 +83,7 @@ TEST_F(EventHandlerTest, DispatchEventToRootWhenNoTarget) {
   EXPECT_EQ(testChild->getLastEventType(), "click");
 }
 
-TEST_F(EventHandlerTest, GetRootFromComponentTree) {
+TEST_F(EventHandlerTest, GetRootReturnsRootComponent) {
   EXPECT_EQ(handler->getRoot(), root);
 }
 

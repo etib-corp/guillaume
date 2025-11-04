@@ -23,6 +23,7 @@
 #pragma once
 
 #include "application.hpp"
+#include "test_event_handler.hpp"
 #include "test_renderer.hpp"
 
 /**
@@ -30,15 +31,15 @@
  * @brief Test-specific application that provides access to the renderer for
  * testing.
  *
- * This class extends Application<TestRenderer> to expose the renderer for
- * verification in tests.
+ * This class extends Application<TestRenderer, MockEventHandler> to expose the
+ * renderer for verification in tests.
  */
-class TestApplication : public Application<TestRenderer> {
+class TestApplication : public Application<TestRenderer, MockEventHandler> {
 public:
   /**
    * @brief Constructs a TestApplication object.
    */
-  TestApplication(void) : Application<TestRenderer>() {}
+  TestApplication(void) : Application<TestRenderer, MockEventHandler>() {}
 
   /**
    * @brief Gets the test renderer for verification purposes.
@@ -46,6 +47,6 @@ public:
    * @return std::shared_ptr<TestRenderer> The test renderer
    */
   std::shared_ptr<TestRenderer> getRenderer(void) const {
-    return Application<TestRenderer>::_renderer;
+    return Application<TestRenderer, MockEventHandler>::_renderer;
   }
 };

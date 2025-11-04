@@ -22,15 +22,8 @@
 
 #include "event_handler.hpp"
 #include "component.hpp"
-#include "component_tree.hpp"
+#include "container.hpp"
 #include "event.hpp"
-
-std::shared_ptr<Component> EventHandler::getRoot(void) const {
-  if (_componentTree) {
-    return _componentTree->getRoot();
-  }
-  return nullptr;
-}
 
 void EventHandler::dispatchEvent(const Event &event) {
   auto target = event.getTarget();
@@ -39,9 +32,8 @@ void EventHandler::dispatchEvent(const Event &event) {
     propagateEvent(target, event);
   } else {
     // If no specific target, dispatch to root
-    auto root = getRoot();
-    if (root) {
-      propagateEvent(root, event);
+    if (_root) {
+      propagateEvent(_root, event);
     }
   }
 }
@@ -83,11 +75,10 @@ std::shared_ptr<Component> EventHandler::findComponent(
 
 std::shared_ptr<Component>
 EventHandler::findComponentById(unsigned int componentId) {
-  auto root = getRoot();
-  if (!root) {
+  if (!_root) {
     return nullptr;
   }
 
   return findComponent(
-      root, [componentId](auto comp) { return comp->getID() == componentId; });
+      _root, [componentId](auto comp) { return comp->getID() == componentId; });
 }

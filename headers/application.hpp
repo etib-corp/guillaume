@@ -26,7 +26,6 @@
 #include <memory>
 #include <utility>
 
-#include "component_tree.hpp"
 #include "container.hpp"
 #include "event_handler.hpp"
 #include "primitives/polygon.hpp"
@@ -43,7 +42,7 @@
  * lifecycle, rendering, and event handling.
  */
 
-template <typename RendererType, typename EventHandlerType = NoOpEventHandler>
+template <typename RendererType, typename EventHandlerType>
 class Application {
   static_assert(std::is_base_of<Renderer, RendererType>::value,
                 "RendererType must be derived from Renderer");
@@ -56,8 +55,8 @@ protected:
       _eventHandler; ///< Shared pointer to the event handler
 
 private:
-  ComponentTree _componentTree; ///< The component tree
-  bool _running = false;        ///< Tracks if the app is in the run loop
+  std::shared_ptr<Container> _root; ///< The root container component
+  bool _running = false;            ///< Tracks if the app is in the run loop
 
 protected:
   /**
@@ -100,12 +99,13 @@ public:
    *
    */
   Application(void)
-      : _renderer(nullptr), _eventHandler(nullptr), _componentTree() {
+      : _renderer(nullptr), _eventHandler(nullptr),
+        _root(std::make_shared<Container>()) {
     try {
       _renderer = std::make_shared<RendererType>();
       _eventHandler = std::make_shared<EventHandlerType>();
-      // Set the component tree reference in the event handler
-      _eventHandler->setComponentTree(&_componentTree);
+      // Set the root component reference in the event handler
+      _eventHandler->setRoot(_root);
     } catch (std::exception &exception) {
       std::cerr << "Failed to create renderer or event handler: "
                 << exception.what() << std::endl;
@@ -119,13 +119,6 @@ public:
    * @brief Destroys the Application object.
    */
   ~Application(void) = default;
-
-  /**
-   * @brief Gets the component tree.
-   *
-   * @return ComponentTree& Reference to the component tree
-   */
-  ComponentTree &getComponentTree(void) { return _componentTree; }
 
   /**
    * @brief Gets the renderer.
@@ -149,7 +142,7 @@ public:
    * @return std::shared_ptr<Container> The root container
    */
   std::shared_ptr<Container> getRoot(void) const {
-    return _componentTree.getRoot();
+    return _root;
   }
 
   /**
@@ -158,9 +151,11 @@ public:
    * @param root The new root container
    */
   void setRoot(std::shared_ptr<Container> root) {
-    _componentTree.setRoot(root);
-    // Component tree is already set in the event handler via pointer,
-    // so no need to update it when the root changes
+    _root = root;
+    // Update the root reference in the event handler
+    if (_eventHandler) {
+      _eventHandler->setRoot(_root);
+    }
   }
 
   /**
@@ -185,9 +180,11 @@ public:
     }
 
     // Compute the virtual tree for this frame
-    _componentTree.render();
+    if (_root) {
+      _root->render();
+    }
     // Draw the computed primitives/components
-    drawTree(_componentTree.getRoot());
+    drawTree(_root);
 
     if (_renderer) {
       _renderer->present();
@@ -215,9 +212,11 @@ public:
     }
 
     // Update the root component and trigger re-render
-    _componentTree.render();
+    if (_root) {
+      _root->render();
+    }
     // Re-draw after the update
-    drawTree(_componentTree.getRoot());
+    drawTree(_root);
 
     if (_renderer) {
       _renderer->present();
