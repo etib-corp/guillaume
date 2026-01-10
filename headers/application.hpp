@@ -27,8 +27,8 @@
 #include <string>
 
 #include "metadata.hpp"
-#include "window.hpp"
 #include "renderer.hpp"
+#include "window.hpp"
 
 namespace guillaume {
 
@@ -50,8 +50,9 @@ template <typename WindowType, typename RendererType> class Application {
                 "RendererType must be hereditary of guillaume::Renderer");
 
 private:
-  Metadata _metadata;
-  std::map<std::string, std::unique_ptr<WindowType>> _windows;
+  Metadata _metadata; ///< Application metadata
+  std::map<std::string, std::unique_ptr<WindowType>>
+      _windows; ///< Application windows
 
 public:
   /**
