@@ -22,30 +22,77 @@
 
 #pragma once
 
-// #define SDL_PROP_APP_METADATA_NAME_STRING         "SDL.app.metadata.name"
-// #define SDL_PROP_APP_METADATA_VERSION_STRING      "SDL.app.metadata.version"
-// #define SDL_PROP_APP_METADATA_IDENTIFIER_STRING   "SDL.app.metadata.identifier"
-// #define SDL_PROP_APP_METADATA_CREATOR_STRING      "SDL.app.metadata.creator"
-// #define SDL_PROP_APP_METADATA_COPYRIGHT_STRING    "SDL.app.metadata.copyright"
-// #define SDL_PROP_APP_METADATA_URL_STRING          "SDL.app.metadata.url"
-// #define SDL_PROP_APP_METADATA_TYPE_STRING         "SDL.app.metadata.type"
-
+#include <map>
+#include <memory>
 #include <string>
+
+#include "metadata.hpp"
+#include "window.hpp"
+#include "renderer.hpp"
 
 namespace guillaume {
 
 /**
- * @brief Base Application class
+ * @brief Application base class.
  *
+ * @tparam WindowType The type of the window used by the application.
+ * @tparam RendererType The type of the renderer used by the application.
  */
-class Application {
+template <typename WindowType, typename RendererType> class Application {
+
+  // WindowType must be hereditary of guillaume::Window<RendererType>
+  static_assert(
+      std::is_base_of<guillaume::Window<RendererType>, WindowType>::value,
+      "WindowType must be hereditary of guillaume::Window<RendererType>");
+
+  // RendererType must be hereditary of guillaume::Renderer
+  static_assert(std::is_base_of<guillaume::Renderer, RendererType>::value,
+                "RendererType must be hereditary of guillaume::Renderer");
+
 private:
+  Metadata _metadata;
+  std::map<std::string, std::unique_ptr<WindowType>> _windows;
 
 public:
   /**
    * @brief Default destructor
    */
-  virtual ~Application() = default;
+  virtual ~Application(void) = default;
+
+  /**
+   * @brief Set the application metadata.
+   * @param metadata The metadata to set.
+   */
+  void setMetadata(const Metadata &metadata) { _metadata = metadata; }
+
+  /**
+   * @brief Get the application metadata.
+   * @return Reference to the application metadata.
+   */
+  Metadata &getMetadata(void) { return _metadata; }
+
+  /**
+   * @brief Add a window to the application.
+   * @param name The name of the window.
+   */
+  void addWindow(const std::string &name) {
+    _windows[name] = std::make_unique<WindowType>();
+  }
+
+  /**
+   * @brief Get a window by name.
+   * @param name The name of the window.
+   * @return Reference to the window.
+   */
+  const std::unique_ptr<WindowType> &getWindow(const std::string &name) const {
+    return _windows.at(name);
+  }
+
+  /**
+   * @brief Remove a window by name.
+   * @param name The name of the window.
+   */
+  void removeWindow(const std::string &name) { _windows.erase(name); }
 };
 
 } // namespace guillaume

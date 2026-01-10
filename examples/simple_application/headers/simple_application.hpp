@@ -24,11 +24,16 @@
 
 #include <application.hpp>
 
+#include "simple_renderer.hpp"
+#include "simple_window.hpp"
+
 namespace guillaume::simple_application {
 
-class SimpleApplication : public guillaume::Application {
+class SimpleApplication
+    : public guillaume::Application<SimpleWindow, SimpleRenderer> {
 public:
-  SimpleApplication() = default;
-  ~SimpleApplication() = default;
-}; // class SimpleApplication
+  SimpleApplication(void);
+  ~SimpleApplication(void) override = default;
+};
+
 } // namespace guillaume::simple_application

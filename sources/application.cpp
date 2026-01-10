@@ -21,3 +21,5 @@
  */
 
 #include "application.hpp"
+
+namespace guillaume {} // namespace guillaume

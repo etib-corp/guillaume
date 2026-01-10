@@ -23,15 +23,16 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <window.hpp>
 
 namespace guillaume::tests {
 
-class TestApplication : public ::testing::Test {
+class TestWindow : public ::testing::Test {
 protected:
-  TestApplication(void) = default;
-  ~TestApplication(void) override = default;
+  TestWindow(void) = default;
+  ~TestWindow(void) override = default;
   void SetUp(void) override {}
   void TearDown(void) override {}
-}; // class TestApplication
+}; // class TestWindow
 
 } // namespace guillaume::tests

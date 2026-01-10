@@ -26,12 +26,12 @@
 
 namespace guillaume::tests {
 
-class TestApplication : public ::testing::Test {
+class TestMetadata : public ::testing::Test {
 protected:
-  TestApplication(void) = default;
-  ~TestApplication(void) override = default;
+  TestMetadata(void) = default;
+  ~TestMetadata(void) override = default;
   void SetUp(void) override {}
   void TearDown(void) override {}
-}; // class TestApplication
+}; // class TestMetadata
 
 } // namespace guillaume::tests
