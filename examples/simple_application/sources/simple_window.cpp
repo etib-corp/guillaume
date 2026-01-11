@@ -18,41 +18,20 @@ std::string formatVector(const utility::Vector<Type, 2> &vector) {
 namespace guillaume::simple_application {
 
 SimpleWindow::SimpleWindow()
-    : _logger(), _title("Guillaume Simple Window"), _position({0.0F, 0.0F}),
-      _size({800, 600}), _minimumSize({100, 100}), _maximumSize({3840, 2160}),
-      _opacity(1.0F), _visible(false), _resizable(true),
-      _minimumAspectRatio(0.0F), _maximumAspectRatio(0.0F),
+    : _logger(), _title("Guillaume Simple Window"), _minimumSize({100, 100}),
+      _maximumSize({3840, 2160}), _opacity(1.0F), _visible(false),
+      _resizable(true), _minimumAspectRatio(0.0F), _maximumAspectRatio(0.0F),
       _state(WindowState::Normal) {
   _logger.info("SimpleWindow created with title '" + _title + "'");
 }
 
-std::unique_ptr<SimpleRenderer> &SimpleWindow::getRenderer(void) {
-  static std::unique_ptr<SimpleRenderer> renderer =
-      std::make_unique<SimpleRenderer>();
-  return renderer;
-}
+SimpleRenderer &SimpleWindow::getRenderer(void) { return _renderer; }
 
 std::string SimpleWindow::getTitle(void) const { return _title; }
 
 void SimpleWindow::setTitle(const std::string &title) {
   _title = title;
   _logger.info("Window title set to '" + _title + "'");
-}
-
-utility::Vector<float, 2> SimpleWindow::getPosition(void) const {
-  return _position;
-}
-
-void SimpleWindow::setPosition(utility::Vector<float, 2> position) {
-  _position = position;
-  _logger.debug("Window moved to " + formatVector(position));
-}
-
-utility::Vector<std::size_t, 2> SimpleWindow::getSize() const { return _size; }
-
-void SimpleWindow::setSize(utility::Vector<std::size_t, 2> size) {
-  _size = size;
-  _logger.debug("Window size set to " + formatVector(size));
 }
 
 void SimpleWindow::setMinimumSize(utility::Vector<std::size_t, 2> size) {

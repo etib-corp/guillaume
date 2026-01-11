@@ -22,36 +22,37 @@
 
 #pragma once
 
-#include <color.hpp>
-#include <rectangle.hpp>
-#include <renderer.hpp>
-#include <standard_logger.hpp>
-#include <vector.hpp>
+#include "property.hpp"
 
-namespace guillaume::simple_application {
+namespace guillaume {
+class Component;
+}
 
-class SimpleRenderer : public guillaume::Renderer {
-private:
-  utility::StandardLogger _logger;
-  utility::Color<uint8_t> _drawColor;
-  utility::Vector<float, 2> _scale;
+namespace guillaume::properties {
 
+/**
+ * @brief Abstract base class for layout properties.
+ */
+class LayoutProperty : public guillaume::Property {
 public:
-  SimpleRenderer(void);
-  ~SimpleRenderer(void) override = default;
+  /**
+   * @brief Default destructor
+   */
+  virtual ~LayoutProperty(void) = default;
 
-  void clear(void) override;
-  void present(void) override;
-  void setDrawColor(utility::Color<uint8_t> color) override;
-  utility::Color<uint8_t> getDrawColor(void) const override;
-  void drawPoint(utility::Vector<std::size_t, 2> point) override;
-  void drawLine(utility::Vector<std::size_t, 2> start,
-                utility::Vector<std::size_t, 2> end) override;
-  void drawRect(utility::Rectangle<std::size_t> rectangle) override;
-  void fillRect(utility::Rectangle<std::size_t> rectangle) override;
-  void setScale(utility::Vector<float, 2> scale) override;
-  utility::Vector<float, 2> getScale(void) const override;
-  bool flush(void) override;
+  /**
+   * @brief Get the priority of layout properties.
+   * @return Layout priority level.
+   */
+  virtual PropertyPriority getPriority(void) const override {
+    return PropertyPriority::LAYOUT;
+  }
+
+  /**
+   * @brief Apply the layout property to a component.
+   * @param component The component to apply the property to.
+   */
+  virtual void apply(Component &component) override = 0;
 };
 
-} // namespace guillaume::simple_application
+} // namespace guillaume::properties

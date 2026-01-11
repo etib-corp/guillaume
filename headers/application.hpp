@@ -25,6 +25,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
+
+#include <logger.hpp>
+#include <standard_logger.hpp>
 
 #include "metadata.hpp"
 #include "renderer.hpp"
@@ -36,23 +40,22 @@ namespace guillaume {
  * @brief Application base class.
  *
  * @tparam WindowType The type of the window used by the application.
- * @tparam RendererType The type of the renderer used by the application.
+ * @tparam RendererType The type of the renderer used by the windows.
+ * @tparam LoggerType The type of the logger used by the application.
  */
-template <typename WindowType, typename RendererType> class Application {
-
-  // WindowType must be hereditary of guillaume::Window<RendererType>
-  static_assert(
-      std::is_base_of<guillaume::Window<RendererType>, WindowType>::value,
-      "WindowType must be hereditary of guillaume::Window<RendererType>");
-
-  // RendererType must be hereditary of guillaume::Renderer
-  static_assert(std::is_base_of<guillaume::Renderer, RendererType>::value,
-                "RendererType must be hereditary of guillaume::Renderer");
-
+template <typename WindowType, typename RendererType,
+          typename LoggerType = utility::StandardLogger>
+  requires std::is_base_of_v<Window<RendererType>, WindowType> &&
+           std::is_base_of_v<Renderer, RendererType> &&
+           std::is_base_of_v<utility::Logger, LoggerType>
+class Application {
 private:
-  Metadata _metadata; ///< Application metadata
   std::map<std::string, std::unique_ptr<WindowType>>
       _windows; ///< Application windows
+
+protected:
+  LoggerType _logger; ///< Application logger
+  Metadata _metadata; ///< Application metadata
 
 public:
   /**
@@ -85,8 +88,15 @@ public:
    * @param name The name of the window.
    * @return Reference to the window.
    */
-  const std::unique_ptr<WindowType> &getWindow(const std::string &name) const {
-    return _windows.at(name);
+  WindowType &getWindow(const std::string &name) { return *_windows.at(name); }
+
+  /**
+   * @brief Get a const window by name.
+   * @param name The name of the window.
+   * @return Const reference to the window.
+   */
+  const WindowType &getWindow(const std::string &name) const {
+    return *_windows.at(name);
   }
 
   /**
@@ -94,6 +104,20 @@ public:
    * @param name The name of the window.
    */
   void removeWindow(const std::string &name) { _windows.erase(name); }
+
+  /**
+   * @brief Main application routine.
+   */
+  void routine(void) {
+    for (auto &[name, window] : _windows) {
+      _logger.info("Processing properties for window: " + name);
+      window->processProperties();
+      _logger.info("Rendering window: " + name);
+      window->render(window->getRenderer());
+      _logger.info("Syncing window: " + name);
+      window->sync();
+    }
+  }
 };
 
 } // namespace guillaume

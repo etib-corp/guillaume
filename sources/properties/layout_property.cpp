@@ -20,14 +20,6 @@
  SOFTWARE.
  */
 
-#include "container.hpp"
+#include "properties/layout_property.hpp"
 
-namespace guillaume {
-
-void Container::render(void) {
-  for (const auto &component : _components) {
-    component->render();
-  }
-}
-
-} // namespace guillaume
+namespace guillaume::properties {} // namespace guillaume::properties

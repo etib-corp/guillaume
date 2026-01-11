@@ -20,40 +20,12 @@
  SOFTWARE.
  */
 
-#pragma once
-
-#include <memory>
-#include <vector>
+#include "properties/style/opacity.hpp"
 
 #include "component.hpp"
 
-namespace guillaume {
+namespace guillaume::properties::style {
 
-/**
- * @brief Container class that can hold multiple components.
- */
-class Container : public Component {
-private:
-  std::vector<std::unique_ptr<Component>> _components; ///< List of components
+void Opacity::apply(Component &component) { component.setOpacity(_alpha); }
 
-public:
-  /**
-   * @brief Default destructor
-   */
-  virtual ~Container(void) = default;
-
-  /**
-   * @brief Add a component to the container.
-   * @param component Unique pointer to the component to add.
-   */
-  void addComponent(std::unique_ptr<Component> component) {
-    _components.push_back(std::move(component));
-  }
-
-  /**
-   * @brief Render all components in the container.
-   */
-  void render(void) override;
-};
-
-} // namespace guillaume
+} // namespace guillaume::properties::style

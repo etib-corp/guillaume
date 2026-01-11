@@ -20,18 +20,14 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "properties/style/background_color.hpp"
 
-#include <gtest/gtest.h>
+#include "component.hpp"
 
-namespace guillaume::tests {
+namespace guillaume::properties::style {
 
-class TestContainer : public ::testing::Test {
-protected:
-  TestContainer(void) = default;
-  ~TestContainer(void) override = default;
-  void SetUp(void) override {}
-  void TearDown(void) override {}
-}; // class TestContainer
+void BackgroundColor::apply(Component &component) {
+  component.setBackgroundColor(_color);
+}
 
-} // namespace guillaume::tests
+} // namespace guillaume::properties::style

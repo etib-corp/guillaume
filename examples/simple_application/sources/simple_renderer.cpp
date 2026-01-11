@@ -43,24 +43,24 @@ utility::Color<uint8_t> SimpleRenderer::getDrawColor(void) const {
   return _drawColor;
 }
 
-void SimpleRenderer::drawPoint(utility::Vector<float, 2> point) {
+void SimpleRenderer::drawPoint(utility::Vector<std::size_t, 2> point) {
   _logger.debug("Renderer draw point at " + formatVector(point));
 }
 
-void SimpleRenderer::drawLine(utility::Vector<float, 2> start,
-                              utility::Vector<float, 2> end) {
+void SimpleRenderer::drawLine(utility::Vector<std::size_t, 2> start,
+                              utility::Vector<std::size_t, 2> end) {
   _logger.debug("Renderer draw line from " + formatVector(start) + " to " +
                 formatVector(end));
 }
 
-void SimpleRenderer::drawRect(utility::Rectangle<float> rectangle) {
+void SimpleRenderer::drawRect(utility::Rectangle<std::size_t> rectangle) {
   _logger.debug("Renderer draw rectangle (x=" + std::to_string(rectangle.x()) +
                 ", y=" + std::to_string(rectangle.y()) +
                 ", w=" + std::to_string(rectangle.width()) +
                 ", h=" + std::to_string(rectangle.height()) + ")");
 }
 
-void SimpleRenderer::fillRect(utility::Rectangle<float> rectangle) {
+void SimpleRenderer::fillRect(utility::Rectangle<std::size_t> rectangle) {
   _logger.debug("Renderer fill rectangle (x=" + std::to_string(rectangle.x()) +
                 ", y=" + std::to_string(rectangle.y()) +
                 ", w=" + std::to_string(rectangle.width()) +

@@ -20,30 +20,6 @@
  SOFTWARE.
  */
 
-#include "component.hpp"
+#include "properties/style_property.hpp"
 
-namespace guillaume {
-
-void Component::setParent(std::shared_ptr<Component> parent) {
-  _parent = std::move(parent);
-}
-
-void Component::processProperties(void) {
-  // Sort properties by priority before applying
-  std::sort(_properties.begin(), _properties.end(),
-            [](const auto &a, const auto &b) { return a.first < b.first; });
-
-  for (auto &property_pair : _properties) {
-    property_pair.second->apply(*this);
-  }
-}
-
-void Component::render(Renderer &renderer) {
-  processProperties();
-  renderer.drawRect(_boundingBox);
-  for (const auto &child : _children) {
-    child->render(renderer);
-  }
-}
-
-} // namespace guillaume
+namespace guillaume::properties {} // namespace guillaume::properties

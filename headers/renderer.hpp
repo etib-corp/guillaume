@@ -68,37 +68,38 @@ public:
    * @brief Draw a point at the specified position.
    * @param point The position of the point to draw as a 2D integer vector.
    */
-  virtual void drawPoint(utility::Vector<float, 2> point) = 0;
+  virtual void drawPoint(utility::Vector<std::size_t, 2> point) = 0;
 
   /**
    * @brief Draw a line between two points.
    * @param start The starting point of the line as a 2D integer vector.
    * @param end The ending point of the line as a 2D integer vector.
    */
-  virtual void drawLine(utility::Vector<float, 2> start,
-                        utility::Vector<float, 2> end) = 0;
+  virtual void drawLine(utility::Vector<std::size_t, 2> start,
+                        utility::Vector<std::size_t, 2> end) = 0;
 
   /**
    * @brief Draw a rectangle outline.
    * @param rectangle The rectangle to draw.
    */
-  virtual void drawRect(utility::Rectangle<float> rectangle) = 0;
+  virtual void drawRect(utility::Rectangle<std::size_t> rectangle) = 0;
 
   /**
    * @brief Draw a filled rectangle.
    * @param rectangle The rectangle to fill.
    */
-  virtual void fillRect(utility::Rectangle<float> rectangle) = 0;
+  virtual void fillRect(utility::Rectangle<std::size_t> rectangle) = 0;
 
   /**
    * @brief Set the drawing scale for rendering operations.
-   * @param scale The scaling factors as a 2D float vector (scale_x, scale_y).
+   * @param scale The scaling factors as a 2D std::size_t vector (scale_x,
+   * scale_y).
    */
   virtual void setScale(utility::Vector<float, 2> scale) = 0;
 
   /**
    * @brief Get the current drawing scale.
-   * @return The current scaling factors as a 2D float vector.
+   * @return The current scaling factors as a 2D std::size_t vector.
    */
   virtual utility::Vector<float, 2> getScale(void) const = 0;
 

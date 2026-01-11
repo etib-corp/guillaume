@@ -22,38 +22,44 @@
 
 #pragma once
 
-#include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 
+#include <logger.hpp>
 #include <rectangle.hpp>
+#include <standard_logger.hpp>
 #include <vector.hpp>
 
+#include "component.hpp"
 #include "renderer.hpp"
 
 namespace guillaume {
 
 /**
- * @brief Window interface.
- *
+ * @brief Window base class.
  * @tparam RendererType The type of the renderer associated with the window.
+ * @tparam LoggerType The type of the logger used by the window.
  */
-template <typename RendererType> class Window {
-  // RendererType must be hereditary of guillaume::Renderer
-  static_assert(std::is_base_of<guillaume::Renderer, RendererType>::value,
-                "RendererType must be hereditary of guillaume::Renderer");
+template <typename RendererType, typename LoggerType = utility::StandardLogger>
+  requires std::is_base_of_v<Renderer, RendererType> &&
+           std::is_base_of_v<utility::Logger, LoggerType>
+class Window : public Component {
+protected:
+  RendererType _renderer; ///< Window renderer
+  LoggerType _logger;     ///< Window logger
 
 public:
   /**
    * @brief Default destructor
    */
-  virtual ~Window() = default;
+  virtual ~Window(void) = default;
 
   /**
    * @brief Get the renderer associated with the window.
    * @return Reference to the unique pointer of the renderer.
    */
-  virtual std::unique_ptr<RendererType> &getRenderer(void) = 0;
+  virtual RendererType &getRenderer(void) = 0;
 
   /**
    * @brief Get the window title.
@@ -66,30 +72,6 @@ public:
    * @param title The new window title.
    */
   virtual void setTitle(const std::string &title) = 0;
-
-  /**
-   * @brief Get the window position.
-   * @return The window position as a 2D integer vector.
-   */
-  virtual utility::Vector<float, 2> getPosition(void) const = 0;
-
-  /**
-   * @brief Set the window position.
-   * @param position The new window position as a 2D integer vector.
-   */
-  virtual void setPosition(utility::Vector<float, 2> position) = 0;
-
-  /**
-   * @brief Get the window size.
-   * @return The window size as a 2D integer vector.
-   */
-  virtual utility::Vector<std::size_t, 2> getSize() const = 0;
-
-  /**
-   * @brief Set the window size.
-   * @param size The new window size as a 2D integer vector.
-   */
-  virtual void setSize(utility::Vector<std::size_t, 2> size) = 0;
 
   /**
    * @brief Set the minimum window size.
