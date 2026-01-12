@@ -2,62 +2,13 @@
 
 **A C++ UI framework designed for modern desktop and extended reality (XR) applications.**
 
-## Key Features
+Guillaume is a cutting-edge C++ UI framework that empowers developers to create seamless and immersive user interfaces for both traditional desktop applications and extended reality (XR) environments. With a focus on performance, flexibility, and ease of use, Guillaume provides a robust set of tools and components to streamline the development process.
 
-## Quick Start
+## Features
 
-```cpp
-```
+- **Cross-Platform Support**: Build applications that run smoothly on Windows, macOS, and Linux, as well as various XR platforms.
+- **Rich UI Components**: Access a comprehensive library of pre-built UI components, including buttons, sliders, menus, and more, all optimized for performance and responsiveness.
+- **3D Integration**: Easily integrate 3D models and environments into your UI, enabling immersive experiences in XR applications.
+- **Customizable Themes**: Tailor the look and feel of your application with customizable themes
 
-## Documentation
-
-- **[How Guillaume Works](docs/HOW_GUILLAUME_WORKS.md)** - Comprehensive guide to concepts, lifecycle, and usage patterns
-- **[Architecture Documentation](docs/ARCHITECTURE.md)** - Detailed overview of the system's design and components
-- **[Technical Choices Documentation](docs/TECHNICAL_CHOICES.md)** - Insights into design decisions and technologies
-
-## Building
-
-Guillaume builds as a static library along with examples and tests:
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/etib-corp/guillaume.git
-cd guillaume
-```
-
-1. Configure and build using CMake:
-
-```bash
-cmake -S . -B build -DBUILD_EXAMPLES=ON -DBUILD_TESTS=ON
-cmake --build build
-```
-
-### Running Examples
-
-To run the examples:
-
-```bash
-./build/examples/simple_application/simple_application
-```
-
-### Running Tests
-
-To run the test suite:
-
-```bash
-./tests/test_guillaume
-```
-
-### Using Guillaume in Your Project
-
-Guillaume builds as a static library (`libguillaume.a`) with minimal dependencies. To use it in your CMake project:
-
-```cmake
-# Link with Guillaume (core library has no external dependencies)
-target_link_libraries(your_target PRIVATE guillaume)
-```
-
-## Examples
-
-The `examples/` directory contains sample applications demonstrating Guillaume's features. Each example is organized in its own subdirectory:
+To discover more about Guillaume, visit the [official documentation](https://github.com/etib-corp/guillaume/wiki).
