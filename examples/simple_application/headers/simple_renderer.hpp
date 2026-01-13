@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <SDL3/SDL.h>
 #include <color.hpp>
 #include <rectangle.hpp>
 #include <renderer.hpp>
@@ -35,10 +36,12 @@ private:
   utility::StandardLogger _logger;
   utility::Color<uint8_t> _drawColor;
   utility::Vector<float, 2> _scale;
+  SDL_Renderer *_sdlRenderer;
 
 public:
   SimpleRenderer(void);
-  ~SimpleRenderer(void) override = default;
+  SimpleRenderer(SDL_Renderer *sdlRenderer);
+  ~SimpleRenderer(void) override;
 
   void clear(void) override;
   void present(void) override;
@@ -52,6 +55,10 @@ public:
   void setScale(utility::Vector<float, 2> scale) override;
   utility::Vector<float, 2> getScale(void) const override;
   bool flush(void) override;
+
+  // SDL3 specific methods
+  SDL_Renderer *getSDLRenderer() const { return _sdlRenderer; }
+  void setSDLRenderer(SDL_Renderer *renderer);
 };
 
 } // namespace guillaume::simple_application

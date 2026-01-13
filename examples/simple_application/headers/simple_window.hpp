@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL3/SDL.h>
 #include <rectangle.hpp>
 #include <standard_logger.hpp>
 #include <string>
@@ -26,9 +27,13 @@ private:
   float _maximumAspectRatio;
   WindowState _state;
 
+  // SDL3 specific members
+  SDL_Window *_sdlWindow;
+  bool _shouldClose;
+
 public:
   SimpleWindow(void);
-  ~SimpleWindow(void) override = default;
+  ~SimpleWindow(void) override;
 
   SimpleRenderer &getRenderer(void) override;
   std::string getTitle(void) const override;
@@ -52,6 +57,10 @@ public:
                       float &maximumAspectRatio) const override;
   void setResizable(bool resizable) override;
   bool sync(void) override;
+
+  // SDL3 specific methods
+  SDL_Window *getSDLWindow() const { return _sdlWindow; }
+  bool shouldClose() const { return _shouldClose; }
 };
 
 } // namespace guillaume::simple_application
