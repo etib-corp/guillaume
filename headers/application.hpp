@@ -30,6 +30,7 @@
 #include <logger.hpp>
 #include <standard_logger.hpp>
 
+#include "event_handler.hpp"
 #include "metadata.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
@@ -41,23 +42,36 @@ namespace guillaume {
  *
  * @tparam WindowType The type of the window used by the application.
  * @tparam RendererType The type of the renderer used by the windows.
+ * @tparam EventHandlerType The type of the event handler used by the
+ * application.
  * @tparam LoggerType The type of the logger used by the application.
  */
 template <typename WindowType, typename RendererType,
+          typename EventHandlerType = EventHandler,
           typename LoggerType = utility::StandardLogger>
   requires std::is_base_of_v<Window<RendererType>, WindowType> &&
            std::is_base_of_v<Renderer, RendererType> &&
+           std::is_base_of_v<EventHandler, EventHandlerType> &&
            std::is_base_of_v<utility::Logger, LoggerType>
 class Application {
 private:
   std::map<std::string, std::unique_ptr<WindowType>>
-      _windows; ///< Application windows
+      _windows; ///< Application windowsc
 
 protected:
-  LoggerType _logger; ///< Application logger
-  Metadata _metadata; ///< Application metadata
+  EventHandlerType _eventHandler; ///< Application event handler
+  LoggerType _logger;             ///< Application logger
+  Metadata _metadata;             ///< Application metadata
 
 public:
+  /**
+   * @brief Default constructor
+   */
+  Application(void) {
+    _eventHandler.setEventCallback(
+        [this](Event &event) { this->_logger.info("Event received."); });
+  }
+
   /**
    * @brief Default destructor
    */
@@ -95,8 +109,8 @@ public:
    * @param name The name of the window.
    * @return Const reference to the window.
    */
-  const WindowType &getWindow(const std::string &name) const {
-    return *_windows.at(name);
+  const std::unique_ptr<WindowType> &getWindow(const std::string &name) const {
+    return _windows.at(name);
   }
 
   /**
@@ -106,9 +120,10 @@ public:
   void removeWindow(const std::string &name) { _windows.erase(name); }
 
   /**
-   * @brief Main application routine.
+   * @brief Main application routine (single frame render).
    */
   void routine(void) {
+    _eventHandler.pollEvents();
     for (auto &[name, window] : _windows) {
       _logger.info("Processing properties for window: " + name);
       window->processProperties();
@@ -117,6 +132,25 @@ public:
       _logger.info("Syncing window: " + name);
       window->sync();
     }
+  }
+
+  /**
+   * @brief Check if the application should quit.
+   * @return True if the application should quit, false otherwise.
+   */
+  bool shouldQuit(void) const { return _eventHandler.shouldQuit(); }
+
+  /**
+   * @brief Check if any window is still open.
+   * @return True if at least one window is still open, false otherwise.
+   */
+  bool hasOpenWindows(void) const {
+    for (const auto &[name, window] : _windows) {
+      if (!window->shouldClose()) {
+        return true;
+      }
+    }
+    return false;
   }
 };
 

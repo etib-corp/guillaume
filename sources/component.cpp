@@ -40,7 +40,17 @@ void Component::processProperties(void) {
 
 void Component::render(Renderer &renderer) {
   processProperties();
-  renderer.drawRect(_boundingBox);
+
+  // Only render visible components
+  if (!_visible) {
+    return;
+  }
+
+  // Fill the component's bounding box with its background color
+  renderer.setDrawColor(_backgroundColor);
+  renderer.fillRect(_boundingBox);
+
+  // Render all children
   for (const auto &child : _children) {
     child->render(renderer);
   }
