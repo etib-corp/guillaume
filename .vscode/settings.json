@@ -2,6 +2,10 @@
     "copyrightInserter.license": "mit",
     "copyrightInserter.holder": "ETIB Corporation",
     "editor.defaultFormatter": "ms-vscode.cpptools",
+    "[cpp]": {
+        "editor.tabSize": 4,
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
     "files.associations": {
         "string": "cpp",
         "typeinfo": "cpp",

@@ -20,12 +20,28 @@
  SOFTWARE.
  */
 
-#include "properties/layout/margin.hpp"
+#pragma once
 
 #include "component.hpp"
 
-namespace guillaume::properties::layout {
+namespace guillaume::component {
 
-void Margin::apply(Component &component) {}
+/**
+ * @brief A text component class.
+ */
+class Text : public Component {
+  public:
+    /**
+     * @brief Default constructor
+     */
+    Text(void) = default;
 
-} // namespace guillaume::properties::layout
+    /**
+     * @brief Default destructor
+     */
+    virtual ~Text(void) = default;
+
+  private:
+    std::string _content; ///< Text content
+};
+} // namespace guillaume::component

@@ -30,45 +30,45 @@ namespace guillaume::properties::style {
  * @brief Opacity style property class.
  */
 class Opacity : public guillaume::properties::StyleProperty {
-private:
-  float _alpha; ///< Opacity value (0.0 to 1.0)
+  private:
+    float _alpha; ///< Opacity value (0.0 to 1.0)
 
-public:
-  /**
-   * @brief Default constructor with full opacity.
-   */
-  Opacity(void) : _alpha(1.0f) {}
+  public:
+    /**
+     * @brief Default constructor with full opacity.
+     */
+    Opacity(void) : _alpha(1.0f) {}
 
-  /**
-   * @brief Parameterized constructor.
-   * @param alpha Opacity value (0.0 = fully transparent, 1.0 = fully opaque).
-   */
-  explicit Opacity(float alpha) : _alpha(alpha) {
-    if (_alpha < 0.0f)
-      _alpha = 0.0f;
-    if (_alpha > 1.0f)
-      _alpha = 1.0f;
-  }
+    /**
+     * @brief Parameterized constructor.
+     * @param alpha Opacity value (0.0 = fully transparent, 1.0 = fully opaque).
+     */
+    explicit Opacity(float alpha) : _alpha(alpha) {
+        if (_alpha < 0.0f)
+            _alpha = 0.0f;
+        if (_alpha > 1.0f)
+            _alpha = 1.0f;
+    }
 
-  /**
-   * @brief Set the opacity.
-   * @param alpha Opacity value (0.0 to 1.0).
-   */
-  void setAlpha(float alpha) {
-    _alpha = (alpha < 0.0f) ? 0.0f : (alpha > 1.0f) ? 1.0f : alpha;
-  }
+    /**
+     * @brief Set the opacity.
+     * @param alpha Opacity value (0.0 to 1.0).
+     */
+    void setAlpha(float alpha) {
+        _alpha = (alpha < 0.0f) ? 0.0f : (alpha > 1.0f) ? 1.0f : alpha;
+    }
 
-  /**
-   * @brief Get the opacity.
-   * @return The opacity value (0.0 to 1.0).
-   */
-  float getAlpha(void) const { return _alpha; }
+    /**
+     * @brief Get the opacity.
+     * @return The opacity value (0.0 to 1.0).
+     */
+    float getAlpha(void) const { return _alpha; }
 
-  /**
-   * @brief Apply the opacity property to a component.
-   * @param component The component to apply the opacity to.
-   */
-  void apply(Component &component) override;
+    /**
+     * @brief Apply the opacity property to a component.
+     * @param component The component to apply the opacity to.
+     */
+    void apply(Component &component) override;
 };
 
 } // namespace guillaume::properties::style

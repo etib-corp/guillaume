@@ -26,8 +26,6 @@
 
 namespace guillaume::properties::style {
 
-void BackgroundColor::apply(Component &component) {
-  component.setBackgroundColor(_color);
-}
+void BackgroundColor::apply(Component &component) {}
 
 } // namespace guillaume::properties::style

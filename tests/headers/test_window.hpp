@@ -28,11 +28,11 @@
 namespace guillaume::tests {
 
 class TestWindow : public ::testing::Test {
-protected:
-  TestWindow(void) = default;
-  ~TestWindow(void) override = default;
-  void SetUp(void) override {}
-  void TearDown(void) override {}
+  protected:
+    TestWindow(void) = default;
+    ~TestWindow(void) override = default;
+    void SetUp(void) override {}
+    void TearDown(void) override {}
 }; // class TestWindow
 
 } // namespace guillaume::tests

@@ -34,25 +34,25 @@ namespace guillaume::properties {
  * @brief Abstract base class for layout properties.
  */
 class LayoutProperty : public guillaume::Property {
-public:
-  /**
-   * @brief Default destructor
-   */
-  virtual ~LayoutProperty(void) = default;
+  public:
+    /**
+     * @brief Default destructor
+     */
+    virtual ~LayoutProperty(void) = default;
 
-  /**
-   * @brief Get the priority of layout properties.
-   * @return Layout priority level.
-   */
-  virtual PropertyPriority getPriority(void) const override {
-    return PropertyPriority::LAYOUT;
-  }
+    /**
+     * @brief Get the priority of layout properties.
+     * @return Layout priority level.
+     */
+    virtual PropertyPriority getPriority(void) const override {
+        return PropertyPriority::LAYOUT;
+    }
 
-  /**
-   * @brief Apply the layout property to a component.
-   * @param component The component to apply the property to.
-   */
-  virtual void apply(Component &component) override = 0;
+    /**
+     * @brief Apply the layout property to a component.
+     * @param component The component to apply the property to.
+     */
+    virtual void apply(Component &component) override = 0;
 };
 
 } // namespace guillaume::properties

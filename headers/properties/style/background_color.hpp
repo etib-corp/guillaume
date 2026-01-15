@@ -36,47 +36,47 @@ namespace guillaume::properties::style {
  * @brief Background color style property class.
  */
 class BackgroundColor : public guillaume::properties::StyleProperty {
-private:
-  utility::Color<uint8_t> _color; ///< Background color
+  private:
+    utility::Color<uint8_t> _color; ///< Background color
 
-public:
-  /**
-   * @brief Default constructor with black background.
-   */
-  BackgroundColor(void) : _color() {}
+  public:
+    /**
+     * @brief Default constructor with black background.
+     */
+    BackgroundColor(void) : _color() {}
 
-  /**
-   * @brief Parameterized constructor.
-   * @param color The background color.
-   */
-  explicit BackgroundColor(const utility::Color<uint8_t> &color)
-      : _color(color) {}
+    /**
+     * @brief Parameterized constructor.
+     * @param color The background color.
+     */
+    explicit BackgroundColor(const utility::Color<uint8_t> &color)
+        : _color(color) {}
 
-  /**
-   * @brief Parameterized constructor with RGB values.
-   * @param r Red channel (0-255).
-   * @param g Green channel (0-255).
-   * @param b Blue channel (0-255).
-   */
-  BackgroundColor(uint8_t r, uint8_t g, uint8_t b) : _color(r, g, b) {}
+    /**
+     * @brief Parameterized constructor with RGB values.
+     * @param r Red channel (0-255).
+     * @param g Green channel (0-255).
+     * @param b Blue channel (0-255).
+     */
+    BackgroundColor(uint8_t r, uint8_t g, uint8_t b) : _color(r, g, b) {}
 
-  /**
-   * @brief Set the background color.
-   * @param color The new background color.
-   */
-  void setColor(const utility::Color<uint8_t> &color) { _color = color; }
+    /**
+     * @brief Set the background color.
+     * @param color The new background color.
+     */
+    void setColor(const utility::Color<uint8_t> &color) { _color = color; }
 
-  /**
-   * @brief Get the background color.
-   * @return The background color.
-   */
-  utility::Color<uint8_t> getColor(void) const { return _color; }
+    /**
+     * @brief Get the background color.
+     * @return The background color.
+     */
+    utility::Color<uint8_t> getColor(void) const { return _color; }
 
-  /**
-   * @brief Apply the background color property to a component.
-   * @param component The component to apply the color to.
-   */
-  void apply(Component &component) override;
+    /**
+     * @brief Apply the background color property to a component.
+     * @param component The component to apply the color to.
+     */
+    void apply(Component &component) override;
 };
 
 } // namespace guillaume::properties::style

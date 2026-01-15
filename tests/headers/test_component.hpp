@@ -27,11 +27,11 @@
 namespace guillaume::tests {
 
 class TestComponent : public ::testing::Test {
-protected:
-  TestComponent(void) = default;
-  ~TestComponent(void) override = default;
-  void SetUp(void) override {}
-  void TearDown(void) override {}
+  protected:
+    TestComponent(void) = default;
+    ~TestComponent(void) override = default;
+    void SetUp(void) override {}
+    void TearDown(void) override {}
 }; // class TestComponent
 
 } // namespace guillaume::tests

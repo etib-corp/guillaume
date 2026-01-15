@@ -20,12 +20,6 @@
  SOFTWARE.
  */
 
-#include "properties/layout/margin.hpp"
+#include "components/text.hpp"
 
-#include "component.hpp"
-
-namespace guillaume::properties::layout {
-
-void Margin::apply(Component &component) {}
-
-} // namespace guillaume::properties::layout
+namespace guillaume::component {} // namespace guillaume::component

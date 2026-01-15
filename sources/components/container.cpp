@@ -20,12 +20,20 @@
  SOFTWARE.
  */
 
-#include "properties/layout/margin.hpp"
+#include "components/container.hpp"
 
-#include "component.hpp"
+namespace guillaume::component {
 
-namespace guillaume::properties::layout {
+Container &Container::addChild(std::shared_ptr<Component> child) {
 
-void Margin::apply(Component &component) {}
+    _children.push_back(child);
+    return *this;
+}
 
-} // namespace guillaume::properties::layout
+void Container::render(Renderer &renderer) {
+    for (const auto &child : _children) {
+        child->render(renderer);
+    }
+}
+
+} // namespace guillaume::component

@@ -26,32 +26,6 @@
 
 namespace guillaume::properties::layout {
 
-void Padding::apply(Component &component) {
-  auto boundingBox = component.getBoundingBox();
-
-  // Padding adds space inside the component, shrinking the content area
-  // Position stays the same, but the inner content area is reduced
-  auto newX = boundingBox.x() + _left;
-  auto newY = boundingBox.y() + _top;
-
-  // Adjust size (reduce by left+right and top+bottom padding)
-  auto currentWidth = boundingBox.width();
-  auto currentHeight = boundingBox.height();
-
-  // Ensure padding doesn't exceed available space
-  auto totalHorizontalPadding = _left + _right;
-  auto totalVerticalPadding = _top + _bottom;
-
-  auto newWidth = (currentWidth > totalHorizontalPadding)
-                      ? currentWidth - totalHorizontalPadding
-                      : 0;
-  auto newHeight = (currentHeight > totalVerticalPadding)
-                       ? currentHeight - totalVerticalPadding
-                       : 0;
-
-  // Update the bounding box to represent the inner content area
-  component.setBoundingBox(
-      utility::Rectangle<std::size_t>(newX, newY, newWidth, newHeight));
-}
+void Padding::apply(Component &component) {}
 
 } // namespace guillaume::properties::layout

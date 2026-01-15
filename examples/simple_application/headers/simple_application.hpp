@@ -10,20 +10,20 @@ namespace guillaume::simple_application {
 
 class SimpleApplication
     : public guillaume::Application<SimpleWindow, SimpleRenderer,
-                                     SimpleEventHandler> {
-public:
-  SimpleApplication(void);
-  ~SimpleApplication(void) override = default;
+                                    SimpleEventHandler> {
+  public:
+    SimpleApplication(void);
+    ~SimpleApplication(void) override = default;
 
-  /**
-   * @brief Initialize the application with components and event handling.
-   */
-  void initialize(void);
+    /**
+     * @brief Initialize the application with components and event handling.
+     */
+    void initialize(void);
 
-  /**
-   * @brief Run the application main loop.
-   */
-  void run(void);
+    /**
+     * @brief Run the application main loop.
+     */
+    void run(void);
 };
 
 } // namespace guillaume::simple_application

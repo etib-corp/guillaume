@@ -20,40 +20,21 @@
  SOFTWARE.
  */
 
+#include <component.hpp>
+
 #include "component.hpp"
 
 namespace guillaume {
 
-void Component::setParent(std::shared_ptr<Component> parent) {
-  _parent = std::move(parent);
-}
-
 void Component::processProperties(void) {
-  // Sort properties by priority before applying
-  std::sort(_properties.begin(), _properties.end(),
-            [](const auto &a, const auto &b) { return a.first < b.first; });
-
-  for (auto &property_pair : _properties) {
-    property_pair.second->apply(*this);
-  }
-}
-
-void Component::render(Renderer &renderer) {
-  processProperties();
-
-  // Only render visible components
-  if (!_visible) {
-    return;
-  }
-
-  // Fill the component's bounding box with its background color
-  renderer.setDrawColor(_backgroundColor);
-  renderer.fillRect(_boundingBox);
-
-  // Render all children
-  for (const auto &child : _children) {
-    child->render(renderer);
-  }
+    std::sort(_properties.begin(), _properties.end(),
+              [](const auto &left, const auto &right) {
+                  return static_cast<unsigned char>(left.first) <
+                         static_cast<unsigned char>(right.first);
+              });
+    for (auto &propertyPair : _properties) {
+        propertyPair.second->apply(*this);
+    }
 }
 
 } // namespace guillaume

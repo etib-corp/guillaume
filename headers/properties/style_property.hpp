@@ -34,25 +34,25 @@ namespace guillaume::properties {
  * @brief Abstract base class for style properties.
  */
 class StyleProperty : public guillaume::Property {
-public:
-  /**
-   * @brief Default destructor
-   */
-  virtual ~StyleProperty(void) = default;
+  public:
+    /**
+     * @brief Default destructor
+     */
+    virtual ~StyleProperty(void) = default;
 
-  /**
-   * @brief Get the priority of style properties.
-   * @return Style priority level.
-   */
-  virtual PropertyPriority getPriority(void) const override {
-    return PropertyPriority::STYLE;
-  }
+    /**
+     * @brief Get the priority of style properties.
+     * @return Style priority level.
+     */
+    virtual PropertyPriority getPriority(void) const override {
+        return PropertyPriority::STYLE;
+    }
 
-  /**
-   * @brief Apply the style property to a component.
-   * @param component The component to apply the property to.
-   */
-  virtual void apply(Component &component) override = 0;
+    /**
+     * @brief Apply the style property to a component.
+     * @param component The component to apply the property to.
+     */
+    virtual void apply(Component &component) override = 0;
 };
 
 } // namespace guillaume::properties

@@ -22,50 +22,51 @@
 
 #pragma once
 
-#include <event_handler.hpp>
 #include <SDL3/SDL.h>
+#include <event_handler.hpp>
 
 /**
  * @brief SDL3 implementation of the EventHandler interface.
  */
 class SimpleEventHandler : public guillaume::EventHandler {
-public:
-  SimpleEventHandler();
-  ~SimpleEventHandler() override = default;
-  
-  /**
-   * @brief Poll for SDL3 events and convert them to Guillaume events.
-   * @return True if events were processed.
-   */
-  bool pollEvents() override;
-  
-  /**
-   * @brief Set the event callback function.
-   * @param callback Function to call when an event is received.
-   */
-  void setEventCallback(const guillaume::EventCallbackFunction& callback) override;
-  
-  /**
-   * @brief Check if a quit event has been received.
-   * @return True if a quit event was received.
-   */
-  bool shouldQuit() const override;
+  public:
+    SimpleEventHandler();
+    ~SimpleEventHandler() override = default;
 
-private:
-  /**
-   * @brief Convert SDL key code to Guillaume key code.
-   * @param sdlKey SDL key code.
-   * @return Guillaume key code.
-   */
-  guillaume::KeyCode convertKeyCode(SDL_Keycode sdlKey);
-  
-  /**
-   * @brief Convert SDL mouse button to Guillaume mouse button.
-   * @param sdlButton SDL mouse button.
-   * @return Guillaume mouse button.
-   */
-  guillaume::MouseButton convertMouseButton(uint8_t sdlButton);
-  
-  guillaume::EventCallbackFunction _callback;
-  bool _shouldQuit = false;
+    /**
+     * @brief Poll for SDL3 events and convert them to Guillaume events.
+     * @return True if events were processed.
+     */
+    bool pollEvents() override;
+
+    /**
+     * @brief Set the event callback function.
+     * @param callback Function to call when an event is received.
+     */
+    void
+    setEventCallback(const guillaume::EventCallbackFunction &callback) override;
+
+    /**
+     * @brief Check if a quit event has been received.
+     * @return True if a quit event was received.
+     */
+    bool shouldQuit() const override;
+
+  private:
+    /**
+     * @brief Convert SDL key code to Guillaume key code.
+     * @param sdlKey SDL key code.
+     * @return Guillaume key code.
+     */
+    guillaume::KeyCode convertKeyCode(SDL_Keycode sdlKey);
+
+    /**
+     * @brief Convert SDL mouse button to Guillaume mouse button.
+     * @param sdlButton SDL mouse button.
+     * @return Guillaume mouse button.
+     */
+    guillaume::MouseButton convertMouseButton(uint8_t sdlButton);
+
+    guillaume::EventCallbackFunction _callback;
+    bool _shouldQuit = false;
 };

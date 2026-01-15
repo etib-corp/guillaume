@@ -26,6 +26,6 @@
 
 namespace guillaume::properties::style {
 
-void Opacity::apply(Component &component) { component.setOpacity(_alpha); }
+void Opacity::apply(Component &component) {}
 
 } // namespace guillaume::properties::style

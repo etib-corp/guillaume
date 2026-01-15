@@ -30,32 +30,32 @@ class Component;
  * @brief Property priority levels for ordered application.
  */
 enum class PropertyPriority : unsigned char {
-  LAYOUT = 0,   ///< Layout properties applied first
-  STYLE = 1,    ///< Style properties applied second
-  ANIMATION = 2 ///< Animation properties applied last
+    LAYOUT = 0,   ///< Layout properties applied first
+    STYLE = 1,    ///< Style properties applied second
+    ANIMATION = 2 ///< Animation properties applied last
 };
 
 /**
  * @brief Property base class.
  */
 class Property {
-public:
-  /**
-   * @brief Default destructor
-   */
-  virtual ~Property(void) = default;
+  public:
+    /**
+     * @brief Default destructor
+     */
+    virtual ~Property(void) = default;
 
-  /**
-   * @brief Get the priority of this property.
-   * @return The priority level for property application order.
-   */
-  virtual PropertyPriority getPriority(void) const = 0;
+    /**
+     * @brief Get the priority of this property.
+     * @return The priority level for property application order.
+     */
+    virtual PropertyPriority getPriority(void) const = 0;
 
-  /**
-   * @brief Apply the property to a component.
-   * @param component The component to apply the property to.
-   */
-  virtual void apply(Component &component) = 0;
+    /**
+     * @brief Apply the property to a component.
+     * @param component The component to apply the property to.
+     */
+    virtual void apply(Component &component) = 0;
 };
 
 } // namespace guillaume

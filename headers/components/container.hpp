@@ -20,12 +20,45 @@
  SOFTWARE.
  */
 
-#include "properties/layout/margin.hpp"
+#pragma once
 
 #include "component.hpp"
 
-namespace guillaume::properties::layout {
+#include <memory>
+#include <vector>
 
-void Margin::apply(Component &component) {}
+namespace guillaume::component {
+/**
+ * @brief A container class.
+ */
+class Container : public Component,
+                  public std::enable_shared_from_this<Container> {
+  public:
+    /**
+     * @brief Destructor.
+     */
+    virtual ~Container(void) = default;
 
-} // namespace guillaume::properties::layout
+    /**
+     * @brief Get the child components.
+     * @return A vector of shared_ptr<Component> representing the child
+     * components.
+     */
+    std::vector<std::shared_ptr<Component>> getChildren(void) const {
+        return _children;
+    }
+
+    /**
+     * @brief Add a child component to the container.
+     * @param child The child component to add as a shared_ptr<Component>.
+     * @return A reference to the current Container object.
+     */
+    Container &addChild(std::shared_ptr<Component> child);
+
+    void render(Renderer &renderer) override;
+
+  private:
+    std::shared_ptr<Container> _parent;                /**< Parent container. */
+    std::vector<std::shared_ptr<Component>> _children; /**< Child components. */
+};
+} // namespace guillaume::component

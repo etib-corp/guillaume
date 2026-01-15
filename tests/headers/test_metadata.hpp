@@ -27,11 +27,11 @@
 namespace guillaume::tests {
 
 class TestMetadata : public ::testing::Test {
-protected:
-  TestMetadata(void) = default;
-  ~TestMetadata(void) override = default;
-  void SetUp(void) override {}
-  void TearDown(void) override {}
+  protected:
+    TestMetadata(void) = default;
+    ~TestMetadata(void) override = default;
+    void SetUp(void) override {}
+    void TearDown(void) override {}
 }; // class TestMetadata
 
 } // namespace guillaume::tests

@@ -49,109 +49,102 @@ namespace guillaume {
 template <typename WindowType, typename RendererType,
           typename EventHandlerType = EventHandler,
           typename LoggerType = utility::StandardLogger>
-  requires std::is_base_of_v<Window<RendererType>, WindowType> &&
-           std::is_base_of_v<Renderer, RendererType> &&
-           std::is_base_of_v<EventHandler, EventHandlerType> &&
-           std::is_base_of_v<utility::Logger, LoggerType>
+    requires std::is_base_of_v<Window<RendererType>, WindowType> &&
+             std::is_base_of_v<Renderer, RendererType> &&
+             std::is_base_of_v<EventHandler, EventHandlerType> &&
+             std::is_base_of_v<utility::Logger, LoggerType>
 class Application {
-private:
-  std::map<std::string, std::unique_ptr<WindowType>>
-      _windows; ///< Application windowsc
+  private:
+    std::map<std::string, std::unique_ptr<WindowType>>
+        _windows; ///< Application windowsc
 
-protected:
-  EventHandlerType _eventHandler; ///< Application event handler
-  LoggerType _logger;             ///< Application logger
-  Metadata _metadata;             ///< Application metadata
+  protected:
+    EventHandlerType _eventHandler; ///< Application event handler
+    LoggerType _logger;             ///< Application logger
+    Metadata _metadata;             ///< Application metadata
 
-public:
-  /**
-   * @brief Default constructor
-   */
-  Application(void) {
-    _eventHandler.setEventCallback(
-        [this](Event &event) { this->_logger.info("Event received."); });
-  }
-
-  /**
-   * @brief Default destructor
-   */
-  virtual ~Application(void) = default;
-
-  /**
-   * @brief Set the application metadata.
-   * @param metadata The metadata to set.
-   */
-  void setMetadata(const Metadata &metadata) { _metadata = metadata; }
-
-  /**
-   * @brief Get the application metadata.
-   * @return Reference to the application metadata.
-   */
-  Metadata &getMetadata(void) { return _metadata; }
-
-  /**
-   * @brief Add a window to the application.
-   * @param name The name of the window.
-   */
-  void addWindow(const std::string &name) {
-    _windows[name] = std::make_unique<WindowType>();
-  }
-
-  /**
-   * @brief Get a window by name.
-   * @param name The name of the window.
-   * @return Reference to the window.
-   */
-  WindowType &getWindow(const std::string &name) { return *_windows.at(name); }
-
-  /**
-   * @brief Get a const window by name.
-   * @param name The name of the window.
-   * @return Const reference to the window.
-   */
-  const std::unique_ptr<WindowType> &getWindow(const std::string &name) const {
-    return _windows.at(name);
-  }
-
-  /**
-   * @brief Remove a window by name.
-   * @param name The name of the window.
-   */
-  void removeWindow(const std::string &name) { _windows.erase(name); }
-
-  /**
-   * @brief Main application routine (single frame render).
-   */
-  void routine(void) {
-    _eventHandler.pollEvents();
-    for (auto &[name, window] : _windows) {
-      _logger.info("Processing properties for window: " + name);
-      window->processProperties();
-      _logger.info("Rendering window: " + name);
-      window->render(window->getRenderer());
-      _logger.info("Syncing window: " + name);
-      window->sync();
+  public:
+    /**
+     * @brief Default constructor
+     */
+    Application(void) {
+        _eventHandler.setEventCallback(
+            [this](Event &event) { this->_logger.info("Event received."); });
     }
-  }
 
-  /**
-   * @brief Check if the application should quit.
-   * @return True if the application should quit, false otherwise.
-   */
-  bool shouldQuit(void) const { return _eventHandler.shouldQuit(); }
+    /**
+     * @brief Default destructor
+     */
+    virtual ~Application(void) = default;
 
-  /**
-   * @brief Check if any window is still open.
-   * @return True if at least one window is still open, false otherwise.
-   */
-  bool hasOpenWindows(void) const {
-    for (const auto &[name, window] : _windows) {
-      if (!window->shouldClose()) {
-        return true;
-      }
+    /**
+     * @brief Set the application metadata.
+     * @param metadata The metadata to set.
+     */
+    void setMetadata(const Metadata &metadata) { _metadata = metadata; }
+
+    /**
+     * @brief Get the application metadata.
+     * @return Reference to the application metadata.
+     */
+    Metadata &getMetadata(void) { return _metadata; }
+
+    /**
+     * @brief Add a window to the application.
+     * @param name The name of the window.
+     */
+    void addWindow(const std::string &name) {
+        _windows[name] = std::make_unique<WindowType>();
     }
-    return false;
-  }
+
+    /**
+     * @brief Get a window by name.
+     * @param name The name of the window.
+     * @return Reference to the window.
+     */
+    WindowType &getWindow(const std::string &name) {
+        return *_windows.at(name);
+    }
+
+    /**
+     * @brief Get a const window by name.
+     * @param name The name of the window.
+     * @return Const reference to the window.
+     */
+    const std::unique_ptr<WindowType> &
+    getWindow(const std::string &name) const {
+        return _windows.at(name);
+    }
+
+    /**
+     * @brief Remove a window by name.
+     * @param name The name of the window.
+     */
+    void removeWindow(const std::string &name) { _windows.erase(name); }
+
+    /**
+     * @brief Main application routine (single frame render).
+     */
+    void routine(void) {}
+
+    /**
+     * @brief Check if the application should quit.
+     * @return True if the application should quit, false otherwise.
+     */
+    bool shouldQuit(void) const { return _eventHandler.shouldQuit(); }
+
+    /**
+     * @brief Check if any window is still open.
+     * @return True if at least one window is still open, false otherwise.
+     */
+    bool hasOpenWindows(void) const {
+        for (const auto &[name, window] : _windows) {
+            if (!window->shouldClose()) {
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 } // namespace guillaume

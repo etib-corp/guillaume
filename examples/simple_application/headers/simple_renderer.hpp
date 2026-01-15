@@ -32,33 +32,33 @@
 namespace guillaume::simple_application {
 
 class SimpleRenderer : public guillaume::Renderer {
-private:
-  utility::StandardLogger _logger;
-  utility::Color<uint8_t> _drawColor;
-  utility::Vector<float, 2> _scale;
-  SDL_Renderer *_sdlRenderer;
+  private:
+    utility::StandardLogger _logger;
+    utility::Color<uint8_t> _drawColor;
+    utility::Vector<float, 2> _scale;
+    SDL_Renderer *_sdlRenderer;
 
-public:
-  SimpleRenderer(void);
-  SimpleRenderer(SDL_Renderer *sdlRenderer);
-  ~SimpleRenderer(void) override;
+  public:
+    SimpleRenderer(void);
+    SimpleRenderer(SDL_Renderer *sdlRenderer);
+    ~SimpleRenderer(void) override;
 
-  void clear(void) override;
-  void present(void) override;
-  void setDrawColor(utility::Color<uint8_t> color) override;
-  utility::Color<uint8_t> getDrawColor(void) const override;
-  void drawPoint(utility::Vector<std::size_t, 2> point) override;
-  void drawLine(utility::Vector<std::size_t, 2> start,
-                utility::Vector<std::size_t, 2> end) override;
-  void drawRect(utility::Rectangle<std::size_t> rectangle) override;
-  void fillRect(utility::Rectangle<std::size_t> rectangle) override;
-  void setScale(utility::Vector<float, 2> scale) override;
-  utility::Vector<float, 2> getScale(void) const override;
-  bool flush(void) override;
+    void clear(void) override;
+    void present(void) override;
+    void setDrawColor(utility::Color<uint8_t> color) override;
+    utility::Color<uint8_t> getDrawColor(void) const override;
+    void drawPoint(utility::Vector<std::size_t, 2> point) override;
+    void drawLine(utility::Vector<std::size_t, 2> start,
+                  utility::Vector<std::size_t, 2> end) override;
+    void drawRect(utility::Rectangle<std::size_t> rectangle) override;
+    void fillRect(utility::Rectangle<std::size_t> rectangle) override;
+    void setScale(utility::Vector<float, 2> scale) override;
+    utility::Vector<float, 2> getScale(void) const override;
+    bool flush(void) override;
 
-  // SDL3 specific methods
-  SDL_Renderer *getSDLRenderer() const { return _sdlRenderer; }
-  void setSDLRenderer(SDL_Renderer *renderer);
+    // SDL3 specific methods
+    SDL_Renderer *getSDLRenderer() const { return _sdlRenderer; }
+    void setSDLRenderer(SDL_Renderer *renderer);
 };
 
 } // namespace guillaume::simple_application
