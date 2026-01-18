@@ -22,10 +22,10 @@
 
 #pragma once
 
-#include "component.hpp"
-
 #include <memory>
 #include <vector>
+
+#include "component.hpp"
 
 namespace guillaume::component {
 /**

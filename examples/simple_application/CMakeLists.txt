@@ -38,7 +38,7 @@ target_include_directories(${EXAMPLE_NAME} PRIVATE
 target_link_libraries(${EXAMPLE_NAME} PRIVATE ${PROJECT_NAME})
 
 # Link against SDL3 and SDL3_ttf
-target_link_libraries(${EXAMPLE_NAME} PRIVATE SDL3 SDL3_ttf)
+target_link_libraries(${EXAMPLE_NAME} PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
 # Set C++ standard
 set_property(TARGET ${EXAMPLE_NAME} PROPERTY CXX_STANDARD 20)

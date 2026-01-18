@@ -22,14 +22,15 @@
 
 #pragma once
 
-#include "component.hpp"
+#include <memory>
+#include <string>
 
 #include <color.hpp>
 #include <font.hpp>
-#include <memory>
-#include <string>
 #include <text.hpp>
 #include <vector.hpp>
+
+#include "component.hpp"
 
 namespace guillaume::component {
 

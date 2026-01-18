@@ -1,9 +1,11 @@
 #pragma once
 
+#include <string>
+
 #include <SDL3/SDL.h>
+
 #include <rectangle.hpp>
 #include <standard_logger.hpp>
-#include <string>
 #include <vector.hpp>
 #include <window.hpp>
 

@@ -20,9 +20,8 @@
  SOFTWARE.
  */
 
-#include "properties/style/background_color.hpp"
-
 #include "component.hpp"
+#include "properties/style/background_color.hpp"
 
 namespace guillaume::properties::style {
 

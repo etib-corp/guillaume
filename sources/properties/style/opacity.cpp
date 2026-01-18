@@ -20,9 +20,8 @@
  SOFTWARE.
  */
 
-#include "properties/style/opacity.hpp"
-
 #include "component.hpp"
+#include "properties/style/opacity.hpp"
 
 namespace guillaume::properties::style {
 

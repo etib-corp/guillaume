@@ -20,8 +20,6 @@
  SOFTWARE.
  */
 
-#include <component.hpp>
-
 #include "component.hpp"
 
 namespace guillaume {

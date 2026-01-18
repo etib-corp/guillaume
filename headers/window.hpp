@@ -31,6 +31,7 @@
 #include <standard_logger.hpp>
 #include <vector.hpp>
 
+#include "components/container.hpp"
 #include "renderer.hpp"
 
 namespace guillaume {
@@ -43,7 +44,7 @@ namespace guillaume {
 template <typename RendererType, typename LoggerType = utility::StandardLogger>
     requires std::is_base_of_v<Renderer, RendererType> &&
              std::is_base_of_v<utility::Logger, LoggerType>
-class Window : public Component {
+class Window : public component::Container {
   protected:
     RendererType _renderer; ///< Window renderer
     LoggerType _logger;     ///< Window logger

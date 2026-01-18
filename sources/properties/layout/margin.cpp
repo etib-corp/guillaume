@@ -20,9 +20,8 @@
  SOFTWARE.
  */
 
-#include "properties/layout/margin.hpp"
-
 #include "component.hpp"
+#include "properties/layout/margin.hpp"
 
 namespace guillaume::properties::layout {
 

@@ -23,6 +23,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+
 #include <event_handler.hpp>
 
 /**

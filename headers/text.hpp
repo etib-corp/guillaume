@@ -22,11 +22,12 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+
 #include <color.hpp>
 #include <font.hpp>
-#include <memory>
 #include <rectangle.hpp>
-#include <string>
 #include <vector.hpp>
 
 namespace guillaume {

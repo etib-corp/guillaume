@@ -20,9 +20,8 @@
  SOFTWARE.
  */
 
-#include "properties/layout/padding.hpp"
-
 #include "component.hpp"
+#include "properties/layout/padding.hpp"
 
 namespace guillaume::properties::layout {
 

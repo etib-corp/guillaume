@@ -22,15 +22,17 @@
 
 #pragma once
 
+#include <unordered_map>
+
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
 #include <color.hpp>
 #include <font.hpp>
 #include <rectangle.hpp>
 #include <renderer.hpp>
 #include <standard_logger.hpp>
 #include <text.hpp>
-#include <unordered_map>
 #include <vector.hpp>
 
 namespace guillaume::simple_application {

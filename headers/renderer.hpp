@@ -22,15 +22,15 @@
 
 #pragma once
 
-#include <color.hpp>
-#include <font.hpp>
 #include <functional>
 #include <optional>
 #include <string>
-#include <text.hpp>
 #include <vector>
 
+#include <color.hpp>
+#include <font.hpp>
 #include <rectangle.hpp>
+#include <text.hpp>
 #include <vector.hpp>
 
 namespace guillaume {
