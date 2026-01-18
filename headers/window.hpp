@@ -43,7 +43,7 @@ namespace guillaume {
 template <typename RendererType, typename LoggerType = utility::StandardLogger>
     requires std::is_base_of_v<Renderer, RendererType> &&
              std::is_base_of_v<utility::Logger, LoggerType>
-class Window {
+class Window : public Component {
   protected:
     RendererType _renderer; ///< Window renderer
     LoggerType _logger;     ///< Window logger
