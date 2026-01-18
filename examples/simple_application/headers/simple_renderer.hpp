@@ -23,10 +23,14 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <color.hpp>
+#include <font.hpp>
 #include <rectangle.hpp>
 #include <renderer.hpp>
 #include <standard_logger.hpp>
+#include <text.hpp>
+#include <unordered_map>
 #include <vector.hpp>
 
 namespace guillaume::simple_application {
@@ -37,6 +41,10 @@ class SimpleRenderer : public guillaume::Renderer {
     utility::Color<uint8_t> _drawColor;
     utility::Vector<float, 2> _scale;
     SDL_Renderer *_sdlRenderer;
+    std::unordered_map<std::string, TTF_Font *> _fontCache;
+
+    // Helper method for font management
+    TTF_Font *loadTTFFont(const std::string &fontPath, int fontSize);
 
   public:
     SimpleRenderer(void);
@@ -51,6 +59,11 @@ class SimpleRenderer : public guillaume::Renderer {
     void drawLine(utility::Vector<std::size_t, 2> start,
                   utility::Vector<std::size_t, 2> end) override;
     void drawRect(utility::Rectangle<std::size_t> rectangle) override;
+    bool drawText(const guillaume::Text &text) override;
+    std::shared_ptr<Font> loadFont(const std::string &fontPath,
+                                   int fontSize) override;
+    utility::Rectangle<std::size_t>
+    measureText(const std::string &text, std::shared_ptr<Font> font) override;
     void fillRect(utility::Rectangle<std::size_t> rectangle) override;
     void setScale(utility::Vector<float, 2> scale) override;
     utility::Vector<float, 2> getScale(void) const override;

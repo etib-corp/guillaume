@@ -11,19 +11,23 @@ namespace guillaume::simple_application {
 class SimpleApplication
     : public guillaume::Application<SimpleWindow, SimpleRenderer,
                                     SimpleEventHandler> {
+  private:
+    /**
+     * @brief Handle incoming events.
+     * @param event The event to handle.
+     */
+    void handleEvent(guillaume::Event &event);
+
   public:
-    SimpleApplication(void);
+    SimpleApplication(int argc, const char *const argv[],
+                      const char *const envp[]);
     ~SimpleApplication(void) override = default;
 
     /**
-     * @brief Initialize the application with components and event handling.
-     */
-    void initialize(void);
-
-    /**
      * @brief Run the application main loop.
+     * @return Exit code (0 for success, non-zero for error).
      */
-    void run(void);
+    int run(void);
 };
 
 } // namespace guillaume::simple_application

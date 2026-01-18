@@ -20,61 +20,76 @@
  SOFTWARE.
  */
 
-#include "components/text.hpp"
+#include "text.hpp"
 
-namespace guillaume::component {
-
-Text::Text(const std::string &content, std::shared_ptr<Font> font)
-    : _text(std::make_shared<guillaume::Text>(
-          content, font, utility::Color<uint8_t>(255, 255, 255, 255),
-          utility::Vector<std::size_t, 2>{0, 0})),
-      _font(font) {}
+namespace guillaume {
 
 Text::Text(const std::string &content, std::shared_ptr<Font> font,
            utility::Color<uint8_t> color,
            utility::Vector<std::size_t, 2> position)
-    : _text(std::make_shared<guillaume::Text>(content, font, color, position)),
-      _font(font) {}
+    : _content(content), _font(font), _color(color), _position(position),
+      _alignment(TextAlignment::Left), _isDirty(true), _bounds(0, 0, 0, 0) {}
 
-const std::string &Text::getContent() const { return _text->getContent(); }
+const std::string &Text::getContent() const { return _content; }
 
 void Text::setContent(const std::string &content) {
-    _text->setContent(content);
+    if (_content != content) {
+        _content = content;
+        _isDirty = true;
+    }
 }
 
 std::shared_ptr<Font> Text::getFont() const { return _font; }
 
 void Text::setFont(std::shared_ptr<Font> font) {
-    _font = font;
-    _text->setFont(font);
+    if (_font != font) {
+        _font = font;
+        _isDirty = true;
+    }
 }
 
-utility::Color<uint8_t> Text::getColor() const { return _text->getColor(); }
+const utility::Color<uint8_t> &Text::getColor() const { return _color; }
 
 void Text::setColor(const utility::Color<uint8_t> &color) {
-    _text->setColor(color);
+    if (_color != color) {
+        _color = color;
+        _isDirty = true;
+    }
 }
 
-utility::Vector<std::size_t, 2> Text::getPosition() const {
-    return _text->getPosition();
+const utility::Vector<std::size_t, 2> &Text::getPosition() const {
+    return _position;
 }
 
 void Text::setPosition(const utility::Vector<std::size_t, 2> &position) {
-    _text->setPosition(position);
+    _position = position;
 }
 
-std::shared_ptr<guillaume::Text> Text::getText() const { return _text; }
+TextAlignment Text::getAlignment() const { return _alignment; }
 
-void Text::render(Renderer &renderer) {
-    if (!_text) {
-        return;
+void Text::setAlignment(TextAlignment alignment) {
+    if (_alignment != alignment) {
+        _alignment = alignment;
+        _isDirty = true;
     }
-
-    // Process any properties that may have been added to this component
-    processProperties();
-
-    // Render the text
-    renderer.drawText(*_text);
 }
 
-} // namespace guillaume::component
+bool Text::isDirty() const { return _isDirty; }
+
+void Text::markClean() { _isDirty = false; }
+
+void Text::markDirty() { _isDirty = true; }
+
+const utility::Rectangle<std::size_t> &Text::getBounds() const {
+    return _bounds;
+}
+
+void Text::setBounds(const utility::Rectangle<std::size_t> &bounds) {
+    _bounds = bounds;
+}
+
+bool Text::isEmpty() const { return _content.empty(); }
+
+std::size_t Text::length() const { return _content.length(); }
+
+} // namespace guillaume

@@ -23,8 +23,11 @@
 #pragma once
 
 #include <color.hpp>
+#include <font.hpp>
 #include <functional>
 #include <optional>
+#include <string>
+#include <text.hpp>
 #include <vector>
 
 #include <rectangle.hpp>
@@ -108,6 +111,32 @@ class Renderer {
      * @return True on success, false on failure.
      */
     virtual bool flush(void) = 0;
+
+    /**
+     * @brief Draw a Text object.
+     * @param text The Text object containing content, styling, and position
+     * information.
+     * @return True on success, false on failure.
+     */
+    virtual bool drawText(const Text &text) = 0;
+
+    /**
+     * @brief Load a font for use in rendering.
+     * @param fontPath Path to the font file.
+     * @param fontSize Size of the font in points.
+     * @return Shared pointer to the loaded Font, or nullptr on failure.
+     */
+    virtual std::shared_ptr<Font> loadFont(const std::string &fontPath,
+                                           int fontSize) = 0;
+
+    /**
+     * @brief Measure the bounds of text when rendered with a specific font.
+     * @param text The text string to measure.
+     * @param font The font to use for measurement.
+     * @return The bounding rectangle of the rendered text.
+     */
+    virtual utility::Rectangle<std::size_t>
+    measureText(const std::string &text, std::shared_ptr<Font> font) = 0;
 };
 
 } // namespace guillaume

@@ -27,13 +27,20 @@ namespace guillaume::simple_application {
 
 SimpleRenderer::SimpleRenderer()
     : _logger(), _drawColor(0, 0, 0, 255), _scale({1.0F, 1.0F}),
-      _sdlRenderer(nullptr) {
+      _sdlRenderer(nullptr), _fontCache() {
+    if (!TTF_Init()) {
+        _logger.error(std::string("TTF_Init failed: ") + SDL_GetError());
+    }
     _logger.info("SimpleRenderer initialized (no SDL renderer yet)");
 }
 
 SimpleRenderer::SimpleRenderer(SDL_Renderer *sdlRenderer)
     : _logger(), _drawColor(0, 0, 0, 255), _scale({1.0F, 1.0F}),
-      _sdlRenderer(sdlRenderer) {
+      _sdlRenderer(sdlRenderer), _fontCache() {
+    if (!TTF_Init()) {
+        _logger.error(std::string("TTF_Init failed: ") + SDL_GetError());
+    }
+
     if (_sdlRenderer) {
         // Get initial draw color from SDL
         Uint8 r, g, b, a;
@@ -52,6 +59,16 @@ SimpleRenderer::SimpleRenderer(SDL_Renderer *sdlRenderer)
 }
 
 SimpleRenderer::~SimpleRenderer() {
+    // Clean up font cache
+    for (auto &pair : _fontCache) {
+        if (pair.second) {
+            TTF_CloseFont(pair.second);
+        }
+    }
+    _fontCache.clear();
+
+    TTF_Quit();
+
     // SDL_Renderer is owned and destroyed by the window
     _sdlRenderer = nullptr;
 }
@@ -189,6 +206,30 @@ void SimpleRenderer::setScale(utility::Vector<float, 2> scale) {
 utility::Vector<float, 2> SimpleRenderer::getScale(void) const {
     return _scale;
 }
+TTF_Font *SimpleRenderer::loadTTFFont(const std::string &fontPath,
+                                      int fontSize) {
+    std::string cacheKey = fontPath + ":" + std::to_string(fontSize);
+
+    // Check if font is already in cache
+    auto it = _fontCache.find(cacheKey);
+    if (it != _fontCache.end()) {
+        return it->second;
+    }
+
+    // Load the font
+    TTF_Font *font = TTF_OpenFont(fontPath.c_str(), fontSize);
+    if (!font) {
+        _logger.error(std::string("TTF_OpenFont failed for ") + fontPath +
+                      ": " + SDL_GetError());
+        return nullptr;
+    }
+
+    // Cache the font
+    _fontCache[cacheKey] = font;
+    _logger.info("Loaded and cached font: " + fontPath + " at size " +
+                 std::to_string(fontSize));
+    return font;
+}
 
 bool SimpleRenderer::flush(void) {
     if (_sdlRenderer) {
@@ -201,6 +242,118 @@ bool SimpleRenderer::flush(void) {
         _logger.debug("Renderer flush (no SDL)");
     }
     return true;
+}
+
+bool SimpleRenderer::drawText(const guillaume::Text &text) {
+    if (text.isEmpty() || !text.getFont()) {
+        return false;
+    }
+
+    if (!_sdlRenderer) {
+        _logger.debug("Renderer draw text (no SDL)");
+        return false;
+    }
+
+    // Save current draw color
+    auto originalColor = _drawColor;
+
+    // Set the text color
+    setDrawColor(text.getColor());
+
+    // Get the font handle
+    TTF_Font *font = static_cast<TTF_Font *>(text.getFont()->getNativeHandle());
+    if (!font) {
+        _logger.error("Invalid font handle in Text object");
+        setDrawColor(originalColor);
+        return false;
+    }
+
+    // Create surface from text
+    SDL_Color textColor = {text.getColor().red(), text.getColor().green(),
+                           text.getColor().blue(), text.getColor().alpha()};
+    SDL_Surface *textSurface = TTF_RenderText_Blended(
+        font, text.getContent().c_str(), text.getContent().length(), textColor);
+    if (!textSurface) {
+        _logger.error(std::string("TTF_RenderText_Blended failed: ") +
+                      SDL_GetError());
+        setDrawColor(originalColor);
+        return false;
+    }
+
+    // Create texture from surface
+    SDL_Texture *textTexture =
+        SDL_CreateTextureFromSurface(_sdlRenderer, textSurface);
+    if (!textTexture) {
+        _logger.error(std::string("SDL_CreateTextureFromSurface failed: ") +
+                      SDL_GetError());
+        SDL_DestroySurface(textSurface);
+        setDrawColor(originalColor);
+        return false;
+    }
+
+    // Get texture dimensions
+    int textWidth = textSurface->w;
+    int textHeight = textSurface->h;
+    SDL_DestroySurface(textSurface);
+
+    // Render texture to screen
+    auto position = text.getPosition();
+    SDL_FRect destRect{
+        static_cast<float>(position[0]), static_cast<float>(position[1]),
+        static_cast<float>(textWidth), static_cast<float>(textHeight)};
+
+    if (!SDL_RenderTexture(_sdlRenderer, textTexture, nullptr, &destRect)) {
+        _logger.error(std::string("SDL_RenderTexture failed: ") +
+                      SDL_GetError());
+        SDL_DestroyTexture(textTexture);
+        setDrawColor(originalColor);
+        return false;
+    }
+
+    SDL_DestroyTexture(textTexture);
+
+    // Restore original draw color
+    setDrawColor(originalColor);
+
+    return true;
+}
+
+std::shared_ptr<guillaume::Font>
+SimpleRenderer::loadFont(const std::string &fontPath, int fontSize) {
+    TTF_Font *ttfFont = loadTTFFont(fontPath, fontSize);
+    if (!ttfFont) {
+        return nullptr;
+    }
+
+    auto font = std::make_shared<guillaume::Font>(fontPath, fontSize);
+    font->setNativeHandle(ttfFont);
+
+    return font;
+}
+
+utility::Rectangle<std::size_t>
+SimpleRenderer::measureText(const std::string &text,
+                            std::shared_ptr<guillaume::Font> font) {
+    if (!font || !font->isValid()) {
+        return utility::Rectangle<std::size_t>(0, 0, 0, 0);
+    }
+
+    TTF_Font *ttfFont = static_cast<TTF_Font *>(font->getNativeHandle());
+    if (!ttfFont) {
+        return utility::Rectangle<std::size_t>(0, 0, 0, 0);
+    }
+
+    int width = 0, height = 0;
+    if (!TTF_GetStringSize(ttfFont, text.c_str(), text.length(), &width,
+                           &height)) {
+        _logger.error(std::string("TTF_GetStringSize failed: ") +
+                      SDL_GetError());
+        return utility::Rectangle<std::size_t>(0, 0, 0, 0);
+    }
+
+    return utility::Rectangle<std::size_t>(0, 0,
+                                           static_cast<std::size_t>(width),
+                                           static_cast<std::size_t>(height));
 }
 
 } // namespace guillaume::simple_application
