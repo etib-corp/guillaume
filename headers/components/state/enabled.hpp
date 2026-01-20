@@ -22,21 +22,39 @@
 
 #pragma once
 
-namespace guillaume {
+#include "component.hpp"
+
+namespace guillaume::components::state {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Enabled component tracking whether an entity is interactive.
  */
-class Component {
+class Enabled : public Component {
+  private:
+    bool _is_enabled_{true};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Enabled(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Enabled(void) override = default;
+
+    /**
+     * @brief Set the enabled state.
+     * @param is_enabled True if enabled.
+     */
+    void setIsEnabled(bool is_enabled) { _is_enabled_ = is_enabled; }
+
+    /**
+     * @brief Check if enabled.
+     * @return True if enabled.
+     */
+    bool isEnabled(void) const { return _is_enabled_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::state

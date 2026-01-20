@@ -25,18 +25,20 @@
 namespace guillaume {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief Base class for all systems in the ECS architecture.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Systems are responsible for processing entities that possess specific
+ * components. They encapsulate the logic that operates on the data held by
+ * components.
  */
-class Component {
+class System {
   public:
+    virtual ~System(void) = default;
+
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Update the system, processing relevant entities.
      */
-    virtual ~Component(void) = default;
+    virtual void update(void) = 0;
 };
 
 } // namespace guillaume

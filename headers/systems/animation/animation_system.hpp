@@ -22,21 +22,31 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::animation {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief AnimationSystem updates frame-by-frame animations.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Animator, Sprite, and Transform components.
  */
-class Component {
+class AnimationSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    AnimationSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~AnimationSystem(void) override = default;
+
+    /**
+     * @brief Update the animation system and advance animations.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::animation

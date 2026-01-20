@@ -22,21 +22,31 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::utility {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief ScrollSystem handles scrollable areas (e.g., lists, panels).
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Scrollable, Transform, and Children components.
  */
-class Component {
+class ScrollSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    ScrollSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~ScrollSystem(void) override = default;
+
+    /**
+     * @brief Update the scroll system and handle scrolling.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::utility

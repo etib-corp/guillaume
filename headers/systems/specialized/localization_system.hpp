@@ -22,21 +22,32 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::specialized {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief LocalizationSystem dynamically updates text based on language/locale.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Text components and applies locale-specific
+ * formatting.
  */
-class Component {
+class LocalizationSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    LocalizationSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~LocalizationSystem(void) override = default;
+
+    /**
+     * @brief Update the localization system and apply language settings.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::specialized

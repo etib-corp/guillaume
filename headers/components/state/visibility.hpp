@@ -22,21 +22,39 @@
 
 #pragma once
 
-namespace guillaume {
+#include "component.hpp"
+
+namespace guillaume::components::state {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Visibility component tracking whether an entity is visible.
  */
-class Component {
+class Visibility : public Component {
+  private:
+    bool _is_visible_{true};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Visibility(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Visibility(void) override = default;
+
+    /**
+     * @brief Set the visibility state.
+     * @param is_visible True if visible.
+     */
+    void setIsVisible(bool is_visible) { _is_visible_ = is_visible; }
+
+    /**
+     * @brief Check if visible.
+     * @return True if visible.
+     */
+    bool isVisible(void) const { return _is_visible_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::state

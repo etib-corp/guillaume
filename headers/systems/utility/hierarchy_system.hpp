@@ -22,21 +22,32 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::utility {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief HierarchySystem manages parent-child relationships and propagates
+ * transforms.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Parent, Children, and Transform components.
  */
-class Component {
+class HierarchySystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    HierarchySystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~HierarchySystem(void) override = default;
+
+    /**
+     * @brief Update the hierarchy system and propagate transforms.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::utility

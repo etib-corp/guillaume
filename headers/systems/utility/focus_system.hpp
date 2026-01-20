@@ -22,21 +22,31 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::utility {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief FocusSystem manages keyboard/tab focus navigation.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Focusable and Selected components.
  */
-class Component {
+class FocusSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    FocusSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~FocusSystem(void) override = default;
+
+    /**
+     * @brief Update the focus system and handle focus navigation.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::utility

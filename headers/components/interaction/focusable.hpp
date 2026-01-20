@@ -22,21 +22,39 @@
 
 #pragma once
 
-namespace guillaume {
+#include "component.hpp"
+
+namespace guillaume::components::interaction {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Focusable component allowing an entity to receive keyboard input.
  */
-class Component {
+class Focusable : public Component {
+  private:
+    bool _is_focused_{false};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Focusable(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Focusable(void) override = default;
+
+    /**
+     * @brief Set the focus state.
+     * @param is_focused True if currently focused.
+     */
+    void setIsFocused(bool is_focused) { _is_focused_ = is_focused; }
+
+    /**
+     * @brief Check if currently focused.
+     * @return True if focused.
+     */
+    bool isFocused(void) const { return _is_focused_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::interaction

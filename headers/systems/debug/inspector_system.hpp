@@ -22,21 +22,33 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::debug {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief InspectorSystem provides real-time editing of UI components for dev
+ * tools.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes all components via reflection to enable runtime inspection and
+ * modification.
  */
-class Component {
+class InspectorSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    InspectorSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~InspectorSystem(void) override = default;
+
+    /**
+     * @brief Update the inspector system and provide editing capabilities.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::debug

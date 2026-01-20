@@ -22,21 +22,57 @@
 
 #pragma once
 
-namespace guillaume {
+#include <cstdint>
+#include <string>
+
+#include "component.hpp"
+
+namespace guillaume::components::visual {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Sprite component for rendering images or textures.
  */
-class Component {
+class Sprite : public Component {
+  private:
+    std::string _texture_id_{};
+    std::uint32_t _color_{0xFFFFFFFF};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Sprite(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Sprite(void) override = default;
+
+    /**
+     * @brief Set the texture ID.
+     * @param texture_id The texture identifier.
+     */
+    void setTextureId(const std::string &texture_id) {
+        _texture_id_ = texture_id;
+    }
+
+    /**
+     * @brief Get the texture ID.
+     * @return The texture identifier.
+     */
+    const std::string &getTextureId(void) const { return _texture_id_; }
+
+    /**
+     * @brief Set the color.
+     * @param color The color value (RGBA).
+     */
+    void setColor(std::uint32_t color) { _color_ = color; }
+
+    /**
+     * @brief Get the color.
+     * @return The color value (RGBA).
+     */
+    std::uint32_t getColor(void) const { return _color_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::visual

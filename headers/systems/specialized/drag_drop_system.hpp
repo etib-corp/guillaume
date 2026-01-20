@@ -22,21 +22,31 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::specialized {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief DragDropSystem manages drag-and-drop interactions between entities.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Draggable, Transform, and Parent components.
  */
-class Component {
+class DragDropSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    DragDropSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~DragDropSystem(void) override = default;
+
+    /**
+     * @brief Update the drag-drop system and handle drag operations.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::specialized

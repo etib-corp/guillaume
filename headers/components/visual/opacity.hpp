@@ -22,21 +22,42 @@
 
 #pragma once
 
-namespace guillaume {
+#include <cstdint>
+
+#include "component.hpp"
+
+namespace guillaume::components::visual {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Opacity component defining transparency level.
  */
-class Component {
+class Opacity : public Component {
+  private:
+    std::uint8_t _alpha_{255};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Opacity(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Opacity(void) override = default;
+
+    /**
+     * @brief Set the alpha value (transparency).
+     * @param alpha The alpha value (0-255, where 0 is transparent and 255 is
+     * opaque).
+     */
+    void setAlpha(std::uint8_t alpha) { _alpha_ = alpha; }
+
+    /**
+     * @brief Get the alpha value.
+     * @return The alpha value (0-255).
+     */
+    std::uint8_t getAlpha(void) const { return _alpha_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::visual

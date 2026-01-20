@@ -22,21 +22,32 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::core {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief InputSystem handles user input (mouse, keyboard, touch).
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Clickable, Hoverable, Draggable, and Focusable
+ * components.
  */
-class Component {
+class InputSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    InputSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~InputSystem(void) override = default;
+
+    /**
+     * @brief Update the input system and process user input events.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::core

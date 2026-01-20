@@ -22,21 +22,31 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::interaction {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief SliderSystem updates slider values and handles user drag input.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Slider, Draggable, and Transform components.
  */
-class Component {
+class SliderSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    SliderSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~SliderSystem(void) override = default;
+
+    /**
+     * @brief Update the slider system and handle slider interactions.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::interaction

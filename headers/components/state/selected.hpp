@@ -22,21 +22,39 @@
 
 #pragma once
 
-namespace guillaume {
+#include "component.hpp"
+
+namespace guillaume::components::state {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Selected component tracking selection state.
  */
-class Component {
+class Selected : public Component {
+  private:
+    bool _is_selected_{false};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Selected(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Selected(void) override = default;
+
+    /**
+     * @brief Set the selected state.
+     * @param is_selected True if selected.
+     */
+    void setIsSelected(bool is_selected) { _is_selected_ = is_selected; }
+
+    /**
+     * @brief Check if selected.
+     * @return True if selected.
+     */
+    bool isSelected(void) const { return _is_selected_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::state

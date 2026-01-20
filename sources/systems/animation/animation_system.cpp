@@ -20,23 +20,12 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "systems/animation/animation_system.hpp"
 
-namespace guillaume {
+namespace guillaume::systems::animation {
 
-/**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
- */
-class Component {
-  public:
-    /**
-     * @brief Virtual destructor for the Component base class.
-     */
-    virtual ~Component(void) = default;
-};
+void AnimationSystem::update(void) {
+    // TODO: Implement frame animation logic
+}
 
-} // namespace guillaume
+} // namespace guillaume::systems::animation

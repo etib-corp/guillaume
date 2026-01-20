@@ -22,21 +22,32 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::core {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief LayoutSystem calculates positions/sizes based on layout rules.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Transform, Layout, Anchor, Parent, and Children
+ * components to implement layout algorithms (e.g., flexbox, grid).
  */
-class Component {
+class LayoutSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    LayoutSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~LayoutSystem(void) override = default;
+
+    /**
+     * @brief Update the layout system and recalculate positions/sizes.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::core

@@ -22,21 +22,31 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::animation {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief TweenSystem handles smooth transitions (e.g., fading, sliding).
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Tween, Transform, and Opacity components.
  */
-class Component {
+class TweenSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    TweenSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~TweenSystem(void) override = default;
+
+    /**
+     * @brief Update the tween system and interpolate values.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::animation

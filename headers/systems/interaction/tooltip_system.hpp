@@ -22,21 +22,31 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::interaction {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief TooltipSystem shows/hides tooltips based on hover or focus.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Tooltip, Hoverable, and Transform components.
  */
-class Component {
+class TooltipSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    TooltipSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~TooltipSystem(void) override = default;
+
+    /**
+     * @brief Update the tooltip system and manage tooltip visibility.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::interaction

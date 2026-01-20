@@ -22,21 +22,54 @@
 
 #pragma once
 
-namespace guillaume {
+#include <cstddef>
+
+#include "component.hpp"
+
+namespace guillaume::components::visual {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Rectangle component defining a rectangular area.
  */
-class Component {
+class Rectangle : public Component {
+  private:
+    std::size_t _width_{0};
+    std::size_t _height_{0};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Rectangle(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Rectangle(void) override = default;
+
+    /**
+     * @brief Set the width.
+     * @param width The width value.
+     */
+    void setWidth(std::size_t width) { _width_ = width; }
+
+    /**
+     * @brief Get the width.
+     * @return The width value.
+     */
+    std::size_t getWidth(void) const { return _width_; }
+
+    /**
+     * @brief Set the height.
+     * @param height The height value.
+     */
+    void setHeight(std::size_t height) { _height_ = height; }
+
+    /**
+     * @brief Get the height.
+     * @return The height value.
+     */
+    std::size_t getHeight(void) const { return _height_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::visual

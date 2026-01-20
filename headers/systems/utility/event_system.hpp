@@ -22,21 +22,32 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::utility {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief EventSystem dispatches custom events.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with event-related components (e.g., Clickable, Hoverable)
+ * and dispatches custom events like `on_click` and `on_hover`.
  */
-class Component {
+class EventSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    EventSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~EventSystem(void) override = default;
+
+    /**
+     * @brief Update the event system and dispatch events.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::utility

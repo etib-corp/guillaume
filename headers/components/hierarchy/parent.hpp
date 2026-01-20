@@ -22,21 +22,41 @@
 
 #pragma once
 
-namespace guillaume {
+#include <cstddef>
+
+#include "component.hpp"
+
+namespace guillaume::components::hierarchy {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Parent component referencing the parent entity.
  */
-class Component {
+class Parent : public Component {
+  private:
+    std::size_t _parent_id_{0};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Parent(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Parent(void) override = default;
+
+    /**
+     * @brief Set the parent entity ID.
+     * @param parent_id The parent entity ID.
+     */
+    void setParentId(std::size_t parent_id) { _parent_id_ = parent_id; }
+
+    /**
+     * @brief Get the parent entity ID.
+     * @return The parent entity ID.
+     */
+    std::size_t getParentId(void) const { return _parent_id_; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::hierarchy

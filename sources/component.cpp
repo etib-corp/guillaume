@@ -22,17 +22,4 @@
 
 #include "component.hpp"
 
-namespace guillaume {
-
-void Component::processProperties(void) {
-    std::sort(_properties.begin(), _properties.end(),
-              [](const auto &left, const auto &right) {
-                  return static_cast<unsigned char>(left.first) <
-                         static_cast<unsigned char>(right.first);
-              });
-    for (auto &propertyPair : _properties) {
-        propertyPair.second->apply(*this);
-    }
-}
-
-} // namespace guillaume
+namespace guillaume {} // namespace guillaume

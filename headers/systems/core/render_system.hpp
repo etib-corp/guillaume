@@ -22,21 +22,32 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::core {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief RenderSystem draws all visible UI elements on screen.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Transform, Sprite, Text, Opacity, and Border
+ * components.
  */
-class Component {
+class RenderSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    RenderSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~RenderSystem(void) override = default;
+
+    /**
+     * @brief Update the render system and draw all visible entities.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::core

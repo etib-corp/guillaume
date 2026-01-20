@@ -22,21 +22,50 @@
 
 #pragma once
 
-namespace guillaume {
+#include <functional>
+
+#include "component.hpp"
+
+namespace guillaume::components::interaction {
 
 /**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * @brief Clickable component marking an entity as clickable.
  */
-class Component {
+class Clickable : public Component {
+  private:
+    std::function<void()> _on_click_{};
+
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    Clickable(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~Clickable(void) override = default;
+
+    /**
+     * @brief Set the click callback.
+     * @param callback The function to call when clicked.
+     */
+    void setOnClick(std::function<void()> callback) { _on_click_ = callback; }
+
+    /**
+     * @brief Get the click callback.
+     * @return The click callback function.
+     */
+    const std::function<void()> &getOnClick(void) const { return _on_click_; }
+
+    /**
+     * @brief Trigger the click callback.
+     */
+    void click(void) const {
+        if (_on_click_) {
+            _on_click_();
+        }
+    }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components::interaction

@@ -22,21 +22,32 @@
 
 #pragma once
 
-namespace guillaume {
+#include "system.hpp"
+
+namespace guillaume::systems::interaction {
 
 /**
- * @brief Base class for all components in the ECS architecture.
+ * @brief DropdownSystem handles dropdown menu expansion, selection, and
+ * scrolling.
  *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
+ * Processes entities with Dropdown, Clickable, and Scrollable components.
  */
-class Component {
+class DropdownSystem : public System {
   public:
     /**
-     * @brief Virtual destructor for the Component base class.
+     * @brief Default constructor.
      */
-    virtual ~Component(void) = default;
+    DropdownSystem(void) = default;
+
+    /**
+     * @brief Default destructor.
+     */
+    ~DropdownSystem(void) override = default;
+
+    /**
+     * @brief Update the dropdown system and handle dropdown interactions.
+     */
+    void update(void) override;
 };
 
-} // namespace guillaume
+} // namespace guillaume::systems::interaction
