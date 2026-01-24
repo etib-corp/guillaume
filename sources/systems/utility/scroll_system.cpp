@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::utility {
 
-void ScrollSystem::update(void) {
+void ScrollSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement scrolling logic
 }
 

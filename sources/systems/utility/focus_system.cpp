@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::utility {
 
-void FocusSystem::update(void) {
+void FocusSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement focus management logic
 }
 

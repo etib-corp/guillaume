@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::functional {
 
 /**
  * @brief ProgressBar component displaying progress.
  */
-class ProgressBar : public Component {
+class ProgressBar : public ecs::Component {
   private:
     double _min_value_{0.0};
     double _max_value_{100.0};

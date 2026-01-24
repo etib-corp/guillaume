@@ -45,8 +45,9 @@ class ButtonSystem : public System {
 
     /**
      * @brief Update the button system and handle button interactions.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

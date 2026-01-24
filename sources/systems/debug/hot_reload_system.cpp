@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::debug {
 
-void HotReloadSystem::update(void) {
+void HotReloadSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement hot-reload logic
 }
 

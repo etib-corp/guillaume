@@ -24,14 +24,14 @@
 
 #include <functional>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::interaction {
 
 /**
  * @brief Clickable component marking an entity as clickable.
  */
-class Clickable : public Component {
+class Clickable : public ecs::Component {
   private:
     std::function<void()> _on_click_{};
 

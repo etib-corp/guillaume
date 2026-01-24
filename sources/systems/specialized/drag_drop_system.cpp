@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::specialized {
 
-void DragDropSystem::update(void) {
+void DragDropSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement drag-drop logic
 }
 

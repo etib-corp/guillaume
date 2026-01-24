@@ -24,14 +24,14 @@
 
 #include <cstddef>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::hierarchy {
 
 /**
  * @brief Parent component referencing the parent entity.
  */
-class Parent : public Component {
+class Parent : public ecs::Component {
   private:
     std::size_t _parent_id_{0};
 

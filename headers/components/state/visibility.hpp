@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::state {
 
 /**
  * @brief Visibility component tracking whether an entity is visible.
  */
-class Visibility : public Component {
+class Visibility : public ecs::Component {
   private:
     bool _is_visible_{true};
 

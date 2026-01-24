@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::specialized {
 
-void ProgressBarSystem::update(void) {
+void ProgressBarSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement progress bar update logic
 }
 

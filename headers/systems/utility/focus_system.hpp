@@ -45,8 +45,9 @@ class FocusSystem : public System {
 
     /**
      * @brief Update the focus system and handle focus navigation.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::utility

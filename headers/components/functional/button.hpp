@@ -25,14 +25,14 @@
 #include <functional>
 #include <string>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::functional {
 
 /**
  * @brief Button component marking an entity as a button.
  */
-class Button : public Component {
+class Button : public ecs::Component {
   private:
     std::string _label_{};
     std::function<void()> _on_click_{};

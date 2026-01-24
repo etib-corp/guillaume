@@ -46,8 +46,9 @@ class DropdownSystem : public System {
 
     /**
      * @brief Update the dropdown system and handle dropdown interactions.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

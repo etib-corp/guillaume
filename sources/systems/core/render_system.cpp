@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::core {
 
-void RenderSystem::update(void) {
+void RenderSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement rendering logic for entities with rendering components
 }
 

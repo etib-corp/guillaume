@@ -45,8 +45,9 @@ class InputFieldSystem : public System {
 
     /**
      * @brief Update the input field system and handle text input.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::interaction {
 
 /**
  * @brief Focusable component allowing an entity to receive keyboard input.
  */
-class Focusable : public Component {
+class Focusable : public ecs::Component {
   private:
     bool _is_focused_{false};
 

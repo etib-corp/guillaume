@@ -22,23 +22,29 @@
 
 #pragma once
 
-namespace guillaume {
+#include "ecs/component_registry.hpp"
+
+namespace guillaume::ecs {
 
 /**
- * @brief Base class for all systems in the ECS architecture.
- *
- * Systems are responsible for processing entities that possess specific
- * components. They encapsulate the logic that operates on the data held by
- * components.
+ * @brief Templated registry helper that registers multiple component
+ * types for an entity.
+ * @tparam ComponentTypes The component types to register.
  */
-class System {
+template <InheritFromComponent... ComponentTypes>
+class ComponentRegistryFiller : public ComponentRegistry {
   public:
-    virtual ~System(void) = default;
+    /**
+     * @brief Default constructor.
+     */
+    ComponentRegistryFiller(void) : ComponentRegistry() {
+        (registerComponent<ComponentTypes>(), ...);
+    }
 
     /**
-     * @brief Update the system, processing relevant entities.
+     * @brief Default destructor for the Component Registry Filler class.
      */
-    virtual void update(void) = 0;
+    virtual ~ComponentRegistryFiller(void) = default;
 };
 
-} // namespace guillaume
+} // namespace guillaume::ecs

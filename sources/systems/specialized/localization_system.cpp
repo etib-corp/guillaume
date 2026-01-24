@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::specialized {
 
-void LocalizationSystem::update(void) {
+void LocalizationSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement localization logic
 }
 

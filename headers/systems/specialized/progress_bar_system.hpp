@@ -45,8 +45,9 @@ class ProgressBarSystem : public System {
 
     /**
      * @brief Update the progress bar system and update visual representation.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::specialized

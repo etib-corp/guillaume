@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::debug {
 
-void InspectorSystem::update(void) {
+void InspectorSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement inspector and reflection logic
 }
 

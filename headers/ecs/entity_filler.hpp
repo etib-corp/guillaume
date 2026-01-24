@@ -20,6 +20,39 @@
  SOFTWARE.
  */
 
-#include "system.hpp"
+#pragma once
 
-namespace guillaume {} // namespace guillaume
+#include "ecs/component.hpp"
+#include "ecs/component_registry.hpp"
+#include "ecs/entity.hpp"
+
+namespace guillaume::ecs {
+
+/**
+ * @brief Templated Entity class that automatically sets its signature based
+ * on the specified component types.
+ * @tparam ComponentTypes The component types that define the entity's
+ * signature.
+ */
+template <InheritFromComponentRegistry ComponentRegistryType,
+          InheritFromComponent... ComponentTypes>
+class EntityFiller : public Entity {
+  public:
+    /**
+     * @brief Construct a new Entity Filler objec, set its signature and
+     * register its components to the ComponentRegistry.
+     */
+    EntityFiller(void) {
+        setSignature<ComponentTypes...>();
+        utility::Singleton<ComponentRegistryType>::getInstance()
+            .template registerComponentsForEntity<ComponentTypes...>(
+                getIdentifier());
+    }
+
+    /**
+     * @brief Default destructor for the Entity Filler class.
+     */
+    virtual ~EntityFiller(void) = default;
+};
+
+} // namespace guillaume::ecs

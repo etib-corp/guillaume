@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::functional {
 
 /**
  * @brief Slider component defining a slider UI element.
  */
-class Slider : public Component {
+class Slider : public ecs::Component {
   private:
     double _min_value_{0.0};
     double _max_value_{100.0};

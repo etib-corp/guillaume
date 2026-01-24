@@ -46,8 +46,9 @@ class HierarchySystem : public System {
 
     /**
      * @brief Update the hierarchy system and propagate transforms.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::utility

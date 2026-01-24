@@ -25,14 +25,14 @@
 #include <cstdint>
 #include <string>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
 
 /**
  * @brief Sprite component for rendering images or textures.
  */
-class Sprite : public Component {
+class Sprite : public ecs::Component {
   private:
     std::string _texture_id_{};
     std::uint32_t _color_{0xFFFFFFFF};

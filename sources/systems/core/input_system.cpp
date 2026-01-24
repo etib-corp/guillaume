@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::core {
 
-void InputSystem::update(void) {
+void InputSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement input handling logic for interactive components
 }
 

@@ -45,8 +45,9 @@ class TooltipSystem : public System {
 
     /**
      * @brief Update the tooltip system and manage tooltip visibility.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

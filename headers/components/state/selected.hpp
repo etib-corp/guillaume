@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::state {
 
 /**
  * @brief Selected component tracking selection state.
  */
-class Selected : public Component {
+class Selected : public ecs::Component {
   private:
     bool _is_selected_{false};
 

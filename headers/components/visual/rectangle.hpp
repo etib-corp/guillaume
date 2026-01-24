@@ -24,14 +24,14 @@
 
 #include <cstddef>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
 
 /**
  * @brief Rectangle component defining a rectangular area.
  */
-class Rectangle : public Component {
+class Rectangle : public ecs::Component {
   private:
     std::size_t _width_{0};
     std::size_t _height_{0};

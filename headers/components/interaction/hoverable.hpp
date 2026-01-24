@@ -25,14 +25,14 @@
 #include <cstdint>
 #include <functional>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::interaction {
 
 /**
  * @brief Hoverable component defining hover effects.
  */
-class Hoverable : public Component {
+class Hoverable : public ecs::Component {
   private:
     std::uint32_t _hover_color_{0xFFFFFFFF};
     std::function<void()> _on_hover_{};

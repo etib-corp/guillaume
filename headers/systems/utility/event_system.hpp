@@ -46,8 +46,9 @@ class EventSystem : public System {
 
     /**
      * @brief Update the event system and dispatch events.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::utility

@@ -26,14 +26,14 @@
 #include <functional>
 #include <string>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::functional {
 
 /**
  * @brief InputField component for text input.
  */
-class InputField : public Component {
+class InputField : public ecs::Component {
   private:
     std::string _placeholder_{};
     std::size_t _max_length_{0};

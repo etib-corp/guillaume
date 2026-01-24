@@ -46,8 +46,9 @@ class LocalizationSystem : public System {
 
     /**
      * @brief Update the localization system and apply language settings.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::specialized

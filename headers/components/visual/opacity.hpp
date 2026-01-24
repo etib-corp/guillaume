@@ -24,14 +24,14 @@
 
 #include <cstdint>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
 
 /**
  * @brief Opacity component defining transparency level.
  */
-class Opacity : public Component {
+class Opacity : public ecs::Component {
   private:
     std::uint8_t _alpha_{255};
 

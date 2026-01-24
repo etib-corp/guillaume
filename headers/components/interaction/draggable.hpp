@@ -24,14 +24,14 @@
 
 #include <vector.hpp>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::interaction {
 
 /**
  * @brief Draggable component allowing an entity to be dragged.
  */
-class Draggable : public Component {
+class Draggable : public ecs::Component {
   private:
     bool _is_dragging_{false};
     utility::Vector<int, 2> _drag_offset_{0, 0};

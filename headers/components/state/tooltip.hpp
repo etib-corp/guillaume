@@ -25,14 +25,14 @@
 #include <cstddef>
 #include <string>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::state {
 
 /**
  * @brief Tooltip component adding tooltip functionality.
  */
-class Tooltip : public Component {
+class Tooltip : public ecs::Component {
   private:
     std::string _tooltip_text_{};
     std::size_t _delay_{500};

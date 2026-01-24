@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::utility {
 
-void EventSystem::update(void) {
+void EventSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement event dispatching logic
 }
 

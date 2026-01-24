@@ -24,14 +24,14 @@
 
 #include <cstddef>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::layout {
 
 /**
  * @brief Scrollable component enabling scrolling for an entity.
  */
-class Scrollable : public Component {
+class Scrollable : public ecs::Component {
   private:
     std::size_t _scroll_position_{0};
     std::size_t _content_size_{0};

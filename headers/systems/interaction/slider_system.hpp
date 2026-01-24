@@ -45,8 +45,9 @@ class SliderSystem : public System {
 
     /**
      * @brief Update the slider system and handle slider interactions.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

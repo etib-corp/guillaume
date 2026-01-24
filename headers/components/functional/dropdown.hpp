@@ -27,14 +27,14 @@
 #include <string>
 #include <vector>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::functional {
 
 /**
  * @brief Dropdown component defining a dropdown menu.
  */
-class Dropdown : public Component {
+class Dropdown : public ecs::Component {
   private:
     std::vector<std::string> _options_{};
     std::size_t _selected_index_{0};

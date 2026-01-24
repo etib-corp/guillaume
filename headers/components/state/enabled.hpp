@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::state {
 
 /**
  * @brief Enabled component tracking whether an entity is interactive.
  */
-class Enabled : public Component {
+class Enabled : public ecs::Component {
   private:
     bool _is_enabled_{true};
 

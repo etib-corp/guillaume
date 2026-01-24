@@ -25,14 +25,14 @@
 #include <cstddef>
 #include <vector>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::hierarchy {
 
 /**
  * @brief Children component listing child entities.
  */
-class Children : public Component {
+class Children : public ecs::Component {
   private:
     std::vector<std::size_t> _child_ids_{};
 

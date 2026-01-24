@@ -25,14 +25,14 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
 
 /**
  * @brief Border component defining border style properties.
  */
-class Border : public Component {
+class Border : public ecs::Component {
   private:
     std::size_t _thickness_{0};
     std::uint32_t _color_{0xFF000000};

@@ -24,14 +24,14 @@
 
 #include <cstddef>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::animation {
 
 /**
  * @brief Animator component handling animation data.
  */
-class Animator : public Component {
+class Animator : public ecs::Component {
   private:
     std::size_t _current_frame_{0};
     double _animation_speed_{1.0};

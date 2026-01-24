@@ -22,28 +22,28 @@
 
 #pragma once
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::layout {
 
 /**
  * @brief Anchor component to anchor an entity to a parent or screen edge.
  */
-class Anchor : public Component {
+class Anchor : public ecs::Component {
   public:
     /**
      * @brief Anchor point positions for element alignment.
      */
     enum class AnchorPoint {
-        TOP_LEFT,     /**< Top-left corner */
-        TOP_CENTER,   /**< Top-center position */
-        TOP_RIGHT,    /**< Top-right corner */
-        CENTER_LEFT,  /**< Center-left position */
-        CENTER,       /**< Center position */
-        CENTER_RIGHT, /**< Center-right position */
-        BOTTOM_LEFT,  /**< Bottom-left corner */
-        BOTTOM_CENTER,/**< Bottom-center position */
-        BOTTOM_RIGHT  /**< Bottom-right corner */
+        TOP_LEFT,      /**< Top-left corner */
+        TOP_CENTER,    /**< Top-center position */
+        TOP_RIGHT,     /**< Top-right corner */
+        CENTER_LEFT,   /**< Center-left position */
+        CENTER,        /**< Center position */
+        CENTER_RIGHT,  /**< Center-right position */
+        BOTTOM_LEFT,   /**< Bottom-left corner */
+        BOTTOM_CENTER, /**< Bottom-center position */
+        BOTTOM_RIGHT   /**< Bottom-right corner */
     };
 
   private:

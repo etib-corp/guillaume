@@ -25,21 +25,21 @@
 #include <cstddef>
 #include <string>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::layout {
 
 /**
  * @brief Layout component defining layout rules for UI elements.
  */
-class Layout : public Component {
+class Layout : public ecs::Component {
   public:
     /**
      * @brief Direction for flex layout arrangement.
      */
     enum class FlexDirection {
-        ROW,    /**< Arrange elements horizontally */
-        COLUMN  /**< Arrange elements vertically */
+        ROW,   /**< Arrange elements horizontally */
+        COLUMN /**< Arrange elements vertically */
     };
 
   private:

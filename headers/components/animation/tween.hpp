@@ -25,23 +25,23 @@
 #include <cstddef>
 #include <functional>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::animation {
 
 /**
  * @brief Tween component for smooth transitions.
  */
-class Tween : public Component {
+class Tween : public ecs::Component {
   public:
     /**
      * @brief Easing function types for smooth value transitions.
      */
     enum class EasingFunction {
-        LINEAR,      /**< Linear interpolation (no easing) */
-        EASE_IN,     /**< Accelerating from zero velocity */
-        EASE_OUT,    /**< Decelerating to zero velocity */
-        EASE_IN_OUT  /**< Acceleration until halfway, then deceleration */
+        LINEAR,     /**< Linear interpolation (no easing) */
+        EASE_IN,    /**< Accelerating from zero velocity */
+        EASE_OUT,   /**< Decelerating to zero velocity */
+        EASE_IN_OUT /**< Acceleration until halfway, then deceleration */
     };
 
   private:

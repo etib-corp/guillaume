@@ -44,9 +44,10 @@ class TweenSystem : public System {
     ~TweenSystem(void) override = default;
 
     /**
-     * @brief Update the tween system and interpolate values.
+     * @brief Update the animation system and advance animations.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::animation

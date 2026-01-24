@@ -46,9 +46,11 @@ class InspectorSystem : public System {
     ~InspectorSystem(void) override = default;
 
     /**
-     * @brief Update the inspector system and provide editing capabilities.
+     * @brief Update the inspector system and provide editing capabilities
+     * to the developer.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::debug

@@ -46,8 +46,9 @@ class RenderSystem : public System {
 
     /**
      * @brief Update the render system and draw all visible entities.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::core

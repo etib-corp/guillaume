@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::interaction {
 
-void DropdownSystem::update(void) {
+void DropdownSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement dropdown interaction logic
 }
 

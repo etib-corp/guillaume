@@ -46,8 +46,9 @@ class LayoutSystem : public System {
 
     /**
      * @brief Update the layout system and recalculate positions/sizes.
+     * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(void) override;
+    void update(const Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::core

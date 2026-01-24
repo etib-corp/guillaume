@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::animation {
 
-void AnimationSystem::update(void) {
+void AnimationSystem::update(const Entity::Identifier &identityIdentifier) {
     // TODO: Implement frame animation logic
 }
 

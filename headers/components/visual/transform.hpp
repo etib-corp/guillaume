@@ -24,14 +24,14 @@
 
 #include <vector.hpp>
 
-#include "component.hpp"
+#include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
 
 /**
  * @brief Transform component representing position, rotation, and scale.
  */
-class Transform : public Component {
+class Transform : public ecs::Component {
   private:
     utility::Vector<std::size_t, 3> _position_{0, 0, 0};
     utility::Vector<std::size_t, 3> _rotation_{0, 0, 0};
