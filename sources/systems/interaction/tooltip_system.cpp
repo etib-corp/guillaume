@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::interaction {
 
-void TooltipSystem::update(const Entity::Identifier &identityIdentifier) {
+void TooltipSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement tooltip display logic
 }
 

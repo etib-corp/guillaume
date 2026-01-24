@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::specialized {
 
@@ -32,7 +32,7 @@ namespace guillaume::systems::specialized {
  * Processes entities with Text components and applies locale-specific
  * formatting.
  */
-class LocalizationSystem : public System {
+class LocalizationSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -48,7 +48,7 @@ class LocalizationSystem : public System {
      * @brief Update the localization system and apply language settings.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::specialized

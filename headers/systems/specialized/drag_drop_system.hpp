@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::specialized {
 
@@ -31,7 +31,7 @@ namespace guillaume::systems::specialized {
  *
  * Processes entities with Draggable, Transform, and Parent components.
  */
-class DragDropSystem : public System {
+class DragDropSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -47,7 +47,7 @@ class DragDropSystem : public System {
      * @brief Update the drag-drop system and handle drag operations.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::specialized

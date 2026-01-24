@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::core {
 
@@ -32,7 +32,7 @@ namespace guillaume::systems::core {
  * Processes entities with Transform, Sprite, Text, Opacity, and Border
  * components.
  */
-class RenderSystem : public System {
+class RenderSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -48,7 +48,7 @@ class RenderSystem : public System {
      * @brief Update the render system and draw all visible entities.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::core

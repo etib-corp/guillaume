@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::utility {
 
-void HierarchySystem::update(const Entity::Identifier &identityIdentifier) {
+void HierarchySystem::update(const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement hierarchy management and transform propagation
 }
 

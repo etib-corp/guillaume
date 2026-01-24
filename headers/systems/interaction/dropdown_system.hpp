@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::interaction {
 
@@ -32,7 +32,7 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with Dropdown, Clickable, and Scrollable components.
  */
-class DropdownSystem : public System {
+class DropdownSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -48,7 +48,7 @@ class DropdownSystem : public System {
      * @brief Update the dropdown system and handle dropdown interactions.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

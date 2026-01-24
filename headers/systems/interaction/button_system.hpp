@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::interaction {
 
@@ -31,7 +31,7 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with Clickable, Hoverable, and Button components.
  */
-class ButtonSystem : public System {
+class ButtonSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -47,7 +47,7 @@ class ButtonSystem : public System {
      * @brief Update the button system and handle button interactions.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

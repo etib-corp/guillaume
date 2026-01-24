@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::debug {
 
@@ -32,7 +32,7 @@ namespace guillaume::systems::debug {
  *
  * Processes all components and manages hot-reloading of asset-specific data.
  */
-class HotReloadSystem : public System {
+class HotReloadSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -48,7 +48,7 @@ class HotReloadSystem : public System {
      * @brief Update the hot-reload system and reload modified assets.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::debug

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::utility {
 
@@ -32,7 +32,7 @@ namespace guillaume::systems::utility {
  * Processes entities with event-related components (e.g., Clickable, Hoverable)
  * and dispatches custom events like `on_click` and `on_hover`.
  */
-class EventSystem : public System {
+class EventSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -48,7 +48,7 @@ class EventSystem : public System {
      * @brief Update the event system and dispatch events.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::utility

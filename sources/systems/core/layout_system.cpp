@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::core {
 
-void LayoutSystem::update(const Entity::Identifier &identityIdentifier) {
+void LayoutSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement layout calculation logic
 }
 

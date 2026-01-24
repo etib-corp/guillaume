@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::interaction {
 
-void ButtonSystem::update(const Entity::Identifier &identityIdentifier) {
+void ButtonSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement button interaction logic
 }
 

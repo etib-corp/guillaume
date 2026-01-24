@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::animation {
 
-void TweenSystem::update(const Entity::Identifier &identityIdentifier) {
+void TweenSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement tween interpolation logic
 }
 

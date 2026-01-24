@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::utility {
 
@@ -31,7 +31,7 @@ namespace guillaume::systems::utility {
  *
  * Processes entities with Focusable and Selected components.
  */
-class FocusSystem : public System {
+class FocusSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -47,7 +47,7 @@ class FocusSystem : public System {
      * @brief Update the focus system and handle focus navigation.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::utility

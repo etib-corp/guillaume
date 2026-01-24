@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::interaction {
 
@@ -31,7 +31,7 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with InputField, Text, and Focusable components.
  */
-class InputFieldSystem : public System {
+class InputFieldSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -47,7 +47,7 @@ class InputFieldSystem : public System {
      * @brief Update the input field system and handle text input.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

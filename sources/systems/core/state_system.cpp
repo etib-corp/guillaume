@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::core {
 
-void StateSystem::update(const Entity::Identifier &identityIdentifier) {
+void StateSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement state management logic
 }
 

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::debug {
 
@@ -33,7 +33,7 @@ namespace guillaume::systems::debug {
  * Processes all components via reflection to enable runtime inspection and
  * modification.
  */
-class InspectorSystem : public System {
+class InspectorSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -50,7 +50,7 @@ class InspectorSystem : public System {
      * to the developer.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::debug

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::interaction {
 
@@ -31,7 +31,7 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with Slider, Draggable, and Transform components.
  */
-class SliderSystem : public System {
+class SliderSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -47,7 +47,7 @@ class SliderSystem : public System {
      * @brief Update the slider system and handle slider interactions.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::interaction

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::utility {
 
@@ -31,7 +31,7 @@ namespace guillaume::systems::utility {
  *
  * Processes entities with Scrollable, Transform, and Children components.
  */
-class ScrollSystem : public System {
+class ScrollSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -47,7 +47,7 @@ class ScrollSystem : public System {
      * @brief Update the scroll system and handle scrolling.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::utility

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "system.hpp"
+#include "ecs/system_filler.hpp"
 
 namespace guillaume::systems::specialized {
 
@@ -31,7 +31,7 @@ namespace guillaume::systems::specialized {
  *
  * Processes entities with ProgressBar and Transform components.
  */
-class ProgressBarSystem : public System {
+class ProgressBarSystem : public ecs::SystemFiller<> {
   public:
     /**
      * @brief Default constructor.
@@ -47,7 +47,7 @@ class ProgressBarSystem : public System {
      * @brief Update the progress bar system and update visual representation.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const Entity::Identifier &identityIdentifier) override;
+    void update(const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems::specialized

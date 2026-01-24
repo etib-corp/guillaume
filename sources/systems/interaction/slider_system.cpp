@@ -24,7 +24,7 @@
 
 namespace guillaume::systems::interaction {
 
-void SliderSystem::update(const Entity::Identifier &identityIdentifier) {
+void SliderSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement slider interaction logic
 }
 
