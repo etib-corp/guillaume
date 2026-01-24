@@ -30,6 +30,7 @@
 #include <logger.hpp>
 #include <standard_logger.hpp>
 
+#include "ecs.hpp"
 #include "event_handler.hpp"
 #include "metadata.hpp"
 #include "renderer.hpp"
@@ -56,7 +57,8 @@ template <typename WindowType, typename RendererType,
 class Application {
   private:
     std::map<std::string, std::unique_ptr<WindowType>>
-        _windows; ///< Application windowsc
+        _windows; ///< Application windows
+    ECS _ecs;     ///< Application ECS
 
   protected:
     EventHandlerType _eventHandler; ///< Application event handler
