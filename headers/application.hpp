@@ -25,7 +25,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <type_traits>
 
 #include <logger.hpp>
 #include <standard_logger.hpp>
@@ -47,13 +46,9 @@ namespace guillaume {
  * application.
  * @tparam LoggerType The type of the logger used by the application.
  */
-template <typename WindowType, typename RendererType,
-          typename EventHandlerType = EventHandler,
-          typename LoggerType = utility::StandardLogger>
-    requires std::is_base_of_v<Window<RendererType>, WindowType> &&
-             std::is_base_of_v<Renderer, RendererType> &&
-             std::is_base_of_v<EventHandler, EventHandlerType> &&
-             std::is_base_of_v<utility::Logger, LoggerType>
+template <typename WindowType, InheritFromRenderer RendererType,
+          InheritFromEventHandler EventHandlerType,
+          utility::InheritFromLogger LoggerType = utility::StandardLogger>
 class Application {
   private:
     std::map<std::string, std::unique_ptr<WindowType>>

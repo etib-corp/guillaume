@@ -40,9 +40,8 @@ namespace guillaume {
  * @tparam RendererType The type of the renderer associated with the window.
  * @tparam LoggerType The type of the logger used by the window.
  */
-template <typename RendererType, typename LoggerType = utility::StandardLogger>
-    requires std::is_base_of_v<Renderer, RendererType> &&
-             std::is_base_of_v<utility::Logger, LoggerType>
+template <InheritFromRenderer RendererType,
+          utility::InheritFromLogger LoggerType = utility::StandardLogger>
 class Window {
   protected:
     RendererType _renderer; ///< Window renderer
