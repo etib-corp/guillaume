@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/hierarchy/parent.hpp"
+#include "components/interaction/draggable.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::specialized {
 
 /**
@@ -31,7 +35,10 @@ namespace guillaume::systems::specialized {
  *
  * Processes entities with Draggable, Transform, and Parent components.
  */
-class DragDropSystem : public ecs::SystemFiller<> {
+class DragDropSystem
+    : public ecs::SystemFiller<components::interaction::Draggable,
+                               components::visual::Transform,
+                               components::hierarchy::Parent> {
   public:
     /**
      * @brief Default constructor.

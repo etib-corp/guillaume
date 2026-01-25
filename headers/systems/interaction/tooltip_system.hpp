@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/interaction/hoverable.hpp"
+#include "components/state/tooltip.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::interaction {
 
 /**
@@ -31,7 +35,10 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with Tooltip, Hoverable, and Transform components.
  */
-class TooltipSystem : public ecs::SystemFiller<> {
+class TooltipSystem
+    : public ecs::SystemFiller<components::state::Tooltip,
+                               components::interaction::Hoverable,
+                               components::visual::Transform> {
   public:
     /**
      * @brief Default constructor.

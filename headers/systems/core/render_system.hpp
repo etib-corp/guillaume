@@ -24,6 +24,13 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/visual/border.hpp"
+#include "components/visual/opacity.hpp"
+#include "components/visual/rectangle.hpp"
+#include "components/visual/sprite.hpp"
+#include "components/visual/text.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::core {
 
 /**
@@ -32,7 +39,11 @@ namespace guillaume::systems::core {
  * Processes entities with Transform, Sprite, Text, Opacity, and Border
  * components.
  */
-class RenderSystem : public ecs::SystemFiller<> {
+class RenderSystem
+    : public ecs::SystemFiller<
+          components::visual::Transform, components::visual::Sprite,
+          components::visual::Text, components::visual::Opacity,
+          components::visual::Border, components::visual::Rectangle> {
   public:
     /**
      * @brief Default constructor.

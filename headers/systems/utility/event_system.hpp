@@ -24,6 +24,9 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/interaction/clickable.hpp"
+#include "components/interaction/hoverable.hpp"
+
 namespace guillaume::systems::utility {
 
 /**
@@ -32,7 +35,9 @@ namespace guillaume::systems::utility {
  * Processes entities with event-related components (e.g., Clickable, Hoverable)
  * and dispatches custom events like `on_click` and `on_hover`.
  */
-class EventSystem : public ecs::SystemFiller<> {
+class EventSystem
+    : public ecs::SystemFiller<components::interaction::Clickable,
+                               components::interaction::Hoverable> {
   public:
     /**
      * @brief Default constructor.

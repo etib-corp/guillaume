@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/state/enabled.hpp"
+#include "components/state/selected.hpp"
+#include "components/state/visibility.hpp"
+
 namespace guillaume::systems::core {
 
 /**
@@ -32,7 +36,9 @@ namespace guillaume::systems::core {
  * Processes entities with Visibility, Enabled, and Selected components to
  * manage state changes.
  */
-class StateSystem : public ecs::SystemFiller<> {
+class StateSystem : public ecs::SystemFiller<components::state::Visibility,
+                                             components::state::Enabled,
+                                             components::state::Selected> {
   public:
     /**
      * @brief Default constructor.

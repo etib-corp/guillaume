@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/animation/tween.hpp"
+#include "components/visual/opacity.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::animation {
 
 /**
@@ -31,7 +35,9 @@ namespace guillaume::systems::animation {
  *
  * Processes entities with Tween, Transform, and Opacity components.
  */
-class TweenSystem : public ecs::SystemFiller<> {
+class TweenSystem : public ecs::SystemFiller<components::animation::Tween,
+                                             components::visual::Transform,
+                                             components::visual::Opacity> {
   public:
     /**
      * @brief Default constructor.

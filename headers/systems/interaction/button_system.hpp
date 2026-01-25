@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/functional/button.hpp"
+#include "components/interaction/clickable.hpp"
+#include "components/interaction/hoverable.hpp"
+
 namespace guillaume::systems::interaction {
 
 /**
@@ -31,7 +35,10 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with Clickable, Hoverable, and Button components.
  */
-class ButtonSystem : public ecs::SystemFiller<> {
+class ButtonSystem
+    : public ecs::SystemFiller<components::interaction::Clickable,
+                               components::interaction::Hoverable,
+                               components::functional::Button> {
   public:
     /**
      * @brief Default constructor.

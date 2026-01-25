@@ -25,6 +25,8 @@
 #include <cstdint>
 #include <string>
 
+#include <color.hpp>
+
 #include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
@@ -35,7 +37,9 @@ namespace guillaume::components::visual {
 class Sprite : public ecs::Component {
   private:
     std::string _texture_id_{};
-    std::uint32_t _color_{0xFFFFFFFF};
+    utility::Color<std::uint8_t> _color_{255, 255, 255, 255};
+    bool _sprite_sheet_{false};
+    int _frame_{0};
 
   public:
     /**
@@ -66,13 +70,39 @@ class Sprite : public ecs::Component {
      * @brief Set the color.
      * @param color The color value (RGBA).
      */
-    void setColor(std::uint32_t color) { _color_ = color; }
+    void setColor(const utility::Color<std::uint8_t> &color) {
+        _color_ = color;
+    }
 
     /**
      * @brief Get the color.
-     * @return The color value (RGBA).
+     * @return Reference to the color value (RGBA).
      */
-    std::uint32_t getColor(void) const { return _color_; }
+    utility::Color<std::uint8_t> &getColor(void) { return _color_; }
+
+    /**
+     * @brief Set sprite sheet flag.
+     * @param sprite_sheet True if using sprite sheet.
+     */
+    void setSpriteSheet(bool sprite_sheet) { _sprite_sheet_ = sprite_sheet; }
+
+    /**
+     * @brief Get sprite sheet flag.
+     * @return True if using sprite sheet.
+     */
+    bool getSpriteSheet(void) const { return _sprite_sheet_; }
+
+    /**
+     * @brief Set the frame number.
+     * @param frame The frame number.
+     */
+    void setFrame(int frame) { _frame_ = frame; }
+
+    /**
+     * @brief Get the frame number.
+     * @return The frame number.
+     */
+    int getFrame(void) const { return _frame_; }
 };
 
 } // namespace guillaume::components::visual

@@ -20,35 +20,6 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "components/visual/text.hpp"
 
-#include "ecs/system_filler.hpp"
-
-namespace guillaume::systems::debug {
-
-/**
- * @brief HotReloadSystem reloads UI assets/components without restarting the
- * application.
- *
- * Processes all components and manages hot-reloading of asset-specific data.
- */
-class HotReloadSystem : public ecs::SystemFiller<> {
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    HotReloadSystem(void) = default;
-
-    /**
-     * @brief Default destructor.
-     */
-    ~HotReloadSystem(void) override = default;
-
-    /**
-     * @brief Update the hot-reload system and reload modified assets.
-     * @param identityIdentifier The identifier of the entity to update.
-     */
-    void update(const ecs::Entity::Identifier &identityIdentifier) override;
-};
-
-} // namespace guillaume::systems::debug
+namespace guillaume::components::visual {}

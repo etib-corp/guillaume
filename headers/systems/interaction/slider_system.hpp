@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/functional/slider.hpp"
+#include "components/interaction/draggable.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::interaction {
 
 /**
@@ -31,7 +35,10 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with Slider, Draggable, and Transform components.
  */
-class SliderSystem : public ecs::SystemFiller<> {
+class SliderSystem
+    : public ecs::SystemFiller<components::functional::Slider,
+                               components::interaction::Draggable,
+                               components::visual::Transform> {
   public:
     /**
      * @brief Default constructor.

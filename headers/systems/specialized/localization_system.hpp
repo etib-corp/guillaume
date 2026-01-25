@@ -24,6 +24,8 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/visual/text.hpp"
+
 namespace guillaume::systems::specialized {
 
 /**
@@ -32,7 +34,7 @@ namespace guillaume::systems::specialized {
  * Processes entities with Text components and applies locale-specific
  * formatting.
  */
-class LocalizationSystem : public ecs::SystemFiller<> {
+class LocalizationSystem : public ecs::SystemFiller<components::visual::Text> {
   public:
     /**
      * @brief Default constructor.

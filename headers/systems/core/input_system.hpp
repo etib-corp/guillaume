@@ -24,6 +24,11 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/interaction/clickable.hpp"
+#include "components/interaction/draggable.hpp"
+#include "components/interaction/focusable.hpp"
+#include "components/interaction/hoverable.hpp"
+
 namespace guillaume::systems::core {
 
 /**
@@ -32,7 +37,11 @@ namespace guillaume::systems::core {
  * Processes entities with Clickable, Hoverable, Draggable, and Focusable
  * components.
  */
-class InputSystem : public ecs::SystemFiller<> {
+class InputSystem
+    : public ecs::SystemFiller<components::interaction::Clickable,
+                               components::interaction::Hoverable,
+                               components::interaction::Draggable,
+                               components::interaction::Focusable> {
   public:
     /**
      * @brief Default constructor.

@@ -24,7 +24,8 @@
 
 namespace guillaume::systems::interaction {
 
-void InputFieldSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
+void InputFieldSystem::update(
+    const ecs::Entity::Identifier &identityIdentifier) {
     // TODO: Implement input field logic
 }
 

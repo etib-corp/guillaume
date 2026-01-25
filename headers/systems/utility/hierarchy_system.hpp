@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/hierarchy/children.hpp"
+#include "components/hierarchy/parent.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::utility {
 
 /**
@@ -32,7 +36,10 @@ namespace guillaume::systems::utility {
  *
  * Processes entities with Parent, Children, and Transform components.
  */
-class HierarchySystem : public ecs::SystemFiller<> {
+class HierarchySystem
+    : public ecs::SystemFiller<components::hierarchy::Parent,
+                               components::hierarchy::Children,
+                               components::visual::Transform> {
   public:
     /**
      * @brief Default constructor.

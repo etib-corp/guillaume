@@ -20,37 +20,6 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "event.hpp"
 
-#include "ecs/system_filler.hpp"
-
-namespace guillaume::systems::debug {
-
-/**
- * @brief InspectorSystem provides real-time editing of UI components for dev
- * tools.
- *
- * Processes all components via reflection to enable runtime inspection and
- * modification.
- */
-class InspectorSystem : public ecs::SystemFiller<> {
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    InspectorSystem(void) = default;
-
-    /**
-     * @brief Default destructor.
-     */
-    ~InspectorSystem(void) override = default;
-
-    /**
-     * @brief Update the inspector system and provide editing capabilities
-     * to the developer.
-     * @param identityIdentifier The identifier of the entity to update.
-     */
-    void update(const ecs::Entity::Identifier &identityIdentifier) override;
-};
-
-} // namespace guillaume::systems::debug
+namespace guillaume {} // namespace guillaume

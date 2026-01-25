@@ -25,6 +25,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <color.hpp>
+
 #include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
@@ -35,7 +37,7 @@ namespace guillaume::components::visual {
 class Border : public ecs::Component {
   private:
     std::size_t _thickness_{0};
-    std::uint32_t _color_{0xFF000000};
+    utility::Color<std::uint8_t> _color_{0, 0, 0, 255};
     std::size_t _radius_{0};
 
   public:
@@ -65,13 +67,15 @@ class Border : public ecs::Component {
      * @brief Set the border color.
      * @param color The color value (RGBA).
      */
-    void setColor(std::uint32_t color) { _color_ = color; }
+    void setColor(const utility::Color<std::uint8_t> &color) {
+        _color_ = color;
+    }
 
     /**
      * @brief Get the border color.
-     * @return The color value (RGBA).
+     * @return Reference to the color value (RGBA).
      */
-    std::uint32_t getColor(void) const { return _color_; }
+    utility::Color<std::uint8_t> &getColor(void) { return _color_; }
 
     /**
      * @brief Set the border radius.

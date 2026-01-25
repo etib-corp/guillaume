@@ -24,6 +24,9 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/functional/progress_bar.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::specialized {
 
 /**
@@ -31,7 +34,9 @@ namespace guillaume::systems::specialized {
  *
  * Processes entities with ProgressBar and Transform components.
  */
-class ProgressBarSystem : public ecs::SystemFiller<> {
+class ProgressBarSystem
+    : public ecs::SystemFiller<components::functional::ProgressBar,
+                               components::visual::Transform> {
   public:
     /**
      * @brief Default constructor.

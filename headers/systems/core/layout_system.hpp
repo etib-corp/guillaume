@@ -24,6 +24,12 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/hierarchy/children.hpp"
+#include "components/hierarchy/parent.hpp"
+#include "components/layout/anchor.hpp"
+#include "components/layout/layout.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::core {
 
 /**
@@ -32,7 +38,11 @@ namespace guillaume::systems::core {
  * Processes entities with Transform, Layout, Anchor, Parent, and Children
  * components to implement layout algorithms (e.g., flexbox, grid).
  */
-class LayoutSystem : public ecs::SystemFiller<> {
+class LayoutSystem
+    : public ecs::SystemFiller<
+          components::visual::Transform, components::layout::Layout,
+          components::layout::Anchor, components::hierarchy::Parent,
+          components::hierarchy::Children> {
   public:
     /**
      * @brief Default constructor.

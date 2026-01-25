@@ -20,12 +20,6 @@
  SOFTWARE.
  */
 
-#include "systems/debug/inspector_system.hpp"
+#include "component_registry.hpp"
 
-namespace guillaume::systems::debug {
-
-void InspectorSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
-    // TODO: Implement inspector and reflection logic
-}
-
-} // namespace guillaume::systems::debug
+namespace guillaume {} // namespace guillaume

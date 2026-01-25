@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/hierarchy/children.hpp"
+#include "components/layout/scrollable.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::utility {
 
 /**
@@ -31,7 +35,9 @@ namespace guillaume::systems::utility {
  *
  * Processes entities with Scrollable, Transform, and Children components.
  */
-class ScrollSystem : public ecs::SystemFiller<> {
+class ScrollSystem : public ecs::SystemFiller<components::layout::Scrollable,
+                                              components::visual::Transform,
+                                              components::hierarchy::Children> {
   public:
     /**
      * @brief Default constructor.

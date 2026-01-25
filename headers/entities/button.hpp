@@ -20,12 +20,24 @@
  SOFTWARE.
  */
 
-#include "systems/debug/hot_reload_system.hpp"
+// - **Components**:
+//   - `Transform` (position, size)
+//   - `Sprite` (background image/color)
+//   - `Text` (label)
+//   - `Clickable` (on_click callback)
+//   - `Hoverable` (hover effects)
+//   - `Border` (optional styling)
+//   - `Animator` (optional for animations)
 
-namespace guillaume::systems::debug {
+#include "components/animation/animator.hpp"
+#include "components/interaction/clickable.hpp"
+#include "components/interaction/hoverable.hpp"
+#include "components/visual/border.hpp"
+#include "components/visual/sprite.hpp"
+#include "components/visual/text.hpp"
+#include "components/visual/transform.hpp"
+#include "ecs/entity_filler.hpp"
 
-void HotReloadSystem::update(const ecs::Entity::Identifier &identityIdentifier) {
-    // TODO: Implement hot-reload logic
-}
+namespace guillaume::entities {
 
-} // namespace guillaume::systems::debug
+class Button : public ecs::EntityFiller<>

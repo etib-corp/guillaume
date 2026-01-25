@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/functional/dropdown.hpp"
+#include "components/interaction/clickable.hpp"
+#include "components/layout/scrollable.hpp"
+
 namespace guillaume::systems::interaction {
 
 /**
@@ -32,7 +36,10 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with Dropdown, Clickable, and Scrollable components.
  */
-class DropdownSystem : public ecs::SystemFiller<> {
+class DropdownSystem
+    : public ecs::SystemFiller<components::functional::Dropdown,
+                               components::interaction::Clickable,
+                               components::layout::Scrollable> {
   public:
     /**
      * @brief Default constructor.

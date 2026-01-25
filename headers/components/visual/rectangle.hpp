@@ -23,18 +23,22 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
+
+#include <color.hpp>
 
 #include "ecs/component.hpp"
 
 namespace guillaume::components::visual {
 
 /**
- * @brief Rectangle component defining a rectangular area.
+ * @brief Rectangle component defining a rectangular area with colors.
  */
 class Rectangle : public ecs::Component {
   private:
-    std::size_t _width_{0};
-    std::size_t _height_{0};
+    utility::Color<std::uint8_t> _fill_color_{255, 255, 255, 255};
+    utility::Color<std::uint8_t> _border_color_{0, 0, 0, 255};
+    float _border_thickness_{0.0f};
 
   public:
     /**
@@ -48,28 +52,46 @@ class Rectangle : public ecs::Component {
     ~Rectangle(void) override = default;
 
     /**
-     * @brief Set the width.
-     * @param width The width value.
+     * @brief Set the fill color.
+     * @param color The fill color value (RGBA).
      */
-    void setWidth(std::size_t width) { _width_ = width; }
+    void setFillColor(const utility::Color<std::uint8_t> &color) {
+        _fill_color_ = color;
+    }
 
     /**
-     * @brief Get the width.
-     * @return The width value.
+     * @brief Get the fill color.
+     * @return Reference to the fill color.
      */
-    std::size_t getWidth(void) const { return _width_; }
+    utility::Color<std::uint8_t> &getFillColor(void) { return _fill_color_; }
 
     /**
-     * @brief Set the height.
-     * @param height The height value.
+     * @brief Set the border color.
+     * @param color The border color value (RGBA).
      */
-    void setHeight(std::size_t height) { _height_ = height; }
+    void setBorderColor(const utility::Color<std::uint8_t> &color) {
+        _border_color_ = color;
+    }
 
     /**
-     * @brief Get the height.
-     * @return The height value.
+     * @brief Get the border color.
+     * @return Reference to the border color.
      */
-    std::size_t getHeight(void) const { return _height_; }
+    utility::Color<std::uint8_t> &getBorderColor(void) {
+        return _border_color_;
+    }
+
+    /**
+     * @brief Set the border thickness.
+     * @param thickness The border thickness value.
+     */
+    void setBorderThickness(float thickness) { _border_thickness_ = thickness; }
+
+    /**
+     * @brief Get the border thickness.
+     * @return The border thickness value.
+     */
+    float getBorderThickness(void) const { return _border_thickness_; }
 };
 
 } // namespace guillaume::components::visual

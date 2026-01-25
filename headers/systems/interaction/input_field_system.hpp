@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/functional/input_field.hpp"
+#include "components/interaction/focusable.hpp"
+#include "components/visual/text.hpp"
+
 namespace guillaume::systems::interaction {
 
 /**
@@ -31,7 +35,10 @@ namespace guillaume::systems::interaction {
  *
  * Processes entities with InputField, Text, and Focusable components.
  */
-class InputFieldSystem : public ecs::SystemFiller<> {
+class InputFieldSystem
+    : public ecs::SystemFiller<components::functional::InputField,
+                               components::visual::Text,
+                               components::interaction::Focusable> {
   public:
     /**
      * @brief Default constructor.

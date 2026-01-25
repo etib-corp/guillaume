@@ -24,6 +24,9 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/interaction/focusable.hpp"
+#include "components/state/selected.hpp"
+
 namespace guillaume::systems::utility {
 
 /**
@@ -31,7 +34,8 @@ namespace guillaume::systems::utility {
  *
  * Processes entities with Focusable and Selected components.
  */
-class FocusSystem : public ecs::SystemFiller<> {
+class FocusSystem : public ecs::SystemFiller<components::interaction::Focusable,
+                                             components::state::Selected> {
   public:
     /**
      * @brief Default constructor.

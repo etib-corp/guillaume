@@ -24,6 +24,10 @@
 
 #include "ecs/system_filler.hpp"
 
+#include "components/animation/animator.hpp"
+#include "components/visual/sprite.hpp"
+#include "components/visual/transform.hpp"
+
 namespace guillaume::systems::animation {
 
 /**
@@ -31,7 +35,10 @@ namespace guillaume::systems::animation {
  *
  * Processes entities with Animator, Sprite, and Transform components.
  */
-class AnimationSystem : public ecs::SystemFiller<> {
+class AnimationSystem
+    : public ecs::SystemFiller<components::animation::Animator,
+                               components::visual::Sprite,
+                               components::visual::Transform> {
   public:
     /**
      * @brief Default constructor.

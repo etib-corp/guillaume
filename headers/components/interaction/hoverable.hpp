@@ -25,6 +25,8 @@
 #include <cstdint>
 #include <functional>
 
+#include <color.hpp>
+
 #include "ecs/component.hpp"
 
 namespace guillaume::components::interaction {
@@ -34,8 +36,9 @@ namespace guillaume::components::interaction {
  */
 class Hoverable : public ecs::Component {
   private:
-    std::uint32_t _hover_color_{0xFFFFFFFF};
+    utility::Color<std::uint8_t> _hover_color_{255, 255, 255, 255};
     std::function<void()> _on_hover_{};
+    bool _is_hovered_{false};
 
   public:
     /**
@@ -52,13 +55,27 @@ class Hoverable : public ecs::Component {
      * @brief Set the hover color.
      * @param color The color value (RGBA).
      */
-    void setHoverColor(std::uint32_t color) { _hover_color_ = color; }
+    void setHoverColor(const utility::Color<std::uint8_t> &color) {
+        _hover_color_ = color;
+    }
 
     /**
      * @brief Get the hover color.
-     * @return The hover color value (RGBA).
+     * @return Reference to the hover color value (RGBA).
      */
-    std::uint32_t getHoverColor(void) const { return _hover_color_; }
+    utility::Color<std::uint8_t> &getHoverColor(void) { return _hover_color_; }
+
+    /**
+     * @brief Set the hovered state.
+     * @param is_hovered True if currently hovered.
+     */
+    void setIsHovered(bool is_hovered) { _is_hovered_ = is_hovered; }
+
+    /**
+     * @brief Check if currently hovered.
+     * @return True if hovered.
+     */
+    bool isHovered(void) const { return _is_hovered_; }
 
     /**
      * @brief Set the hover callback.
