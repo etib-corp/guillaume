@@ -24,17 +24,59 @@
 
 #include "ecs/ecs.hpp"
 
+#include "component_registry.hpp"
+
+#include "systems/animation/animation_system.hpp"
+#include "systems/animation/tween_system.hpp"
+
+#include "systems/core/input_system.hpp"
+#include "systems/core/layout_system.hpp"
+#include "systems/core/render_system.hpp"
+#include "systems/core/state_system.hpp"
+
+#include "systems/specialized/drag_drop_system.hpp"
+#include "systems/specialized/localization_system.hpp"
+#include "systems/specialized/progress_bar_system.hpp"
+
+#include "systems/utility/event_system.hpp"
+#include "systems/utility/focus_system.hpp"
+#include "systems/utility/hierarchy_system.hpp"
+#include "systems/utility/scroll_system.hpp"
+
 namespace guillaume {
 
 /**
  * @brief Main ECS class using the default ComponentRegistry.
  */
-class ECS : public ecs::ECS<ecs::ComponentRegistry> {
+class ECS : public ecs::ECS<ComponentRegistry> {
+  private:
+    /**
+     * @brief Utility to register all core systems.
+     * @tparam SystemTypes The system types to register.
+     */
+    template <ecs::InheritFromSystem... SystemTypes>
+    void registerSystems(void) {
+        (_systemRegistry.registerNewSystem<SystemTypes>(
+             std::make_unique<SystemTypes>()),
+         ...);
+    }
+
   public:
     /**
      * @brief Default constructor.
      */
-    ECS(void) {}
+    ECS(void) {
+        registerSystems<
+            systems::animation::AnimationSystem,
+            systems::animation::TweenSystem, systems::core::InputSystem,
+            systems::core::LayoutSystem, systems::core::RenderSystem,
+            systems::core::StateSystem, systems::specialized::DragDropSystem,
+            systems::specialized::LocalizationSystem,
+            systems::specialized::ProgressBarSystem,
+            systems::utility::EventSystem, systems::utility::FocusSystem,
+            systems::utility::HierarchySystem,
+            systems::utility::ScrollSystem>();
+    }
 
     /**
      * @brief Default destructor.

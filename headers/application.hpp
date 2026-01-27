@@ -30,6 +30,7 @@
 #include <standard_logger.hpp>
 
 #include "ecs.hpp"
+#include "event_bus.hpp"
 #include "event_handler.hpp"
 #include "metadata.hpp"
 #include "renderer.hpp"
@@ -52,39 +53,10 @@ template <typename WindowType, InheritFromRenderer RendererType,
 class Application {
   private:
     std::map<std::string, std::unique_ptr<WindowType>>
-        _windows; ///< Application windows
-    ECS _ecs;     ///< Application ECS
-
-  protected:
+        _windows;                   ///< Application windows
+    ECS _ecs;                       ///< Application ECS
     EventHandlerType _eventHandler; ///< Application event handler
-    LoggerType _logger;             ///< Application logger
-    Metadata _metadata;             ///< Application metadata
-
-  public:
-    /**
-     * @brief Default constructor
-     */
-    Application(void) {
-        _eventHandler.setEventCallback(
-            [this](Event &event) { this->_logger.info("Event received."); });
-    }
-
-    /**
-     * @brief Default destructor
-     */
-    virtual ~Application(void) = default;
-
-    /**
-     * @brief Set the application metadata.
-     * @param metadata The metadata to set.
-     */
-    void setMetadata(const Metadata &metadata) { _metadata = metadata; }
-
-    /**
-     * @brief Get the application metadata.
-     * @return Reference to the application metadata.
-     */
-    Metadata &getMetadata(void) { return _metadata; }
+    EventBus _eventBus;             ///< Event bus dispatching to systems
 
     /**
      * @brief Add a window to the application.
@@ -94,24 +66,8 @@ class Application {
         _windows[name] = std::make_unique<WindowType>();
     }
 
-    /**
-     * @brief Get a window by name.
-     * @param name The name of the window.
-     * @return Reference to the window.
-     */
-    WindowType &getWindow(const std::string &name) {
-        return *_windows.at(name);
-    }
-
-    /**
-     * @brief Get a const window by name.
-     * @param name The name of the window.
-     * @return Const reference to the window.
-     */
-    const std::unique_ptr<WindowType> &
-    getWindow(const std::string &name) const {
-        return _windows.at(name);
-    }
+  protected:
+    LoggerType _logger; ///< Application logger
 
     /**
      * @brief Remove a window by name.
@@ -122,25 +78,40 @@ class Application {
     /**
      * @brief Main application routine (single frame render).
      */
-    void routine(void) {}
+    void routine(void) {
+        _eventHandler.pollEvents();
+        _ecs.routine();
+    }
+
+  public:
+    /**
+     * @brief Default constructor
+     */
+    Application(void) {
+        _eventHandler.setEventCallback(
+            [this](Event &event) { this->_eventBus.publish(event); });
+    }
 
     /**
-     * @brief Check if the application should quit.
-     * @return True if the application should quit, false otherwise.
+     * @brief Default destructor
      */
-    bool shouldQuit(void) const { return _eventHandler.shouldQuit(); }
+    virtual ~Application(void) = default;
 
     /**
-     * @brief Check if any window is still open.
-     * @return True if at least one window is still open, false otherwise.
+     * @brief Run the application main loop.
+     * @return Exit code.
      */
-    bool hasOpenWindows(void) const {
-        for (const auto &[name, window] : _windows) {
-            if (!window->shouldClose()) {
-                return true;
+    int run(void) {
+        while (true) {
+            try {
+                routine();
+            } catch (const std::exception &exception) {
+                _logger.error(std::string("Application error: ") +
+                              exception.what());
+                return EXIT_FAILURE;
             }
         }
-        return false;
+        return EXIT_SUCCESS;
     }
 };
 

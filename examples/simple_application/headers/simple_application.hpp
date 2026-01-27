@@ -19,15 +19,8 @@ class SimpleApplication
     void handleEvent(guillaume::Event &event);
 
   public:
-    SimpleApplication(int argc, const char *const argv[],
-                      const char *const envp[]);
+    SimpleApplication(int argc, char *argv[]);
     ~SimpleApplication(void) override = default;
-
-    /**
-     * @brief Run the application main loop.
-     * @return Exit code (0 for success, non-zero for error).
-     */
-    int run(void);
 };
 
 } // namespace guillaume::simple_application

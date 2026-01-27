@@ -38,7 +38,7 @@ class ComponentRegistryFiller : public ComponentRegistry {
      * @brief Default constructor.
      */
     ComponentRegistryFiller(void) : ComponentRegistry() {
-        (registerComponent<ComponentTypes>(), ...);
+        (registerNewComponentType<ComponentTypes>(), ...);
     }
 
     /**

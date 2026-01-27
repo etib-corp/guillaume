@@ -20,24 +20,37 @@
  SOFTWARE.
  */
 
-// - **Components**:
-//   - `Transform` (position, size)
-//   - `Sprite` (background image/color)
-//   - `Text` (label)
-//   - `Clickable` (on_click callback)
-//   - `Hoverable` (hover effects)
-//   - `Border` (optional styling)
-//   - `Animator` (optional for animations)
+#include "event_bus.hpp"
 
-#include "components/animation/animator.hpp"
-#include "components/interaction/clickable.hpp"
-#include "components/interaction/hoverable.hpp"
-#include "components/visual/border.hpp"
-#include "components/visual/sprite.hpp"
-#include "components/visual/text.hpp"
-#include "components/visual/transform.hpp"
-#include "ecs/entity_filler.hpp"
+namespace guillaume {
 
-namespace guillaume::entities {
+EventBus::EventBus() {}
 
-class Button : public ecs::EntityFiller<>
+void EventBus::publish(Event &event) {
+    auto typedListenerIterator = _typedListeners.find(event.type);
+    if (typedListenerIterator != _typedListeners.end()) {
+        dispatchToListeners(event, typedListenerIterator->second);
+    }
+
+    if (!event.handled) {
+        dispatchToListeners(event, _globalListeners);
+    }
+}
+
+void EventBus::subscribe(EventType eventType, const Listener &listener) {
+    _typedListeners[eventType].push_back(listener);
+}
+
+void EventBus::dispatchToListeners(Event &event, ListenerList &listeners) {
+    for (auto &listener : listeners) {
+        if (!listener) {
+            continue;
+        }
+        listener(event);
+        if (event.handled) {
+            break;
+        }
+    }
+}
+
+} // namespace guillaume

@@ -23,11 +23,20 @@
 #pragma once
 
 #include <bitset>
+#include <functional>
 #include <typeindex>
 #include <vector>
 
 #include "ecs/component.hpp"
 #include "ecs/entity.hpp"
+
+#include "event_bus.hpp"
+
+namespace guillaume {
+class EventBus;
+class Event;
+enum class EventType;
+} // namespace guillaume
 
 namespace guillaume::ecs {
 
@@ -41,6 +50,7 @@ class System {
   private:
     Entity::Signature _signature;              ///< System signature
     std::vector<Entity::Identifier> _entities; ///< Managed entities
+    std::queue<guillaume::Event> _eventQueue;  ///< Event queue
 
   protected:
     /**
@@ -79,10 +89,30 @@ class System {
     }
 
     /**
+     * @brief Routine to update all managed entities.
+     */
+    void routine(void) {
+        for (const auto &entityIdentifier : _entities) {
+            update(entityIdentifier);
+        }
+    }
+
+    /**
      * @brief Update the system, processing relevant entities.
      * @param identityIdentifier The identifier of the entity to update.
      */
     virtual void update(const Entity::Identifier &identityIdentifier) = 0;
+
+    /**
+     * @brief Subscribe to a specific event type on the event bus.
+     * @param eventBus The event bus to subscribe to.
+     * @param eventType The event type to listen for.
+     * @param callback The callback to invoke when the event is published.
+     */
+    void subscribeToEvent(EventBus &eventBus, EventType eventType,
+                          const std::function<void(Event &)> &callback) {
+        eventBus.subscribe(eventType, callback);
+    }
 };
 
 /**

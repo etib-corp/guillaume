@@ -33,7 +33,7 @@ namespace guillaume::ecs {
  * @tparam SystemRegistryType The type of the system registry.
  */
 template <InheritFromComponentRegistry ComponentRegistryType> class ECS {
-  private:
+  protected:
     SystemRegistry _systemRegistry; ///< System registry instance
 
   public:
@@ -48,17 +48,12 @@ template <InheritFromComponentRegistry ComponentRegistryType> class ECS {
     virtual ~ECS(void) = default;
 
     /**
-     * @brief Get the system registry.
-     * @return Reference to the system registry.
+     * @brief Routine to update all systems.
      */
-    SystemRegistry &getSystemRegistry(void) { return _systemRegistry; }
-
-    /**
-     * @brief Get the component registry.
-     * @return Reference to the component registry.
-     */
-    ComponentRegistryType &getComponentRegistry(void) {
-        return utility::Singleton<ComponentRegistryType>::getInstance();
+    void routine(void) {
+        for (auto &[typeIndex, system] : _systemRegistry.getSystems()) {
+            system->routine();
+        }
     }
 };
 

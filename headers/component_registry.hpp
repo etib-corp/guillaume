@@ -75,7 +75,23 @@ class ComponentRegistry
     /**
      * @brief Default constructor.
      */
-    ComponentRegistry(void) : ecs::ComponentRegistryFiller(void) {}
+    ComponentRegistry(void)
+        : ecs::ComponentRegistryFiller<
+              components::animation::Animator, components::animation::Tween,
+              components::functional::Button, components::functional::Dropdown,
+              components::functional::InputField,
+              components::functional::ProgressBar,
+              components::functional::Slider, components::hierarchy::Children,
+              components::hierarchy::Parent, components::interaction::Clickable,
+              components::interaction::Draggable,
+              components::interaction::Focusable,
+              components::interaction::Hoverable, components::layout::Anchor,
+              components::layout::Layout, components::layout::Scrollable,
+              components::state::Enabled, components::state::Selected,
+              components::state::Tooltip, components::state::Visibility,
+              components::visual::Border, components::visual::Opacity,
+              components::visual::Rectangle, components::visual::Sprite,
+              components::visual::Transform>() {}
 
     /**
      * @brief Default destructor.

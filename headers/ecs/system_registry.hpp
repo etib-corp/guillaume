@@ -91,13 +91,13 @@ class SystemRegistry {
     ~SystemRegistry(void) = default;
 
     /**
-     * @brief Register a system in the registry.
-     * @param typeIndex The type index of the system.
-     * @param system The system instance to register.
+     * @brief Register a new system in the registry.
+     * @tparam SystemType The type of the system to register.
+     * @param system Unique pointer to the system instance.
      */
-    void registerSystem(std::type_index typeIndex,
-                        std::unique_ptr<System> system) {
-        _systems[typeIndex] = std::move(system);
+    template <InheritFromSystem SystemType>
+    void registerNewSystem(std::unique_ptr<SystemType> system) {
+        _systems[std::type_index(typeid(SystemType))] = std::move(system);
     }
 
     /**
@@ -111,6 +111,15 @@ class SystemRegistry {
             throw SystemNotFoundException<SystemType>();
         }
         return std::static_pointer_cast<SystemType>(iterator->second);
+    }
+
+    /**
+     * @brief Get all registered systems.
+     * @return Map of type indices to system instances.
+     */
+    const std::map<std::type_index, std::unique_ptr<System>> &
+    getSystems(void) const {
+        return _systems;
     }
 };
 

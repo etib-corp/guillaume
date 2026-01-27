@@ -105,6 +105,18 @@ class ComponentRegistry {
             std::make_unique<ComponentType>();
     }
 
+  protected:
+    /**
+     * @brief Register a new component type in the registry.
+     * @tparam ComponentType The type of the component to register.
+     */
+    template <InheritFromComponent ComponentType>
+    void registerNewComponentType(void) {
+        _components.emplace(
+            std::type_index(typeid(ComponentType)),
+            std::map<Entity::Identifier, std::unique_ptr<Component>>{});
+    }
+
   public:
     /**
      * @brief Default constructor.
