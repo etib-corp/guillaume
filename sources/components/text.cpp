@@ -20,42 +20,6 @@
  SOFTWARE.
  */
 
-#pragma once
-
-#include "guillaume/ecs/component_registry_filler.hpp"
-
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/click.hpp"
-#include "guillaume/components/focus.hpp"
-#include "guillaume/components/hover.hpp"
-#include "guillaume/components/relationship.hpp"
 #include "guillaume/components/text.hpp"
-#include "guillaume/components/transform.hpp"
 
-namespace guillaume {
-
-/**
- * @brief Component registry class registering all core components.
- */
-class ComponentRegistry
-    : public ecs::ComponentRegistryFiller<
-          components::Bound, components::Click, components::Focus,
-          components::Hover, components::Relationship, components::Text,
-          components::Transform> {
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    ComponentRegistry(void)
-        : ecs::ComponentRegistryFiller<
-              components::Bound, components::Click, components::Focus,
-              components::Hover, components::Relationship, components::Text,
-              components::Transform>() {}
-
-    /**
-     * @brief Default destructor.
-     */
-    virtual ~ComponentRegistry(void) = default;
-};
-
-} // namespace guillaume
+namespace guillaume::components {} // namespace guillaume::components

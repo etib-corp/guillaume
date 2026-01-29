@@ -41,14 +41,16 @@ class Entity {
     using Identifier = std::size_t;    ///< Type alias for entity identifiers
     using Signature = std::bitset<64>; ///< Type alias for entity signatures
 
+    constexpr static Identifier InvalidIdentifier = 0; ///< Invalid identifier
+
   private:
     /**
      * @brief Generate the next unique identifier for an entity.
      * @return The next unique identifier.
      */
     static Identifier getNextIdentifier(void) {
-        static Identifier currentId = 0;
-        return currentId++;
+        static Identifier currentId = InvalidIdentifier;
+        return ++currentId;
     }
 
   public:

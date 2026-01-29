@@ -31,6 +31,7 @@
 
 #include "guillaume/systems/click.hpp"
 #include "guillaume/systems/hover.hpp"
+#include "guillaume/systems/keyboard.hpp"
 #include "guillaume/systems/render.hpp"
 
 namespace guillaume {
@@ -66,6 +67,8 @@ class ECS : public ecs::ECS<ComponentRegistry> {
             std::make_unique<systems::Hover>(_eventBus));
         registerSystem<systems::Render>(
             std::make_unique<systems::Render>(_renderer));
+        registerSystem<systems::Keyboard>(
+            std::make_unique<systems::Keyboard>(_eventBus));
     }
 
     /**

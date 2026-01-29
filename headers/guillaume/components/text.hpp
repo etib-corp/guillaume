@@ -22,40 +22,41 @@
 
 #pragma once
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#include <string>
 
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/click.hpp"
-#include "guillaume/components/focus.hpp"
-#include "guillaume/components/hover.hpp"
-#include "guillaume/components/relationship.hpp"
-#include "guillaume/components/text.hpp"
-#include "guillaume/components/transform.hpp"
+#include "guillaume/ecs/component.hpp"
 
-namespace guillaume {
+namespace guillaume::components {
 
 /**
- * @brief Component registry class registering all core components.
+ * @brief Component representing a text element.
  */
-class ComponentRegistry
-    : public ecs::ComponentRegistryFiller<
-          components::Bound, components::Click, components::Focus,
-          components::Hover, components::Relationship, components::Text,
-          components::Transform> {
+class Text : public ecs::Component {
+  private:
+    std::string _content; ///< Text content
+
   public:
     /**
-     * @brief Default constructor.
+     * @brief Default constructor for the Text component.
      */
-    ComponentRegistry(void)
-        : ecs::ComponentRegistryFiller<
-              components::Bound, components::Click, components::Focus,
-              components::Hover, components::Relationship, components::Text,
-              components::Transform>() {}
+    Text(void) = default;
 
     /**
-     * @brief Default destructor.
+     * @brief Default destructor for the Text component.
      */
-    virtual ~ComponentRegistry(void) = default;
+    ~Text(void) = default;
+
+    /**
+     * @brief Get the text content.
+     * @return The text content.
+     */
+    const std::string &getContent(void) const { return _content; }
+
+    /**
+     * @brief Set the text content.
+     * @param content The new text content.
+     */
+    void setContent(const std::string &content) { _content = content; }
 };
 
-} // namespace guillaume
+} // namespace guillaume::components
