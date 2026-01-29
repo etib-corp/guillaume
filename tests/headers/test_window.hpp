@@ -23,7 +23,8 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <window.hpp>
+
+#include <guillaume/window.hpp>
 
 namespace guillaume::tests {
 

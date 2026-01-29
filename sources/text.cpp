@@ -20,13 +20,13 @@
  SOFTWARE.
  */
 
-#include "text.hpp"
+#include "guillaume/text.hpp"
 
 namespace guillaume {
 
 Text::Text(const std::string &content, std::shared_ptr<Font> font,
-           utility::Color<uint8_t> color,
-           utility::Vector<std::size_t, 2> position)
+           utility::math::Color<uint8_t> color,
+           utility::math::Vector<std::size_t, 2> position)
     : _content(content), _font(font), _color(color), _position(position),
       _alignment(TextAlignment::Left), _isDirty(true), _bounds(0, 0, 0, 0) {}
 
@@ -48,20 +48,20 @@ void Text::setFont(std::shared_ptr<Font> font) {
     }
 }
 
-const utility::Color<uint8_t> &Text::getColor() const { return _color; }
+const utility::math::Color<uint8_t> &Text::getColor() const { return _color; }
 
-void Text::setColor(const utility::Color<uint8_t> &color) {
+void Text::setColor(const utility::math::Color<uint8_t> &color) {
     if (_color != color) {
         _color = color;
         _isDirty = true;
     }
 }
 
-const utility::Vector<std::size_t, 2> &Text::getPosition() const {
+const utility::math::Vector<std::size_t, 2> &Text::getPosition() const {
     return _position;
 }
 
-void Text::setPosition(const utility::Vector<std::size_t, 2> &position) {
+void Text::setPosition(const utility::math::Vector<std::size_t, 2> &position) {
     _position = position;
 }
 
@@ -80,11 +80,11 @@ void Text::markClean() { _isDirty = false; }
 
 void Text::markDirty() { _isDirty = true; }
 
-const utility::Rectangle<std::size_t> &Text::getBounds() const {
+const utility::math::Rectangle<std::size_t> &Text::getBounds() const {
     return _bounds;
 }
 
-void Text::setBounds(const utility::Rectangle<std::size_t> &bounds) {
+void Text::setBounds(const utility::math::Rectangle<std::size_t> &bounds) {
     _bounds = bounds;
 }
 

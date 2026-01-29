@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "window.hpp"
+#include "guillaume/window.hpp"
 
 namespace guillaume {} // namespace guillaume

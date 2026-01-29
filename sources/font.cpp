@@ -20,7 +20,7 @@
  SOFTWARE.
  */
 
-#include "font.hpp"
+#include "guillaume/font.hpp"
 
 namespace guillaume {
 

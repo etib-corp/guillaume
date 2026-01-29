@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "application.hpp"
+#include "guillaume/application.hpp"
 
 namespace guillaume {} // namespace guillaume

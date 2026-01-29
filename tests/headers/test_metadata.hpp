@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+#include <guillaume/metadata.hpp>
+
 namespace guillaume::tests {
 
 class TestMetadata : public ::testing::Test {

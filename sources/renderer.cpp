@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "renderer.hpp"
+#include "guillaume/renderer.hpp"
 
 namespace guillaume {} // namespace guillaume

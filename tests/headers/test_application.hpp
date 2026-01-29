@@ -24,6 +24,8 @@
 
 #include <gtest/gtest.h>
 
+#include <guillaume/application.hpp>
+
 namespace guillaume::tests {
 
 class TestApplication : public ::testing::Test {

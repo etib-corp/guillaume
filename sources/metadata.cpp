@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "metadata.hpp"
+#include "guillaume/metadata.hpp"
 
 namespace guillaume {} // namespace guillaume

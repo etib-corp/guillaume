@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "ecs.hpp"
+#include "guillaume/ecs.hpp"
 
 namespace guillaume {} // namespace guillaume

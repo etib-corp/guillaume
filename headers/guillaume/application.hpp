@@ -1,0 +1,119 @@
+/*
+ Copyright (c) 2026 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+
+#pragma once
+
+#include <map>
+#include <memory>
+#include <string>
+
+#include <utility/logging/logger.hpp>
+#include <utility/logging/standard_logger.hpp>
+
+#include "ecs.hpp"
+#include "metadata.hpp"
+#include "renderer.hpp"
+#include "window.hpp"
+
+#include "event/event_bus.hpp"
+#include "event/event_handler.hpp"
+
+namespace guillaume {
+
+/**
+ * @brief Application base class.
+ *
+ * @tparam WindowType The type of the window used by the application.
+ * @tparam RendererType The type of the renderer used by the windows.
+ * @tparam EventHandlerType The type of the event handler used by the
+ * application.
+ * @tparam LoggerType The type of the logger used by the application.
+ */
+template <typename WindowType, typename RendererType, typename EventHandlerType,
+          utility::logging::InheritFromLogger LoggerType =
+              utility::logging::StandardLogger>
+class Application {
+  private:
+    WindowType _mainWindow;         ///< Main application window
+    EventHandlerType _eventHandler; ///< Application event handler
+    LoggerType _logger;             ///< Application logger
+    event::EventBus _eventBus;      ///< Event bus dispatching to systems
+    std::unique_ptr<ECS> _ecs;      ///< ECS instance
+
+  protected:
+    /**
+     * @brief Get the main application window.
+     * @return Reference to the main window.
+     */
+    WindowType &getMainWindow(void) { return _mainWindow; }
+
+    /**
+     * @brief Get the logger instance.
+     * @return Reference to the logger.
+     */
+    LoggerType &getLogger(void) { return _logger; }
+
+    /**
+     * @brief Main application routine (single frame render).
+     */
+    void routine(void) {
+        _eventHandler.pollEvents();
+        _ecs->routine();
+    }
+
+  public:
+    /**
+     * @brief Default constructor
+     */
+    Application(void) {
+        getLogger().setName("Application");
+        _ecs = std::make_unique<ECS>(_eventBus, _mainWindow.getRenderer());
+        _eventHandler.setEventCallback(
+            [this](std::unique_ptr<utility::event::Event> &event) {
+                this->_eventBus.publish(std::move(event));
+            });
+    }
+
+    /**
+     * @brief Default destructor
+     */
+    virtual ~Application(void) = default;
+
+    /**
+     * @brief Run the application main loop.
+     * @return Exit code.
+     */
+    int run(void) {
+        while (true) {
+            try {
+                routine();
+            } catch (const std::exception &exception) {
+                getLogger().error(std::string("Application error: ") +
+                                  exception.what());
+                return EXIT_FAILURE;
+            }
+        }
+        return EXIT_SUCCESS;
+    }
+};
+
+} // namespace guillaume

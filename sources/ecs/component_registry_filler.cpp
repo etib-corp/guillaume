@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "ecs/component_registry_filler.hpp"
+#include "guillaume/ecs/component_registry_filler.hpp"
 
 namespace guillaume::ecs {} // namespace guillaume::ecs

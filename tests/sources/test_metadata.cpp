@@ -20,4 +20,4 @@
  SOFTWARE.
  */
 
-#include "test_application.hpp"
+#include "test_metadata.hpp"

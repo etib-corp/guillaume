@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "component_registry.hpp"
+#include "guillaume/component_registry.hpp"
 
 namespace guillaume {} // namespace guillaume
