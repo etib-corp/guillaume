@@ -1,6 +1,7 @@
 #include "event_handler.hpp"
 
 #include <utility/event/mouse_motion_event.hpp>
+#include <utility/event/quit_event.hpp>
 
 EventHandler::EventHandler(void) : guillaume::event::EventHandler<>() {
     getLogger().info("SDL3 Event Handler initialized");
@@ -11,56 +12,62 @@ EventHandler::~EventHandler(void) {
 }
 
 bool EventHandler::pollEvents(void) {
-    SDL_Event event;
+    SDL_Event sdlEvent;
     bool hasEvents = false;
 
-    while (SDL_PollEvent(&event)) {
+    while (SDL_PollEvent(&sdlEvent)) {
         hasEvents = true;
-        std::unique_ptr<utility::event::Event> guiEvent = nullptr;
+        std::unique_ptr<utility::event::Event> event = nullptr;
 
-        switch (event.type) {
-            case SDL_EVENT_QUIT:
-                getLogger().info("Quit event received");
-                return false;
-
-            case SDL_EVENT_KEY_DOWN:
-            case SDL_EVENT_KEY_UP: {
-                auto keyEvent = std::make_unique<utility::event::KeyboardEvent>();
-                keyEvent->setKeycode(convertKeyCode(event.key.key));
-                keyEvent->setModifiers(convertKeyModifiers(event.key.mod));
-                keyEvent->setIsDownEvent(event.type == SDL_EVENT_KEY_DOWN);
-                keyEvent->setIsRepeatEvent(event.key.repeat != 0);
-                guiEvent = std::move(keyEvent);
-                break;
-            }
-
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            case SDL_EVENT_MOUSE_BUTTON_UP: {
-                auto mouseEvent = std::make_unique<utility::event::MouseButtonEvent>();
-                mouseEvent->setPosition({static_cast<float>(event.button.x),
-                                        static_cast<float>(event.button.y)});
-                mouseEvent->setButtonState(
-                    convertMouseButton(event.button.button),
-                    event.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
-                guiEvent = std::move(mouseEvent);
-                break;
-            }
-
-            case SDL_EVENT_MOUSE_MOTION: {
-                auto motionEvent = std::make_unique<utility::event::MouseMotionEvent>();
-                motionEvent->setPosition({static_cast<float>(event.motion.x),
-                                         static_cast<float>(event.motion.y)});
-                guiEvent = std::move(motionEvent);
-                break;
-            }
-
-            default:
-                // Ignore other events
-                break;
+        switch (sdlEvent.type) {
+        case SDL_EVENT_QUIT: {
+            auto quitEvent = std::make_unique<utility::event::QuitEvent>();
+            setShouldQuit(true);
+            event = std::move(quitEvent);
+            break;
         }
 
-        if (guiEvent && getEventCallback()) {
-            getEventCallback()(guiEvent);
+        case SDL_EVENT_KEY_DOWN:
+        case SDL_EVENT_KEY_UP: {
+            auto keyEvent = std::make_unique<utility::event::KeyboardEvent>();
+            keyEvent->setKeycode(convertKeyCode(sdlEvent.key.key));
+            keyEvent->setModifiers(convertKeyModifiers(sdlEvent.key.mod));
+            keyEvent->setIsDownEvent(sdlEvent.type == SDL_EVENT_KEY_DOWN);
+            keyEvent->setIsRepeatEvent(sdlEvent.key.repeat != 0);
+            event = std::move(keyEvent);
+            break;
+        }
+
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        case SDL_EVENT_MOUSE_BUTTON_UP: {
+            auto mouseEvent =
+                std::make_unique<utility::event::MouseButtonEvent>();
+            mouseEvent->setPosition({static_cast<float>(sdlEvent.button.x),
+                                     static_cast<float>(sdlEvent.button.y)});
+            mouseEvent->setButtonState(
+                convertMouseButton(sdlEvent.button.button),
+                sdlEvent.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
+            event = std::move(mouseEvent);
+            break;
+        }
+
+        case SDL_EVENT_MOUSE_MOTION: {
+            auto motionEvent =
+                std::make_unique<utility::event::MouseMotionEvent>();
+            motionEvent->setPosition({static_cast<float>(sdlEvent.motion.x),
+                                      static_cast<float>(sdlEvent.motion.y)});
+            event = std::move(motionEvent);
+            break;
+        }
+
+        default: {
+            // Ignore other events
+            break;
+        }
+        }
+
+        if (event && getEventCallback()) {
+            getEventCallback()(event);
         }
     }
 
@@ -127,6 +134,6 @@ EventHandler::convertKeyModifiers(SDL_Keymod modifiers) {
 utility::event::MouseButtonEvent::MouseButton
 EventHandler::convertMouseButton(std::uint8_t sdlButton) {
     // SDL3 mouse button values map directly to the utility MouseButton enum
-    return static_cast<utility::event::MouseButtonEvent::MouseButton>(sdlButton);
+    return static_cast<utility::event::MouseButtonEvent::MouseButton>(
+        sdlButton);
 }
-

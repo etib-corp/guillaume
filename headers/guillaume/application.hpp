@@ -84,7 +84,9 @@ class Application {
     /**
      * @brief Default constructor
      */
-    Application(void) {
+    Application(void)
+        : _mainWindow(), _eventHandler(), _logger(), _eventBus(),
+          _ecs(nullptr) {
         getLogger().setName("Application");
         _ecs = std::make_unique<ECS>(_eventBus, _mainWindow.getRenderer());
         _eventHandler.setEventCallback(
@@ -103,7 +105,7 @@ class Application {
      * @return Exit code.
      */
     int run(void) {
-        while (true) {
+        while (!_eventHandler.shouldQuit()) {
             try {
                 routine();
             } catch (const std::exception &exception) {

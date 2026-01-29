@@ -50,6 +50,7 @@ class EventHandler {
   private:
     LoggerType logger; ///< Logger instance
     Handler _callback; ///< Event callback function
+    bool _shouldQuit;  ///< Flag indicating if a quit event was received
 
   protected:
     /**
@@ -63,6 +64,12 @@ class EventHandler {
      * @return Reference to the event callback function.
      */
     Handler &getEventCallback(void) { return _callback; }
+
+    /**
+     * @brief Set the should quit flag.
+     * @param shouldQuit True if a quit event was received, false otherwise.
+     */
+    void setShouldQuit(bool shouldQuit) { _shouldQuit = shouldQuit; }
 
   public:
     /**
@@ -83,6 +90,12 @@ class EventHandler {
      * @param callback Function to call when an event is received.
      */
     void setEventCallback(const Handler &callback) { _callback = callback; }
+
+    /**
+     * @brief Check if a quit event has been received.
+     * @return True if a quit event was received, false otherwise.
+     */
+    bool shouldQuit(void) const { return _shouldQuit; }
 
     /**
      * @brief Poll for events and dispatch them.
