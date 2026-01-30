@@ -26,6 +26,7 @@
 #include <map>
 #include <typeindex>
 #include <vector>
+#include <memory>
 
 #include <utility/event/event.hpp>
 
