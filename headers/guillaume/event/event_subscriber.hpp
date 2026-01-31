@@ -69,11 +69,10 @@ template <utility::event::InheritFromEvent EventType> class EventSubscriber {
     /**
      * @brief Get the next event from the queue.
      * @return The next event.
-     * @throws std::runtime_error if there are no pending events.
      */
     std::unique_ptr<EventType> getNextEvent(void) {
         if (_eventQueue.empty()) {
-            throw std::runtime_error("No pending events");
+            return nullptr;
         }
         std::unique_ptr<EventType> event = std::move(_eventQueue.front());
         _eventQueue.pop();
