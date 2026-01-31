@@ -25,10 +25,14 @@
 #include <SDL3/SDL.h>
 
 #include <guillaume/event/event_handler.hpp>
+
+#include <utility/logging/loggable.hpp>
+
 #include <utility/event/keyboard_event.hpp>
 #include <utility/event/mouse_button_event.hpp>
 
-class EventHandler : public guillaume::event::EventHandler<> {
+class EventHandler : public guillaume::event::EventHandler,
+                     public utility::logging::Loggable {
   private:
     utility::event::KeyboardEvent::ScanCode
     convertScanCode(SDL_Scancode sdlScanCode);

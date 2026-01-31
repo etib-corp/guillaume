@@ -34,31 +34,21 @@ namespace guillaume::event {
 
 /**
  * @brief Interface for event handlers.
- * @param LoggerType The type of logger to use.
  *
  * This class provides an abstract interface for handling events in the
  * Guillaume framework. Implementations should poll or process platform-specific
  * events and convert them to Guillaume Event objects.
  */
-template <utility::logging::InheritFromLogger LoggerType =
-              utility::logging::StandardLogger>
 class EventHandler {
   public:
     using Handler = std::function<void(
         std::unique_ptr<utility::event::Event> &)>; ///< Event handler type
 
   private:
-    LoggerType logger; ///< Logger instance
     Handler _callback; ///< Event callback function
     bool _shouldQuit;  ///< Flag indicating if a quit event was received
 
   protected:
-    /**
-     * @brief Get the logger instance.
-     * @return Reference to the logger.
-     */
-    LoggerType &getLogger(void) { return logger; }
-
     /**
      * @brief Get the current event callback function.
      * @return Reference to the event callback function.
@@ -75,7 +65,7 @@ class EventHandler {
     /**
      * @brief Default constructor
      */
-    EventHandler(void) { getLogger().setName("EventHandler"); }
+    EventHandler(void) {}
 
     /**
      * @brief Default destructor

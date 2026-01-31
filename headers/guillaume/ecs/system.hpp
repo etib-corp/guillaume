@@ -27,6 +27,8 @@
 #include <typeindex>
 #include <vector>
 
+#include <utility/logging/loggable.hpp>
+
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
 
@@ -38,7 +40,7 @@ namespace guillaume::ecs {
  * This base class provides common functionality that doesn't depend on
  * component types.
  */
-class System {
+class System : public utility::logging::Loggable {
   private:
     Entity::Signature _signature;              ///< System signature
     std::vector<Entity::Identifier> _entities; ///< Managed entities

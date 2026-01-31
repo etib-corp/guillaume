@@ -38,8 +38,7 @@ namespace guillaume::systems {
  * @brief System handling hoverable entities.
  */
 class Hover
-    : public ecs::SystemFiller<utility::logging::StandardLogger,
-                               components::Hover, components::Transform> {
+    : public ecs::SystemFiller<components::Hover, components::Transform> {
 
   private:
     event::EventSubscriber<utility::event::MouseMotionEvent>
@@ -50,9 +49,7 @@ class Hover
      * @brief Default constructor for the Hover system.
      * @param eventBus The event bus to subscribe to.
      */
-    Hover(event::EventBus &eventBus) : _mouseMotionSubscriber(eventBus) {
-        getLogger().setName("HoverSystem");
-    }
+    Hover(event::EventBus &eventBus) : _mouseMotionSubscriber(eventBus) {}
 
     /**
      * @brief Default destructor for the Hover system.
@@ -64,7 +61,7 @@ class Hover
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(const ecs::Entity::Identifier &identityIdentifier) override {
-        getLogger().info("Hovering entity " +
+        info("Hovering entity " +
                          std::to_string(identityIdentifier));
     }
 };

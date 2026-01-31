@@ -26,9 +26,9 @@
 #include <string>
 #include <type_traits>
 
-#include <utility/logging/logger.hpp>
+#include <utility/logging/loggable.hpp>
+
 #include <utility/math/rectangle.hpp>
-#include <utility/logging/standard_logger.hpp>
 #include <utility/math/vector.hpp>
 
 #include "guillaume/renderer.hpp"
@@ -38,27 +38,17 @@ namespace guillaume {
 /**
  * @brief Window base class.
  * @tparam RendererType The type of the renderer associated with the window.
- * @tparam LoggerType The type of the logger used by the window.
  */
-template <typename RendererType,
-          utility::logging::InheritFromLogger LoggerType = utility::logging::StandardLogger>
-class Window {
+template <typename RendererType>
+class Window : public utility::logging::Loggable {
   private:
     RendererType _renderer; ///< Window renderer
-    LoggerType _logger;     ///< Window logger
-
-  protected:
-    /**
-     * @brief Get the logger instance.
-     * @return Reference to the logger.
-     */
-    LoggerType &getLogger(void) { return _logger; }
 
   public:
     /**
      * @brief Default constructor
      */
-    Window(void) { getLogger().setName("Window"); }
+    Window(void) {}
 
     /**
      * @brief Default destructor
@@ -99,7 +89,8 @@ class Window {
      * @brief Get the maximum window size.
      * @return The maximum window size as a 2D integer vector.
      */
-    virtual utility::math::Vector<std::size_t, 2> getMaximumSize(void) const = 0;
+    virtual utility::math::Vector<std::size_t, 2>
+    getMaximumSize(void) const = 0;
 
     /**
      * @brief Show the window.

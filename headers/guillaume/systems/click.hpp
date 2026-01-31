@@ -38,8 +38,7 @@ namespace guillaume::systems {
  * @brief System handling clickable entities.
  */
 class Click
-    : public ecs::SystemFiller<utility::logging::StandardLogger,
-                               components::Click, components::Transform> {
+    : public ecs::SystemFiller<components::Click, components::Transform> {
   private:
     event::EventSubscriber<utility::event::MouseButtonEvent>
         _mouseButtonSubscriber;
@@ -49,9 +48,7 @@ class Click
      * @brief Default constructor for the MouseButton system.
      * @param eventBus The event bus to subscribe to.
      */
-    Click(event::EventBus &eventBus) : _mouseButtonSubscriber(eventBus) {
-        getLogger().setName("ClickSystem");
-    }
+    Click(event::EventBus &eventBus) : _mouseButtonSubscriber(eventBus) {}
 
     /**
      * @brief Default destructor for the Click system.
@@ -63,7 +60,7 @@ class Click
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(const ecs::Entity::Identifier &identityIdentifier) override {
-        getLogger().info("Updating button entity " +
+        info("Updating button entity " +
                          std::to_string(identityIdentifier));
     }
 };

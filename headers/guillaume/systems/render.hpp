@@ -35,19 +35,16 @@ namespace guillaume::systems {
  * @brief System handling rendering of entities.
  */
 class Render
-    : public ecs::SystemFiller<utility::logging::StandardLogger,
-                               components::Transform, components::Bound> {
+    : public ecs::SystemFiller<components::Transform, components::Bound> {
   private:
-    Renderer<> &_renderer; ///< Renderer instance
+    Renderer &_renderer; ///< Renderer instance
 
   public:
     /**
      * @brief Default constructor for the Render system.
      * @param renderer The renderer to use for rendering operations.
      */
-    Render(Renderer<> &renderer) : _renderer(renderer) {
-        getLogger().setName("RenderSystem");
-    }
+    Render(Renderer &renderer) : _renderer(renderer) {}
 
     /**
      * @brief Default destructor for the Render system.
@@ -59,7 +56,7 @@ class Render
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(const ecs::Entity::Identifier &identityIdentifier) override {
-        getLogger().info("Rendering entity " +
+        info("Rendering entity " +
                          std::to_string(identityIdentifier));
     }
 };

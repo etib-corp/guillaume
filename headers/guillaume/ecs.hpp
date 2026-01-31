@@ -42,7 +42,7 @@ namespace guillaume {
 class ECS : public ecs::ECS<ComponentRegistry> {
   private:
     event::EventBus &_eventBus;
-    Renderer<> &_renderer;
+    Renderer &_renderer;
 
     /**
      * @brief Utility to register all core systems.
@@ -59,7 +59,7 @@ class ECS : public ecs::ECS<ComponentRegistry> {
      * @param eventBus The event bus to use for event dispatching.
      * @param renderer The renderer to use for rendering operations.
      */
-    ECS(event::EventBus &eventBus, Renderer<> &renderer)
+    ECS(event::EventBus &eventBus, Renderer &renderer)
         : _eventBus(eventBus), _renderer(renderer) {
         registerSystem<systems::Click>(
             std::make_unique<systems::Click>(_eventBus));

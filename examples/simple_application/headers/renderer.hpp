@@ -38,7 +38,7 @@
 
 namespace simple_application {
 
-class Renderer : public guillaume::Renderer<> {
+class Renderer : public guillaume::Renderer {
   private:
     utility::logging::StandardLogger _logger;
     utility::math::Color<uint8_t> _drawColor;

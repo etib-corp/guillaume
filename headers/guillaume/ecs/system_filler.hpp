@@ -22,9 +22,6 @@
 
 #pragma once
 
-#include <utility/logging/logger.hpp>
-#include <utility/logging/standard_logger.hpp>
-
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/system.hpp"
 
@@ -36,19 +33,8 @@ namespace guillaume::ecs {
  * @tparam ComponentTypes The component types that define the system's
  * signature.
  */
-template <utility::logging::InheritFromLogger LoggerType = utility::logging::StandardLogger,
-          InheritFromComponent... ComponentTypes>
+template <InheritFromComponent... ComponentTypes>
 class SystemFiller : public System {
-  private:
-    LoggerType logger; ///< Logger instance
-
-  protected:
-    /**
-     * @brief Get the logger instance.
-     * @return Reference to the logger.
-     */
-    LoggerType &getLogger(void) { return logger; }
-
   public:
     /**
      * @brief Construct a new System Filler object and set its signature.

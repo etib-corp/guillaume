@@ -26,8 +26,7 @@
 #include <memory>
 #include <string>
 
-#include <utility/logging/logger.hpp>
-#include <utility/logging/standard_logger.hpp>
+#include <utility/logging/loggable.hpp>
 
 #include "ecs.hpp"
 #include "metadata.hpp"
@@ -46,16 +45,12 @@ namespace guillaume {
  * @tparam RendererType The type of the renderer used by the windows.
  * @tparam EventHandlerType The type of the event handler used by the
  * application.
- * @tparam LoggerType The type of the logger used by the application.
  */
-template <typename WindowType, typename RendererType, typename EventHandlerType,
-          utility::logging::InheritFromLogger LoggerType =
-              utility::logging::StandardLogger>
-class Application {
+template <typename WindowType, typename RendererType, typename EventHandlerType>
+class Application : public utility::logging::Loggable {
   private:
     WindowType _mainWindow;         ///< Main application window
     EventHandlerType _eventHandler; ///< Application event handler
-    LoggerType _logger;             ///< Application logger
     event::EventBus _eventBus;      ///< Event bus dispatching to systems
     std::unique_ptr<ECS> _ecs;      ///< ECS instance
 
@@ -65,12 +60,6 @@ class Application {
      * @return Reference to the main window.
      */
     WindowType &getMainWindow(void) { return _mainWindow; }
-
-    /**
-     * @brief Get the logger instance.
-     * @return Reference to the logger.
-     */
-    LoggerType &getLogger(void) { return _logger; }
 
     /**
      * @brief Main application routine (single frame render).
@@ -85,9 +74,7 @@ class Application {
      * @brief Default constructor
      */
     Application(void)
-        : _mainWindow(), _eventHandler(), _logger(), _eventBus(),
-          _ecs(nullptr) {
-        getLogger().setName("Application");
+        : _mainWindow(), _eventHandler(), _eventBus(), _ecs(nullptr) {
         _ecs = std::make_unique<ECS>(_eventBus, _mainWindow.getRenderer());
         _eventHandler.setEventCallback(
             [this](std::unique_ptr<utility::event::Event> &event) {
@@ -109,8 +96,7 @@ class Application {
             try {
                 routine();
             } catch (const std::exception &exception) {
-                getLogger().error(std::string("Application error: ") +
-                                  exception.what());
+                error(std::string("Application error: ") + exception.what());
                 return EXIT_FAILURE;
             }
         }

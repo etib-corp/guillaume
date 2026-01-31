@@ -13,10 +13,10 @@ class Application
   public:
     Application(int argc, char *argv[])
         : guillaume::Application<Window, Application, EventHandler>() {
-        getLogger().info("Application initialized.");
+        info("Application initialized.");
     }
 
-    ~Application(void) { getLogger().info("Application terminated."); }
+    ~Application(void) { info("Application terminated."); }
 };
 
 } // namespace simple_application

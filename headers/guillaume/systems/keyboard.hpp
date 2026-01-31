@@ -36,8 +36,7 @@ namespace guillaume::systems {
 /**
  * @brief System handling clickable entities.
  */
-class Keyboard : public ecs::SystemFiller<utility::logging::StandardLogger,
-                                          components::Text> {
+class Keyboard : public ecs::SystemFiller<components::Text> {
   private:
     event::EventSubscriber<utility::event::KeyboardEvent> _keyboardSubscriber;
 
@@ -46,9 +45,7 @@ class Keyboard : public ecs::SystemFiller<utility::logging::StandardLogger,
      * @brief Default constructor for the Keyboard system.
      * @param eventBus The event bus to subscribe to.
      */
-    Keyboard(event::EventBus &eventBus) : _keyboardSubscriber(eventBus) {
-        getLogger().setName("KeyboardSystem");
-    }
+    Keyboard(event::EventBus &eventBus) : _keyboardSubscriber(eventBus) {}
 
     /**
      * @brief Default destructor for the Keyboard system.
@@ -60,7 +57,7 @@ class Keyboard : public ecs::SystemFiller<utility::logging::StandardLogger,
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(const ecs::Entity::Identifier &identityIdentifier) override {
-        getLogger().info("Updating button entity " +
+        info("Updating button entity " +
                          std::to_string(identityIdentifier));
     }
 };

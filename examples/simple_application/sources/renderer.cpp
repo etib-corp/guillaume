@@ -26,7 +26,7 @@ std::string formatVector(const utility::math::Vector<Type, 2> &vector) {
 namespace simple_application {
 
 Renderer::Renderer()
-    : guillaume::Renderer<>(), _logger(), _drawColor(0, 0, 0, 255),
+    : guillaume::Renderer(), _logger(), _drawColor(0, 0, 0, 255),
       _scale({1.0F, 1.0F}), _sdlRenderer(nullptr), _fontCache() {
     if (!TTF_Init()) {
         _logger.error(std::string("TTF_Init failed: ") + SDL_GetError());
@@ -35,7 +35,7 @@ Renderer::Renderer()
 }
 
 Renderer::Renderer(SDL_Renderer *sdlRenderer)
-    : guillaume::Renderer<>(), _logger(), _drawColor(0, 0, 0, 255),
+    : guillaume::Renderer(), _logger(), _drawColor(0, 0, 0, 255),
       _scale({1.0F, 1.0F}), _sdlRenderer(sdlRenderer), _fontCache() {
     if (!TTF_Init()) {
         _logger.error(std::string("TTF_Init failed: ") + SDL_GetError());

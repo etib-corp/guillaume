@@ -27,10 +27,9 @@
 #include <string>
 #include <vector>
 
+#include <utility/logging/loggable.hpp>
 #include <utility/math/color.hpp>
-#include <utility/logging/logger.hpp>
 #include <utility/math/rectangle.hpp>
-#include <utility/logging/standard_logger.hpp>
 #include <utility/math/vector.hpp>
 
 #include "guillaume/font.hpp"
@@ -40,25 +39,13 @@ namespace guillaume {
 
 /**
  * @brief Renderer interface.
- * @param LoggerType The type of logger to use.
  */
-template <utility::logging::InheritFromLogger LoggerType = utility::logging::StandardLogger>
-class Renderer {
-  private:
-    LoggerType logger; ///< Logger instance
-
-  protected:
-    /**
-     * @brief Get the logger instance.
-     * @return Reference to the logger.
-     */
-    LoggerType &getLogger(void) { return logger; }
-
+class Renderer : public utility::logging::Loggable {
   public:
     /**
      * @brief Default constructor
      */
-    Renderer(void) { getLogger().setName("Renderer"); }
+    Renderer(void) {}
 
     /**
      * @brief Default destructor

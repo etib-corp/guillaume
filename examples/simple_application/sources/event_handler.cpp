@@ -3,12 +3,12 @@
 #include <utility/event/mouse_motion_event.hpp>
 #include <utility/event/quit_event.hpp>
 
-EventHandler::EventHandler(void) : guillaume::event::EventHandler<>() {
-    getLogger().info("SDL3 Event Handler initialized");
+EventHandler::EventHandler(void) : guillaume::event::EventHandler() {
+    info("SDL3 Event Handler initialized");
 }
 
 EventHandler::~EventHandler(void) {
-    getLogger().info("SDL3 Event Handler destroyed");
+    info("SDL3 Event Handler destroyed");
 }
 
 bool EventHandler::pollEvents(void) {
