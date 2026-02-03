@@ -21,12 +21,9 @@
  */
 
 #include "shapes/rectangle.hpp"
+#include "renderer.hpp"
 
 namespace simple_application::shapes {
-
-Rectangle::Rectangle(void) : guillaume::shapes::Rectangle() {}
-
-Rectangle::~Rectangle(void) {}
 
 void Rectangle::draw(guillaume::Renderer &renderer) const {}
 

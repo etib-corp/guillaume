@@ -60,8 +60,9 @@ class Click
      * @brief Update the Click system for the specified entity.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(const ecs::Entity::Identifier &identityIdentifier) override {
-        getLogger().info("Updating button entity " +
+    void update(ecs::ComponentRegistry &,
+                const ecs::Entity::Identifier &identityIdentifier) override {
+        System::getLogger().info("Updating button entity " +
                          std::to_string(identityIdentifier));
     }
 };

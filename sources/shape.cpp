@@ -20,6 +20,35 @@
  SOFTWARE.
  */
 
-#include "guillaume/window.hpp"
+#include "guillaume/shape.hpp"
 
-namespace guillaume {} // namespace guillaume
+namespace guillaume {
+
+Shape::Shape(void)
+    : _position({0.0f, 0.0f, 0.0f}),
+      _origin({0.0f, 0.0f, 0.0f}),
+      _rotation({0.0f, 0.0f, 0.0f}),
+      _scale({1.0f, 1.0f, 1.0f}),
+      _color({255, 255, 255, 255}) {}
+
+void Shape::setPosition(const utility::math::Vector<std::float_t, 3> &position) {
+    _position = position;
+}
+
+void Shape::setOrigin(const utility::math::Vector<std::float_t, 3> &origin) {
+    _origin = origin;
+}
+
+void Shape::setRotation(const utility::math::Vector<std::float_t, 3> &rotation) {
+    _rotation = rotation;
+}
+
+void Shape::setScale(const utility::math::Vector<std::float_t, 3> &scale) {
+    _scale = scale;
+}
+
+void Shape::setColor(const utility::math::Color<uint8_t> &color) {
+    _color = color;
+}
+
+}

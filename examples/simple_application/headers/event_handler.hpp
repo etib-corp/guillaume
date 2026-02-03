@@ -51,7 +51,7 @@ class EventHandler : public guillaume::event::EventHandler {
   public:
     EventHandler(void);
     ~EventHandler(void) override;
-    bool pollEvents(void) override;
+    void pollEvents(void) override;
 };
 
 } // namespace simple_application

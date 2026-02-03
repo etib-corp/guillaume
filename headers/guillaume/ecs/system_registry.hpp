@@ -29,6 +29,9 @@
 #include <type_traits>
 #include <typeindex>
 
+#include <utility/logging/loggable.hpp>
+#include <utility/logging/standard_logger.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/system.hpp"
 
@@ -74,7 +77,9 @@ class SystemNotFoundException : public std::exception {
  * This base class provides common functionality that doesn't depend on
  * system types.
  */
-class SystemRegistry {
+class SystemRegistry
+    : public utility::logging::Loggable<SystemRegistry,
+                                        utility::logging::StandardLogger> {
   private:
     std::map<std::type_index, std::unique_ptr<System>>
         _systems; ///< Map of registered systems
@@ -98,6 +103,8 @@ class SystemRegistry {
     template <InheritFromSystem SystemType>
     void registerNewSystem(std::unique_ptr<SystemType> system) {
         _systems[std::type_index(typeid(SystemType))] = std::move(system);
+        getLogger().debug("Registered system of type " +
+                          std::string(typeid(SystemType).name()));
     }
 
     /**
@@ -120,6 +127,28 @@ class SystemRegistry {
     const std::map<std::type_index, std::unique_ptr<System>> &
     getSystems(void) const {
         return _systems;
+    }
+
+    /**
+     * @brief Add an entity to all compatible systems based on its signature.
+     * @param entity The entity to add.
+     */
+    void addEntityToSystems(Entity &entity) {
+        const auto entitySignature = entity.getSignature();
+        const auto entityIdentifier = entity.getIdentifier();
+
+        getLogger().debug("Adding entity " + std::to_string(entityIdentifier) +
+                          " to compatible systems");
+
+        for (const auto &[systemType, system] : _systems) {
+            const auto systemSignature = system->getSignature();
+            if ((entitySignature & systemSignature) == systemSignature) {
+                system->addEntity(entityIdentifier);
+                getLogger().debug("Entity " + std::to_string(entityIdentifier) +
+                                  " added to system " +
+                                  std::string(systemType.name()));
+            }
+        }
     }
 };
 

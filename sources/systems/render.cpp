@@ -22,10 +22,24 @@
 
 #include "guillaume/systems/render.hpp"
 
+#include "guillaume/shapes/rectangle.hpp"
+
 namespace guillaume::systems {
 
-void Render::update(const ecs::Entity::Identifier &identityIdentifier) {
-    getLogger().info("Rendering entity " + std::to_string(identityIdentifier));
+void Render::update(ecs::ComponentRegistry &componentRegistry,
+                    const ecs::Entity::Identifier &identityIdentifier) {
+    System::getLogger().info("Rendering entity " +
+                             std::to_string(identityIdentifier));
+
+    auto &transformComponent =
+        componentRegistry.getComponent<components::Transform>(
+            identityIdentifier);
+    auto &boundComponent =
+        componentRegistry.getComponent<components::Bound>(identityIdentifier);
+    auto rectangle = guillaume::shapes::Rectangle();
+    rectangle.setPosition(transformComponent->getPosition());
+    rectangle.setSize(boundComponent->getRectangle().getSize());
+    rectangle.draw(_renderer);
 }
 
 } // namespace guillaume::systems

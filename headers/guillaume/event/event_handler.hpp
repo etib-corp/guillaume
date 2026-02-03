@@ -40,15 +40,16 @@ namespace guillaume::event {
  * events and convert them to Guillaume Event objects.
  */
 class EventHandler
-    : public utility::logging::Loggable<EventHandler,
-                                        utility::logging::StandardLogger> {
+    : protected utility::logging::Loggable<EventHandler,
+                                           utility::logging::StandardLogger> {
   public:
     using Handler = std::function<void(
         std::unique_ptr<utility::event::Event> &)>; ///< Event handler type
 
   private:
-    Handler _callback; ///< Event callback function
-    bool _shouldQuit;  ///< Flag indicating if a quit event was received
+    Handler _callback;  ///< Event callback function
+    bool _shouldQuit;   ///< Flag indicating if a quit event was received
+    bool _gotNewEvents; ///< Flag indicating if new events were received
 
   protected:
     /**
@@ -63,11 +64,17 @@ class EventHandler
      */
     void setShouldQuit(bool shouldQuit) { _shouldQuit = shouldQuit; }
 
+    /**
+     * @brief Set the got new events flag.
+     * @param gotNewEvents True if new events were received, false otherwise.
+     */
+    void setGotNewEvents(bool gotNewEvents) { _gotNewEvents = gotNewEvents; }
+
   public:
     /**
      * @brief Default constructor
      */
-    EventHandler(void) {}
+    EventHandler(void) : _shouldQuit(false), _gotNewEvents(false) {}
 
     /**
      * @brief Default destructor
@@ -90,15 +97,19 @@ class EventHandler
     bool shouldQuit(void) const { return _shouldQuit; }
 
     /**
+     * @brief Check if new events were received in the last poll.
+     * @return True if new events were received, false otherwise.
+     */
+    bool gotNewEvents(void) const { return _gotNewEvents; }
+
+    /**
      * @brief Poll for events and dispatch them.
      *
      * This method should check for pending events from the underlying platform,
      * convert them to Event objects, and call the
      * registered callback for each event.
-     *
-     * @return True if events were processed, false if no events are pending.
      */
-    virtual bool pollEvents(void) = 0;
+    virtual void pollEvents(void) = 0;
 };
 
 } // namespace guillaume::event

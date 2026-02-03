@@ -29,11 +29,11 @@
 #include <type_traits>
 #include <typeindex>
 
-#include <utility/singleton.hpp>
+#include <utility/logging/loggable.hpp>
+#include <utility/logging/standard_logger.hpp>
 
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
-#include "guillaume/ecs/system.hpp"
 
 namespace guillaume::ecs {
 
@@ -50,6 +50,7 @@ class EntityComponentNotFoundException : public std::exception {
         typeid(ComponentType)}; ///< Type index of the missing component
     std::string _componentTypeName{
         _componentTypeIndex.name()}; ///< Name of the missing component type
+    mutable std::string _message; ///< Cached exception message
 
   public:
     /**
@@ -58,16 +59,17 @@ class EntityComponentNotFoundException : public std::exception {
      */
     EntityComponentNotFoundException(
         const Entity::Identifier &identityIdentifier)
-        : _identityIdentifier(identityIdentifier) {}
+        : _identityIdentifier(identityIdentifier) {
+        _message = "Component of type " + _componentTypeName +
+                   " not found for entity " + std::to_string(_identityIdentifier);
+    }
 
     /**
      * @brief Get the exception message.
      * @return The exception message.
      */
     const char *what(void) const noexcept override {
-        return ("Component of type " + _componentTypeName +
-                " not found for entity " + std::to_string(_identityIdentifier))
-            .c_str();
+        return _message.c_str();
     }
 
     /**
@@ -85,7 +87,9 @@ class EntityComponentNotFoundException : public std::exception {
  * Manages the registration and retrieval of component types within the ECS
  * architecture.
  */
-class ComponentRegistry {
+class ComponentRegistry
+    : public utility::logging::Loggable<ComponentRegistry,
+                                        utility::logging::StandardLogger> {
   private:
     std::map<std::type_index,
              std::map<Entity::Identifier, std::unique_ptr<Component>>>
@@ -103,6 +107,9 @@ class ComponentRegistry {
             _components[std::type_index(typeid(ComponentType))];
         entityComponents[identityIdentifier] =
             std::make_unique<ComponentType>();
+        getLogger().debug("Registered component of type " +
+                          std::string(typeid(ComponentType).name()) +
+                          " for entity " + std::to_string(identityIdentifier));
     }
 
   protected:
@@ -154,9 +161,9 @@ class ComponentRegistry {
             _components[std::type_index(typeid(ComponentType))];
         auto iterator = entityComponents.find(identityIdentifier);
         if (iterator == entityComponents.end()) {
-            throw ComponentNotFoundException<ComponentType>(identityIdentifier);
+            throw EntityComponentNotFoundException<ComponentType>(identityIdentifier);
         }
-        return static_cast<std::unique_ptr<ComponentType> &>(iterator->second);
+        return reinterpret_cast<std::unique_ptr<ComponentType> &>(iterator->second);
     }
 };
 

@@ -94,6 +94,12 @@ class Entity {
      * @return The entity's unique identifier.
      */
     Entity::Identifier getIdentifier(void) const { return _identifier; }
+
+    /**
+     * @brief Get the entity's signature.
+     * @return The entity's signature.
+     */
+    Entity::Signature getSignature(void) const { return _signature; }
 };
 
 /**

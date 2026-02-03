@@ -50,6 +50,8 @@ class ECS : public ecs::ECS<ComponentRegistry> {
      */
     template <ecs::InheritFromSystem SystemTypes>
     void registerSystem(std::unique_ptr<SystemTypes> system) {
+        getLogger().debug("Registering system: " +
+                          std::string(typeid(SystemTypes).name()));
         _systemRegistry.registerNewSystem<SystemTypes>(std::move(system));
     }
 
@@ -61,6 +63,7 @@ class ECS : public ecs::ECS<ComponentRegistry> {
      */
     ECS(event::EventBus &eventBus, Renderer &renderer)
         : _eventBus(eventBus), _renderer(renderer) {
+        this->getLogger().info("Initializing ECS with core systems");
         registerSystem<systems::Click>(
             std::make_unique<systems::Click>(_eventBus));
         registerSystem<systems::Hover>(
@@ -69,6 +72,7 @@ class ECS : public ecs::ECS<ComponentRegistry> {
             std::make_unique<systems::Render>(_renderer));
         registerSystem<systems::Keyboard>(
             std::make_unique<systems::Keyboard>(_eventBus));
+        this->getLogger().info("ECS initialization complete");
     }
 
     /**

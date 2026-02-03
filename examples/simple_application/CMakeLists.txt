@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
-# Fetch SDL3 and SDL3_ttf
+# Fetch SDL3 and SDL3_ttf (SDL3 includes GPU support natively)
 include(FetchContent)
+
+set(SDL_TESTS OFF CACHE INTERNAL "")
+
 FetchContent_Declare(
     SDL
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG release-3.4.0
 )
+
 FetchContent_MakeAvailable(SDL)
 
 FetchContent_Declare(
@@ -14,7 +18,17 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
     GIT_TAG release-3.2.2
 )
+
 FetchContent_MakeAvailable(SDL_ttf)
+
+# Fetch GLM for matrix operations
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.3
+)
+
+FetchContent_MakeAvailable(glm)
 
 # Set project name
 set(EXAMPLE_NAME simple_application)
@@ -37,8 +51,8 @@ target_include_directories(${EXAMPLE_NAME} PRIVATE
 # Link against the main library
 target_link_libraries(${EXAMPLE_NAME} PRIVATE ${PROJECT_NAME})
 
-# Link against SDL3 and SDL3_ttf
-target_link_libraries(${EXAMPLE_NAME} PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
+# Link against SDL3 and SDL3_ttf (GPU support included in SDL3)
+target_link_libraries(${EXAMPLE_NAME} PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf glm::glm)
 
 # Set C++ standard
 set_property(TARGET ${EXAMPLE_NAME} PROPERTY CXX_STANDARD 20)

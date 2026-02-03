@@ -34,17 +34,28 @@ namespace guillaume::ecs {
  * @tparam ComponentTypes The component types that define the entity's
  * signature.
  */
-template <InheritFromComponentRegistry ComponentRegistryType,
-          InheritFromComponent... ComponentTypes>
+template <InheritFromComponent... ComponentTypes>
 class EntityFiller : public Entity {
+  private:
+    ComponentRegistry &_componentRegistry;
+
+  protected:
+    /**
+     * @brief Get the Component Registry.
+     * @return Reference to the component registry.
+     */
+    ComponentRegistry &getComponentRegistry(void) { return _componentRegistry; }
+
   public:
     /**
-     * @brief Construct a new Entity Filler objec, set its signature and
-     * register its components to the ComponentRegistry.
+     * @brief Construct a new Entity Filler object.
+     * @param componentRegistry The component registry to register components
+     * to.
      */
-    EntityFiller(void) {
+    EntityFiller(ComponentRegistry &componentRegistry)
+        : Entity(), _componentRegistry(componentRegistry) {
         setSignature<ComponentTypes...>();
-        utility::Singleton<ComponentRegistryType>::getInstance()
+        _componentRegistry
             .template registerComponentsForEntity<ComponentTypes...>(
                 getIdentifier());
     }

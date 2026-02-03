@@ -13,16 +13,20 @@ EventHandler::~EventHandler(void) {
     getLogger().info("SDL3 Event Handler destroyed");
 }
 
-bool EventHandler::pollEvents(void) {
+void EventHandler::pollEvents(void) {
     SDL_Event sdlEvent;
-    bool hasEvents = false;
+    setGotNewEvents(false);
 
     while (SDL_PollEvent(&sdlEvent)) {
-        hasEvents = true;
+        setGotNewEvents(true);
+        getLogger().debug("Get new SDL event of type: " +
+                          std::to_string(sdlEvent.type));
+
         std::unique_ptr<utility::event::Event> event = nullptr;
 
         switch (sdlEvent.type) {
         case SDL_EVENT_QUIT: {
+            getLogger().info("Quit event received");
             auto quitEvent = std::make_unique<utility::event::QuitEvent>();
             setShouldQuit(true);
             event = std::move(quitEvent);
@@ -31,6 +35,10 @@ bool EventHandler::pollEvents(void) {
 
         case SDL_EVENT_KEY_DOWN:
         case SDL_EVENT_KEY_UP: {
+            getLogger().debug("Keyboard event: " +
+                              std::string(sdlEvent.type == SDL_EVENT_KEY_DOWN
+                                              ? "KEY_DOWN"
+                                              : "KEY_UP"));
             auto keyEvent = std::make_unique<utility::event::KeyboardEvent>();
             keyEvent->setKeycode(convertKeyCode(sdlEvent.key.key));
             keyEvent->setModifiers(convertKeyModifiers(sdlEvent.key.mod));
@@ -42,6 +50,9 @@ bool EventHandler::pollEvents(void) {
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         case SDL_EVENT_MOUSE_BUTTON_UP: {
+            getLogger().debug("Mouse button event at (" +
+                              std::to_string(sdlEvent.button.x) + ", " +
+                              std::to_string(sdlEvent.button.y) + ")");
             auto mouseEvent =
                 std::make_unique<utility::event::MouseButtonEvent>();
             mouseEvent->setPosition({static_cast<float>(sdlEvent.button.x),
@@ -72,8 +83,6 @@ bool EventHandler::pollEvents(void) {
             getEventCallback()(event);
         }
     }
-
-    return hasEvents;
 }
 
 utility::event::KeyboardEvent::ScanCode

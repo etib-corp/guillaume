@@ -62,7 +62,7 @@ class Rectangle : public Shape {
      * @brief Draw the rectangle using the provided renderer.
      * @param renderer The renderer to use for drawing.
      */
-    virtual void draw(Renderer &renderer) = 0;
+    void draw(Renderer &renderer) const override;
 };
 
 } // namespace guillaume::shapes

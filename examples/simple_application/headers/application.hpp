@@ -4,15 +4,12 @@
 
 #include "event_handler.hpp"
 #include "renderer.hpp"
-#include "window.hpp"
 
 namespace simple_application {
 
-class Application
-    : public guillaume::Application<Window, Renderer, EventHandler> {
+class Application : public guillaume::Application<Renderer, EventHandler> {
   public:
     Application(int argc, char *argv[]);
-
     ~Application(void);
 };
 

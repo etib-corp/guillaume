@@ -71,7 +71,10 @@ class Renderer
      * @brief Draw a shape.
      * @param shape The shape to draw.
      */
-    void draw(const Shape &shape) { shape.draw(*this); }
+    void draw(const Shape &shape) {
+        this->getLogger().debug("Drawing shape");
+        shape.draw(*this);
+    }
 };
 
 } // namespace guillaume

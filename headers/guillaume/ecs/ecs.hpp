@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <utility/logging/loggable.hpp>
+#include <utility/logging/standard_logger.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/system_registry.hpp"
 
@@ -32,9 +35,14 @@ namespace guillaume::ecs {
  * @tparam ComponentRegistryType The type of the component registry.
  * @tparam SystemRegistryType The type of the system registry.
  */
-template <InheritFromComponentRegistry ComponentRegistryType> class ECS {
+template <InheritFromComponentRegistry ComponentRegistryType>
+class ECS
+    : protected utility::logging::Loggable<ECS<ComponentRegistryType>,
+                                           utility::logging::StandardLogger> {
   protected:
-    SystemRegistry _systemRegistry; ///< System registry instance
+    SystemRegistry _systemRegistry;            ///< System registry instance
+    ComponentRegistryType _componentRegistry;  ///< Component registry instance
+    std::vector<Entity::Identifier> _entities; ///< Managed entities
 
   public:
     /**
@@ -48,11 +56,34 @@ template <InheritFromComponentRegistry ComponentRegistryType> class ECS {
     virtual ~ECS(void) = default;
 
     /**
+     * @brief Get the System Registry.
+     * @return Reference to the system registry.
+     */
+    SystemRegistry &getSystemRegistry(void) { return _systemRegistry; }
+
+    /**
+     * @brief Get the Component Registry.
+     * @return Reference to the component registry.
+     */
+    ComponentRegistryType &getComponentRegistry(void) {
+        return _componentRegistry;
+    }
+
+    /**
+     * @brief Add an entity to all compatible systems and manage it.
+     * @param entity The entity to add.
+     */
+    void addEntity(Entity &entity) {
+        _systemRegistry.addEntityToSystems(entity);
+        _entities.push_back(entity.getIdentifier());
+    }
+
+    /**
      * @brief Routine to update all systems.
      */
     void routine(void) {
         for (auto &[typeIndex, system] : _systemRegistry.getSystems()) {
-            system->routine();
+            system->routine(_componentRegistry);
         }
     }
 };

@@ -31,6 +31,7 @@
 #include <utility/logging/standard_logger.hpp>
 
 #include "guillaume/ecs/component.hpp"
+#include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::ecs {
@@ -42,7 +43,8 @@ namespace guillaume::ecs {
  * component types.
  */
 class System
-    : protected utility::logging::Loggable<System, utility::logging::StandardLogger> {
+    : protected utility::logging::Loggable<System,
+                                           utility::logging::StandardLogger> {
   private:
     Entity::Signature _signature;              ///< System signature
     std::vector<Entity::Identifier> _entities; ///< Managed entities
@@ -85,18 +87,21 @@ class System
 
     /**
      * @brief Routine to update all managed entities.
+     * @param componentRegistry The component registry instance.
      */
-    void routine(void) {
+    void routine(ecs::ComponentRegistry &componentRegistry) {
         for (const auto &entityIdentifier : _entities) {
-            update(entityIdentifier);
+            update(componentRegistry, entityIdentifier);
         }
     }
 
     /**
      * @brief Update the system, processing relevant entities.
+     * @param componentRegistry The component registry instance.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    virtual void update(const Entity::Identifier &identityIdentifier) = 0;
+    virtual void update(ecs::ComponentRegistry &componentRegistry,
+                        const ecs::Entity::Identifier &identityIdentifier) = 0;
 };
 
 /**

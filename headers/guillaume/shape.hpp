@@ -109,6 +109,18 @@ class Shape {
     }
 
     /**
+     * @brief Set the color of the shape.
+     * @param color The new color.
+     */
+    void setColor(const utility::math::Color<uint8_t> &color);
+
+    /**
+     * @brief Get the color of the shape.
+     * @return The color.
+     */
+    utility::math::Color<uint8_t> getColor(void) const { return _color; }
+
+    /**
      * @brief Draw the shape using the provided renderer.
      * @param renderer The renderer to use for drawing.
      */

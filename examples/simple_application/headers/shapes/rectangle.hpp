@@ -27,10 +27,9 @@
 namespace simple_application::shapes {
 
 class Rectangle : public guillaume::shapes::Rectangle {
-  private:
   public:
-    Rectangle(void);
-    ~Rectangle(void) override;
+    Rectangle(void) : guillaume::shapes::Rectangle() {}
+    ~Rectangle(void) override {}
     void draw(guillaume::Renderer &renderer) const override;
 };
 
