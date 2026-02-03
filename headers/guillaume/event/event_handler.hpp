@@ -25,7 +25,7 @@
 #include <functional>
 #include <memory>
 
-#include <utility/logging/logger.hpp>
+#include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
 #include <utility/event/event.hpp>
@@ -39,7 +39,9 @@ namespace guillaume::event {
  * Guillaume framework. Implementations should poll or process platform-specific
  * events and convert them to Guillaume Event objects.
  */
-class EventHandler {
+class EventHandler
+    : public utility::logging::Loggable<EventHandler,
+                                        utility::logging::StandardLogger> {
   public:
     using Handler = std::function<void(
         std::unique_ptr<utility::event::Event> &)>; ///< Event handler type

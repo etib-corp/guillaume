@@ -39,6 +39,7 @@ namespace guillaume::systems {
  */
 class Click
     : public ecs::SystemFiller<components::Click, components::Transform> {
+
   private:
     event::EventSubscriber<utility::event::MouseButtonEvent>
         _mouseButtonSubscriber;
@@ -60,7 +61,7 @@ class Click
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(const ecs::Entity::Identifier &identityIdentifier) override {
-        info("Updating button entity " +
+        getLogger().info("Updating button entity " +
                          std::to_string(identityIdentifier));
     }
 };

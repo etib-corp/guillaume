@@ -9,14 +9,11 @@
 namespace simple_application {
 
 class Application
-    : public guillaume::Application<Window, Application, EventHandler> {
+    : public guillaume::Application<Window, Renderer, EventHandler> {
   public:
-    Application(int argc, char *argv[])
-        : guillaume::Application<Window, Application, EventHandler>() {
-        info("Application initialized.");
-    }
+    Application(int argc, char *argv[]);
 
-    ~Application(void) { info("Application terminated."); }
+    ~Application(void);
 };
 
 } // namespace simple_application

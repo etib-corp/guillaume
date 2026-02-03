@@ -27,12 +27,14 @@
 #include <guillaume/event/event_handler.hpp>
 
 #include <utility/logging/loggable.hpp>
+#include <utility/logging/standard_logger.hpp>
 
 #include <utility/event/keyboard_event.hpp>
 #include <utility/event/mouse_button_event.hpp>
 
-class EventHandler : public guillaume::event::EventHandler,
-                     public utility::logging::Loggable {
+namespace simple_application {
+
+class EventHandler : public guillaume::event::EventHandler {
   private:
     utility::event::KeyboardEvent::ScanCode
     convertScanCode(SDL_Scancode sdlScanCode);
@@ -51,3 +53,5 @@ class EventHandler : public guillaume::event::EventHandler,
     ~EventHandler(void) override;
     bool pollEvents(void) override;
 };
+
+} // namespace simple_application

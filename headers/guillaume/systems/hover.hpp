@@ -61,7 +61,7 @@ class Hover
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(const ecs::Entity::Identifier &identityIdentifier) override {
-        info("Hovering entity " +
+        getLogger().info("Hovering entity " +
                          std::to_string(identityIdentifier));
     }
 };

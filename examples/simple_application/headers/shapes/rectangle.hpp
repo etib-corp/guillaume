@@ -22,40 +22,16 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include <guillaume/shapes/rectangle.hpp>
 
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/transform.hpp"
+namespace simple_application::shapes {
 
-#include "guillaume/renderer.hpp"
-
-namespace guillaume::systems {
-
-/**
- * @brief System handling rendering of entities.
- */
-class Render
-    : public ecs::SystemFiller<components::Transform, components::Bound> {
+class Rectangle : public guillaume::shapes::Rectangle {
   private:
-    Renderer &_renderer; ///< Renderer instance
-
   public:
-    /**
-     * @brief Default constructor for the Render system.
-     * @param renderer The renderer to use for rendering operations.
-     */
-    Render(Renderer &renderer) : _renderer(renderer) {}
-
-    /**
-     * @brief Default destructor for the Render system.
-     */
-    ~Render(void) = default;
-
-    /**
-     * @brief Update the Render system for the specified entity.
-     * @param identityIdentifier The identifier of the entity to update.
-     */
-    void update(const ecs::Entity::Identifier &identityIdentifier) override;
+    Rectangle(void);
+    ~Rectangle(void) override;
+    void draw(guillaume::Renderer &renderer) const override;
 };
 
-} // namespace guillaume::systems
+} // namespace simple_application::shapes

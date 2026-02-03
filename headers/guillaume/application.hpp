@@ -27,6 +27,7 @@
 #include <string>
 
 #include <utility/logging/loggable.hpp>
+#include <utility/logging/standard_logger.hpp>
 
 #include "ecs.hpp"
 #include "metadata.hpp"
@@ -47,9 +48,12 @@ namespace guillaume {
  * application.
  */
 template <typename WindowType, typename RendererType, typename EventHandlerType>
-class Application : public utility::logging::Loggable {
+class Application : protected utility::logging::Loggable<
+                        Application<WindowType, RendererType, EventHandlerType>,
+                        utility::logging::StandardLogger> {
   private:
     WindowType _mainWindow;         ///< Main application window
+    RendererType _renderer;         ///< Main application renderer
     EventHandlerType _eventHandler; ///< Application event handler
     event::EventBus _eventBus;      ///< Event bus dispatching to systems
     std::unique_ptr<ECS> _ecs;      ///< ECS instance
@@ -75,7 +79,7 @@ class Application : public utility::logging::Loggable {
      */
     Application(void)
         : _mainWindow(), _eventHandler(), _eventBus(), _ecs(nullptr) {
-        _ecs = std::make_unique<ECS>(_eventBus, _mainWindow.getRenderer());
+        _ecs = std::make_unique<ECS>(_eventBus, _renderer);
         _eventHandler.setEventCallback(
             [this](std::unique_ptr<utility::event::Event> &event) {
                 this->_eventBus.publish(std::move(event));
@@ -96,7 +100,8 @@ class Application : public utility::logging::Loggable {
             try {
                 routine();
             } catch (const std::exception &exception) {
-                error(std::string("Application error: ") + exception.what());
+                this->getLogger().error(std::string("Application error: ") +
+                                        exception.what());
                 return EXIT_FAILURE;
             }
         }

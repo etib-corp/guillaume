@@ -20,42 +20,14 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "shapes/rectangle.hpp"
 
-#include "guillaume/ecs/system_filler.hpp"
+namespace simple_application::shapes {
 
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/transform.hpp"
+Rectangle::Rectangle(void) : guillaume::shapes::Rectangle() {}
 
-#include "guillaume/renderer.hpp"
+Rectangle::~Rectangle(void) {}
 
-namespace guillaume::systems {
+void Rectangle::draw(guillaume::Renderer &renderer) const {}
 
-/**
- * @brief System handling rendering of entities.
- */
-class Render
-    : public ecs::SystemFiller<components::Transform, components::Bound> {
-  private:
-    Renderer &_renderer; ///< Renderer instance
-
-  public:
-    /**
-     * @brief Default constructor for the Render system.
-     * @param renderer The renderer to use for rendering operations.
-     */
-    Render(Renderer &renderer) : _renderer(renderer) {}
-
-    /**
-     * @brief Default destructor for the Render system.
-     */
-    ~Render(void) = default;
-
-    /**
-     * @brief Update the Render system for the specified entity.
-     * @param identityIdentifier The identifier of the entity to update.
-     */
-    void update(const ecs::Entity::Identifier &identityIdentifier) override;
-};
-
-} // namespace guillaume::systems
+} // namespace simple_application::shapes

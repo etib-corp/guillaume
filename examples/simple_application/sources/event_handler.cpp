@@ -3,12 +3,14 @@
 #include <utility/event/mouse_motion_event.hpp>
 #include <utility/event/quit_event.hpp>
 
+namespace simple_application {
+
 EventHandler::EventHandler(void) : guillaume::event::EventHandler() {
-    info("SDL3 Event Handler initialized");
+    getLogger().info("SDL3 Event Handler initialized");
 }
 
 EventHandler::~EventHandler(void) {
-    info("SDL3 Event Handler destroyed");
+    getLogger().info("SDL3 Event Handler destroyed");
 }
 
 bool EventHandler::pollEvents(void) {
@@ -137,3 +139,5 @@ EventHandler::convertMouseButton(std::uint8_t sdlButton) {
     return static_cast<utility::event::MouseButtonEvent::MouseButton>(
         sdlButton);
 }
+
+} // namespace simple_application

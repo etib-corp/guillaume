@@ -22,40 +22,47 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include <utility/math/vector.hpp>
 
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/transform.hpp"
+#include "guillaume/shape.hpp"
 
-#include "guillaume/renderer.hpp"
-
-namespace guillaume::systems {
+namespace guillaume::shapes {
 
 /**
- * @brief System handling rendering of entities.
+ * @brief Rectangle shape.
  */
-class Render
-    : public ecs::SystemFiller<components::Transform, components::Bound> {
+class Rectangle : public Shape {
   private:
-    Renderer &_renderer; ///< Renderer instance
+    utility::math::Vector<std::float_t, 2> _size; ///< Size of the rectangle
 
   public:
     /**
-     * @brief Default constructor for the Render system.
-     * @param renderer The renderer to use for rendering operations.
+     * @brief Default constructor
      */
-    Render(Renderer &renderer) : _renderer(renderer) {}
+    Rectangle(void);
 
     /**
-     * @brief Default destructor for the Render system.
+     * @brief Default destructor
      */
-    ~Render(void) = default;
+    virtual ~Rectangle(void) = default;
 
     /**
-     * @brief Update the Render system for the specified entity.
-     * @param identityIdentifier The identifier of the entity to update.
+     * @brief Set the size of the rectangle.
+     * @param size The new size vector.
      */
-    void update(const ecs::Entity::Identifier &identityIdentifier) override;
+    void setSize(const utility::math::Vector<std::float_t, 2> &size);
+
+    /**
+     * @brief Get the size of the rectangle.
+     * @return The size vector.
+     */
+    utility::math::Vector<std::float_t, 2> getSize(void) const { return _size; }
+
+    /**
+     * @brief Draw the rectangle using the provided renderer.
+     * @param renderer The renderer to use for drawing.
+     */
+    virtual void draw(Renderer &renderer) = 0;
 };
 
-} // namespace guillaume::systems
+} // namespace guillaume::shapes

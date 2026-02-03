@@ -22,4 +22,10 @@
 
 #include "guillaume/systems/render.hpp"
 
-namespace guillaume::systems {} // namespace guillaume::systems
+namespace guillaume::systems {
+
+void Render::update(const ecs::Entity::Identifier &identityIdentifier) {
+    getLogger().info("Rendering entity " + std::to_string(identityIdentifier));
+}
+
+} // namespace guillaume::systems
