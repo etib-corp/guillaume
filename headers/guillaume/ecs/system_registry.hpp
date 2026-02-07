@@ -48,6 +48,7 @@ class SystemNotFoundException : public std::exception {
         typeid(SystemType)}; ///< Type index of the missing system
     std::string _systemName{
         _systemIndex.name()}; ///< Name of the missing system type
+    mutable std::string _message; ///< Cached exception message
 
   public:
     /**
@@ -60,7 +61,10 @@ class SystemNotFoundException : public std::exception {
      * @return The exception message.
      */
     const char *what(void) const noexcept override {
-        return ("System of type " + _systemName + " not found").c_str();
+        if (_message.empty()) {
+            _message = "System of type " + _systemName + " not found";
+        }
+        return _message.c_str();
     }
 
     /**
@@ -112,12 +116,13 @@ class SystemRegistry
      * @tparam SystemType The type of the system to retrieve.
      * @return Shared pointer to the system instance.
      */
-    template <typename SystemType> std::shared_ptr<SystemType> getSystem(void) {
+    template <InheritFromSystem SystemType>
+    SystemType &getSystem(void) {
         auto iterator = _systems.find(std::type_index(typeid(SystemType)));
         if (iterator == _systems.end()) {
             throw SystemNotFoundException<SystemType>();
         }
-        return std::static_pointer_cast<SystemType>(iterator->second);
+        return *static_cast<SystemType *>(iterator->second.get());
     }
 
     /**
@@ -134,6 +139,14 @@ class SystemRegistry
      * @param entity The entity to add.
      */
     void addEntityToSystems(Entity &entity);
+
+    /**
+     * @brief Update system membership for an entity signature change.
+     * @param identityIdentifier The entity identifier.
+     * @param signature The updated entity signature.
+     */
+    void onEntitySignatureChanged(const Entity::Identifier &identityIdentifier,
+                                  const Entity::Signature &signature);
 };
 
 } // namespace guillaume::ecs

@@ -20,34 +20,6 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/system.hpp"
+#include "guillaume/ecs/component_type_id.hpp"
 
-namespace guillaume::ecs {
-
-void System::addEntity(Entity::Identifier entityIdentifier) {
-    if (hasEntity(entityIdentifier)) {
-        return;
-    }
-    _entities.push_back(entityIdentifier);
-}
-
-void System::removeEntity(Entity::Identifier entityIdentifier) {
-    auto iterator =
-        std::remove(_entities.begin(), _entities.end(), entityIdentifier);
-    if (iterator != _entities.end()) {
-        _entities.erase(iterator, _entities.end());
-    }
-}
-
-bool System::hasEntity(Entity::Identifier entityIdentifier) const {
-    return std::find(_entities.begin(), _entities.end(), entityIdentifier) !=
-           _entities.end();
-}
-
-void System::routine(ecs::ComponentRegistry &componentRegistry) {
-    for (const auto &entityIdentifier : _entities) {
-        update(componentRegistry, entityIdentifier);
-    }
-}
-
-} // namespace guillaume::ecs
+namespace guillaume::ecs {} // namespace guillaume::ecs

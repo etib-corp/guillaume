@@ -20,34 +20,46 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/system.hpp"
+#pragma once
+
+#include <cstddef>
+#include <stdexcept>
 
 namespace guillaume::ecs {
 
-void System::addEntity(Entity::Identifier entityIdentifier) {
-    if (hasEntity(entityIdentifier)) {
-        return;
-    }
-    _entities.push_back(entityIdentifier);
-}
+/**
+ * @brief Maximum number of distinct component types supported by signatures.
+ */
+constexpr std::size_t MaxComponentTypes = 64;
 
-void System::removeEntity(Entity::Identifier entityIdentifier) {
-    auto iterator =
-        std::remove(_entities.begin(), _entities.end(), entityIdentifier);
-    if (iterator != _entities.end()) {
-        _entities.erase(iterator, _entities.end());
+/**
+ * @brief Monotonic component type id generator.
+ */
+class ComponentTypeId {
+  public:
+    /**
+     * @brief Get a stable id for a component type.
+     * @tparam ComponentType The component type.
+     * @return A stable id within [0, MaxComponentTypes).
+     */
+    template <typename ComponentType> static std::size_t get(void) {
+        static const std::size_t id = nextId();
+        return id;
     }
-}
 
-bool System::hasEntity(Entity::Identifier entityIdentifier) const {
-    return std::find(_entities.begin(), _entities.end(), entityIdentifier) !=
-           _entities.end();
-}
-
-void System::routine(ecs::ComponentRegistry &componentRegistry) {
-    for (const auto &entityIdentifier : _entities) {
-        update(componentRegistry, entityIdentifier);
+  private:
+    /**
+     * @brief Generate the next available id.
+     * @return The next id.
+     */
+    static std::size_t nextId(void) {
+        static std::size_t currentId = 0;
+        if (currentId >= MaxComponentTypes) {
+            throw std::runtime_error(
+                "Exceeded maximum number of component types");
+        }
+        return currentId++;
     }
-}
+};
 
 } // namespace guillaume::ecs

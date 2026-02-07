@@ -22,9 +22,9 @@
 
 #pragma once
 
+#include <algorithm>
 #include <bitset>
 #include <functional>
-#include <typeindex>
 #include <vector>
 
 #include <utility/logging/loggable.hpp>
@@ -32,6 +32,7 @@
 
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/component_type_id.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::ecs {
@@ -56,8 +57,8 @@ class System
      * signature.
      */
     template <InheritFromComponent... ComponentTypes> void setSignature(void) {
-        _signature =
-            (std::type_index(typeid(ComponentTypes)).hash_code() | ...);
+      _signature.reset();
+      ( _signature.set(ComponentTypeId::get<ComponentTypes>()), ... );
     }
 
   public:
@@ -82,6 +83,19 @@ class System
      * @param entityIdentifier The identifier of the entity to add.
      */
     void addEntity(Entity::Identifier entityIdentifier);
+
+    /**
+     * @brief Remove an entity from the system.
+     * @param entityIdentifier The identifier of the entity to remove.
+     */
+    void removeEntity(Entity::Identifier entityIdentifier);
+
+    /**
+     * @brief Check if an entity is already managed.
+     * @param entityIdentifier The identifier of the entity.
+     * @return True if the entity is present.
+     */
+    bool hasEntity(Entity::Identifier entityIdentifier) const;
 
     /**
      * @brief Routine to update all managed entities.

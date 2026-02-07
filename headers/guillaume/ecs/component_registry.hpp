@@ -28,11 +28,13 @@
 #include <string>
 #include <type_traits>
 #include <typeindex>
+#include <utility>
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
 #include "guillaume/ecs/component.hpp"
+#include "guillaume/ecs/component_storage.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::ecs {
@@ -90,9 +92,27 @@ class ComponentRegistry
     : public utility::logging::Loggable<ComponentRegistry,
                                         utility::logging::StandardLogger> {
   private:
-    std::map<std::type_index,
-             std::map<Entity::Identifier, std::unique_ptr<Component>>>
-        _components; ///< Registered components
+    std::map<std::type_index, std::unique_ptr<IComponentStorage>>
+        _storages; ///< Registered component storages
+
+    /**
+     * @brief Get or create a storage for a component type.
+     * @tparam ComponentType The type of component to store.
+     * @return Reference to the storage.
+     */
+    template <InheritFromComponent ComponentType>
+    ComponentStorage<ComponentType> &getOrCreateStorage(void) {
+        const std::type_index typeIndex(typeid(ComponentType));
+        auto iterator = _storages.find(typeIndex);
+        if (iterator == _storages.end()) {
+            auto storage = std::make_unique<ComponentStorage<ComponentType>>();
+            auto [insertedIterator, inserted] =
+                _storages.emplace(typeIndex, std::move(storage));
+            iterator = insertedIterator;
+        }
+        return static_cast<ComponentStorage<ComponentType> &>(
+            *iterator->second);
+    }
 
     /**
      * @brief Register a component for an entity.
@@ -102,10 +122,8 @@ class ComponentRegistry
      */
     template <InheritFromComponent ComponentType>
     void registerComponent(const Entity::Identifier &identityIdentifier) {
-        auto &entityComponents =
-            _components[std::type_index(typeid(ComponentType))];
-        entityComponents[identityIdentifier] =
-            std::make_unique<ComponentType>();
+        auto &storage = getOrCreateStorage<ComponentType>();
+        storage.emplace(identityIdentifier);
         getLogger().debug("Registered component of type " +
                           std::string(typeid(ComponentType).name()) +
                           " for entity " + std::to_string(identityIdentifier));
@@ -118,9 +136,7 @@ class ComponentRegistry
      */
     template <InheritFromComponent ComponentType>
     void registerNewComponentType(void) {
-        _components.emplace(
-            std::type_index(typeid(ComponentType)),
-            std::map<Entity::Identifier, std::unique_ptr<Component>>{});
+        getOrCreateStorage<ComponentType>();
     }
 
   public:
@@ -147,6 +163,48 @@ class ComponentRegistry
     }
 
     /**
+     * @brief Add or replace a component for an entity.
+     * @tparam ComponentType The type of the component to add.
+     * @param identityIdentifier The entity identifier.
+     * @param args Arguments forwarded to the component constructor.
+     * @return Reference to the stored component.
+     */
+    template <InheritFromComponent ComponentType, typename... Args>
+    ComponentType &addComponent(const Entity::Identifier &identityIdentifier,
+                                Args &&...args) {
+        auto &storage = getOrCreateStorage<ComponentType>();
+        return storage.emplace(identityIdentifier,
+                               std::forward<Args>(args)...);
+    }
+
+    /**
+     * @brief Check whether an entity has a component.
+     * @tparam ComponentType The component type to check.
+     * @param identityIdentifier The entity identifier.
+     * @return True if the component is present.
+     */
+    template <InheritFromComponent ComponentType>
+    bool hasComponent(const Entity::Identifier &identityIdentifier) const {
+        const std::type_index typeIndex(typeid(ComponentType));
+        auto iterator = _storages.find(typeIndex);
+        if (iterator == _storages.end()) {
+            return false;
+        }
+        return iterator->second->has(identityIdentifier);
+    }
+
+    /**
+     * @brief Remove a component from an entity.
+     * @tparam ComponentType The component type to remove.
+     * @param identityIdentifier The entity identifier.
+     */
+    template <InheritFromComponent ComponentType>
+    void removeComponent(const Entity::Identifier &identityIdentifier) {
+        auto &storage = getOrCreateStorage<ComponentType>();
+        storage.remove(identityIdentifier);
+    }
+
+    /**
      * @brief Get a component for an entity.
      * @tparam ComponentType The type of the component to retrieve.
      * @param identityIdentifier The entity identifier to which the
@@ -154,17 +212,41 @@ class ComponentRegistry
      * @return Unique pointer to the requested component.
      */
     template <InheritFromComponent ComponentType>
-    std::unique_ptr<ComponentType> &
-    getComponent(const Entity::Identifier &identityIdentifier) {
-        auto &entityComponents =
-            _components[std::type_index(typeid(ComponentType))];
-        auto iterator = entityComponents.find(identityIdentifier);
-        if (iterator == entityComponents.end()) {
+    ComponentType &getComponent(const Entity::Identifier &identityIdentifier) {
+        auto &storage = getOrCreateStorage<ComponentType>();
+        auto component = storage.find(identityIdentifier);
+        if (!component) {
             throw EntityComponentNotFoundException<ComponentType>(
                 identityIdentifier);
         }
-        return reinterpret_cast<std::unique_ptr<ComponentType> &>(
-            iterator->second);
+        return *component;
+    }
+
+    /**
+     * @brief Get a component for an entity (const).
+     * @tparam ComponentType The type of the component to retrieve.
+     * @param identityIdentifier The entity identifier to which the
+     * component belongs.
+     * @return Reference to the requested component.
+     */
+    template <InheritFromComponent ComponentType>
+    const ComponentType &
+    getComponent(const Entity::Identifier &identityIdentifier) const {
+        const std::type_index typeIndex(typeid(ComponentType));
+        auto iterator = _storages.find(typeIndex);
+        if (iterator == _storages.end()) {
+            throw EntityComponentNotFoundException<ComponentType>(
+                identityIdentifier);
+        }
+        const auto *storage =
+            static_cast<const ComponentStorage<ComponentType> *>(
+                iterator->second.get());
+        const auto *component = storage->find(identityIdentifier);
+        if (!component) {
+            throw EntityComponentNotFoundException<ComponentType>(
+                identityIdentifier);
+        }
+        return *component;
     }
 };
 

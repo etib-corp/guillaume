@@ -25,7 +25,10 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
+#include <utility>
+
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/component_type_id.hpp"
 #include "guillaume/ecs/system_registry.hpp"
 
 namespace guillaume::ecs {
@@ -76,6 +79,77 @@ class ECS
     void addEntity(Entity &entity) {
         _systemRegistry.addEntityToSystems(entity);
         _entities.push_back(entity.getIdentifier());
+    }
+
+    /**
+     * @brief Add or replace a component on an entity and update system membership.
+     * @tparam ComponentType The component type to add.
+     * @param entity The entity to update.
+     * @param args Arguments forwarded to the component constructor.
+     * @return Reference to the stored component.
+     */
+    template <InheritFromComponent ComponentType, typename... Args>
+    ComponentType &addComponent(Entity &entity, Args &&...args) {
+        auto &component = _componentRegistry.template addComponent<ComponentType>(
+            entity.getIdentifier(), std::forward<Args>(args)...);
+        auto signature = entity.getSignature();
+        signature.set(ComponentTypeId::get<ComponentType>());
+        entity.setSignature(signature);
+        _systemRegistry.onEntitySignatureChanged(entity.getIdentifier(),
+                                                 signature);
+        return component;
+    }
+
+    /**
+     * @brief Remove a component from an entity and update system membership.
+     * @tparam ComponentType The component type to remove.
+     * @param entity The entity to update.
+     */
+    template <InheritFromComponent ComponentType>
+    void removeComponent(Entity &entity) {
+        _componentRegistry.template removeComponent<ComponentType>(
+            entity.getIdentifier());
+        auto signature = entity.getSignature();
+        signature.reset(ComponentTypeId::get<ComponentType>());
+        entity.setSignature(signature);
+        _systemRegistry.onEntitySignatureChanged(entity.getIdentifier(),
+                                                 signature);
+    }
+
+    /**
+     * @brief Check whether an entity has a component.
+     * @tparam ComponentType The component type to check.
+     * @param entity The entity to inspect.
+     * @return True if the entity has the component.
+     */
+    template <InheritFromComponent ComponentType>
+    bool hasComponent(const Entity &entity) const {
+        return _componentRegistry.template hasComponent<ComponentType>(
+            entity.getIdentifier());
+    }
+
+    /**
+     * @brief Get a component attached to an entity.
+     * @tparam ComponentType The component type.
+     * @param entity The entity to inspect.
+     * @return Reference to the component.
+     */
+    template <InheritFromComponent ComponentType>
+    ComponentType &getComponent(Entity &entity) {
+        return _componentRegistry.template getComponent<ComponentType>(
+            entity.getIdentifier());
+    }
+
+    /**
+     * @brief Get a component attached to an entity (const).
+     * @tparam ComponentType The component type.
+     * @param entity The entity to inspect.
+     * @return Reference to the component.
+     */
+    template <InheritFromComponent ComponentType>
+    const ComponentType &getComponent(const Entity &entity) const {
+        return _componentRegistry.template getComponent<ComponentType>(
+            entity.getIdentifier());
     }
 
     /**

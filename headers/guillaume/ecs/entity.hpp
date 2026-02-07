@@ -24,9 +24,9 @@
 
 #include <bitset>
 #include <cstddef>
-#include <typeindex>
 
 #include "guillaume/ecs/component.hpp"
+#include "guillaume/ecs/component_type_id.hpp"
 
 namespace guillaume::ecs {
 
@@ -58,7 +58,9 @@ class Entity {
      */
     template <InheritFromComponent... ComponentTypes>
     static Signature getSignatureFromTypes(void) {
-        return (std::type_index(typeid(ComponentTypes)).hash_code() | ...);
+      Signature signature;
+      (signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
+      return signature;
     }
 
   private:
@@ -97,6 +99,12 @@ class Entity {
      * @return The entity's signature.
      */
     Entity::Signature getSignature(void) const { return _signature; }
+
+    /**
+     * @brief Set the entity's signature.
+     * @param signature The new signature.
+     */
+    void setSignature(const Signature &signature) { _signature = signature; }
 };
 
 /**
