@@ -27,16 +27,12 @@
 
 namespace guillaume {
 
-class Renderer;
-
 /**
  * @brief Abstract base class for drawable shapes.
  */
 class Shape {
   private:
     utility::math::Vector<std::float_t, 3> _position; ///< Position in 3D space
-    utility::math::Vector<std::float_t, 3>
-        _origin; ///< Origin for transformations
     utility::math::Vector<std::float_t, 3> _rotation; ///< Rotation angles
     utility::math::Vector<std::float_t, 3> _scale;    ///< Scaling factors
     utility::math::Color<uint8_t> _color;             ///< Shape color
@@ -64,20 +60,6 @@ class Shape {
      */
     utility::math::Vector<std::float_t, 3> getPosition(void) const {
         return _position;
-    }
-
-    /**
-     * @brief Set the origin of the shape.
-     * @param origin The new origin vector.
-     */
-    void setOrigin(const utility::math::Vector<std::float_t, 3> &origin);
-
-    /**
-     * @brief Get the origin of the shape.
-     * @return The origin vector.
-     */
-    utility::math::Vector<std::float_t, 3> getOrigin(void) const {
-        return _origin;
     }
 
     /**
@@ -119,12 +101,6 @@ class Shape {
      * @return The color.
      */
     utility::math::Color<uint8_t> getColor(void) const { return _color; }
-
-    /**
-     * @brief Draw the shape using the provided renderer.
-     * @param renderer The renderer to use for drawing.
-     */
-    virtual void draw(Renderer &renderer) const = 0;
 };
 
 } // namespace guillaume

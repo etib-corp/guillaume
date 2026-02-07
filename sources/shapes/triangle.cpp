@@ -20,10 +20,10 @@
  SOFTWARE.
  */
 
-#include "guillaume/renderer.hpp"
+#include "guillaume/shapes/triangle.hpp"
 
-namespace guillaume {
+namespace guillaume::shapes {
 
-Renderer::Renderer(void) : Loggable() {}
+Triangle::Triangle(void) : Shape() {}
 
-} // namespace guillaume
+} // namespace guillaume::shapes

@@ -44,7 +44,7 @@ class Rectangle : public Shape {
     /**
      * @brief Default destructor
      */
-    virtual ~Rectangle(void) = default;
+    ~Rectangle(void) = default;
 
     /**
      * @brief Set the size of the rectangle.
@@ -57,12 +57,6 @@ class Rectangle : public Shape {
      * @return The size vector.
      */
     utility::math::Vector<std::float_t, 2> getSize(void) const { return _size; }
-
-    /**
-     * @brief Draw the rectangle using the provided renderer.
-     * @param renderer The renderer to use for drawing.
-     */
-    void draw(Renderer &renderer) const override;
 };
 
 } // namespace guillaume::shapes

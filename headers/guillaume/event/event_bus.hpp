@@ -24,9 +24,9 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <typeindex>
 #include <vector>
-#include <memory>
 
 #include <utility/event/event.hpp>
 

@@ -30,12 +30,11 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
-#include <utility/math/color.hpp>
-#include <utility/math/rectangle.hpp>
-#include <utility/math/vector.hpp>
+#include "guillaume/shapes/circle.hpp"
+#include "guillaume/shapes/rectangle.hpp"
+#include "guillaume/shapes/triangle.hpp"
 
 #include "guillaume/font.hpp"
-#include "guillaume/shape.hpp"
 #include "guillaume/text.hpp"
 
 namespace guillaume {
@@ -50,7 +49,7 @@ class Renderer
     /**
      * @brief Default constructor
      */
-    Renderer(void) {}
+    Renderer(void);
 
     /**
      * @brief Default destructor
@@ -68,13 +67,38 @@ class Renderer
     virtual void present(void) = 0;
 
     /**
-     * @brief Draw a shape.
-     * @param shape The shape to draw.
+     * @brief Draw a triangle shape.
+     * @param triangle The triangle to draw.
      */
-    void draw(const Shape &shape) {
-        this->getLogger().debug("Drawing shape");
-        shape.draw(*this);
-    }
+    virtual void drawTriangle(const shapes::Triangle &triangle) = 0;
+
+    /**
+     * @brief Draw a rectangle shape.
+     * @param rectangle The rectangle to draw.
+     */
+    virtual void drawRectangle(const shapes::Rectangle &rectangle) = 0;
+
+    /**
+     * @brief Draw a circle shape.
+     * @param circle The circle to draw.
+     */
+    virtual void drawCircle(const shapes::Circle &circle) = 0;
+
+    /**
+     * @brief Measure the size of the given text using the specified font.
+     * @param text The text to measure.
+     * @param font The font to use for measurement.
+     * @return The size of the text as a 2D vector (width, height).
+     */
+    virtual utility::math::Vector<std::float_t, 2>
+    mesureText(const Text &text, const Font &font) = 0;
+
+    /**
+     * @brief Draw text using a specific font.
+     * @param text The text to draw.
+     * @param font The font to use.
+     */
+    virtual void drawText(const Text &text, const Font &font) = 0;
 };
 
 } // namespace guillaume

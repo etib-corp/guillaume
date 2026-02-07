@@ -22,15 +22,24 @@
 
 #pragma once
 
-#include <guillaume/shapes/rectangle.hpp>
+#include "guillaume/shape.hpp"
 
-namespace simple_application::shapes {
+namespace guillaume::shapes {
 
-class Rectangle : public guillaume::shapes::Rectangle {
+/**
+ * @brief Circle shape.
+ */
+class Circle : public Shape {
   public:
-    Rectangle(void) : guillaume::shapes::Rectangle() {}
-    ~Rectangle(void) override {}
-    void draw(guillaume::Renderer &renderer) const override;
+    /**
+     * @brief Default constructor
+     */
+    Circle(void);
+
+    /**
+     * @brief Default destructor
+     */
+    ~Circle(void) = default;
 };
 
-} // namespace simple_application::shapes
+} // namespace guillaume::shapes

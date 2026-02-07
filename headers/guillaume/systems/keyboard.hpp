@@ -59,7 +59,7 @@ class Keyboard : public ecs::SystemFiller<components::Text> {
     void update(ecs::ComponentRegistry &,
                 const ecs::Entity::Identifier &identityIdentifier) override {
         System::getLogger().info("Updating button entity " +
-                         std::to_string(identityIdentifier));
+                                 std::to_string(identityIdentifier));
     }
 };
 

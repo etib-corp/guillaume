@@ -20,11 +20,26 @@
  SOFTWARE.
  */
 
-#include "shapes/rectangle.hpp"
-#include "renderer.hpp"
+#pragma once
 
-namespace simple_application::shapes {
+#include "guillaume/shape.hpp"
 
-void Rectangle::draw(guillaume::Renderer &renderer) const {}
+namespace guillaume::shapes {
 
-} // namespace simple_application::shapes
+/**
+ * @brief Triangle shape.
+ */
+class Triangle : public Shape {
+  public:
+    /**
+     * @brief Default constructor
+     */
+    Triangle(void);
+
+    /**
+     * @brief Default destructor
+     */
+    ~Triangle(void) = default;
+};
+
+} // namespace guillaume::shapes

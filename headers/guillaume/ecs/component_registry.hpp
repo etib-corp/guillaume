@@ -50,7 +50,7 @@ class EntityComponentNotFoundException : public std::exception {
         typeid(ComponentType)}; ///< Type index of the missing component
     std::string _componentTypeName{
         _componentTypeIndex.name()}; ///< Name of the missing component type
-    mutable std::string _message; ///< Cached exception message
+    mutable std::string _message;    ///< Cached exception message
 
   public:
     /**
@@ -61,16 +61,15 @@ class EntityComponentNotFoundException : public std::exception {
         const Entity::Identifier &identityIdentifier)
         : _identityIdentifier(identityIdentifier) {
         _message = "Component of type " + _componentTypeName +
-                   " not found for entity " + std::to_string(_identityIdentifier);
+                   " not found for entity " +
+                   std::to_string(_identityIdentifier);
     }
 
     /**
      * @brief Get the exception message.
      * @return The exception message.
      */
-    const char *what(void) const noexcept override {
-        return _message.c_str();
-    }
+    const char *what(void) const noexcept override { return _message.c_str(); }
 
     /**
      * @brief Get the type index of the missing component.
@@ -161,9 +160,11 @@ class ComponentRegistry
             _components[std::type_index(typeid(ComponentType))];
         auto iterator = entityComponents.find(identityIdentifier);
         if (iterator == entityComponents.end()) {
-            throw EntityComponentNotFoundException<ComponentType>(identityIdentifier);
+            throw EntityComponentNotFoundException<ComponentType>(
+                identityIdentifier);
         }
-        return reinterpret_cast<std::unique_ptr<ComponentType> &>(iterator->second);
+        return reinterpret_cast<std::unique_ptr<ComponentType> &>(
+            iterator->second);
     }
 };
 

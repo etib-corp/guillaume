@@ -22,18 +22,21 @@ SOFTWARE.
 
 #pragma once
 
-#include <utility/math/rectangle.hpp>
+#include <utility/math/vector.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
 namespace guillaume::components {
 
 /**
- * @brief Component representing a bounding rectangle.
+ * @brief Component representing a bounding parallelepiped.
  */
 class Bound : public ecs::Component {
+  public:
+    using Size = utility::math::Vector<float, 3>; ///< Size type
+
   private:
-    utility::math::Rectangle<float> _rectangle; ///< Bounding rectangle
+    Size _size; ///< Size of the bounding parallelepiped
 
   public:
     /**
@@ -47,20 +50,16 @@ class Bound : public ecs::Component {
     ~Bound(void) = default;
 
     /**
-     * @brief Get the bounding rectangle.
-     * @return The bounding rectangle.
+     * @brief Set the bounding parallelepiped.
+     * @param size The size of the bounding parallelepiped.
      */
-    const utility::math::Rectangle<float> &getRectangle(void) const {
-        return _rectangle;
-    }
+    void setSize(const Size &size) { _size = size; };
 
     /**
-     * @brief Set the bounding rectangle.
-     * @param rectangle The new bounding rectangle.
+     * @brief Get the bounding parallelepiped.
+     * @return The bounding parallelepiped.
      */
-    void setRectangle(const utility::math::Rectangle<float> &rectangle) {
-        _rectangle = rectangle;
-    }
+    Size getSize(void) const { return _size; }
 };
 
 } // namespace guillaume::components

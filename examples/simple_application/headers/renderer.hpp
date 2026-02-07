@@ -22,57 +22,37 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <unordered_map>
-
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_gpu.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
-#include <utility/math/color.hpp>
-#include <utility/math/rectangle.hpp>
-#include <utility/math/vector.hpp>
-
-#include <guillaume/font.hpp>
 #include <guillaume/renderer.hpp>
-#include <guillaume/text.hpp>
 
 namespace simple_application {
 
 class Renderer : public guillaume::Renderer {
   private:
-    SDL_Window *window;
-    SDL_GPUDevice *device;
-    SDL_GPUGraphicsPipeline *pipeline;
-    SDL_GPUBuffer *vertexBuffer;
-    SDL_GPUBuffer *indexBuffer;
-    SDL_GPUBuffer *uniformBuffer;
-    SDL_GPUTexture *depthTexture;
-    utility::math::Color<float> clearColor;
-
-    // 3D rendering matrices
-    glm::mat4 projectionMatrix;
-    glm::mat4 viewMatrix;
-    glm::mat4 modelMatrix;
-
-    void initializeGPU(void);
-    void createPipeline(void);
-    void createDepthBuffer(Uint32 width, Uint32 height);
-    void shutdownGPU(void);
-    void updateMatrices(Uint32 width, Uint32 height);
+    SDL_Window *_window; ///< SDL window pointer
 
   public:
     Renderer(void);
-    ~Renderer(void);
+
+    ~Renderer(void) override;
 
     void clear(void) override;
+
     void present(void) override;
 
-    void setDrawColor(const utility::math::Color<uint8_t> &color);
-    void setViewMatrix(const glm::mat4 &view);
-    void setProjectionMatrix(const glm::mat4 &projection);
-    void setModelMatrix(const glm::mat4 &model);
+    void drawTriangle(const guillaume::shapes::Triangle &triangle) override;
+
+    void drawRectangle(const guillaume::shapes::Rectangle &rectangle) override;
+
+    void drawCircle(const guillaume::shapes::Circle &circle) override;
+
+    utility::math::Vector<std::float_t, 2>
+    mesureText(const guillaume::Text &text,
+               const guillaume::Font &font) override;
+
+    void drawText(const guillaume::Text &text,
+                  const guillaume::Font &font) override;
 };
 
 } // namespace simple_application

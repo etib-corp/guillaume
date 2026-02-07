@@ -29,8 +29,6 @@
 #include <utility/math/rectangle.hpp>
 #include <utility/math/vector.hpp>
 
-#include "guillaume/font.hpp"
-
 namespace guillaume {
 
 /**
@@ -42,14 +40,13 @@ enum class TextAlignment { Left, Center, Right };
  * @brief Represents styled text content for rendering.
  *
  * The Text class encapsulates a string of text along with its visual
- * properties such as font, color, and position. It provides a high-level
+ * properties such as color and position. It provides a high-level
  * interface for text rendering without directly dealing with low-level
  * rendering APIs.
  */
 class Text {
   private:
     std::string _content;
-    std::shared_ptr<Font> _font;
     utility::math::Color<uint8_t> _color;
     utility::math::Vector<std::size_t, 2> _position;
     TextAlignment _alignment;
@@ -60,13 +57,12 @@ class Text {
     /**
      * @brief Construct a new Text object.
      * @param content The text content to display.
-     * @param font Shared pointer to the font to use for rendering.
      * @param color The color of the text.
      * @param position The position where the text should be rendered.
      */
-    Text(const std::string &content, std::shared_ptr<Font> font,
-         utility::math::Color<uint8_t> color = utility::math::Color<uint8_t>(255, 255, 255,
-                                                                 255),
+    Text(const std::string &content,
+         utility::math::Color<uint8_t> color =
+             utility::math::Color<uint8_t>(255, 255, 255, 255),
          utility::math::Vector<std::size_t, 2> position =
              utility::math::Vector<std::size_t, 2>{0, 0});
 
@@ -86,18 +82,6 @@ class Text {
      * @param content The new text content.
      */
     void setContent(const std::string &content);
-
-    /**
-     * @brief Get the font used for rendering.
-     * @return Shared pointer to the font.
-     */
-    std::shared_ptr<Font> getFont() const;
-
-    /**
-     * @brief Set the font to use for rendering.
-     * @param font Shared pointer to the new font.
-     */
-    void setFont(std::shared_ptr<Font> font);
 
     /**
      * @brief Get the text color.

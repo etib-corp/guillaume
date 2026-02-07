@@ -21,7 +21,6 @@
  */
 
 #include "guillaume/shapes/rectangle.hpp"
-#include "guillaume/renderer.hpp"
 
 namespace guillaume::shapes {
 
@@ -29,14 +28,6 @@ Rectangle::Rectangle(void) : Shape() {}
 
 void Rectangle::setSize(const utility::math::Vector<std::float_t, 2> &size) {
     _size = size;
-}
-
-void Rectangle::draw(Renderer &renderer) const {
-    // Note: This is a placeholder implementation.
-    // Actual GPU rendering requires a graphics pipeline with vertex/fragment shaders.
-    // The shape data (position, size, color) is prepared here and would be
-    // sent to the GPU through the renderer's pipeline in a complete implementation.
-    (void)renderer; // Suppress unused parameter warning
 }
 
 } // namespace guillaume::shapes

@@ -24,10 +24,9 @@
 
 namespace guillaume {
 
-Text::Text(const std::string &content, std::shared_ptr<Font> font,
-           utility::math::Color<uint8_t> color,
+Text::Text(const std::string &content, utility::math::Color<uint8_t> color,
            utility::math::Vector<std::size_t, 2> position)
-    : _content(content), _font(font), _color(color), _position(position),
+    : _content(content), _color(color), _position(position),
       _alignment(TextAlignment::Left), _isDirty(true), _bounds(0, 0, 0, 0) {}
 
 const std::string &Text::getContent() const { return _content; }
@@ -35,15 +34,6 @@ const std::string &Text::getContent() const { return _content; }
 void Text::setContent(const std::string &content) {
     if (_content != content) {
         _content = content;
-        _isDirty = true;
-    }
-}
-
-std::shared_ptr<Font> Text::getFont() const { return _font; }
-
-void Text::setFont(std::shared_ptr<Font> font) {
-    if (_font != font) {
-        _font = font;
         _isDirty = true;
     }
 }

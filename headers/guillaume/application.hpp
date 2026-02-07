@@ -45,8 +45,7 @@ namespace guillaume {
  * @tparam EventHandlerType The type of the event handler used by the
  * application.
  */
-template <typename RendererType, typename EventHandlerType>
-class Application;
+template <typename RendererType, typename EventHandlerType> class Application;
 
 template <typename RendererType, typename EventHandlerType>
 class Application : protected utility::logging::Loggable<
@@ -93,7 +92,16 @@ class Application : protected utility::logging::Loggable<
                 if (!_eventHandler.gotNewEvents()) {
                     continue;
                 }
+
+                // Clear the screen before rendering
+                _renderer.clear();
+
+                // Update all ECS systems
                 _ecs->routine();
+
+                // Present the rendered frame
+                _renderer.present();
+
                 this->getLogger().debug("Processed a frame");
             } catch (const std::exception &exception) {
                 this->getLogger().error(std::string("Application error: ") +
