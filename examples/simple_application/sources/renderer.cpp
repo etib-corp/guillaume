@@ -13,14 +13,14 @@ Renderer::Renderer(void) : guillaume::Renderer() {
     if (primaryDisplayID == 0) {
         getLogger().warning("Failed to get primary display ID: " +
                             std::string(SDL_GetError()));
-        throw std::runtime_error("SDL_GetPrimaryDisplay failed");
+        throw PrimaryDisplayUnavailableException(SDL_GetError());
     }
 
     SDL_Rect primaryDisplayBounds{};
     if (!SDL_GetDisplayBounds(primaryDisplayID, &primaryDisplayBounds)) {
         getLogger().warning("Failed to get primary display bounds: " +
                             std::string(SDL_GetError()));
-        throw std::runtime_error("SDL_GetDisplayBounds failed");
+        throw DisplayBoundsUnavailableException(SDL_GetError());
     }
 
     // Create SDL window

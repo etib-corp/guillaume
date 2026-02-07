@@ -23,7 +23,8 @@
 #pragma once
 
 #include <cstddef>
-#include <stdexcept>
+#include <exception>
+#include <string>
 
 namespace guillaume::ecs {
 
@@ -31,6 +32,29 @@ namespace guillaume::ecs {
  * @brief Maximum number of distinct component types supported by signatures.
  */
 constexpr std::size_t MaxComponentTypes = 64;
+
+/**
+ * @brief Exception thrown when the component type limit is exceeded.
+ */
+class ComponentTypeLimitExceededException : public std::exception {
+  private:
+    std::string _message;
+
+  public:
+    /**
+     * @brief Construct a new Component Type Limit Exceeded Exception.
+     */
+    ComponentTypeLimitExceededException(void)
+        : _message("Exceeded maximum number of component types") {}
+
+    /**
+     * @brief Get the exception message.
+     * @return The exception message.
+     */
+    const char *what(void) const noexcept override {
+        return _message.c_str();
+    }
+};
 
 /**
  * @brief Monotonic component type id generator.
@@ -55,8 +79,7 @@ class ComponentTypeId {
     static std::size_t nextId(void) {
         static std::size_t currentId = 0;
         if (currentId >= MaxComponentTypes) {
-            throw std::runtime_error(
-                "Exceeded maximum number of component types");
+        throw ComponentTypeLimitExceededException();
         }
         return currentId++;
     }

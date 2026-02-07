@@ -24,9 +24,38 @@
 
 #include <SDL3/SDL.h>
 
+#include <exception>
+#include <string>
+
 #include <guillaume/renderer.hpp>
 
 namespace simple_application {
+
+class PrimaryDisplayUnavailableException : public std::exception {
+  private:
+    std::string _message;
+
+  public:
+    explicit PrimaryDisplayUnavailableException(const std::string &details)
+        : _message("SDL_GetPrimaryDisplay failed: " + details) {}
+
+    const char *what(void) const noexcept override {
+        return _message.c_str();
+    }
+};
+
+class DisplayBoundsUnavailableException : public std::exception {
+  private:
+    std::string _message;
+
+  public:
+    explicit DisplayBoundsUnavailableException(const std::string &details)
+        : _message("SDL_GetDisplayBounds failed: " + details) {}
+
+    const char *what(void) const noexcept override {
+        return _message.c_str();
+    }
+};
 
 class Renderer : public guillaume::Renderer {
   private:
