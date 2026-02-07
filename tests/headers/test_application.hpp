@@ -34,6 +34,6 @@ class TestApplication : public ::testing::Test {
     ~TestApplication(void) override = default;
     void SetUp(void) override {}
     void TearDown(void) override {}
-}; // class TestApplication
+};
 
 } // namespace guillaume::tests

@@ -48,10 +48,7 @@ class Entity {
      * @brief Generate the next unique identifier for an entity.
      * @return The next unique identifier.
      */
-    static Identifier getNextIdentifier(void) {
-        static Identifier currentId = InvalidIdentifier;
-        return ++currentId;
-    }
+    static Identifier getNextIdentifier(void);
 
   public:
     /**
@@ -82,7 +79,7 @@ class Entity {
     /**
      * @brief Default constructor for the Entity class.
      */
-    Entity(void) : _identifier(getNextIdentifier()) {}
+    Entity(void);
 
     /**
      * @brief Default destructor for the Entity class.

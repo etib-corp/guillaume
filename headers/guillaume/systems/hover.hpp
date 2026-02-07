@@ -49,7 +49,7 @@ class Hover
      * @brief Default constructor for the Hover system.
      * @param eventBus The event bus to subscribe to.
      */
-    Hover(event::EventBus &eventBus) : _mouseMotionSubscriber(eventBus) {}
+    Hover(event::EventBus &eventBus);
 
     /**
      * @brief Default destructor for the Hover system.
@@ -61,10 +61,7 @@ class Hover
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(ecs::ComponentRegistry &,
-                const ecs::Entity::Identifier &identityIdentifier) override {
-        System::getLogger().info("Hovering entity " +
-                                 std::to_string(identityIdentifier));
-    }
+        const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems

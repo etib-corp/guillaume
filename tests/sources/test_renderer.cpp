@@ -21,3 +21,5 @@
  */
 
 #include "test_renderer.hpp"
+
+namespace guillaume::tests {} // namespace guillaume::tests

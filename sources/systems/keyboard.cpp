@@ -22,4 +22,14 @@
 
 #include "guillaume/systems/keyboard.hpp"
 
-namespace guillaume::systems {} // namespace guillaume::systems
+namespace guillaume::systems {
+
+Keyboard::Keyboard(event::EventBus &eventBus) : _keyboardSubscriber(eventBus) {}
+
+void Keyboard::update(ecs::ComponentRegistry &,
+					  const ecs::Entity::Identifier &identityIdentifier) {
+	System::getLogger().info("Updating button entity " +
+							 std::to_string(identityIdentifier));
+}
+
+} // namespace guillaume::systems

@@ -45,7 +45,7 @@ class Keyboard : public ecs::SystemFiller<components::Text> {
      * @brief Default constructor for the Keyboard system.
      * @param eventBus The event bus to subscribe to.
      */
-    Keyboard(event::EventBus &eventBus) : _keyboardSubscriber(eventBus) {}
+    Keyboard(event::EventBus &eventBus);
 
     /**
      * @brief Default destructor for the Keyboard system.
@@ -57,10 +57,7 @@ class Keyboard : public ecs::SystemFiller<components::Text> {
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(ecs::ComponentRegistry &,
-                const ecs::Entity::Identifier &identityIdentifier) override {
-        System::getLogger().info("Updating button entity " +
-                                 std::to_string(identityIdentifier));
-    }
+        const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems

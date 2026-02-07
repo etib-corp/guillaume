@@ -22,4 +22,24 @@
 
 #include "guillaume/event/event_bus.hpp"
 
-namespace guillaume::event {} // namespace guillaume::event
+namespace guillaume::event {
+
+void EventBus::dispatchToListeners(
+	std::unique_ptr<utility::event::Event> event,
+	ListenerList &listeners) {
+	for (auto &listener : listeners) {
+		if (!listener) {
+			continue;
+		}
+		listener(std::move(event));
+	}
+}
+
+void EventBus::publish(std::unique_ptr<utility::event::Event> event) {
+	auto it = _typedListeners.find(typeid(event.get()));
+	if (it != _typedListeners.end()) {
+		dispatchToListeners(std::move(event), it->second);
+	}
+}
+
+} // namespace guillaume::event

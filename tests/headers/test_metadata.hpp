@@ -34,6 +34,6 @@ class TestMetadata : public ::testing::Test {
     ~TestMetadata(void) override = default;
     void SetUp(void) override {}
     void TearDown(void) override {}
-}; // class TestMetadata
+};
 
 } // namespace guillaume::tests

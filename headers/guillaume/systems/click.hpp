@@ -49,7 +49,7 @@ class Click
      * @brief Default constructor for the MouseButton system.
      * @param eventBus The event bus to subscribe to.
      */
-    Click(event::EventBus &eventBus) : _mouseButtonSubscriber(eventBus) {}
+    Click(event::EventBus &eventBus);
 
     /**
      * @brief Default destructor for the Click system.
@@ -61,10 +61,7 @@ class Click
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(ecs::ComponentRegistry &,
-                const ecs::Entity::Identifier &identityIdentifier) override {
-        System::getLogger().info("Updating button entity " +
-                                 std::to_string(identityIdentifier));
-    }
+        const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems

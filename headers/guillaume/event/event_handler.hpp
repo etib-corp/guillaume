@@ -74,7 +74,7 @@ class EventHandler
     /**
      * @brief Default constructor
      */
-    EventHandler(void) : _shouldQuit(false), _gotNewEvents(false) {}
+    EventHandler(void);
 
     /**
      * @brief Default destructor

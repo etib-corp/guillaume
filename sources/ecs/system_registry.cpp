@@ -22,4 +22,24 @@
 
 #include "guillaume/ecs/system_registry.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs {
+
+void SystemRegistry::addEntityToSystems(Entity &entity) {
+	const auto entitySignature = entity.getSignature();
+	const auto entityIdentifier = entity.getIdentifier();
+
+	getLogger().debug("Adding entity " + std::to_string(entityIdentifier) +
+					  " to compatible systems");
+
+	for (const auto &[systemType, system] : _systems) {
+		const auto systemSignature = system->getSignature();
+		if ((entitySignature & systemSignature) == systemSignature) {
+			system->addEntity(entityIdentifier);
+			getLogger().debug("Entity " + std::to_string(entityIdentifier) +
+							  " added to system " +
+							  std::string(systemType.name()));
+		}
+	}
+}
+
+} // namespace guillaume::ecs

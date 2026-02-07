@@ -22,4 +22,16 @@
 
 #include "guillaume/ecs/system.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs {
+
+void System::addEntity(Entity::Identifier entityIdentifier) {
+	_entities.push_back(entityIdentifier);
+}
+
+void System::routine(ecs::ComponentRegistry &componentRegistry) {
+	for (const auto &entityIdentifier : _entities) {
+		update(componentRegistry, entityIdentifier);
+	}
+}
+
+} // namespace guillaume::ecs

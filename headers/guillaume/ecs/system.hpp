@@ -81,19 +81,13 @@ class System
      * @brief Add an entity to be managed by the system.
      * @param entityIdentifier The identifier of the entity to add.
      */
-    void addEntity(Entity::Identifier entityIdentifier) {
-        _entities.push_back(entityIdentifier);
-    }
+    void addEntity(Entity::Identifier entityIdentifier);
 
     /**
      * @brief Routine to update all managed entities.
      * @param componentRegistry The component registry instance.
      */
-    void routine(ecs::ComponentRegistry &componentRegistry) {
-        for (const auto &entityIdentifier : _entities) {
-            update(componentRegistry, entityIdentifier);
-        }
-    }
+    void routine(ecs::ComponentRegistry &componentRegistry);
 
     /**
      * @brief Update the system, processing relevant entities.

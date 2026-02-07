@@ -51,20 +51,13 @@ class EventBus {
      * @param listeners List of listeners to notify.
      */
     void dispatchToListeners(std::unique_ptr<utility::event::Event> event,
-                             ListenerList &listeners) {
-        for (auto &listener : listeners) {
-            if (!listener) {
-                continue;
-            }
-            listener(std::move(event));
-        }
-    }
+                             ListenerList &listeners);
 
   public:
     /**
      * @brief Default constructor.
      */
-    EventBus(void) {}
+    EventBus(void) = default;
 
     /**
      * @brief Default destructor.
@@ -75,12 +68,7 @@ class EventBus {
      * @brief Dispatch an event to listeners and systems.
      * @param event Event to dispatch.
      */
-    void publish(std::unique_ptr<utility::event::Event> event) {
-        auto it = _typedListeners.find(typeid(event.get()));
-        if (it != _typedListeners.end()) {
-            dispatchToListeners(std::move(event), it->second);
-        }
-    }
+    void publish(std::unique_ptr<utility::event::Event> event);
 
     /**
      * @brief Subscribe a listener to all events.
