@@ -57,7 +57,7 @@ class Keyboard : public ecs::SystemFiller<components::Text> {
      * @param identityIdentifier The identifier of the entity to update.
      */
     void update(ecs::ComponentRegistry &,
-        const ecs::Entity::Identifier &identityIdentifier) override;
+                const ecs::Entity::Identifier &identityIdentifier) override;
 };
 
 } // namespace guillaume::systems

@@ -25,15 +25,15 @@
 namespace guillaume {
 
 ECS::ECS(event::EventBus &eventBus, Renderer &renderer)
-	: _eventBus(eventBus), _renderer(renderer) {
-	this->getLogger().info("Initializing ECS with core systems");
-	registerSystem<systems::Click>(std::make_unique<systems::Click>(_eventBus));
-	registerSystem<systems::Hover>(std::make_unique<systems::Hover>(_eventBus));
-	registerSystem<systems::Render>(
-		std::make_unique<systems::Render>(_renderer));
-	registerSystem<systems::Keyboard>(
-		std::make_unique<systems::Keyboard>(_eventBus));
-	this->getLogger().info("ECS initialization complete");
+    : _eventBus(eventBus), _renderer(renderer) {
+    this->getLogger().info("Initializing ECS with core systems");
+    registerSystem<systems::Click>(std::make_unique<systems::Click>(_eventBus));
+    registerSystem<systems::Hover>(std::make_unique<systems::Hover>(_eventBus));
+    registerSystem<systems::Render>(
+        std::make_unique<systems::Render>(_renderer));
+    registerSystem<systems::Keyboard>(
+        std::make_unique<systems::Keyboard>(_eventBus));
+    this->getLogger().info("ECS initialization complete");
 }
 
 } // namespace guillaume

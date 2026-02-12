@@ -47,7 +47,7 @@ class SystemNotFoundException : public std::exception {
     std::type_index _systemIndex{
         typeid(SystemType)}; ///< Type index of the missing system
     std::string _systemName{
-        _systemIndex.name()}; ///< Name of the missing system type
+        _systemIndex.name()};     ///< Name of the missing system type
     mutable std::string _message; ///< Cached exception message
 
   public:
@@ -116,8 +116,7 @@ class SystemRegistry
      * @tparam SystemType The type of the system to retrieve.
      * @return Shared pointer to the system instance.
      */
-    template <InheritFromSystem SystemType>
-    SystemType &getSystem(void) {
+    template <InheritFromSystem SystemType> SystemType &getSystem(void) {
         auto iterator = _systems.find(std::type_index(typeid(SystemType)));
         if (iterator == _systems.end()) {
             throw SystemNotFoundException<SystemType>();

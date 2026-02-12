@@ -27,9 +27,9 @@ namespace guillaume::systems {
 Hover::Hover(event::EventBus &eventBus) : _mouseMotionSubscriber(eventBus) {}
 
 void Hover::update(ecs::ComponentRegistry &,
-				   const ecs::Entity::Identifier &identityIdentifier) {
-	System::getLogger().info("Hovering entity " +
-							 std::to_string(identityIdentifier));
+                   const ecs::Entity::Identifier &identityIdentifier) {
+    System::getLogger().info("Hovering entity " +
+                             std::to_string(identityIdentifier));
 }
 
 } // namespace guillaume::systems

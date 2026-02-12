@@ -51,9 +51,7 @@ class ComponentTypeLimitExceededException : public std::exception {
      * @brief Get the exception message.
      * @return The exception message.
      */
-    const char *what(void) const noexcept override {
-        return _message.c_str();
-    }
+    const char *what(void) const noexcept override { return _message.c_str(); }
 };
 
 /**
@@ -79,7 +77,7 @@ class ComponentTypeId {
     static std::size_t nextId(void) {
         static std::size_t currentId = 0;
         if (currentId >= MaxComponentTypes) {
-        throw ComponentTypeLimitExceededException();
+            throw ComponentTypeLimitExceededException();
         }
         return currentId++;
     }

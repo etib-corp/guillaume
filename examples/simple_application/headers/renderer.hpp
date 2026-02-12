@@ -39,9 +39,7 @@ class PrimaryDisplayUnavailableException : public std::exception {
     explicit PrimaryDisplayUnavailableException(const std::string &details)
         : _message("SDL_GetPrimaryDisplay failed: " + details) {}
 
-    const char *what(void) const noexcept override {
-        return _message.c_str();
-    }
+    const char *what(void) const noexcept override { return _message.c_str(); }
 };
 
 class DisplayBoundsUnavailableException : public std::exception {
@@ -52,9 +50,7 @@ class DisplayBoundsUnavailableException : public std::exception {
     explicit DisplayBoundsUnavailableException(const std::string &details)
         : _message("SDL_GetDisplayBounds failed: " + details) {}
 
-    const char *what(void) const noexcept override {
-        return _message.c_str();
-    }
+    const char *what(void) const noexcept override { return _message.c_str(); }
 };
 
 class Renderer : public guillaume::Renderer {

@@ -173,8 +173,7 @@ class ComponentRegistry
     ComponentType &addComponent(const Entity::Identifier &identityIdentifier,
                                 Args &&...args) {
         auto &storage = getOrCreateStorage<ComponentType>();
-        return storage.emplace(identityIdentifier,
-                               std::forward<Args>(args)...);
+        return storage.emplace(identityIdentifier, std::forward<Args>(args)...);
     }
 
     /**

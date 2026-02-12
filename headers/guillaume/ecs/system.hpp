@@ -57,8 +57,8 @@ class System
      * signature.
      */
     template <InheritFromComponent... ComponentTypes> void setSignature(void) {
-      _signature.reset();
-      ( _signature.set(ComponentTypeId::get<ComponentTypes>()), ... );
+        _signature.reset();
+        (_signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
     }
 
   public:

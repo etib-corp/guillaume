@@ -58,9 +58,9 @@ class Entity {
      */
     template <InheritFromComponent... ComponentTypes>
     static Signature getSignatureFromTypes(void) {
-      Signature signature;
-      (signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
-      return signature;
+        Signature signature;
+        (signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
+        return signature;
     }
 
   private:

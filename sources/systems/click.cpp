@@ -27,9 +27,9 @@ namespace guillaume::systems {
 Click::Click(event::EventBus &eventBus) : _mouseButtonSubscriber(eventBus) {}
 
 void Click::update(ecs::ComponentRegistry &,
-				   const ecs::Entity::Identifier &identityIdentifier) {
-	System::getLogger().info("Updating button entity " +
-							 std::to_string(identityIdentifier));
+                   const ecs::Entity::Identifier &identityIdentifier) {
+    System::getLogger().info("Updating button entity " +
+                             std::to_string(identityIdentifier));
 }
 
 } // namespace guillaume::systems

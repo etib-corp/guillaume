@@ -82,7 +82,8 @@ class ECS
     }
 
     /**
-     * @brief Add or replace a component on an entity and update system membership.
+     * @brief Add or replace a component on an entity and update system
+     * membership.
      * @tparam ComponentType The component type to add.
      * @param entity The entity to update.
      * @param args Arguments forwarded to the component constructor.
@@ -90,8 +91,9 @@ class ECS
      */
     template <InheritFromComponent ComponentType, typename... Args>
     ComponentType &addComponent(Entity &entity, Args &&...args) {
-        auto &component = _componentRegistry.template addComponent<ComponentType>(
-            entity.getIdentifier(), std::forward<Args>(args)...);
+        auto &component =
+            _componentRegistry.template addComponent<ComponentType>(
+                entity.getIdentifier(), std::forward<Args>(args)...);
         auto signature = entity.getSignature();
         signature.set(ComponentTypeId::get<ComponentType>());
         entity.setSignature(signature);
