@@ -43,6 +43,8 @@ enum class TextAlignment { Left, Center, Right };
  * properties such as color and position. It provides a high-level
  * interface for text rendering without directly dealing with low-level
  * rendering APIs.
+ * @see Renderer
+ * @see Font
  */
 class Text {
   private:

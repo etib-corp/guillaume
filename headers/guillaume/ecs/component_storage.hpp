@@ -85,6 +85,7 @@ class ComponentStorage : public IComponentStorage {
      * @param identityIdentifier The entity identifier.
      * @param args Arguments forwarded to the component constructor.
      * @return Reference to the stored component.
+     * @note If a component already exists for the entity, it is replaced.
      */
     template <typename... Args>
     ComponentType &emplace(const Entity::Identifier &identityIdentifier,
@@ -101,6 +102,7 @@ class ComponentStorage : public IComponentStorage {
      * @brief Find a component for an entity.
      * @param identityIdentifier The entity identifier.
      * @return Pointer to the component or nullptr.
+     * @retval nullptr No component exists for the entity.
      */
     ComponentType *find(const Entity::Identifier &identityIdentifier) {
         auto iterator = _components.find(identityIdentifier);
@@ -114,6 +116,7 @@ class ComponentStorage : public IComponentStorage {
      * @brief Find a component for an entity (const).
      * @param identityIdentifier The entity identifier.
      * @return Pointer to the component or nullptr.
+     * @retval nullptr No component exists for the entity.
      */
     const ComponentType *
     find(const Entity::Identifier &identityIdentifier) const {

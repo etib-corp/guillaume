@@ -33,6 +33,8 @@ namespace guillaume::systems {
 
 /**
  * @brief System handling rendering of entities.
+ * @see components::Transform
+ * @see components::Bound
  */
 class Render
     : public ecs::SystemFiller<components::Transform, components::Bound> {

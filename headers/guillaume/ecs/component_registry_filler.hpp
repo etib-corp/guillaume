@@ -30,6 +30,7 @@ namespace guillaume::ecs {
  * @brief Templated registry helper that registers multiple component
  * types for an entity.
  * @tparam ComponentTypes The component types to register.
+ * @see ComponentRegistry
  */
 template <InheritFromComponent... ComponentTypes>
 class ComponentRegistryFiller : public ComponentRegistry {

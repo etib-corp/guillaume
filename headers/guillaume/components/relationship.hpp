@@ -51,7 +51,7 @@ class Relationship : public ecs::Component {
     ~Relationship(void) = default;
 
     /**
-     * @brief Get the parent entity identifier.
+     * @brief Set the parent entity identifier.
      * @param identifier The new parent entity identifier.
      */
     void setParentIdentifier(ecs::Entity::Identifier identifier) {

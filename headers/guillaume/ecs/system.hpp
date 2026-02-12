@@ -42,6 +42,8 @@ namespace guillaume::ecs {
  *
  * This base class provides common functionality that doesn't depend on
  * component types.
+ * @see SystemRegistry
+ * @see SystemFiller
  */
 class System
     : protected utility::logging::Loggable<System,

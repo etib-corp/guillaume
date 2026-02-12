@@ -35,6 +35,8 @@ namespace guillaume::ecs {
  *
  * This base class provides common functionality that doesn't depend on
  * component types.
+ * @see ComponentRegistry
+ * @see System
  */
 class Entity {
   public:
@@ -108,7 +110,7 @@ class Entity {
 };
 
 /**
- * @brief Concept to ensure a type inherits from System.
+ * @brief Concept to ensure a type inherits from Entity.
  * @tparam Type The type to check.
  */
 template <typename Type>

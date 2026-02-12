@@ -29,6 +29,10 @@ namespace guillaume {
 
 /**
  * @brief Abstract base class for drawable shapes.
+ * @see shapes::Rectangle
+ * @see shapes::Circle
+ * @see shapes::Triangle
+ * @see Renderer
  */
 class Shape {
   private:
