@@ -3,7 +3,8 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/examples/simple_application/headers"
             ],
             "defines": [],
             "macFrameworkPath": [

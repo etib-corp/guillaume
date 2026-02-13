@@ -67,6 +67,12 @@ class ECS : public ecs::ECS<ComponentRegistry> {
      * @brief Default destructor.
      */
     ~ECS(void) = default;
+
+    /**
+     * @brief Get the renderer instance.
+     * @return Reference to the renderer.
+     */
+    Renderer &getRenderer(void) { return _renderer; }
 };
 
 } // namespace guillaume
