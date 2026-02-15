@@ -36,6 +36,7 @@ namespace guillaume::systems {
 
 /**
  * @brief System handling hoverable entities.
+ * @see components::Hover
  */
 class Hover
     : public ecs::SystemFiller<components::Hover, components::Transform> {
@@ -58,9 +59,10 @@ class Hover
 
     /**
      * @brief Update the Hover system for the specified entity.
+     * @param componentRegistry The component registry instance.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(ecs::ComponentRegistry &,
+    void update(ecs::ComponentRegistry &componentRegistry,
                 const ecs::Entity::Identifier &identityIdentifier) override;
 };
 

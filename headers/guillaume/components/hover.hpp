@@ -30,6 +30,7 @@ namespace guillaume::components {
 
 /**
  * @brief Component representing a hoverable entity.
+ * @see systems::Hover
  */
 class Hover : public ecs::Component {
   public:

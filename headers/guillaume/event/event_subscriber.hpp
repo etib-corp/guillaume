@@ -36,6 +36,7 @@ namespace guillaume::event {
  *
  * This class provides a base for subscribing to specific event types from the
  * event bus. It maintains a queue of received events for processing.
+ * @see EventBus
  */
 template <utility::event::InheritFromEvent EventType> class EventSubscriber {
   private:
@@ -69,6 +70,7 @@ template <utility::event::InheritFromEvent EventType> class EventSubscriber {
     /**
      * @brief Get the next event from the queue.
      * @return The next event.
+     * @retval nullptr If the queue is empty.
      */
     std::unique_ptr<EventType> getNextEvent(void) {
         if (_eventQueue.empty()) {

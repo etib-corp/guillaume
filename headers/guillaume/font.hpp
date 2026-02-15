@@ -32,6 +32,8 @@ namespace guillaume {
  *
  * Represents a font that can be used to render text. Implementations handle
  * loading and managing font resources from files.
+ * @see Text
+ * @see Renderer
  */
 class Font {
   protected:

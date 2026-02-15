@@ -41,6 +41,9 @@ namespace guillaume {
 
 /**
  * @brief Renderer interface.
+ * @see Shape
+ * @see Text
+ * @see Font
  */
 class Renderer
     : protected utility::logging::Loggable<Renderer,

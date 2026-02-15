@@ -32,6 +32,7 @@ namespace guillaume::ecs {
  * on the specified component types.
  * @tparam ComponentTypes The component types that define the system's
  * signature.
+ * @see System
  */
 template <InheritFromComponent... ComponentTypes>
 class SystemFiller : public System {

@@ -80,6 +80,7 @@ class SystemNotFoundException : public std::exception {
  *
  * This base class provides common functionality that doesn't depend on
  * system types.
+ * @see System
  */
 class SystemRegistry
     : public utility::logging::Loggable<SystemRegistry,
@@ -103,6 +104,7 @@ class SystemRegistry
      * @brief Register a new system in the registry.
      * @tparam SystemType The type of the system to register.
      * @param system Unique pointer to the system instance.
+     * @note If a system of the same type is already registered, it is replaced.
      */
     template <InheritFromSystem SystemType>
     void registerNewSystem(std::unique_ptr<SystemType> system) {
@@ -114,7 +116,8 @@ class SystemRegistry
     /**
      * @brief Retrieve a system from the registry.
      * @tparam SystemType The type of the system to retrieve.
-     * @return Shared pointer to the system instance.
+     * @return Reference to the system instance.
+     * @throws SystemNotFoundException<SystemType> If the system is not found.
      */
     template <InheritFromSystem SystemType> SystemType &getSystem(void) {
         auto iterator = _systems.find(std::type_index(typeid(SystemType)));

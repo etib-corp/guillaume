@@ -44,9 +44,19 @@ namespace guillaume {
  * @tparam RendererType The type of the renderer used by the application.
  * @tparam EventHandlerType The type of the event handler used by the
  * application.
+ *
+ * @code
+ * class MyRenderer : public Renderer { ... };
+ * class MyEventHandler : public event::EventHandler { ... };
+ * Application<MyRenderer, MyEventHandler> app;
+ * return app.run();
+ * @endcode
+ *
+ * @see ECS
+ * @see event::EventBus
+ * @see event::EventHandler
+ * @see Renderer
  */
-template <typename RendererType, typename EventHandlerType> class Application;
-
 template <typename RendererType, typename EventHandlerType>
 class Application : protected utility::logging::Loggable<
                         Application<RendererType, EventHandlerType>,

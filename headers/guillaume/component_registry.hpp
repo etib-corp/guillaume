@@ -36,6 +36,7 @@ namespace guillaume {
 
 /**
  * @brief Component registry class registering all core components.
+ * @see ecs::ComponentRegistryFiller
  */
 class ComponentRegistry
     : public ecs::ComponentRegistryFiller<

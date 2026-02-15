@@ -36,6 +36,18 @@ namespace guillaume::systems {
 
 /**
  * @brief System handling clickable entities.
+ *
+ * @code
+ * event::EventBus eventBus;
+ * systems::Click clickSystem(eventBus);
+ *
+ * components::Click click;
+ * click.setOnClickHandler([]() {
+ *     // React to click events.
+ * });
+ * @endcode
+ *
+ * @see components::Click
  */
 class Click
     : public ecs::SystemFiller<components::Click, components::Transform> {
@@ -46,7 +58,7 @@ class Click
 
   public:
     /**
-     * @brief Default constructor for the MouseButton system.
+     * @brief Default constructor for the Click system.
      * @param eventBus The event bus to subscribe to.
      */
     Click(event::EventBus &eventBus);
@@ -58,9 +70,10 @@ class Click
 
     /**
      * @brief Update the Click system for the specified entity.
+     * @param componentRegistry The component registry instance.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(ecs::ComponentRegistry &,
+    void update(ecs::ComponentRegistry &componentRegistry,
                 const ecs::Entity::Identifier &identityIdentifier) override;
 };
 

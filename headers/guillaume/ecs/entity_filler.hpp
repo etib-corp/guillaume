@@ -33,6 +33,27 @@ namespace guillaume::ecs {
  * on the specified component types.
  * @tparam ComponentTypes The component types that define the entity's
  * signature.
+ *
+ * @code
+ * // UI-style entity composed from common components.
+ * class ButtonEntity
+ *     : public ecs::EntityFiller<components::Transform,
+ *                                components::Bound,
+ *                                components::Click,
+ *                                components::Text> {
+ *   public:
+ *     ButtonEntity(ecs::ComponentRegistry &registry)
+ *         : ecs::EntityFiller<components::Transform,
+ *                             components::Bound,
+ *                             components::Click,
+ *                             components::Text>(registry) {}
+ * };
+ *
+ * ButtonEntity button(registry);
+ * @endcode
+ *
+ * @see Entity
+ * @see ComponentRegistry
  */
 template <InheritFromComponent... ComponentTypes>
 class EntityFiller : public Entity {

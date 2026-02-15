@@ -30,6 +30,15 @@ namespace guillaume::components {
 
 /**
  * @brief Component representing a clickable entity.
+ *
+ * @code
+ * components::Click click;
+ * click.setOnClickHandler([]() {
+ *     // Handle click.
+ * });
+ * @endcode
+ *
+ * @see systems::Click
  */
 class Click : public ecs::Component {
   public:

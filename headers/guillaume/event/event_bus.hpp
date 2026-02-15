@@ -34,6 +34,17 @@ namespace guillaume::event {
 
 /**
  * @brief Routes events to subscribed listeners.
+ *
+ * @code
+ * event::EventBus bus;
+ * bus.subscribe<utility::event::KeyboardEvent>(
+ *     [](std::unique_ptr<utility::event::Event> event) {
+ *         // Handle keyboard event.
+ *     });
+ * @endcode
+ *
+ * @see EventSubscriber
+ * @see EventHandler
  */
 class EventBus {
   public:
@@ -66,14 +77,15 @@ class EventBus {
 
     /**
      * @brief Dispatch an event to listeners and systems.
-     * @param event Event to dispatch.
+     * @param event Event to dispatch (ownership transferred).
+     * @note Listeners take ownership of the event instance.
      */
     void publish(std::unique_ptr<utility::event::Event> event);
 
     /**
-     * @brief Subscribe a listener to all events.
+     * @brief Subscribe a listener to a specific event type.
      * @tparam EventType The type of event to subscribe to.
-     * @param listener Listener to notify on all events.
+     * @param listener Listener to notify for matching events.
      */
     template <utility::event::InheritFromEvent EventType>
     void subscribe(const Listener &listener) {

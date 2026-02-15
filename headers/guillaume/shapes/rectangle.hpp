@@ -30,6 +30,7 @@ namespace guillaume::shapes {
 
 /**
  * @brief Rectangle shape.
+ * @see Shape
  */
 class Rectangle : public Shape {
   private:

@@ -56,6 +56,8 @@ class ComponentTypeLimitExceededException : public std::exception {
 
 /**
  * @brief Monotonic component type id generator.
+ * @see MaxComponentTypes
+ * @see ComponentTypeLimitExceededException
  */
 class ComponentTypeId {
   public:
@@ -63,6 +65,8 @@ class ComponentTypeId {
      * @brief Get a stable id for a component type.
      * @tparam ComponentType The component type.
      * @return A stable id within [0, MaxComponentTypes).
+     * @throws ComponentTypeLimitExceededException If the maximum number of
+     * component types has been exceeded.
      */
     template <typename ComponentType> static std::size_t get(void) {
         static const std::size_t id = nextId();

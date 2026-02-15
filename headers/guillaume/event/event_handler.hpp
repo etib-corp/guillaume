@@ -38,6 +38,19 @@ namespace guillaume::event {
  * This class provides an abstract interface for handling events in the
  * Guillaume framework. Implementations should poll or process platform-specific
  * events and convert them to Guillaume Event objects.
+ *
+ * @code
+ * class MyEventHandler : public event::EventHandler {
+ *   public:
+ *     void pollEvents(void) override {
+ *         // Convert platform events to utility::event::Event and call
+ * callback.
+ *         // getEventCallback()(event);
+ *     }
+ * };
+ * @endcode
+ *
+ * @see EventBus
  */
 class EventHandler
     : protected utility::logging::Loggable<EventHandler,
