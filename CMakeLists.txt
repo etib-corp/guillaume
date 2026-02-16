@@ -76,9 +76,9 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Optional components
-option(BUILD_TESTING "Build the tests" ON)
-option(BUILD_DOCS "Build documentation" ON)
-option(BUILD_EXAMPLES "Build the examples" ON)
+option(BUILD_TESTING "Build the tests" OFF)
+option(BUILD_DOCS "Build documentation" OFF)
+option(BUILD_EXAMPLES "Build the examples" OFF)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
