@@ -37,6 +37,20 @@ namespace guillaume::ecs {
  * @brief ECS (Entity-Component-System) main class.
  * @tparam ComponentRegistryType The type of the component registry.
  * @tparam SystemRegistryType The type of the system registry.
+ *
+ * @code
+ * ecs::ECS<MyComponentRegistry> ecs;
+ *
+ * MyEntity entity(ecs.getComponentRegistry());
+ * ecs.addEntity(entity);
+ * ecs.addComponent<components::Transform>(entity);
+ *
+ * // Run one update pass.
+ * ecs.routine();
+ * @endcode
+ *
+ * @see ComponentRegistry
+ * @see SystemRegistry
  */
 template <InheritFromComponentRegistry ComponentRegistryType>
 class ECS

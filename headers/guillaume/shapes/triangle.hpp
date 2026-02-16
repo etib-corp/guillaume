@@ -28,6 +28,7 @@ namespace guillaume::shapes {
 
 /**
  * @brief Triangle shape.
+ * @see Shape
  */
 class Triangle : public Shape {
   public:

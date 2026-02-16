@@ -34,7 +34,8 @@
 namespace guillaume::systems {
 
 /**
- * @brief System handling clickable entities.
+ * @brief System handling keyboard input for text entities.
+ * @see components::Text
  */
 class Keyboard : public ecs::SystemFiller<components::Text> {
   private:
@@ -54,9 +55,10 @@ class Keyboard : public ecs::SystemFiller<components::Text> {
 
     /**
      * @brief Update the Keyboard system for the specified entity.
+     * @param componentRegistry The component registry instance.
      * @param identityIdentifier The identifier of the entity to update.
      */
-    void update(ecs::ComponentRegistry &,
+    void update(ecs::ComponentRegistry &componentRegistry,
                 const ecs::Entity::Identifier &identityIdentifier) override;
 };
 

@@ -28,6 +28,7 @@ namespace guillaume::shapes {
 
 /**
  * @brief Circle shape.
+ * @see Shape
  */
 class Circle : public Shape {
   public:

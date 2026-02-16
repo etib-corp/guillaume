@@ -87,6 +87,7 @@ class EntityComponentNotFoundException : public std::exception {
  *
  * Manages the registration and retrieval of component types within the ECS
  * architecture.
+ * @see ComponentStorage
  */
 class ComponentRegistry
     : public utility::logging::Loggable<ComponentRegistry,
@@ -152,7 +153,7 @@ class ComponentRegistry
 
     /**
      * @brief Register a component for an entity.
-     * @tparam ComponentType The type of the component to register.
+     * @tparam NeededComponentTypes The types of the components to register.
      * @param identityIdentifier The entity identifier to which the
      * component will be associated.
      */
@@ -168,6 +169,7 @@ class ComponentRegistry
      * @param identityIdentifier The entity identifier.
      * @param args Arguments forwarded to the component constructor.
      * @return Reference to the stored component.
+     * @note If a component already exists for the entity, it is replaced.
      */
     template <InheritFromComponent ComponentType, typename... Args>
     ComponentType &addComponent(const Entity::Identifier &identityIdentifier,
@@ -208,7 +210,9 @@ class ComponentRegistry
      * @tparam ComponentType The type of the component to retrieve.
      * @param identityIdentifier The entity identifier to which the
      * component belongs.
-     * @return Unique pointer to the requested component.
+     * @return Reference to the requested component.
+     * @throws EntityComponentNotFoundException<ComponentType> If the entity
+     * does not have the component.
      */
     template <InheritFromComponent ComponentType>
     ComponentType &getComponent(const Entity::Identifier &identityIdentifier) {
@@ -227,6 +231,8 @@ class ComponentRegistry
      * @param identityIdentifier The entity identifier to which the
      * component belongs.
      * @return Reference to the requested component.
+     * @throws EntityComponentNotFoundException<ComponentType> If the entity
+     * does not have the component.
      */
     template <InheritFromComponent ComponentType>
     const ComponentType &
