@@ -4,19 +4,20 @@
  Permission is hereby granted, free of charge, to any person obtaining a copy of
  this software and associated documentation files (the "Software"), to deal in
  the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
 
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
 
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
  */
 
 #include "renderer.hpp"
@@ -219,8 +220,7 @@ void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
 }
 
 utility::math::Vector<std::float_t, 2>
-Renderer::mesureText(const guillaume::Text &text,
-                     const guillaume::Font &font) {
+Renderer::mesureText(const guillaume::Text &text, const guillaume::Font &font) {
     getLogger().debug("Measuring text: " + text.getContent() +
                       " with font: " + font.getFontPath());
 
@@ -231,8 +231,10 @@ Renderer::mesureText(const guillaume::Text &text,
     }
 
     int width = 0, height = 0;
-    // Pass 0 as length to indicate that the input string is null-terminated (SDL_ttf API).
-    if (!TTF_GetStringSize(ttfFont, text.getContent().c_str(), 0, &width, &height)) {
+    // Pass 0 as length to indicate that the input string is null-terminated
+    // (SDL_ttf API).
+    if (!TTF_GetStringSize(ttfFont, text.getContent().c_str(), 0, &width,
+                           &height)) {
         getLogger().error("Failed to measure text: " +
                           std::string(SDL_GetError()));
         return {0.0f, 0.0f};
@@ -253,7 +255,8 @@ void Renderer::drawText(const guillaume::Text &text,
     }
 
     auto color = text.getColor();
-    SDL_Color sdlColor = {color.red(), color.green(), color.blue(), color.alpha()};
+    SDL_Color sdlColor = {color.red(), color.green(), color.blue(),
+                          color.alpha()};
 
     SDL_Surface *surface =
         TTF_RenderText_Blended(ttfFont, text.getContent().c_str(), 0, sdlColor);
@@ -263,8 +266,8 @@ void Renderer::drawText(const guillaume::Text &text,
         return;
     }
 
-    SDL_Surface *converted = SDL_ConvertSurface(surface,
-                                                      SDL_PIXELFORMAT_RGBA32);
+    SDL_Surface *converted =
+        SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
     if (!converted) {
         getLogger().error("Failed to convert surface for OpenGL: " +
                           std::string(SDL_GetError()));
@@ -319,16 +322,16 @@ void Renderer::drawText(const guillaume::Text &text,
 }
 
 TTF_Font *Renderer::getOrLoadFont(const guillaume::Font &font) {
-    std::string fontKey = font.getFontPath() + ":" +
-                          std::to_string(font.getFontSize());
+    std::string fontKey =
+        font.getFontPath() + ":" + std::to_string(font.getFontSize());
 
     auto it = _fontCache.find(fontKey);
     if (it != _fontCache.end()) {
         return it->second;
     }
 
-    TTF_Font *ttfFont = TTF_OpenFont(font.getFontPath().c_str(),
-                                      font.getFontSize());
+    TTF_Font *ttfFont =
+        TTF_OpenFont(font.getFontPath().c_str(), font.getFontSize());
     if (!ttfFont) {
         getLogger().error("Failed to load font: " +
                           std::string(SDL_GetError()));

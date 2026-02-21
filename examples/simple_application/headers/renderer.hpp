@@ -59,18 +59,18 @@ class DisplayBoundsUnavailableException : public std::exception {
 
 class Renderer : public guillaume::Renderer {
   private:
-    SDL_Window *_window;          ///< SDL window pointer
-    SDL_GLContext _glContext;     ///< OpenGL context for the window
+    SDL_Window *_window;      ///< SDL window pointer
+    SDL_GLContext _glContext; ///< OpenGL context for the window
     std::unordered_map<std::string, TTF_Font *>
         _fontCache; ///< Cache for loaded fonts
-
 
     TTF_Font *getOrLoadFont(const guillaume::Font &font);
 
   public:
     /**
      * @brief Default constructor for the Renderer class.
-     * Initializes SDL, creates a window and OpenGL context, and sets up font caching.
+     * Initializes SDL, creates a window and OpenGL context, and sets up font
+     * caching.
      */
     Renderer(void);
 
@@ -109,10 +109,12 @@ class Renderer : public guillaume::Renderer {
     void drawCircle(const guillaume::shapes::Circle &circle) override;
 
     /**
-     * @brief Measures the pixel dimensions of a given text string when rendered with a specific font.
+     * @brief Measures the pixel dimensions of a given text string when rendered
+     * with a specific font.
      * @param text The text to measure.
      * @param font The font to use for measurement.
-     * @return A 2D vector containing the width and height of the rendered text in pixels in the form of utility::math::Vector<std::float_t, 2>.
+     * @return A 2D vector containing the width and height of the rendered text
+     * in pixels in the form of utility::math::Vector<std::float_t, 2>.
      */
     utility::math::Vector<std::float_t, 2>
     mesureText(const guillaume::Text &text,

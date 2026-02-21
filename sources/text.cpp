@@ -25,9 +25,11 @@
 namespace guillaume {
 
 Text::Text(const std::string &content, utility::math::Color<uint8_t> color,
-           utility::math::Vector<float, 3> position, utility::math::Vector<float, 3> rotation)
-    : _content(content), _color(color), _position(position), _rotation(rotation),
-      _alignment(TextAlignment::Left), _isDirty(true), _bounds(0, 0, 0, 0) {}
+           utility::math::Vector<float, 3> position,
+           utility::math::Vector<float, 3> rotation)
+    : _content(content), _color(color), _position(position),
+      _rotation(rotation), _alignment(TextAlignment::Left), _isDirty(true),
+      _bounds(0, 0, 0, 0) {}
 
 const std::string &Text::getContent() const { return _content; }
 

@@ -28,11 +28,13 @@ Shape::Shape(void)
     : _position({0.0f, 0.0f, 0.0f}), _rotation({0.0f, 0.0f, 0.0f}),
       _scale({1.0f, 1.0f, 1.0f}), _color({255, 255, 255, 255}) {}
 
-void Shape::setPosition(const utility::math::Vector<std::float_t, 3> &position) {
+void Shape::setPosition(
+    const utility::math::Vector<std::float_t, 3> &position) {
     _position = position;
 }
 
-void Shape::setRotation(const utility::math::Vector<std::float_t, 3> &rotation) {
+void Shape::setRotation(
+    const utility::math::Vector<std::float_t, 3> &rotation) {
     _rotation = rotation;
 }
 
