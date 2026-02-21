@@ -231,6 +231,7 @@ Renderer::mesureText(const guillaume::Text &text,
     }
 
     int width = 0, height = 0;
+    // Pass 0 as length to indicate that the input string is null-terminated (SDL_ttf API).
     if (!TTF_GetStringSize(ttfFont, text.getContent().c_str(), 0, &width, &height)) {
         getLogger().error("Failed to measure text: " +
                           std::string(SDL_GetError()));
