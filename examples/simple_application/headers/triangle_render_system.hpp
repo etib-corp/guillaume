@@ -56,9 +56,8 @@ class TriangleRenderSystem : public guillaume::ecs::System {
      */
     void update(guillaume::ecs::ComponentRegistry &componentRegistry,
                 const guillaume::ecs::Entity::Identifier &entityIdentifier) override {
-        bool isTriangle = componentRegistry.getComponent<simple_application::TriangleComponent>(
-                entityIdentifier).isTriangleShape();
-        if (!isTriangle) {
+        if (!componentRegistry.hasComponent<simple_application::TriangleComponent>(
+                entityIdentifier)) {
             return;
         }
         utility::math::Color color = componentRegistry.getComponent<guillaume::components::Color>(
@@ -70,6 +69,11 @@ class TriangleRenderSystem : public guillaume::ecs::System {
             componentRegistry.getComponent<guillaume::components::Transform>(
                 entityIdentifier)
                 .getPosition()
+        );
+        _triangle.setRotation(
+            componentRegistry.getComponent<guillaume::components::Transform>(
+                entityIdentifier)
+                .getRotation()
         );
         _triangle.setScale(
             componentRegistry.getComponent<guillaume::components::Transform>(

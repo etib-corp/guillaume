@@ -23,6 +23,8 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
+#include <SDL3/SDL_video.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
 #include <exception>
@@ -57,8 +59,8 @@ class DisplayBoundsUnavailableException : public std::exception {
 
 class Renderer : public guillaume::Renderer {
   private:
-    SDL_Window *_window;     ///< SDL window pointer
-    SDL_Renderer *_renderer; ///< SDL renderer pointer
+    SDL_Window *_window;          ///< SDL window pointer
+    SDL_GLContext _glContext;     ///< OpenGL context for the window
     std::unordered_map<std::string, TTF_Font *>
         _fontCache; ///< Cache for loaded fonts
 
@@ -68,7 +70,7 @@ class Renderer : public guillaume::Renderer {
   public:
     /**
      * @brief Default constructor for the Renderer class.
-     * Initializes SDL, creates a window and renderer, and sets up font caching.
+     * Initializes SDL, creates a window and OpenGL context, and sets up font caching.
      */
     Renderer(void);
 
@@ -89,20 +91,20 @@ class Renderer : public guillaume::Renderer {
     void present(void) override;
 
     /**
-     * @brief Draws a triangle shape using the SDL renderer.
-     * @param triangle The triangle shape to draw.
+     * @brief Draws a 3D triangle shape using OpenGL.
+     * @param triangle The triangle shape to draw (with Z-depth).
      */
     void drawTriangle(const guillaume::shapes::Triangle &triangle) override;
 
     /**
-     * @brief Draws a rectangle shape using the SDL renderer.
-     * @param rectangle The rectangle shape to draw.
+     * @brief Draws a 3D rectangle shape using OpenGL.
+     * @param rectangle The rectangle shape to draw (with Z-depth).
      */
     void drawRectangle(const guillaume::shapes::Rectangle &rectangle) override;
 
     /**
-     * @brief Draws a circle shape using the SDL renderer.
-     * @param circle The circle shape to draw.
+     * @brief Draws a 3D circle shape using OpenGL.
+     * @param circle The circle shape to draw (with Z-depth).
      */
     void drawCircle(const guillaume::shapes::Circle &circle) override;
 

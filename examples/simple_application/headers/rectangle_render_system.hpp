@@ -55,9 +55,8 @@ class RectangleRenderSystem : public guillaume::ecs::System {
      */
     void update(guillaume::ecs::ComponentRegistry &componentRegistry,
                 const guillaume::ecs::Entity::Identifier &entityIdentifier) override {
-        bool isRectangle = componentRegistry.getComponent<simple_application::RectangleComponent>(
-                entityIdentifier).isRectangleShape();
-        if (!isRectangle) {
+        if (!componentRegistry.hasComponent<simple_application::RectangleComponent>(
+                entityIdentifier)) {
             return;
         }
 
@@ -69,6 +68,11 @@ class RectangleRenderSystem : public guillaume::ecs::System {
             componentRegistry.getComponent<guillaume::components::Transform>(
                 entityIdentifier)
                 .getPosition()
+        );
+        _rectangle.setRotation(
+            componentRegistry.getComponent<guillaume::components::Transform>(
+                entityIdentifier)
+                .getRotation()
         );
         _rectangle.setSize(
             {bound[0], bound[1]}

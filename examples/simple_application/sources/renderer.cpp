@@ -1,9 +1,32 @@
+/*
+ Copyright (c) 2026 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 #include "renderer.hpp"
+
+#include <cmath>
 
 namespace simple_application {
 
-Renderer::Renderer(void) : guillaume::Renderer(), _renderer(nullptr) {
-    // Initialize SDL
+Renderer::Renderer(void)
+    : guillaume::Renderer(), _window(nullptr), _glContext(nullptr) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         getLogger().error("Failed to initialize SDL: " +
                           std::string(SDL_GetError()));
@@ -28,18 +51,56 @@ Renderer::Renderer(void) : guillaume::Renderer(), _renderer(nullptr) {
         throw DisplayBoundsUnavailableException(SDL_GetError());
     }
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
     _window = SDL_CreateWindow("Simple Application", primaryDisplayBounds.w,
-                               primaryDisplayBounds.h, SDL_WINDOW_FULLSCREEN);
+                               primaryDisplayBounds.h,
+                               SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     if (!_window) {
         getLogger().error("Failed to create SDL window: " +
                           std::string(SDL_GetError()));
     }
 
-    _renderer = SDL_CreateRenderer(_window, nullptr);
-    if (!_renderer) {
-        getLogger().error("Failed to create SDL renderer: " +
+    _glContext = SDL_GL_CreateContext(_window);
+    if (!_glContext) {
+        getLogger().error("Failed to create OpenGL context: " +
                           std::string(SDL_GetError()));
     }
+
+    if (!SDL_GL_MakeCurrent(_window, _glContext)) {
+        getLogger().error("Failed to make OpenGL context current: " +
+                          std::string(SDL_GetError()));
+    }
+
+    SDL_GL_SetSwapInterval(1);
+
+    int windowWidth = 0;
+    int windowHeight = 0;
+    if (!SDL_GetWindowSize(_window, &windowWidth, &windowHeight)) {
+        getLogger().warning("Failed to get window size: " +
+                            std::string(SDL_GetError()));
+        windowWidth = primaryDisplayBounds.w;
+        windowHeight = primaryDisplayBounds.h;
+    }
+
+    glViewport(0, 0, windowWidth, windowHeight);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glOrtho(0.0, static_cast<double>(windowWidth),
+            static_cast<double>(windowHeight), 0.0, -1000.0, 1000.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 Renderer::~Renderer(void) {
@@ -50,8 +111,8 @@ Renderer::~Renderer(void) {
     }
     _fontCache.clear();
 
-    if (_renderer) {
-        SDL_DestroyRenderer(_renderer);
+    if (_glContext) {
+        SDL_GL_DestroyContext(_glContext);
     }
     if (_window) {
         SDL_DestroyWindow(_window);
@@ -61,86 +122,100 @@ Renderer::~Renderer(void) {
 }
 
 void Renderer::clear(void) {
-    getLogger().debug("Clearing the screen");
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
-    SDL_RenderClear(_renderer);
+    getLogger().debug("Clearing the screen and depth buffer");
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::present(void) {
     getLogger().debug("Presenting the back buffer to the screen");
-    SDL_RenderPresent(_renderer);
+    SDL_GL_SwapWindow(_window);
 }
 
 void Renderer::drawTriangle(const guillaume::shapes::Triangle &triangle) {
-    getLogger().debug("Drawing a triangle shape");
+    getLogger().debug("Drawing a 3D triangle shape");
 
     auto position = triangle.getPosition();
     auto color = triangle.getColor();
     auto scale = triangle.getScale();
-
-    SDL_SetRenderDrawColor(_renderer, color.red(), color.green(), color.blue(), color.alpha());
+    auto rotation = triangle.getRotation();
 
     float baseSize = 50.0f;
-    SDL_FPoint vertices[4] = {
-        {position[0], position[1] - baseSize * scale[1]},
-        {position[0] - baseSize * scale[0], position[1] + baseSize * scale[1]},
-        {position[0] + baseSize * scale[0], position[1] + baseSize * scale[1]},
-        {position[0], position[1] - baseSize * scale[1]}
-    };
+    glDisable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
 
-    SDL_RenderLines(_renderer, vertices, 4);
+    glPushMatrix();
+    glTranslatef(position[0], position[1], position[2]);
+    glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+    glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+    glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+
+    glBegin(GL_TRIANGLES);
+    glVertex3f(0.0f, -baseSize * scale[1], 0.0f);
+    glVertex3f(-baseSize * scale[0], baseSize * scale[1], 0.0f);
+    glVertex3f(baseSize * scale[0], baseSize * scale[1], 0.0f);
+    glEnd();
+
+    glPopMatrix();
 }
 
 void Renderer::drawRectangle(const guillaume::shapes::Rectangle &rectangle) {
-    getLogger().debug("Drawing a rectangle shape");
+    getLogger().debug("Drawing a 3D rectangle shape");
 
     auto position = rectangle.getPosition();
     auto size = rectangle.getSize();
     auto color = rectangle.getColor();
     auto scale = rectangle.getScale();
+    auto rotation = rectangle.getRotation();
 
-    SDL_SetRenderDrawColor(_renderer, color.red(), color.green(), color.blue(), color.alpha());
+    glDisable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
 
-    SDL_FRect rect = {position[0], position[1], size[0] * scale[0], size[1] * scale[1]};
+    float width = size[0] * scale[0];
+    float height = size[1] * scale[1];
 
-    SDL_RenderFillRect(_renderer, &rect);
+    glPushMatrix();
+    glTranslatef(position[0], position[1], position[2]);
+    glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+    glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+    glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+    glTranslatef(-width / 2.0f, -height / 2.0f, 0.0f);
+
+    glBegin(GL_QUADS);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(width, 0.0f, 0.0f);
+    glVertex3f(width, height, 0.0f);
+    glVertex3f(0.0f, height, 0.0f);
+    glEnd();
+
+    glPopMatrix();
 }
 
 void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
-    getLogger().debug("Drawing a circle shape");
+    getLogger().debug("Drawing a 3D circle shape");
 
     auto position = circle.getPosition();
     auto color = circle.getColor();
     auto scale = circle.getScale();
 
-    SDL_SetRenderDrawColor(_renderer, color.red(), color.green(), color.blue(), color.alpha());
-
     float radius = 50.0f * scale[0];
-    int32_t centerX = static_cast<int32_t>(position[0]);
-    int32_t centerY = static_cast<int32_t>(position[1]);
+    glDisable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
 
-    int32_t x = static_cast<int32_t>(radius);
-    int32_t y = 0;
-    int32_t radiusError = 1 - x;
-
-    while (x >= y) {
-        SDL_RenderPoint(_renderer, centerX + x, centerY + y);
-        SDL_RenderPoint(_renderer, centerX + y, centerY + x);
-        SDL_RenderPoint(_renderer, centerX - x, centerY + y);
-        SDL_RenderPoint(_renderer, centerX - y, centerY + x);
-        SDL_RenderPoint(_renderer, centerX - x, centerY - y);
-        SDL_RenderPoint(_renderer, centerX - y, centerY - x);
-        SDL_RenderPoint(_renderer, centerX + x, centerY - y);
-        SDL_RenderPoint(_renderer, centerX + y, centerY - x);
-
-        y++;
-        if (radiusError < 0) {
-            radiusError += 2 * y + 1;
-        } else {
-            x--;
-            radiusError += 2 * (y - x + 1);
-        }
+    const int segments = 64;
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(position[0], position[1], position[2]);
+    for (int i = 0; i <= segments; ++i) {
+        float angle = static_cast<float>(i) / static_cast<float>(segments) *
+                      6.28318530718f;
+        float x = position[0] + std::cos(angle) * radius;
+        float y = position[1] + std::sin(angle) * radius;
+        glVertex3f(x, y, position[2]);
     }
+    glEnd();
 }
 
 utility::math::Vector<std::float_t, 2>
@@ -167,7 +242,7 @@ Renderer::mesureText(const guillaume::Text &text,
 
 void Renderer::drawText(const guillaume::Text &text,
                         const guillaume::Font &font) {
-    getLogger().debug("Drawing text: " + text.getContent() +
+    getLogger().debug("Drawing 3D text: " + text.getContent() +
                       " with font: " + font.getFontPath());
 
     TTF_Font *ttfFont = getOrLoadFont(font);
@@ -179,7 +254,6 @@ void Renderer::drawText(const guillaume::Text &text,
     auto color = text.getColor();
     SDL_Color sdlColor = {color.red(), color.green(), color.blue(), color.alpha()};
 
-    // Render text to surface
     SDL_Surface *surface =
         TTF_RenderText_Blended(ttfFont, text.getContent().c_str(), 0, sdlColor);
     if (!surface) {
@@ -188,27 +262,58 @@ void Renderer::drawText(const guillaume::Text &text,
         return;
     }
 
-    // Create texture from surface
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(_renderer, surface);
-    if (!texture) {
-        getLogger().error("Failed to create texture from surface: " +
+    SDL_Surface *converted = SDL_ConvertSurface(surface,
+                                                      SDL_PIXELFORMAT_RGBA32);
+    if (!converted) {
+        getLogger().error("Failed to convert surface for OpenGL: " +
                           std::string(SDL_GetError()));
         SDL_DestroySurface(surface);
         return;
     }
 
-    // Set destination rectangle
+    GLuint textureId = 0;
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
+
     auto position = text.getPosition();
-    SDL_FRect destRect = {static_cast<float>(position[0]),
-                          static_cast<float>(position[1]),
-                          static_cast<float>(surface->w),
-                          static_cast<float>(surface->h)};
+    auto rotation = text.getRotation();
+    float width = static_cast<float>(converted->w);
+    float height = static_cast<float>(converted->h);
+    float z = position[2];
 
-    // Render texture
-    SDL_RenderTexture(_renderer, texture, nullptr, &destRect);
+    glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
+    glPushMatrix();
+    glTranslatef(position[0], position[1], z);
+    glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
+    glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
+    glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
 
-    // Clean up
-    SDL_DestroyTexture(texture);
+    float halfWidth = width / 2.0f;
+    float halfHeight = height / 2.0f;
+
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-halfWidth, -halfHeight, 0.0f);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(halfWidth, -halfHeight, 0.0f);
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(halfWidth, halfHeight, 0.0f);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-halfWidth, halfHeight, 0.0f);
+    glEnd();
+
+    glPopMatrix();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+    glDeleteTextures(1, &textureId);
+    SDL_DestroySurface(converted);
     SDL_DestroySurface(surface);
 }
 
@@ -216,13 +321,11 @@ TTF_Font *Renderer::getOrLoadFont(const guillaume::Font &font) {
     std::string fontKey = font.getFontPath() + ":" +
                           std::to_string(font.getFontSize());
 
-    // Check if font is already in cache
     auto it = _fontCache.find(fontKey);
     if (it != _fontCache.end()) {
         return it->second;
     }
 
-    // Load font
     TTF_Font *ttfFont = TTF_OpenFont(font.getFontPath().c_str(),
                                       font.getFontSize());
     if (!ttfFont) {
@@ -231,7 +334,6 @@ TTF_Font *Renderer::getOrLoadFont(const guillaume::Font &font) {
         return nullptr;
     }
 
-    // Cache the font
     _fontCache[fontKey] = ttfFont;
     return ttfFont;
 }

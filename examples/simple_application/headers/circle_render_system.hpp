@@ -54,9 +54,8 @@ class CircleRenderSystem : public guillaume::ecs::System {
      */
     void update(guillaume::ecs::ComponentRegistry &componentRegistry,
                 const guillaume::ecs::Entity::Identifier &entityIdentifier) override {
-        bool isCircle = componentRegistry.getComponent<simple_application::CircleComponent>(
-                entityIdentifier).isCircleShape();
-        if (!isCircle) {
+        if (!componentRegistry.hasComponent<simple_application::CircleComponent>(
+                entityIdentifier)) {
             return;
         }
         utility::math::Color color = componentRegistry.getComponent<guillaume::components::Color>(

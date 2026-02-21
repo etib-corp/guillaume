@@ -11,24 +11,20 @@
 #include "triangle_render_system.hpp"
 #include "rectangle_render_system.hpp"
 #include "circle_render_system.hpp"
+#include "rotation_system.hpp"
+#include "text_render_system.hpp"
 
-class MyEntity
-    : public guillaume::ecs::EntityFiller<guillaume::components::Transform,
-                                          guillaume::components::Bound,
-                                          guillaume::components::Color,
-                                          simple_application::TriangleComponent,
-                                          simple_application::RectangleComponent,
-                                          simple_application::CircleComponent> {
-  public:
-    MyEntity(guillaume::ecs::ComponentRegistry &componentRegistry)
-        : guillaume::ecs::EntityFiller<guillaume::components::Transform,
-                                       guillaume::components::Bound,
-                                       guillaume::components::Color,
-                                       simple_application::TriangleComponent,
-                                       simple_application::RectangleComponent,
-                                       simple_application::CircleComponent>(
-              componentRegistry) {}
-};
+#define entityDecl(name, ...) \
+    class name : public guillaume::ecs::EntityFiller<__VA_ARGS__> { \
+      public: \
+        name(guillaume::ecs::ComponentRegistry &componentRegistry) \
+            : guillaume::ecs::EntityFiller<__VA_ARGS__>(componentRegistry) {} \
+    }
+
+entityDecl(MyRectangle, guillaume::components::Transform, guillaume::components::Bound, guillaume::components::Color, simple_application::RectangleComponent);
+entityDecl(MyTriangle, guillaume::components::Transform, guillaume::components::Color, simple_application::TriangleComponent);
+entityDecl(MyCircle, guillaume::components::Transform, guillaume::components::Color, simple_application::CircleComponent);
+entityDecl(MyText, guillaume::components::Transform, guillaume::components::Color, guillaume::components::Text);
 
 int main(int argc, char *argv[]) {
     simple_application::Application application(argc, argv);
@@ -49,13 +45,25 @@ int main(int argc, char *argv[]) {
     ecs.getSystemRegistry().registerNewSystem<simple_application::CircleRenderSystem>(
         std::move(circleSystem));
 
-    MyEntity rectangle(ecs.getComponentRegistry());
+    auto rotationSystem = std::make_unique<simple_application::RotationSystem>();
+    ecs.getSystemRegistry().registerNewSystem<simple_application::RotationSystem>(
+        std::move(rotationSystem));
+
+    auto textSystem = std::make_unique<simple_application::TextRenderSystem>(
+        ecs.getRenderer());
+    ecs.getSystemRegistry().registerNewSystem<simple_application::TextRenderSystem>(
+        std::move(textSystem));
+
+    MyRectangle rectangle(ecs.getComponentRegistry());
     ecs.addEntity(rectangle);
-    // ecs.addComponent<guillaume::components::Bound, guillaume::components::Bound::Size>(rectangle.getIdentifier(), {150.0f, 100.0f, 1.0f});
 
     ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
         rectangle.getIdentifier())
         .setPosition({200.0f, 300.0f, 0.0f});
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
+        rectangle.getIdentifier())
+        .setRotation({0.0f, 30.0f, 0.0f});
 
     ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
         rectangle.getIdentifier())
@@ -73,12 +81,16 @@ int main(int argc, char *argv[]) {
         rectangle.getIdentifier())
         .setIsRectangleShape(true);
 
-    MyEntity triangle(ecs.getComponentRegistry());
+    MyTriangle triangle(ecs.getComponentRegistry());
     ecs.addEntity(triangle);
 
     ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
         triangle.getIdentifier())
-        .setPosition({300.0f, 500.0f, 0.0f});
+        .setPosition({600.0f, 600.0f, 0.0f});
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
+        triangle.getIdentifier())
+        .setRotation({0.0f, 0.0f, 0.0f});
 
     ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
         triangle.getIdentifier())
@@ -92,12 +104,16 @@ int main(int argc, char *argv[]) {
         triangle.getIdentifier())
         .setIsTriangleShape(true);
 
-    MyEntity circle(ecs.getComponentRegistry());
+    MyCircle circle(ecs.getComponentRegistry());
     ecs.addEntity(circle);
 
     ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
         circle.getIdentifier())
-        .setPosition({400.0f, 600.0f, 0.0f});
+        .setPosition({1000.0f, 900.0f, 0.0f});
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
+        circle.getIdentifier())
+        .setRotation({30.0f, 30.0f, 0.0f});
 
     ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
         circle.getIdentifier())
@@ -110,6 +126,29 @@ int main(int argc, char *argv[]) {
     ecs.getComponentRegistry().getComponent<simple_application::CircleComponent>(
         circle.getIdentifier())
         .setIsCircleShape(true);
+
+    MyText text(ecs.getComponentRegistry());
+    ecs.addEntity(text);
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
+        text.getIdentifier())
+        .setPosition({400.0f, 200.0f, 0.0f});
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
+        text.getIdentifier())
+        .setRotation({0.0f, 0.0f, 0.0f});
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Transform>(
+        text.getIdentifier())
+        .setScale({1.0f, 1.0f, 1.0f});
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Color>(
+        text.getIdentifier())
+        .setRGBA(255, 255, 255, 255);
+
+    ecs.getComponentRegistry().getComponent<guillaume::components::Text>(
+        text.getIdentifier())
+        .setContent("Hello, World!");
 
     return application.run();
 }

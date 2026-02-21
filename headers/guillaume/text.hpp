@@ -48,7 +48,8 @@ class Text {
   private:
     std::string _content;
     utility::math::Color<uint8_t> _color;
-    utility::math::Vector<std::size_t, 2> _position;
+    utility::math::Vector<float, 3> _position;
+    utility::math::Vector<float, 3> _rotation;
     TextAlignment _alignment;
     bool _isDirty;
     utility::math::Rectangle<std::size_t> _bounds;
@@ -59,12 +60,15 @@ class Text {
      * @param content The text content to display.
      * @param color The color of the text.
      * @param position The position where the text should be rendered.
+     * @param rotation The rotation of the text in degrees.
      */
     Text(const std::string &content,
          utility::math::Color<uint8_t> color =
              utility::math::Color<uint8_t>(255, 255, 255, 255),
-         utility::math::Vector<std::size_t, 2> position =
-             utility::math::Vector<std::size_t, 2>{0, 0});
+         utility::math::Vector<float, 3> position =
+             utility::math::Vector<float, 3>{0.0f, 0.0f, 0.0f},
+         utility::math::Vector<float, 3> rotation =
+             utility::math::Vector<float, 3>{0.0f, 0.0f, 0.0f});
 
     /**
      * @brief Default destructor.
@@ -97,15 +101,27 @@ class Text {
 
     /**
      * @brief Get the text position.
-     * @return The current position as a 2D vector.
+     * @return The current position as a 3D vector.
      */
-    const utility::math::Vector<std::size_t, 2> &getPosition() const;
+    const utility::math::Vector<float, 3> &getPosition() const;
 
     /**
      * @brief Set the text position.
-     * @param position The new position as a 2D vector.
+     * @param position The new position as a 3D vector.
      */
-    void setPosition(const utility::math::Vector<std::size_t, 2> &position);
+    void setPosition(const utility::math::Vector<float, 3> &position);
+
+    /**
+     * @brief Get the text rotation.
+     * @return The current rotation as a 3D vector (in degrees).
+     */
+    const utility::math::Vector<float, 3> &getRotation() const;
+
+    /**
+     * @brief Set the text rotation.
+     * @param rotation The new rotation as a 3D vector (in degrees).
+     */
+    void setRotation(const utility::math::Vector<float, 3> &rotation);
 
     /**
      * @brief Get the text alignment.
