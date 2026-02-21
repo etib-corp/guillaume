@@ -78,8 +78,6 @@ void update(guillaume::ecs::ComponentRegistry &componentRegistry,
                 }
         } else if (componentRegistry.hasComponent<guillaume::components::Text>(
                         entityIdentifier)) {
-                auto textComponent = componentRegistry.getComponent<guillaume::components::Text>(
-                                entityIdentifier);
                 auto rotation = componentRegistry.getComponent<guillaume::components::Transform>(
                                 entityIdentifier).getRotation();
                 rotation[getRandomAxis()] += 1.0f;
