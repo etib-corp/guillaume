@@ -29,6 +29,7 @@
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
+#include <utility/math/vector.hpp>
 
 #include "guillaume/shapes/circle.hpp"
 #include "guillaume/shapes/rectangle.hpp"
@@ -91,7 +92,7 @@ class Renderer
      * @return The size of the text as a 2D vector (width, height).
      */
     virtual utility::math::Vector<std::float_t, 2>
-    mesureText(const Text &text, const Font &font) = 0;
+    measureText(const Text &text, const Font &font) = 0;
 
     /**
      * @brief Draw text using a specific font.

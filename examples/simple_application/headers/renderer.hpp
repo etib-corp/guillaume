@@ -117,7 +117,7 @@ class Renderer : public guillaume::Renderer {
      * in pixels in the form of utility::math::Vector<std::float_t, 2>.
      */
     utility::math::Vector<std::float_t, 2>
-    mesureText(const guillaume::Text &text,
+    measureText(const guillaume::Text &text,
                const guillaume::Font &font) override;
 
     /**

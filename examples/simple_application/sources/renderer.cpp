@@ -23,19 +23,36 @@
 #include "renderer.hpp"
 
 #include <cmath>
+#include <stdexcept>
 
 namespace simple_application {
 
 Renderer::Renderer(void)
     : guillaume::Renderer(), _window(nullptr), _glContext(nullptr) {
+    auto cleanupSdlResources = [this](void) {
+        if (_glContext) {
+            SDL_GL_DestroyContext(_glContext);
+            _glContext = nullptr;
+        }
+        if (_window) {
+            SDL_DestroyWindow(_window);
+            _window = nullptr;
+        }
+        TTF_Quit();
+        SDL_Quit();
+    };
+
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        getLogger().error("Failed to initialize SDL: " +
-                          std::string(SDL_GetError()));
+        std::string error = SDL_GetError();
+        getLogger().error("Failed to initialize SDL: " + error);
+        throw std::runtime_error("SDL_Init failed: " + error);
     }
 
     if (!TTF_Init()) {
-        getLogger().error("Failed to initialize SDL_ttf: " +
-                          std::string(SDL_GetError()));
+        std::string error = SDL_GetError();
+        getLogger().error("Failed to initialize SDL_ttf: " + error);
+        SDL_Quit();
+        throw std::runtime_error("TTF_Init failed: " + error);
     }
 
     SDL_DisplayID primaryDisplayID = SDL_GetPrimaryDisplay();
@@ -62,19 +79,25 @@ Renderer::Renderer(void)
                                primaryDisplayBounds.h,
                                SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
     if (!_window) {
-        getLogger().error("Failed to create SDL window: " +
-                          std::string(SDL_GetError()));
+        std::string error = SDL_GetError();
+        getLogger().error("Failed to create SDL window: " + error);
+        cleanupSdlResources();
+        throw std::runtime_error("SDL_CreateWindow failed: " + error);
     }
 
     _glContext = SDL_GL_CreateContext(_window);
     if (!_glContext) {
-        getLogger().error("Failed to create OpenGL context: " +
-                          std::string(SDL_GetError()));
+        std::string error = SDL_GetError();
+        getLogger().error("Failed to create OpenGL context: " + error);
+        cleanupSdlResources();
+        throw std::runtime_error("SDL_GL_CreateContext failed: " + error);
     }
 
     if (!SDL_GL_MakeCurrent(_window, _glContext)) {
-        getLogger().error("Failed to make OpenGL context current: " +
-                          std::string(SDL_GetError()));
+        std::string error = SDL_GetError();
+        getLogger().error("Failed to make OpenGL context current: " + error);
+        cleanupSdlResources();
+        throw std::runtime_error("SDL_GL_MakeCurrent failed: " + error);
     }
 
     SDL_GL_SetSwapInterval(1);
@@ -220,7 +243,8 @@ void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
 }
 
 utility::math::Vector<std::float_t, 2>
-Renderer::mesureText(const guillaume::Text &text, const guillaume::Font &font) {
+Renderer::measureText(const guillaume::Text &text,
+                      const guillaume::Font &font) {
     getLogger().debug("Measuring text: " + text.getContent() +
                       " with font: " + font.getFontPath());
 
