@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
-#include <SDL3/SDL_video.h>
-#include <SDL3_ttf/SDL_ttf.h>
-
 #include <exception>
 #include <string>
 #include <unordered_map>
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
+
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include <guillaume/renderer.hpp>
 
@@ -118,7 +118,7 @@ class Renderer : public guillaume::Renderer {
      */
     utility::math::Vector<std::float_t, 2>
     measureText(const guillaume::Text &text,
-               const guillaume::Font &font) override;
+                const guillaume::Font &font) override;
 
     /**
      * @brief Draws text using a specific font.
