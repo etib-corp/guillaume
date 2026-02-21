@@ -68,9 +68,8 @@ void update(guillaume::ecs::ComponentRegistry &componentRegistry,
                 }
         } else if (componentRegistry.hasComponent<simple_application::RectangleComponent>(
                         entityIdentifier)) {
-                auto rectangleComponent = componentRegistry.getComponent<simple_application::RectangleComponent>(
-                                entityIdentifier);
-                if (rectangleComponent.isRectangleShape()) {
+                if (componentRegistry.getComponent<simple_application::RectangleComponent>(
+                                entityIdentifier).isRectangleShape()) {
                         auto rotation = componentRegistry.getComponent<guillaume::components::Transform>(
                                         entityIdentifier).getRotation();
                         rotation[getRandomAxis()] += 1.0f;
