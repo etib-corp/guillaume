@@ -20,30 +20,16 @@
  SOFTWARE.
  */
 
-#include "guillaume/shape.hpp"
+#pragma once
 
-namespace guillaume {
+#include "guillaume/ecs/component.hpp"
+#include "utility/math/color.hpp"
 
-Shape::Shape(void)
-    : _position({0.0f, 0.0f, 0.0f}), _rotation({0.0f, 0.0f, 0.0f}),
-      _scale({1.0f, 1.0f, 1.0f}), _color({255, 255, 255, 255}) {}
+namespace guillaume::components {
 
-void Shape::setPosition(
-    const utility::math::Vector<std::float_t, 3> &position) {
-    _position = position;
-}
+/**
+ * @brief Component representing a color.
+ */
+class Color : public ecs::Component, public utility::math::Color<uint8_t> {};
 
-void Shape::setRotation(
-    const utility::math::Vector<std::float_t, 3> &rotation) {
-    _rotation = rotation;
-}
-
-void Shape::setScale(const utility::math::Vector<std::float_t, 3> &scale) {
-    _scale = scale;
-}
-
-void Shape::setColor(const utility::math::Color<uint8_t> &color) {
-    _color = color;
-}
-
-} // namespace guillaume
+} // namespace guillaume::components

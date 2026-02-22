@@ -22,10 +22,14 @@
 
 #pragma once
 
-#include <SDL3/SDL.h>
-
 #include <exception>
 #include <string>
+#include <unordered_map>
+
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
+
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include <guillaume/renderer.hpp>
 
@@ -55,27 +59,72 @@ class DisplayBoundsUnavailableException : public std::exception {
 
 class Renderer : public guillaume::Renderer {
   private:
-    SDL_Window *_window; ///< SDL window pointer
+    SDL_Window *_window;      ///< SDL window pointer
+    SDL_GLContext _glContext; ///< OpenGL context for the window
+    std::unordered_map<std::string, TTF_Font *>
+        _fontCache; ///< Cache for loaded fonts
+
+    TTF_Font *getOrLoadFont(const guillaume::Font &font);
 
   public:
+    /**
+     * @brief Default constructor for the Renderer class.
+     * Initializes SDL, creates a window and OpenGL context, and sets up font
+     * caching.
+     */
     Renderer(void);
 
+    /**
+     * @brief Destructor for the Renderer class.
+     * Cleans up SDL resources and cached fonts.
+     */
     ~Renderer(void) override;
 
+    /**
+     * @brief Clears the renderer's drawing surface.
+     */
     void clear(void) override;
 
+    /**
+     * @brief Presents the rendered content to the display.
+     */
     void present(void) override;
 
+    /**
+     * @brief Draws a 3D triangle shape using OpenGL.
+     * @param triangle The triangle shape to draw (with Z-depth).
+     */
     void drawTriangle(const guillaume::shapes::Triangle &triangle) override;
 
+    /**
+     * @brief Draws a 3D rectangle shape using OpenGL.
+     * @param rectangle The rectangle shape to draw (with Z-depth).
+     */
     void drawRectangle(const guillaume::shapes::Rectangle &rectangle) override;
 
+    /**
+     * @brief Draws a 3D circle shape using OpenGL.
+     * @param circle The circle shape to draw (with Z-depth).
+     */
     void drawCircle(const guillaume::shapes::Circle &circle) override;
 
+    /**
+     * @brief Measures the pixel dimensions of a given text string when rendered
+     * with a specific font.
+     * @param text The text to measure.
+     * @param font The font to use for measurement.
+     * @return A 2D vector containing the width and height of the rendered text
+     * in pixels in the form of utility::math::Vector<std::float_t, 2>.
+     */
     utility::math::Vector<std::float_t, 2>
-    mesureText(const guillaume::Text &text,
-               const guillaume::Font &font) override;
+    measureText(const guillaume::Text &text,
+                const guillaume::Font &font) override;
 
+    /**
+     * @brief Draws text using a specific font.
+     * @param text The text to draw.
+     * @param font The font to use for rendering the text.
+     */
     void drawText(const guillaume::Text &text,
                   const guillaume::Font &font) override;
 };
