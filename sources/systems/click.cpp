@@ -26,10 +26,51 @@ namespace guillaume::systems {
 
 Click::Click(event::EventBus &eventBus) : _mouseButtonSubscriber(eventBus) {}
 
-void Click::update(ecs::ComponentRegistry &,
+void Click::update(ecs::ComponentRegistry &componentRegistry,
                    const ecs::Entity::Identifier &identityIdentifier) {
-    System::getLogger().info("Updating button entity " +
-                             std::to_string(identityIdentifier));
+    if (!_mouseButtonSubscriber.hasPendingEvents()) {
+        return;
+    }
+
+    const auto event = _mouseButtonSubscriber.getNextEvent();
+    if (!event) {
+        return;
+    }
+
+    if (!event->isButtonPressed(
+            utility::event::MouseButtonEvent::MouseButton::LEFT)) {
+        return;
+    }
+
+    const auto &transform =
+        componentRegistry.getComponent<components::Transform>(
+            identityIdentifier);
+    const auto &bound =
+        componentRegistry.getComponent<components::Bound>(identityIdentifier);
+
+    const auto mousePosition = event->getPosition();
+    const auto position = transform.getPosition();
+    const auto size = bound.getSize();
+
+    const float halfWidth = size[0] / 2.0f;
+    const float halfHeight = size[1] / 2.0f;
+    const bool isInside = mousePosition[0] >= position[0] - halfWidth &&
+                          mousePosition[0] <= position[0] + halfWidth &&
+                          mousePosition[1] >= position[1] - halfHeight &&
+                          mousePosition[1] <= position[1] + halfHeight;
+
+    if (!isInside) {
+        return;
+    }
+
+    const auto &click =
+        componentRegistry.getComponent<components::Click>(identityIdentifier);
+    const auto onClick = click.getOnClickHandler();
+    if (!onClick) {
+        return;
+    }
+
+    onClick();
 }
 
 } // namespace guillaume::systems

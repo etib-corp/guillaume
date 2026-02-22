@@ -35,7 +35,12 @@ void EventBus::dispatchToListeners(std::unique_ptr<utility::event::Event> event,
 }
 
 void EventBus::publish(std::unique_ptr<utility::event::Event> event) {
-    auto it = _typedListeners.find(typeid(event.get()));
+    auto *rawEvent = event.get();
+    if (!rawEvent) {
+        return;
+    }
+
+    auto it = _typedListeners.find(typeid(*rawEvent));
     if (it != _typedListeners.end()) {
         dispatchToListeners(std::move(event), it->second);
     }

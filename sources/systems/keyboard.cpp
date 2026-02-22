@@ -22,14 +22,67 @@
 
 #include "guillaume/systems/keyboard.hpp"
 
+#include <cctype>
+
 namespace guillaume::systems {
 
 Keyboard::Keyboard(event::EventBus &eventBus) : _keyboardSubscriber(eventBus) {}
 
-void Keyboard::update(ecs::ComponentRegistry &,
+void Keyboard::update(ecs::ComponentRegistry &componentRegistry,
                       const ecs::Entity::Identifier &identityIdentifier) {
-    System::getLogger().info("Updating button entity " +
-                             std::to_string(identityIdentifier));
+    if (!_keyboardSubscriber.hasPendingEvents()) {
+        return;
+    }
+
+    const auto event = _keyboardSubscriber.getNextEvent();
+    if (!event || !event->getIsDownEvent()) {
+        return;
+    }
+
+    auto &text =
+        componentRegistry.getComponent<components::Text>(identityIdentifier);
+    std::string content = text.getContent();
+
+    const auto keycode = event->getKeycode();
+    const bool isShiftPressed =
+        event->isModifierSet(
+            utility::event::KeyboardEvent::KeyModifiers::LSHIFT) ||
+        event->isModifierSet(
+            utility::event::KeyboardEvent::KeyModifiers::RSHIFT);
+
+    if (keycode == utility::event::KeyboardEvent::KeyCode::BACKSPACE) {
+        if (!content.empty()) {
+            content.pop_back();
+            text.setContent(content);
+        }
+        return;
+    }
+
+    if (keycode == utility::event::KeyboardEvent::KeyCode::SPACE) {
+        text.setContent(content + " ");
+        return;
+    }
+
+    const auto keycodeValue = static_cast<std::int32_t>(keycode);
+    if (keycodeValue >= static_cast<std::int32_t>(
+                            utility::event::KeyboardEvent::KeyCode::A) &&
+        keycodeValue <= static_cast<std::int32_t>(
+                            utility::event::KeyboardEvent::KeyCode::Z)) {
+        char character = static_cast<char>(keycodeValue);
+        if (!isShiftPressed) {
+            character = static_cast<char>(std::tolower(character));
+        }
+        text.setContent(content + character);
+        return;
+    }
+
+    if (keycodeValue >= static_cast<std::int32_t>(
+                            utility::event::KeyboardEvent::KeyCode::NUM_0) &&
+        keycodeValue <= static_cast<std::int32_t>(
+                            utility::event::KeyboardEvent::KeyCode::NUM_9)) {
+        const char character = static_cast<char>(keycodeValue);
+        text.setContent(content + character);
+    }
 }
 
 } // namespace guillaume::systems

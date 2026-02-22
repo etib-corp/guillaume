@@ -26,10 +26,58 @@ namespace guillaume::systems {
 
 Hover::Hover(event::EventBus &eventBus) : _mouseMotionSubscriber(eventBus) {}
 
-void Hover::update(ecs::ComponentRegistry &,
+void Hover::update(ecs::ComponentRegistry &componentRegistry,
                    const ecs::Entity::Identifier &identityIdentifier) {
-    System::getLogger().info("Hovering entity " +
-                             std::to_string(identityIdentifier));
+    if (!_mouseMotionSubscriber.hasPendingEvents()) {
+        return;
+    }
+
+    const auto event = _mouseMotionSubscriber.getNextEvent();
+    if (!event) {
+        return;
+    }
+
+    const auto &transform =
+        componentRegistry.getComponent<components::Transform>(
+            identityIdentifier);
+    const auto &bound =
+        componentRegistry.getComponent<components::Bound>(identityIdentifier);
+    auto &hover =
+        componentRegistry.getComponent<components::Hover>(identityIdentifier);
+
+    const auto mousePosition = event->getPosition();
+    const auto position = transform.getPosition();
+    const auto size = bound.getSize();
+
+    const float halfWidth = size[0] / 2.0f;
+    const float halfHeight = size[1] / 2.0f;
+    const bool isInside = mousePosition[0] >= position[0] - halfWidth &&
+                          mousePosition[0] <= position[0] + halfWidth &&
+                          mousePosition[1] >= position[1] - halfHeight &&
+                          mousePosition[1] <= position[1] + halfHeight;
+
+    if (isInside) {
+        if (hover.getIsHovered()) {
+            return;
+        }
+
+        hover.setIsHovered(true);
+        const auto onHover = hover.getOnHoverHandler();
+        if (onHover) {
+            onHover();
+        }
+        return;
+    }
+
+    if (!hover.getIsHovered()) {
+        return;
+    }
+
+    hover.setIsHovered(false);
+    const auto onUnhover = hover.getOnUnhoverHandler();
+    if (onUnhover) {
+        onUnhover();
+    }
 }
 
 } // namespace guillaume::systems

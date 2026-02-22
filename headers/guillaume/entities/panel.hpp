@@ -22,49 +22,27 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
-#include "guillaume/components/hover.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/event/event_subscriber.hpp"
+namespace guillaume::entities {
 
-#include <utility/event/event.hpp>
-#include <utility/event/mouse_motion_event.hpp>
-
-namespace guillaume::systems {
-
-/**
- * @brief System handling hoverable entities.
- * @see components::Hover
- */
-class Hover : public ecs::SystemFiller<components::Hover, components::Transform,
-                                       components::Bound> {
-
-  private:
-    event::EventSubscriber<utility::event::MouseMotionEvent>
-        _mouseMotionSubscriber;
-
+class Panel
+    : public ecs::EntityFiller<components::Transform, components::Bound> {
   public:
     /**
-     * @brief Default constructor for the Hover system.
-     * @param eventBus The event bus to subscribe to.
+     * @brief Construct a new Panel entity filler.
      */
-    Hover(event::EventBus &eventBus);
+    Panel(ecs::ComponentRegistry &componentRegistry)
+        : ecs::EntityFiller<components::Transform, components::Bound>(
+              componentRegistry) {}
 
     /**
-     * @brief Default destructor for the Hover system.
+     * @brief Virtual destructor for Panel.
      */
-    ~Hover(void) = default;
-
-    /**
-     * @brief Update the Hover system for the specified entity.
-     * @param componentRegistry The component registry instance.
-     * @param identityIdentifier The identifier of the entity to update.
-     */
-    void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &identityIdentifier) override;
+    ~Panel(void) override = default;
 };
 
-} // namespace guillaume::systems
+} // namespace guillaume::entities

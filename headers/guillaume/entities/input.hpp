@@ -22,45 +22,30 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
+#include "guillaume/components/bound.hpp"
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/text.hpp"
+#include "guillaume/components/transform.hpp"
 
-#include "guillaume/event/event_subscriber.hpp"
+namespace guillaume::entities {
 
-#include <utility/event/event.hpp>
-#include <utility/event/keyboard_event.hpp>
-
-namespace guillaume::systems {
-
-/**
- * @brief System handling keyboard input for text entities.
- * @see components::Text
- */
-class Keyboard : public ecs::SystemFiller<components::Text, components::Focus> {
-  private:
-    event::EventSubscriber<utility::event::KeyboardEvent> _keyboardSubscriber;
-
+class Input : public ecs::EntityFiller<components::Transform, components::Bound,
+                                       components::Text, components::Focus> {
   public:
     /**
-     * @brief Default constructor for the Keyboard system.
-     * @param eventBus The event bus to subscribe to.
+     * @brief Construct a new Input entity filler.
      */
-    Keyboard(event::EventBus &eventBus);
+    Input(ecs::ComponentRegistry &componentRegistry)
+        : ecs::EntityFiller<components::Transform, components::Bound,
+                            components::Text, components::Focus>(
+              componentRegistry) {}
 
     /**
-     * @brief Default destructor for the Keyboard system.
+     * @brief Virtual destructor for Input.
      */
-    ~Keyboard(void) = default;
-
-    /**
-     * @brief Update the Keyboard system for the specified entity.
-     * @param componentRegistry The component registry instance.
-     * @param identityIdentifier The identifier of the entity to update.
-     */
-    void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &identityIdentifier) override;
+    ~Input(void) override = default;
 };
 
-} // namespace guillaume::systems
+} // namespace guillaume::entities

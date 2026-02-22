@@ -24,6 +24,7 @@
 
 #include "guillaume/ecs/system_filler.hpp"
 
+#include "guillaume/components/bound.hpp"
 #include "guillaume/components/click.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -49,8 +50,8 @@ namespace guillaume::systems {
  *
  * @see components::Click
  */
-class Click
-    : public ecs::SystemFiller<components::Click, components::Transform> {
+class Click : public ecs::SystemFiller<components::Click, components::Transform,
+                                       components::Bound> {
 
   private:
     event::EventSubscriber<utility::event::MouseButtonEvent>
