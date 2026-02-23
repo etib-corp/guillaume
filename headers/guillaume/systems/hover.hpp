@@ -29,6 +29,7 @@
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/event/event_subscriber.hpp"
+#include "guillaume/renderer.hpp"
 
 #include <utility/event/event.hpp>
 #include <utility/event/mouse_motion_event.hpp>
@@ -45,13 +46,15 @@ class Hover : public ecs::SystemFiller<components::Hover, components::Transform,
   private:
     event::EventSubscriber<utility::event::MouseMotionEvent>
         _mouseMotionSubscriber;
+    Renderer &_renderer;
 
   public:
     /**
      * @brief Default constructor for the Hover system.
      * @param eventBus The event bus to subscribe to.
+     * @param renderer The renderer instance for camera and viewport information.
      */
-    Hover(event::EventBus &eventBus);
+    Hover(event::EventBus &eventBus, Renderer &renderer);
 
     /**
      * @brief Default destructor for the Hover system.

@@ -29,6 +29,7 @@
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/event/event_subscriber.hpp"
+#include "guillaume/renderer.hpp"
 
 #include <utility/event/event.hpp>
 #include <utility/event/mouse_button_event.hpp>
@@ -56,13 +57,15 @@ class Click : public ecs::SystemFiller<components::Click, components::Transform,
   private:
     event::EventSubscriber<utility::event::MouseButtonEvent>
         _mouseButtonSubscriber;
+    Renderer &_renderer;
 
   public:
     /**
      * @brief Default constructor for the Click system.
      * @param eventBus The event bus to subscribe to.
+     * @param renderer The renderer instance for camera and viewport information.
      */
-    Click(event::EventBus &eventBus);
+    Click(event::EventBus &eventBus, Renderer &renderer);
 
     /**
      * @brief Default destructor for the Click system.

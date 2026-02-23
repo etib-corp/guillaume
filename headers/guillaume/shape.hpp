@@ -36,7 +36,7 @@ namespace guillaume {
  */
 class Shape {
   private:
-    utility::math::Vector<std::float_t, 3> _position; ///< Position in 3D space
+    utility::math::Vector<std::float_t, 3> _position; ///< Position in space
     utility::math::Vector<std::float_t, 3> _rotation; ///< Rotation angles
     utility::math::Vector<std::float_t, 3> _scale;    ///< Scaling factors
     utility::math::Color<uint8_t> _color;             ///< Shape color

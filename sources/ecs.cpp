@@ -27,8 +27,10 @@ namespace guillaume {
 ECS::ECS(event::EventBus &eventBus, Renderer &renderer)
     : _eventBus(eventBus), _renderer(renderer) {
     this->getLogger().info("Initializing ECS with core systems");
-    registerSystem<systems::Click>(std::make_unique<systems::Click>(_eventBus));
-    registerSystem<systems::Hover>(std::make_unique<systems::Hover>(_eventBus));
+    registerSystem<systems::Click>(
+        std::make_unique<systems::Click>(_eventBus, _renderer));
+    registerSystem<systems::Hover>(
+        std::make_unique<systems::Hover>(_eventBus, _renderer));
     registerSystem<systems::Render>(
         std::make_unique<systems::Render>(_renderer));
     registerSystem<systems::Keyboard>(

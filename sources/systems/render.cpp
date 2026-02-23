@@ -28,6 +28,8 @@
 #include "guillaume/components/click.hpp"
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/text.hpp"
+#include "guillaume/components/relationship.hpp"
+#include "guillaume/components/transform.hpp"
 
 #include "guillaume/shapes/rectangle.hpp"
 
@@ -60,6 +62,51 @@ std::optional<std::string> resolveDefaultFontPath(void) {
 
 namespace guillaume::systems {
 
+// Helper function to calculate world position by traversing parent hierarchy
+static typename components::Transform::Position calculateWorldPosition(
+    ecs::ComponentRegistry &componentRegistry,
+    const ecs::Entity::Identifier &entityId) {
+    
+    const auto &transform =
+        componentRegistry.getComponent<components::Transform>(entityId);
+    typename components::Transform::Position worldPos = transform.getPosition();
+    
+    // Check if entity has a parent via Relationship component
+    if (!componentRegistry.hasComponent<components::Relationship>(entityId)) {
+        return worldPos;
+    }
+    
+    const auto &relationship =
+        componentRegistry.getComponent<components::Relationship>(entityId);
+    const auto parentId = relationship.getParentIdentifier();
+    
+    // If no parent, return local position
+    if (parentId == ecs::Entity::InvalidIdentifier) {
+        return worldPos;
+    }
+    
+    // Recursively get parent's world position
+    typename components::Transform::Position parentWorldPos = calculateWorldPosition(componentRegistry, parentId);
+    
+    // Get parent's scale to apply to child's local offset
+    const auto &parentTransform =
+        componentRegistry.getComponent<components::Transform>(parentId);
+    const auto parentScale = parentTransform.getScale();
+    
+    // Combine: parent_world_pos + (local_pos * parent_scale)
+    typename components::Transform::Position scaledLocalPos;
+    scaledLocalPos[0] = worldPos[0] * parentScale[0];
+    scaledLocalPos[1] = worldPos[1] * parentScale[1];
+    scaledLocalPos[2] = worldPos[2] * parentScale[2];
+    
+    typename components::Transform::Position result;
+    result[0] = parentWorldPos[0] + scaledLocalPos[0];
+    result[1] = parentWorldPos[1] + scaledLocalPos[1];
+    result[2] = parentWorldPos[2] + scaledLocalPos[2];
+    
+    return result;
+}
+
 void Render::update(ecs::ComponentRegistry &componentRegistry,
                     const ecs::Entity::Identifier &identityIdentifier) {
     const auto &transform =
@@ -67,9 +114,12 @@ void Render::update(ecs::ComponentRegistry &componentRegistry,
             identityIdentifier);
     const auto &bound =
         componentRegistry.getComponent<components::Bound>(identityIdentifier);
+    
+    // Calculate world position considering parent hierarchy
+    auto worldPosition = calculateWorldPosition(componentRegistry, identityIdentifier);
 
     shapes::Rectangle rectangle;
-    rectangle.setPosition(transform.getPosition());
+    rectangle.setPosition(worldPosition);
     rectangle.setRotation(transform.getRotation());
     rectangle.setScale(transform.getScale());
     rectangle.setSize({bound.getSize()[0], bound.getSize()[1]});
@@ -101,7 +151,7 @@ void Render::update(ecs::ComponentRegistry &componentRegistry,
     }
 
     Text text(textComponent.getContent());
-    text.setPosition(transform.getPosition());
+    text.setPosition(worldPosition);
     text.setRotation(transform.getRotation());
 
     Font font(*fontPath, 24);

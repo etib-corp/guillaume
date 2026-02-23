@@ -29,14 +29,14 @@
 namespace guillaume::components {
 
 /**
- * @brief Component representing a transform in 3D space.
+ * @brief Component representing a transform in space.
  * @see systems::Render
  */
 class Transform : public ecs::Component {
   public:
-    using Position = utility::math::Vector<float, 3>; ///< 3D position type
-    using Rotation = utility::math::Vector<float, 3>; ///< 3D rotation type
-    using Scale = utility::math::Vector<float, 3>;    ///< 3D scale type
+    using Position = utility::math::Vector<float, 3>; ///< Position type
+    using Rotation = utility::math::Vector<float, 3>; ///< Rotation type
+    using Scale = utility::math::Vector<float, 3>;    ///< Scale type
 
   private:
     Position _position; ///< Position of the entity

@@ -50,6 +50,9 @@ class Renderer
     : protected utility::logging::Loggable<Renderer,
                                            utility::logging::StandardLogger> {
   public:
+    using Position = utility::math::Vector<float, 3>; ///< Camera position type
+    using Rotation = utility::math::Vector<float, 3>; ///< Camera rotation type
+
     /**
      * @brief Default constructor
      */
@@ -59,6 +62,13 @@ class Renderer
      * @brief Default destructor
      */
     virtual ~Renderer(void) = default;
+
+  private:
+    Position _cameraPosition = {0.0f, 0.0f, 5.0f}; ///< Camera position in 3D space
+    Rotation _cameraRotation = {0.0f, 0.0f, 0.0f}; ///< Camera rotation (Euler angles)
+    Position _lastMousePosition = {0.0f, 0.0f, 0.0f}; ///< Last mouse position in world space
+
+  public:
 
     /**
      * @brief Clear the current rendering target with the drawing color.
@@ -103,6 +113,48 @@ class Renderer
      * @param font The font to use.
      */
     virtual void drawText(const Text &text, const Font &font) = 0;
+
+    /**
+     * @brief Get the camera position in 3D space.
+     * @return The camera position vector.
+     */
+    Position getCameraPosition(void) const { return _cameraPosition; }
+
+    /**
+     * @brief Set the camera position in 3D space.
+     * @param position The new camera position vector.
+     */
+    void setCameraPosition(const Position &position) {
+        _cameraPosition = position;
+    }
+
+    /**
+     * @brief Get the camera rotation (Euler angles).
+     * @return The camera rotation vector.
+     */
+    Rotation getCameraRotation(void) const { return _cameraRotation; }
+
+    /**
+     * @brief Set the camera rotation (Euler angles).
+     * @param rotation The new camera rotation vector.
+     */
+    void setCameraRotation(const Rotation &rotation) {
+        _cameraRotation = rotation;
+    }
+
+    /**
+     * @brief Get the last mouse position in world space.
+     * @return The last mouse position vector.
+     */
+    Position getLastMousePosition(void) const { return _lastMousePosition; }
+
+    /**
+     * @brief Set the last mouse position in world space.
+     * @param position The new mouse position vector.
+     */
+    void setLastMousePosition(const Position &position) {
+        _lastMousePosition = position;
+    }
 };
 
 } // namespace guillaume

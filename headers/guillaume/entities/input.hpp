@@ -26,20 +26,23 @@
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/focus.hpp"
+#include "guillaume/components/relationship.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 
 namespace guillaume::entities {
 
 class Input : public ecs::EntityFiller<components::Transform, components::Bound,
-                                       components::Text, components::Focus> {
+                                       components::Text, components::Focus,
+                                       components::Relationship> {
   public:
     /**
      * @brief Construct a new Input entity filler.
      */
     Input(ecs::ComponentRegistry &componentRegistry)
         : ecs::EntityFiller<components::Transform, components::Bound,
-                            components::Text, components::Focus>(
+                            components::Text, components::Focus,
+                            components::Relationship>(
               componentRegistry) {}
 
     /**

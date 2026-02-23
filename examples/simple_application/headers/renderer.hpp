@@ -91,19 +91,19 @@ class Renderer : public guillaume::Renderer {
     void present(void) override;
 
     /**
-     * @brief Draws a 3D triangle shape using OpenGL.
+     * @brief Draws a triangle shape using OpenGL.
      * @param triangle The triangle shape to draw (with Z-depth).
      */
     void drawTriangle(const guillaume::shapes::Triangle &triangle) override;
 
     /**
-     * @brief Draws a 3D rectangle shape using OpenGL.
+     * @brief Draws a rectangle shape using OpenGL.
      * @param rectangle The rectangle shape to draw (with Z-depth).
      */
     void drawRectangle(const guillaume::shapes::Rectangle &rectangle) override;
 
     /**
-     * @brief Draws a 3D circle shape using OpenGL.
+     * @brief Draws a circle shape using OpenGL.
      * @param circle The circle shape to draw (with Z-depth).
      */
     void drawCircle(const guillaume::shapes::Circle &circle) override;

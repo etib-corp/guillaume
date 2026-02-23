@@ -157,7 +157,7 @@ void Renderer::present(void) {
 }
 
 void Renderer::drawTriangle(const guillaume::shapes::Triangle &triangle) {
-    getLogger().debug("Drawing a 3D triangle shape");
+    getLogger().debug("Drawing a triangle shape");
 
     auto position = triangle.getPosition();
     auto color = triangle.getColor();
@@ -185,7 +185,7 @@ void Renderer::drawTriangle(const guillaume::shapes::Triangle &triangle) {
 }
 
 void Renderer::drawRectangle(const guillaume::shapes::Rectangle &rectangle) {
-    getLogger().debug("Drawing a 3D rectangle shape");
+    getLogger().debug("Drawing a rectangle shape");
 
     auto position = rectangle.getPosition();
     auto size = rectangle.getSize();
@@ -218,7 +218,7 @@ void Renderer::drawRectangle(const guillaume::shapes::Rectangle &rectangle) {
 }
 
 void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
-    getLogger().debug("Drawing a 3D circle shape");
+    getLogger().debug("Drawing a circle shape");
 
     auto position = circle.getPosition();
     auto color = circle.getColor();
@@ -269,7 +269,7 @@ Renderer::measureText(const guillaume::Text &text,
 
 void Renderer::drawText(const guillaume::Text &text,
                         const guillaume::Font &font) {
-    getLogger().debug("Drawing 3D text: " + text.getContent() +
+    getLogger().debug("Drawing text: " + text.getContent() +
                       " with font: " + font.getFontPath());
 
     TTF_Font *ttfFont = getOrLoadFont(font);

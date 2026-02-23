@@ -85,8 +85,9 @@ template <utility::event::InheritFromEvent EventType> class EventSubscriber {
      * @brief Add an event to the queue.
      * @param event The event to add.
      */
-    void pushUnhandledEvent(std::unique_ptr<EventType> event) {
-        _eventQueue.push(std::move(event));
+    template <typename U>
+    void pushUnhandledEvent(U &&event) {
+        _eventQueue.push(std::forward<U>(event));
     }
 };
 

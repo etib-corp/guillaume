@@ -103,25 +103,25 @@ class Text {
 
     /**
      * @brief Get the text position.
-     * @return The current position as a 3D vector.
+     * @return The current position as a vector.
      */
     const utility::math::Vector<float, 3> &getPosition() const;
 
     /**
      * @brief Set the text position.
-     * @param position The new position as a 3D vector.
+     * @param position The new position as a vector.
      */
     void setPosition(const utility::math::Vector<float, 3> &position);
 
     /**
      * @brief Get the text rotation.
-     * @return The current rotation as a 3D vector (in degrees).
+     * @return The current rotation as a vector (in degrees).
      */
     const utility::math::Vector<float, 3> &getRotation() const;
 
     /**
      * @brief Set the text rotation.
-     * @param rotation The new rotation as a 3D vector (in degrees).
+     * @param rotation The new rotation as a vector (in degrees).
      */
     void setRotation(const utility::math::Vector<float, 3> &rotation);
 

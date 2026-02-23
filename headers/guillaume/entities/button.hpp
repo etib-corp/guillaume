@@ -27,6 +27,7 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/click.hpp"
 #include "guillaume/components/hover.hpp"
+#include "guillaume/components/relationship.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -34,7 +35,8 @@ namespace guillaume::entities {
 
 class Button : public ecs::EntityFiller<components::Transform,
                                         components::Bound, components::Click,
-                                        components::Hover, components::Text> {
+                                        components::Hover, components::Text,
+                                        components::Relationship> {
   public:
     /**
      * @brief Construct a new Button entity filler.
@@ -42,7 +44,8 @@ class Button : public ecs::EntityFiller<components::Transform,
     Button(ecs::ComponentRegistry &componentRegistry)
         : ecs::EntityFiller<components::Transform, components::Bound,
                             components::Click, components::Hover,
-                            components::Text>(componentRegistry) {}
+                            components::Text, components::Relationship>(
+              componentRegistry) {}
 
     /**
      * @brief Virtual destructor for Button.
