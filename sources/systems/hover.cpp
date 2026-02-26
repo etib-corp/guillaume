@@ -57,7 +57,7 @@ static bool isPointInsideEntityBounds(
     const typename guillaume::components::Transform::Scale &entityScale,
     const typename guillaume::components::Transform::Rotation &entityRotation) {
     constexpr float degreeToRadian = 0.01745329251994329576923690768489f;
-    const float rotationRadians = -entityRotation[2] * degreeToRadian;
+    const float rotationRadians = entityRotation[2] * degreeToRadian;
     const float cosine = std::cos(rotationRadians);
     const float sine = std::sin(rotationRadians);
 
@@ -110,8 +110,13 @@ void Hover::update(ecs::ComponentRegistry &componentRegistry,
     const auto worldTransform =
         detail::calculateWorldTransform(componentRegistry, identityIdentifier);
     const auto size = bound.getSize();
+
+    guillaume::components::Transform::Position trueCenter;
+    trueCenter[0] = worldTransform.position[0];
+    trueCenter[1] = worldTransform.position[1] - (size[1] * worldTransform.scale[1] / 2.0f);
+
     const bool isInside = isPointInsideEntityBounds(
-        worldMousePos, worldTransform.position, size, worldTransform.scale,
+        worldMousePos, trueCenter, size, worldTransform.scale,
         worldTransform.rotation);
 
     if (isInside) {
