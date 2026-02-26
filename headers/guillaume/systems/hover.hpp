@@ -52,7 +52,8 @@ class Hover : public ecs::SystemFiller<components::Hover, components::Transform,
     /**
      * @brief Default constructor for the Hover system.
      * @param eventBus The event bus to subscribe to.
-     * @param renderer The renderer instance for camera and viewport information.
+     * @param renderer The renderer instance for camera and viewport
+     * information.
      */
     Hover(event::EventBus &eventBus, Renderer &renderer);
 

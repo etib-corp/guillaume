@@ -33,10 +33,10 @@
 
 namespace guillaume::entities {
 
-class Button : public ecs::EntityFiller<components::Transform,
-                                        components::Bound, components::Click,
-                                        components::Hover, components::Text,
-                                        components::Relationship> {
+class Button
+    : public ecs::EntityFiller<components::Transform, components::Bound,
+                               components::Click, components::Hover,
+                               components::Text, components::Relationship> {
   public:
     /**
      * @brief Construct a new Button entity filler.

@@ -67,7 +67,8 @@ class Click : public ecs::SystemFiller<components::Click, components::Transform,
     /**
      * @brief Default constructor for the Click system.
      * @param eventBus The event bus to subscribe to.
-     * @param renderer The renderer instance for camera and viewport information.
+     * @param renderer The renderer instance for camera and viewport
+     * information.
      */
     Click(event::EventBus &eventBus, Renderer &renderer);
 

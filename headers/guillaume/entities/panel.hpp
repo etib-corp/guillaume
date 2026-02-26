@@ -30,17 +30,15 @@
 
 namespace guillaume::entities {
 
-class Panel
-    : public ecs::EntityFiller<components::Transform, components::Bound,
-                               components::Relationship> {
+class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
+                                       components::Relationship> {
   public:
     /**
      * @brief Construct a new Panel entity filler.
      */
     Panel(ecs::ComponentRegistry &componentRegistry)
         : ecs::EntityFiller<components::Transform, components::Bound,
-                            components::Relationship>(
-              componentRegistry) {}
+                            components::Relationship>(componentRegistry) {}
 
     /**
      * @brief Virtual destructor for Panel.

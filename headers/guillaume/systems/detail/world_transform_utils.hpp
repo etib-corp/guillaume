@@ -43,8 +43,8 @@ calculateWorldTransform(ecs::ComponentRegistry &componentRegistry,
     const auto &transform =
         componentRegistry.getComponent<components::Transform>(entityId);
 
-    WorldTransform worldTransform{transform.getPosition(), transform.getRotation(),
-                                  transform.getScale()};
+    WorldTransform worldTransform{
+        transform.getPosition(), transform.getRotation(), transform.getScale()};
 
     if (!componentRegistry.hasComponent<components::Relationship>(entityId)) {
         return worldTransform;

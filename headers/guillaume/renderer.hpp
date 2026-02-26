@@ -64,12 +64,14 @@ class Renderer
     virtual ~Renderer(void) = default;
 
   private:
-    Position _cameraPosition = {0.0f, 0.0f, 5.0f}; ///< Camera position in 3D space
-    Rotation _cameraRotation = {0.0f, 0.0f, 0.0f}; ///< Camera rotation (Euler angles)
-    Position _lastMousePosition = {0.0f, 0.0f, 0.0f}; ///< Last mouse position in world space
+    Position _cameraPosition = {0.0f, 0.0f,
+                                5.0f}; ///< Camera position in 3D space
+    Rotation _cameraRotation = {0.0f, 0.0f,
+                                0.0f}; ///< Camera rotation (Euler angles)
+    Position _lastMousePosition = {
+        0.0f, 0.0f, 0.0f}; ///< Last mouse position in world space
 
   public:
-
     /**
      * @brief Clear the current rendering target with the drawing color.
      */

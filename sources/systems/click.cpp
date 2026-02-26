@@ -27,24 +27,26 @@
 
 namespace {
 
-// Helper function to convert screen-space mouse position to world-space position
-// Assumes orthographic projection (camera projects from Z distance towards Z=0 plane)
-static typename guillaume::components::Transform::Position convertMouseToWorldPosition(
+// Helper function to convert screen-space mouse position to world-space
+// position Assumes orthographic projection (camera projects from Z distance
+// towards Z=0 plane)
+static typename guillaume::components::Transform::Position
+convertMouseToWorldPosition(
     const typename guillaume::Renderer::Position &mousePos2D,
     const typename guillaume::Renderer::Position &cameraPos) {
-    
+
     // For orthographic projection, we assume:
     // - Mouse position is in screen coordinates (x, y in pixel space)
     // - We need to transform it considering camera position
     // - Z component determines depth for 2D UI elements
-    
+
     // Simple orthographic transformation:
     // Screen (x, y) maps directly to world (x, y) with camera offset
     typename guillaume::components::Transform::Position worldPos;
     worldPos[0] = mousePos2D[0] - cameraPos[0];
     worldPos[1] = mousePos2D[1] - cameraPos[1];
     worldPos[2] = 0.0f;
-    
+
     return worldPos;
 }
 
@@ -80,8 +82,7 @@ Click::Click(event::EventBus &eventBus, Renderer &renderer)
 
 void Click::update(ecs::ComponentRegistry &componentRegistry,
                    const ecs::Entity::Identifier &identityIdentifier) {
-    if (_pendingClickEvent &&
-        _evaluatedEntities.contains(identityIdentifier)) {
+    if (_pendingClickEvent && _evaluatedEntities.contains(identityIdentifier)) {
         _pendingClickEvent.reset();
         _evaluatedEntities.clear();
     }
@@ -116,15 +117,13 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
     mousePos3D[0] = mousePosition[0];
     mousePos3D[1] = mousePosition[1];
     mousePos3D[2] = 0.0f;
-    const auto worldMousePos = convertMouseToWorldPosition(mousePos3D, cameraPos);
-    const auto worldTransform = detail::calculateWorldTransform(
-        componentRegistry, identityIdentifier);
+    const auto worldMousePos =
+        convertMouseToWorldPosition(mousePos3D, cameraPos);
+    const auto worldTransform =
+        detail::calculateWorldTransform(componentRegistry, identityIdentifier);
     const auto size = bound.getSize();
     const bool isInside = isPointInsideEntityBounds(
-        worldMousePos,
-        worldTransform.position,
-        size,
-        worldTransform.scale,
+        worldMousePos, worldTransform.position, size, worldTransform.scale,
         worldTransform.rotation);
 
     _evaluatedEntities.insert(identityIdentifier);

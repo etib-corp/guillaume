@@ -66,8 +66,8 @@ void Render::update(ecs::ComponentRegistry &componentRegistry,
     const auto &bound =
         componentRegistry.getComponent<components::Bound>(identityIdentifier);
 
-    const auto worldTransform = detail::calculateWorldTransform(
-        componentRegistry, identityIdentifier);
+    const auto worldTransform =
+        detail::calculateWorldTransform(componentRegistry, identityIdentifier);
 
     shapes::Rectangle rectangle;
     rectangle.setPosition(worldTransform.position);

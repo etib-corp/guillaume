@@ -42,8 +42,7 @@ class Input : public ecs::EntityFiller<components::Transform, components::Bound,
     Input(ecs::ComponentRegistry &componentRegistry)
         : ecs::EntityFiller<components::Transform, components::Bound,
                             components::Text, components::Focus,
-                            components::Relationship>(
-              componentRegistry) {}
+                            components::Relationship>(componentRegistry) {}
 
     /**
      * @brief Virtual destructor for Input.
