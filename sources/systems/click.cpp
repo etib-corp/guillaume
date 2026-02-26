@@ -21,56 +21,11 @@
  */
 
 #include "guillaume/systems/click.hpp"
+#include "guillaume/systems/detail/world_transform_utils.hpp"
 
-#include "guillaume/components/relationship.hpp"
-#include "guillaume/components/transform.hpp"
+#include <cmath>
 
 namespace {
-
-// Helper function to calculate world position by traversing parent hierarchy
-static typename guillaume::components::Transform::Position calculateWorldPosition(
-    guillaume::ecs::ComponentRegistry &componentRegistry,
-    const guillaume::ecs::Entity::Identifier &entityId) {
-    
-    const auto &transform =
-        componentRegistry.getComponent<guillaume::components::Transform>(entityId);
-    typename guillaume::components::Transform::Position worldPos = transform.getPosition();
-    
-    // Check if entity has a parent via Relationship component
-    if (!componentRegistry.hasComponent<guillaume::components::Relationship>(entityId)) {
-        return worldPos;
-    }
-    
-    const auto &relationship =
-        componentRegistry.getComponent<guillaume::components::Relationship>(entityId);
-    const auto parentId = relationship.getParentIdentifier();
-    
-    // If no parent, return local position
-    if (parentId == guillaume::ecs::Entity::InvalidIdentifier) {
-        return worldPos;
-    }
-    
-    // Recursively get parent's world position
-    typename guillaume::components::Transform::Position parentWorldPos = calculateWorldPosition(componentRegistry, parentId);
-    
-    // Get parent's scale to apply to child's local offset
-    const auto &parentTransform =
-        componentRegistry.getComponent<guillaume::components::Transform>(parentId);
-    const auto parentScale = parentTransform.getScale();
-    
-    // Combine: parent_world_pos + (local_pos * parent_scale)
-    typename guillaume::components::Transform::Position scaledLocalPos;
-    scaledLocalPos[0] = worldPos[0] * parentScale[0];
-    scaledLocalPos[1] = worldPos[1] * parentScale[1];
-    scaledLocalPos[2] = worldPos[2] * parentScale[2];
-    
-    typename guillaume::components::Transform::Position result;
-    result[0] = parentWorldPos[0] + scaledLocalPos[0];
-    result[1] = parentWorldPos[1] + scaledLocalPos[1];
-    result[2] = parentWorldPos[2] + scaledLocalPos[2];
-    
-    return result;
-}
 
 // Helper function to convert screen-space mouse position to world-space position
 // Assumes orthographic projection (camera projects from Z distance towards Z=0 plane)
@@ -86,11 +41,34 @@ static typename guillaume::components::Transform::Position convertMouseToWorldPo
     // Simple orthographic transformation:
     // Screen (x, y) maps directly to world (x, y) with camera offset
     typename guillaume::components::Transform::Position worldPos;
-    worldPos[0] = mousePos2D[0] + cameraPos[0];
-    worldPos[1] = mousePos2D[1] + cameraPos[1];
-    worldPos[2] = cameraPos[2];  // Keep camera Z depth
+    worldPos[0] = mousePos2D[0] - cameraPos[0];
+    worldPos[1] = mousePos2D[1] - cameraPos[1];
+    worldPos[2] = 0.0f;
     
     return worldPos;
+}
+
+static bool isPointInsideEntityBounds(
+    const typename guillaume::components::Transform::Position &point,
+    const typename guillaume::components::Transform::Position &entityCenter,
+    const typename guillaume::components::Bound::Size &boundSize,
+    const typename guillaume::components::Transform::Scale &entityScale,
+    const typename guillaume::components::Transform::Rotation &entityRotation) {
+    constexpr float degreeToRadian = 0.01745329251994329576923690768489f;
+    const float rotationRadians = -entityRotation[2] * degreeToRadian;
+    const float cosine = std::cos(rotationRadians);
+    const float sine = std::sin(rotationRadians);
+
+    const float dx = point[0] - entityCenter[0];
+    const float dy = point[1] - entityCenter[1];
+
+    const float localX = dx * cosine - dy * sine;
+    const float localY = dx * sine + dy * cosine;
+
+    const float halfWidth = (boundSize[0] * entityScale[0]) / 2.0f;
+    const float halfHeight = (boundSize[1] * entityScale[1]) / 2.0f;
+
+    return std::abs(localX) <= halfWidth && std::abs(localY) <= halfHeight;
 }
 
 } // namespace
@@ -102,24 +80,36 @@ Click::Click(event::EventBus &eventBus, Renderer &renderer)
 
 void Click::update(ecs::ComponentRegistry &componentRegistry,
                    const ecs::Entity::Identifier &identityIdentifier) {
-    if (!_mouseButtonSubscriber.hasPendingEvents()) {
-        return;
+    if (_pendingClickEvent &&
+        _evaluatedEntities.contains(identityIdentifier)) {
+        _pendingClickEvent.reset();
+        _evaluatedEntities.clear();
     }
 
-    auto event = _mouseButtonSubscriber.getNextEvent();
-    if (!event) {
-        return;
+    if (!_pendingClickEvent) {
+        while (_mouseButtonSubscriber.hasPendingEvents()) {
+            auto nextEvent = _mouseButtonSubscriber.getNextEvent();
+            if (!nextEvent) {
+                continue;
+            }
+            if (!nextEvent->isButtonPressed(
+                    utility::event::MouseButtonEvent::MouseButton::LEFT)) {
+                continue;
+            }
+            _pendingClickEvent = std::move(nextEvent);
+            _evaluatedEntities.clear();
+            break;
+        }
     }
 
-    if (!event->isButtonPressed(
-            utility::event::MouseButtonEvent::MouseButton::LEFT)) {
+    if (!_pendingClickEvent) {
         return;
     }
 
     const auto &bound =
         componentRegistry.getComponent<components::Bound>(identityIdentifier);
 
-    const auto mousePosition = event->getPosition();
+    const auto mousePosition = _pendingClickEvent->getPosition();
     // Convert screen-space mouse position to world position using camera info
     const auto cameraPos = _renderer.getCameraPosition();
     typename guillaume::components::Transform::Position mousePos3D;
@@ -127,15 +117,17 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
     mousePos3D[1] = mousePosition[1];
     mousePos3D[2] = 0.0f;
     const auto worldMousePos = convertMouseToWorldPosition(mousePos3D, cameraPos);
-    const auto worldPosition = calculateWorldPosition(componentRegistry, identityIdentifier);
+    const auto worldTransform = detail::calculateWorldTransform(
+        componentRegistry, identityIdentifier);
     const auto size = bound.getSize();
+    const bool isInside = isPointInsideEntityBounds(
+        worldMousePos,
+        worldTransform.position,
+        size,
+        worldTransform.scale,
+        worldTransform.rotation);
 
-    const float halfWidth = size[0] / 2.0f;
-    const float halfHeight = size[1] / 2.0f;
-    const bool isInside = worldMousePos[0] >= worldPosition[0] - halfWidth &&
-                          worldMousePos[0] <= worldPosition[0] + halfWidth &&
-                          worldMousePos[1] >= worldPosition[1] - halfHeight &&
-                          worldMousePos[1] <= worldPosition[1] + halfHeight;
+    _evaluatedEntities.insert(identityIdentifier);
 
     if (!isInside) {
         return;
@@ -149,6 +141,8 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
     }
 
     onClick();
+    _pendingClickEvent.reset();
+    _evaluatedEntities.clear();
 }
 
 } // namespace guillaume::systems

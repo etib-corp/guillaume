@@ -31,6 +31,8 @@
 #include "guillaume/event/event_subscriber.hpp"
 #include "guillaume/renderer.hpp"
 
+#include <memory>
+#include <unordered_set>
 #include <utility/event/event.hpp>
 #include <utility/event/mouse_button_event.hpp>
 
@@ -58,6 +60,8 @@ class Click : public ecs::SystemFiller<components::Click, components::Transform,
     event::EventSubscriber<utility::event::MouseButtonEvent>
         _mouseButtonSubscriber;
     Renderer &_renderer;
+    std::unique_ptr<utility::event::MouseButtonEvent> _pendingClickEvent;
+    std::unordered_set<ecs::Entity::Identifier> _evaluatedEntities;
 
   public:
     /**
