@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
@@ -36,6 +38,88 @@ class Input : public ecs::EntityFiller<components::Transform, components::Bound,
                                        components::Text, components::Focus,
                                        components::Relationship> {
   public:
+    class Builder {
+      private:
+        ecs::ComponentRegistry &_componentRegistry;
+        std::unique_ptr<Input> _input;
+
+        ecs::Entity::Identifier getIdentifier(void) const {
+            return _input->getIdentifier();
+        }
+
+      public:
+        Builder(ecs::ComponentRegistry &componentRegistry)
+            : _componentRegistry(componentRegistry) {
+            reset();
+        }
+
+        ~Builder(void) = default;
+
+        void reset(void) {
+            _input = std::make_unique<Input>(_componentRegistry);
+        }
+
+        void setPosition(const components::Transform::Position &position) {
+            _componentRegistry
+                .getComponent<components::Transform>(getIdentifier())
+                .setPosition(position);
+        }
+
+        void setRotation(const components::Transform::Rotation &rotation) {
+            _componentRegistry
+                .getComponent<components::Transform>(getIdentifier())
+                .setRotation(rotation);
+        }
+
+        void setScale(const components::Transform::Scale &scale) {
+            _componentRegistry
+                .getComponent<components::Transform>(getIdentifier())
+                .setScale(scale);
+        }
+
+        void setSize(const components::Bound::Size &size) {
+            _componentRegistry.getComponent<components::Bound>(getIdentifier())
+                .setSize(size);
+        }
+
+        void setText(const std::string &content) {
+            _componentRegistry.getComponent<components::Text>(getIdentifier())
+                .setContent(content);
+        }
+
+        void
+        setParentIdentifier(const ecs::Entity::Identifier &parentIdentifier) {
+            _componentRegistry
+                .getComponent<components::Relationship>(getIdentifier())
+                .setParentIdentifier(parentIdentifier);
+        }
+
+        std::unique_ptr<Input> getProduct(void) {
+            auto product = std::move(_input);
+            reset();
+            return product;
+        }
+    };
+
+    class Director {
+      public:
+        template <typename BuilderType>
+        void
+        constructInput(BuilderType &builder,
+                       const components::Transform::Position &position,
+                       const components::Bound::Size &size,
+                       const std::string &content,
+                       const ecs::Entity::Identifier &parentIdentifier) const {
+            builder.reset();
+            builder.setPosition(position);
+            builder.setRotation({0.0f, 0.0f, 0.0f});
+            builder.setScale({1.0f, 1.0f, 1.0f});
+            builder.setSize(size);
+            builder.setText(content);
+            builder.setParentIdentifier(parentIdentifier);
+        }
+    };
+
     /**
      * @brief Construct a new Input entity filler.
      */
