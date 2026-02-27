@@ -31,9 +31,23 @@
 
 namespace guillaume::systems::detail {
 
+/**
+ * @brief World-space transform data resolved for an entity.
+ */
 struct WorldTransform {
+    /**
+     * @brief Entity world position.
+     */
     components::Transform::Position position;
+
+    /**
+     * @brief Entity world rotation (Euler angles).
+     */
     components::Transform::Rotation rotation;
+
+    /**
+     * @brief Entity world scale.
+     */
     components::Transform::Scale scale;
 };
 
