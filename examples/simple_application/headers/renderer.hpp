@@ -121,6 +121,12 @@ class Renderer : public guillaume::Renderer {
                 const guillaume::Font &font) override;
 
     /**
+     * @brief Get the renderer viewport size in pixels.
+     * @return Width and height as a 2D vector.
+     */
+    ViewportSize getViewportSize(void) const override;
+
+    /**
      * @brief Draws text using a specific font.
      * @param text The text to draw.
      * @param font The font to use for rendering the text.

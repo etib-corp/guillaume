@@ -33,9 +33,16 @@
 
 namespace guillaume::entities {
 
+/**
+ * @brief Entity representing a generic container panel.
+ * @see components::Relationship
+ */
 class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
                                        components::Relationship> {
   public:
+        /**
+         * @brief Builder for constructing `Panel` entities.
+         */
     class Builder {
       private:
         ecs::ComponentRegistry &_componentRegistry;
@@ -46,42 +53,77 @@ class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
         }
 
       public:
+        /**
+         * @brief Construct a new panel builder.
+         * @param componentRegistry Registry used to create and configure
+         * components.
+         */
         Builder(ecs::ComponentRegistry &componentRegistry)
             : _componentRegistry(componentRegistry) {
             reset();
         }
 
+        /**
+         * @brief Default destructor.
+         */
         ~Builder(void) = default;
 
+        /**
+         * @brief Reset the builder with a fresh `Panel` instance.
+         */
         void reset(void) {
             _panel = std::make_unique<Panel>(_componentRegistry);
         }
 
+        /**
+         * @brief Set panel local position.
+         * @param position New local position.
+         */
         void setPosition(const components::Transform::Position &position) {
             _componentRegistry
                 .getComponent<components::Transform>(getIdentifier())
                 .setPosition(position);
         }
 
+        /**
+         * @brief Set panel local rotation.
+         * @param rotation New local rotation.
+         */
         void setRotation(const components::Transform::Rotation &rotation) {
             _componentRegistry
                 .getComponent<components::Transform>(getIdentifier())
                 .setRotation(rotation);
         }
 
+        /**
+         * @brief Set panel local scale.
+         * @param scale New local scale.
+         */
         void setScale(const components::Transform::Scale &scale) {
             _componentRegistry
                 .getComponent<components::Transform>(getIdentifier())
                 .setScale(scale);
         }
 
+        /**
+         * @brief Set panel bound size.
+         * @param size New bound size.
+         */
         void setSize(const components::Bound::Size &size) {
             _componentRegistry.getComponent<components::Bound>(getIdentifier())
                 .setSize(size);
         }
 
+        /**
+         * @brief Placeholder for API parity with other builders.
+         * @param content Unused text payload.
+         */
         void setText(const std::string &content) { (void)content; }
 
+        /**
+         * @brief Set parent entity identifier.
+         * @param parentIdentifier Identifier of the parent entity.
+         */
         void
         setParentIdentifier(const ecs::Entity::Identifier &parentIdentifier) {
             _componentRegistry
@@ -89,6 +131,10 @@ class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
                 .setParentIdentifier(parentIdentifier);
         }
 
+        /**
+         * @brief Finalize and return the built panel.
+         * @return The constructed panel entity.
+         */
         std::unique_ptr<Panel> getProduct(void) {
             auto product = std::move(_panel);
             reset();
@@ -96,8 +142,18 @@ class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
         }
     };
 
+    /**
+     * @brief Director orchestrating `Panel::Builder` construction steps.
+     */
     class Director {
       public:
+                /**
+                 * @brief Construct a panel with provided attributes.
+                 * @tparam BuilderType Concrete builder type.
+                 * @param builder Builder instance.
+                 * @param position Panel position.
+                 * @param size Panel size.
+                 */
         template <typename BuilderType>
         void constructPanel(BuilderType &builder,
                             const components::Transform::Position &position,
@@ -113,6 +169,7 @@ class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
 
     /**
      * @brief Construct a new Panel entity filler.
+     * @param componentRegistry Registry used to create and store components.
      */
     Panel(ecs::ComponentRegistry &componentRegistry)
         : ecs::EntityFiller<components::Transform, components::Bound,
