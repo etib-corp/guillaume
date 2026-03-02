@@ -52,7 +52,7 @@ include_directories(
 )
 
 # Add the source files
-file(GLOB_RECURSE SOURCES
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${SOURCES_DIR}/*.cpp"
 )
 

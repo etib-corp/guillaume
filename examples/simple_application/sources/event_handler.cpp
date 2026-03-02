@@ -48,6 +48,14 @@ void EventHandler::pollEvents(void) {
             break;
         }
 
+        case SDL_EVENT_TEXT_INPUT: {
+            getLogger().debug("Text input event received");
+            auto textInputEvent = std::make_unique<utility::event::TextInputEvent>();
+            textInputEvent->setText(std::string(sdlEvent.text.text));
+            event = std::move(textInputEvent);
+            break;
+        }
+
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         case SDL_EVENT_MOUSE_BUTTON_UP: {
             getLogger().debug("Mouse button event at (" +

@@ -30,7 +30,8 @@ namespace guillaume::components {
 
 /**
  * @brief Component representing a text element.
- * @see systems::Keyboard
+ * @see systems::KeyboardControl
+ * @see systems::TextInput
  * @see guillaume::Text
  */
 class Text : public ecs::Component {

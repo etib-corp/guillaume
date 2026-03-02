@@ -100,12 +100,12 @@ flowchart LR
   SysHover --> CompTransform
 ```
 
-## systems::Keyboard
+## systems::KeyboardControl
 
 ```mermaid
 flowchart LR
   subgraph System
-    SysKeyboard["systems::Keyboard"]
+    SysKeyboardControl["systems::KeyboardControl"]
   end
 
   subgraph Component_Text
@@ -114,7 +114,24 @@ flowchart LR
     CompText --> CompTextAttr1
   end
 
-  SysKeyboard --> CompText
+  SysKeyboardControl --> CompText
+```
+
+## systems::TextInput
+
+```mermaid
+flowchart LR
+  subgraph System
+    SysTextInput["systems::TextInput"]
+  end
+
+  subgraph Component_Text
+    CompText["components::Text"]
+    CompTextAttr1["content: string"]
+    CompText --> CompTextAttr1
+  end
+
+  SysTextInput --> CompText
 ```
 
 ## systems::Render
