@@ -102,6 +102,11 @@ Renderer::Renderer(void)
 
     SDL_GL_SetSwapInterval(1);
 
+    if (!SDL_StartTextInput(_window)) {
+        getLogger().warning("Failed to start SDL text input: " +
+                            std::string(SDL_GetError()));
+    }
+
     int windowWidth = 0;
     int windowHeight = 0;
     if (!SDL_GetWindowSize(_window, &windowWidth, &windowHeight)) {
@@ -134,6 +139,10 @@ Renderer::~Renderer(void) {
         }
     }
     _fontCache.clear();
+
+    if (_window) {
+        SDL_StopTextInput(_window);
+    }
 
     if (_glContext) {
         SDL_GL_DestroyContext(_glContext);

@@ -153,7 +153,7 @@ class Renderer
     /**
      * @brief Set the full camera model.
      * @param camera The new camera instance.
-        * @note Synchronizes cached Euler rotation and last mouse ray.
+     * @note Synchronizes cached Euler rotation and last mouse ray.
      */
     void setCamera(const Camera &camera);
 
@@ -166,14 +166,14 @@ class Renderer
     /**
      * @brief Set the camera rotation (Euler angles).
      * @param rotation The new camera rotation vector.
-        * @note Synchronizes camera forward/up vectors and last mouse ray.
+     * @note Synchronizes camera forward/up vectors and last mouse ray.
      */
     void setCameraRotation(const Rotation &rotation);
 
     /**
-        * @brief Build an orthographic world-space view ray from a screen position.
+     * @brief Build an orthographic world-space view ray from a screen position.
      * @param screenPosition The screen position (x, y in pixels).
-        * @return A world-space ray parallel to camera forward.
+     * @return A world-space ray parallel to camera forward.
      */
     Ray getViewRayFromScreenPosition(const Position &screenPosition) const {
         const auto cameraPosition = _camera.getPosition();

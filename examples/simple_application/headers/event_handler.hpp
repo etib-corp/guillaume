@@ -31,6 +31,7 @@
 
 #include <utility/event/keyboard_event.hpp>
 #include <utility/event/mouse_button_event.hpp>
+#include <utility/event/text_input_event.hpp>
 
 namespace simple_application {
 
