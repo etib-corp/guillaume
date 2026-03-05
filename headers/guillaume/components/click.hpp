@@ -46,6 +46,7 @@ class Click : public ecs::Component {
 
   private:
     Handler _onClick; ///< Click event handler
+    bool _isClicked{false}; ///< Flag indicating if the entity is currently clicked
 
   public:
     /**
@@ -69,6 +70,18 @@ class Click : public ecs::Component {
      * @return The onClick event handler.
      */
     Handler getOnClickHandler(void) const { return _onClick; }
+
+    /**
+     * @brief Check if the entity is currently clicked.
+     * @return True if the entity is clicked, false otherwise.
+     */
+    bool isClicked(void) const { return _isClicked; }
+
+    /**
+     * @brief Set the clicked state of the entity.
+     * @param clicked True if the entity is clicked, false otherwise.
+     */
+    void setClicked(bool clicked) { _isClicked = clicked; }
 };
 
 } // namespace guillaume::components

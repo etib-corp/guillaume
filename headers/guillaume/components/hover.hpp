@@ -80,13 +80,13 @@ class Hover : public ecs::Component {
      * @brief Check if the entity is currently hovered.
      * @return True when the cursor is inside the entity bounds.
      */
-    bool getIsHovered(void) const { return _isHovered; }
+    bool isHovered(void) const { return _isHovered; }
 
     /**
      * @brief Set current hovered state.
      * @param isHovered Current hovered state.
      */
-    void setIsHovered(bool isHovered) { _isHovered = isHovered; }
+    void setHovered(bool isHovered) { _isHovered = isHovered; }
 };
 
 } // namespace guillaume::components

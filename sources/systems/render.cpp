@@ -22,91 +22,42 @@
 
 #include "guillaume/systems/render.hpp"
 
-#include "guillaume/font.hpp"
-#include "guillaume/systems/detail/world_transform_utils.hpp"
-#include "guillaume/text.hpp"
 
 #include "guillaume/components/click.hpp"
-#include "guillaume/components/focus.hpp"
-#include "guillaume/components/text.hpp"
+// TODO #include "guillaume/components/focus.hpp"
+#include "guillaume/components/hover.hpp"
+#include "guillaume/components/render.hpp"
 
-#include "guillaume/shapes/rectangle.hpp"
-
-#include <filesystem>
-#include <optional>
-#include <vector>
-
-namespace {
-
-std::optional<std::string> resolveDefaultFontPath(void) {
-    static const std::vector<std::string> candidates = {
-        "/System/Library/Fonts/Helvetica.ttc",
-        "/System/Library/Fonts/Avenir.ttc",
-        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    };
-
-    for (const auto &candidate : candidates) {
-        if (std::filesystem::exists(candidate)) {
-            return candidate;
-        }
-    }
-
-    return std::nullopt;
-}
-
-} // namespace
 
 namespace guillaume::systems {
 
-void Render::update(ecs::ComponentRegistry &componentRegistry,
-                    const ecs::Entity::Identifier &identityIdentifier) {
-    const auto &bound =
-        componentRegistry.getComponent<components::Bound>(identityIdentifier);
-
-    const auto worldTransform =
-        detail::calculateWorldTransform(componentRegistry, identityIdentifier);
-
-    shapes::Rectangle rectangle;
-    rectangle.setPosition(worldTransform.position);
-    rectangle.setRotation(worldTransform.rotation);
-    rectangle.setScale(worldTransform.scale);
-    rectangle.setSize({bound.getSize()[0], bound.getSize()[1]});
-
-    if (componentRegistry.hasComponent<components::Click>(identityIdentifier)) {
-        rectangle.setColor({46, 88, 170, 255});
-    } else if (componentRegistry.hasComponent<components::Focus>(
-                   identityIdentifier)) {
-        rectangle.setColor({60, 60, 60, 255});
-    } else {
-        rectangle.setColor({110, 110, 110, 255});
-    }
-
-    _renderer.drawRectangle(rectangle);
-
-    if (!componentRegistry.hasComponent<components::Text>(identityIdentifier)) {
+void Render::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity::Identifier &identityIdentifier) {
+    if (!componentRegistry.hasComponent<components::Render>(identityIdentifier)) {
+        getLogger().warning("Entity " + std::to_string(identityIdentifier) + " does not have a Render component");
         return;
     }
 
-    const auto &textComponent =
-        componentRegistry.getComponent<components::Text>(identityIdentifier);
-    if (textComponent.getContent().empty()) {
-        return;
+    guillaume::components::Render &renderComponent =
+        componentRegistry.getComponent<components::Render>(identityIdentifier);
+
+    if (componentRegistry.hasComponent<components::Click>(identityIdentifier) && renderComponent.getClickedHandler()) {
+        if (componentRegistry.getComponent<components::Click>(identityIdentifier).isClicked()) {
+            renderComponent.getClickedHandler()(componentRegistry, identityIdentifier, _renderer);
+            return;
+        }
     }
 
-    static const auto fontPath = resolveDefaultFontPath();
-    if (!fontPath) {
-        return;
+    if (componentRegistry.hasComponent<components::Hover>(identityIdentifier) && renderComponent.getHoveredHandler()) {
+        if (componentRegistry.getComponent<components::Hover>(identityIdentifier).isHovered()) {
+            renderComponent.getHoveredHandler()(componentRegistry, identityIdentifier, _renderer);
+            return;
+        }
     }
 
-    Text text(textComponent.getContent());
-    text.setPosition(worldTransform.position);
-    text.setRotation(worldTransform.rotation);
-
-    Font font(*fontPath, 24);
-    _renderer.drawText(text, font);
+    if (renderComponent.getNormalHandler()) {
+        renderComponent.getNormalHandler()(componentRegistry, identityIdentifier, _renderer);
+        return;
+    }
+    getLogger().warning("Entity " + std::to_string(identityIdentifier) + " has Render component but no handlers defined");
 }
-
 } // namespace guillaume::systems

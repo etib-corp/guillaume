@@ -86,6 +86,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         _pendingClickEvent.reset();
         _evaluatedEntities.clear();
     }
+    auto &click = componentRegistry.getComponent<components::Click>(identityIdentifier);
 
     if (!_pendingClickEvent) {
         while (_mouseButtonSubscriber.hasPendingEvents()) {
@@ -95,6 +96,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
             }
             if (!nextEvent->isButtonPressed(
                     utility::event::MouseButtonEvent::MouseButton::LEFT)) {
+                click.setClicked(false);
                 continue;
             }
             _pendingClickEvent = std::move(nextEvent);
@@ -106,6 +108,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
     if (!_pendingClickEvent) {
         return;
     }
+
 
     const auto &bound =
         componentRegistry.getComponent<components::Bound>(identityIdentifier);
@@ -137,8 +140,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         return;
     }
 
-    const auto &click =
-        componentRegistry.getComponent<components::Click>(identityIdentifier);
+    click.setClicked(true);
     const auto onClick = click.getOnClickHandler();
     if (!onClick) {
         return;

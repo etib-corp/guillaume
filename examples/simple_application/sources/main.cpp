@@ -3,6 +3,7 @@
 #include <guillaume/components/focus.hpp>
 #include <guillaume/components/hover.hpp>
 #include <guillaume/components/relationship.hpp>
+#include <guillaume/components/render.hpp>
 #include <guillaume/components/text.hpp>
 #include <guillaume/components/transform.hpp>
 
@@ -10,7 +11,35 @@
 #include <guillaume/entities/input.hpp>
 #include <guillaume/entities/panel.hpp>
 
+#include <guillaume/systems/detail/world_transform_utils.hpp>
+
+#include <iostream>
+
+
 #include "application.hpp"
+
+namespace {
+
+std::optional<std::string> resolveDefaultFontPath(void) {
+    static const std::vector<std::string> candidates = {
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/System/Library/Fonts/Avenir.ttc",
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    };
+
+    for (const auto &candidate : candidates) {
+        if (std::filesystem::exists(candidate)) {
+            return candidate;
+        }
+    }
+
+    return std::nullopt;
+}
+
+} // namespace
 
 int main(int argc, char *argv[]) {
     simple_application::Application application(argc, argv);
@@ -20,7 +49,6 @@ int main(int argc, char *argv[]) {
 
     guillaume::entities::Panel::Director panelDirector;
     guillaume::entities::Button::Director buttonDirector;
-    guillaume::entities::Input::Director inputDirector;
 
     guillaume::entities::Panel::Builder panelBuilder(componentRegistry);
     panelDirector.constructPanel(panelBuilder, {960.0f, 540.0f, 0.0f},
@@ -35,129 +63,158 @@ int main(int argc, char *argv[]) {
     auto button1 = buttonBuilder.getProduct();
     ecs.addEntity(*button1);
 
-    buttonDirector.constructButton(buttonBuilder, {-280.0f, -100.0f, 1.0f},
-                                   {0.0f, 0.0f, 0.1f}, {200.0f, 70.0f, 0.0f},
-                                   "Button 2", panel->getIdentifier());
-    auto button2 = buttonBuilder.getProduct();
-    ecs.addEntity(*button2);
-
-    buttonDirector.constructButton(buttonBuilder, {280.0f, 100.0f, 1.0f},
-                                   {0.0f, 0.0f, -0.1f}, {200.0f, 70.0f, 0.0f},
-                                   "Button 3", panel->getIdentifier());
-    auto button3 = buttonBuilder.getProduct();
-    ecs.addEntity(*button3);
-
-    buttonDirector.constructButton(buttonBuilder, {280.0f, -100.0f, 1.0f},
-                                   {0.0f, 0.0f, 0.2f}, {200.0f, 70.0f, 0.0f},
-                                   "Button 4", panel->getIdentifier());
-    auto button4 = buttonBuilder.getProduct();
-    ecs.addEntity(*button4);
-
-    guillaume::entities::Input::Builder inputBuilder(componentRegistry);
-    inputDirector.constructInput(inputBuilder, {0.0f, -80.0f, 1.0f},
-                                 {520.0f, 90.0f, 0.0f},
-                                 "Type here: ", panel->getIdentifier());
-    auto input = inputBuilder.getProduct();
-    ecs.addEntity(*input);
-
     // Establish parent-child relationships for responsive UI
     auto &panelRelationship =
         ecs.getComponent<guillaume::components::Relationship>(*panel);
     panelRelationship.addChildIdentifier(button1->getIdentifier());
-    panelRelationship.addChildIdentifier(button2->getIdentifier());
-    panelRelationship.addChildIdentifier(button3->getIdentifier());
-    panelRelationship.addChildIdentifier(button4->getIdentifier());
-    panelRelationship.addChildIdentifier(input->getIdentifier());
-
-    auto &inputText = ecs.getComponent<guillaume::components::Text>(*input);
 
     auto &button1Text = ecs.getComponent<guillaume::components::Text>(*button1);
-    auto &button2Text = ecs.getComponent<guillaume::components::Text>(*button2);
-    auto &button3Text = ecs.getComponent<guillaume::components::Text>(*button3);
-    auto &button4Text = ecs.getComponent<guillaume::components::Text>(*button4);
 
     // Button 1 handlers
-    auto &button1Hover =
-        ecs.getComponent<guillaume::components::Hover>(*button1);
+    auto &button1Hover = ecs.getComponent<guillaume::components::Hover>(*button1);
     button1Hover.setOnHoverHandler(
         [&button1Text]() { button1Text.setContent("Button 1 (hover)"); });
     button1Hover.setOnUnhoverHandler(
         [&button1Text]() { button1Text.setContent("Button 1"); });
 
     bool isButton1Clicked = false;
-    auto &button1Click =
-        ecs.getComponent<guillaume::components::Click>(*button1);
-    button1Click.setOnClickHandler([&button1Text, &inputText,
-                                    &isButton1Clicked]() {
-        isButton1Clicked = !isButton1Clicked;
-        button1Text.setContent(isButton1Clicked ? "Button 1 (clicked)"
-                                                : "Button 1");
-        inputText.setContent(isButton1Clicked ? "Button 1 clicked. Type here: "
-                                              : "Type here: ");
-    });
+    auto &button1Click = ecs.getComponent<guillaume::components::Click>(*button1);
+    button1Click.setOnClickHandler(
+        [&button1Text, &isButton1Clicked]() {
+            isButton1Clicked = !isButton1Clicked;
+            button1Text.setContent(isButton1Clicked ? "Button 1 (clicked)" : "Button 1");
+        }
+    );
 
-    // Button 2 handlers
-    auto &button2Hover =
-        ecs.getComponent<guillaume::components::Hover>(*button2);
-    button2Hover.setOnHoverHandler(
-        [&button2Text]() { button2Text.setContent("Button 2 (hover)"); });
-    button2Hover.setOnUnhoverHandler(
-        [&button2Text]() { button2Text.setContent("Button 2"); });
+    auto &button1Render = ecs.getComponent<guillaume::components::Render>(*button1);
 
-    bool isButton2Clicked = false;
-    auto &button2Click =
-        ecs.getComponent<guillaume::components::Click>(*button2);
-    button2Click.setOnClickHandler([&button2Text, &inputText,
-                                    &isButton2Clicked]() {
-        isButton2Clicked = !isButton2Clicked;
-        button2Text.setContent(isButton2Clicked ? "Button 2 (clicked)"
-                                                : "Button 2");
-        inputText.setContent(isButton2Clicked ? "Button 2 clicked. Type here: "
-                                              : "Type here: ");
-    });
+    button1Render.setNormalHandler([](guillaume::ecs::ComponentRegistry &componentRegistry,
+        const guillaume::ecs::Entity::Identifier &identityIdentifier,
+        guillaume::Renderer &renderer) {
+            const auto &bound =
+                componentRegistry.getComponent<guillaume::components::Bound>(identityIdentifier);
 
-    // Button 3 handlers
-    auto &button3Hover =
-        ecs.getComponent<guillaume::components::Hover>(*button3);
-    button3Hover.setOnHoverHandler(
-        [&button3Text]() { button3Text.setContent("Button 3 (hover)"); });
-    button3Hover.setOnUnhoverHandler(
-        [&button3Text]() { button3Text.setContent("Button 3"); });
+            const auto worldTransform =
+                guillaume::systems::detail::calculateWorldTransform(componentRegistry, identityIdentifier);
 
-    bool isButton3Clicked = false;
-    auto &button3Click =
-        ecs.getComponent<guillaume::components::Click>(*button3);
-    button3Click.setOnClickHandler([&button3Text, &inputText,
-                                    &isButton3Clicked]() {
-        isButton3Clicked = !isButton3Clicked;
-        button3Text.setContent(isButton3Clicked ? "Button 3 (clicked)"
-                                                : "Button 3");
-        inputText.setContent(isButton3Clicked ? "Button 3 clicked. Type here: "
-                                              : "Type here: ");
-    });
+            guillaume::shapes::Rectangle rectangle;
+            rectangle.setPosition(worldTransform.position);
+            rectangle.setRotation(worldTransform.rotation);
+            rectangle.setScale(worldTransform.scale);
+            rectangle.setSize({bound.getSize()[0], bound.getSize()[1]});
+            rectangle.setColor({255, 0, 0, 255});
 
-    // Button 4 handlers
-    auto &button4Hover =
-        ecs.getComponent<guillaume::components::Hover>(*button4);
-    button4Hover.setOnHoverHandler(
-        [&button4Text]() { button4Text.setContent("Button 4 (hover)"); });
-    button4Hover.setOnUnhoverHandler(
-        [&button4Text]() { button4Text.setContent("Button 4"); });
+            renderer.drawRectangle(rectangle);
 
-    bool isButton4Clicked = false;
-    auto &button4Click =
-        ecs.getComponent<guillaume::components::Click>(*button4);
-    button4Click.setOnClickHandler([&button4Text, &inputText,
-                                    &isButton4Clicked]() {
-        isButton4Clicked = !isButton4Clicked;
-        button4Text.setContent(isButton4Clicked ? "Button 4 (clicked)"
-                                                : "Button 4");
-        inputText.setContent(isButton4Clicked ? "Button 4 clicked. Type here: "
-                                              : "Type here: ");
-    });
+            if (!componentRegistry.hasComponent<guillaume::components::Text>(identityIdentifier)) {
+                return;
+            }
 
-    auto &inputFocus = ecs.getComponent<guillaume::components::Focus>(*input);
-    inputFocus.setOnFocusHandler([]() {});
+            const auto &textComponent =
+                componentRegistry.getComponent<guillaume::components::Text>(identityIdentifier);
+            std::string text = textComponent.getContent();
+            if (text.empty()) {
+                return;
+            }
 
+            const auto &fontPath = resolveDefaultFontPath();
+            if (!fontPath) {
+                return;
+            }
+
+            guillaume::Text textObj(text);
+            textObj.setPosition(worldTransform.position);
+            textObj.setRotation(worldTransform.rotation);
+
+            guillaume::Font font(*fontPath, 24);
+            renderer.drawText(textObj, font);
+        }
+    );
+
+    button1Render.setHoveredHandler([](guillaume::ecs::ComponentRegistry &componentRegistry,
+        const guillaume::ecs::Entity::Identifier &identityIdentifier,
+        guillaume::Renderer &renderer) {
+            const auto &bound =
+                componentRegistry.getComponent<guillaume::components::Bound>(identityIdentifier);
+
+            const auto worldTransform =
+                guillaume::systems::detail::calculateWorldTransform(componentRegistry, identityIdentifier);
+
+            guillaume::shapes::Rectangle rectangle;
+            rectangle.setPosition(worldTransform.position);
+            rectangle.setRotation(worldTransform.rotation);
+            rectangle.setScale(worldTransform.scale);
+            rectangle.setSize({bound.getSize()[0], bound.getSize()[1]});
+            rectangle.setColor({0, 255, 0, 255});
+
+            renderer.drawRectangle(rectangle);
+
+            if (!componentRegistry.hasComponent<guillaume::components::Text>(identityIdentifier)) {
+                return;
+            }
+
+            const auto &textComponent =
+                componentRegistry.getComponent<guillaume::components::Text>(identityIdentifier);
+            std::string text = textComponent.getContent();
+            if (text.empty()) {
+                return;
+            }
+
+            const auto &fontPath = resolveDefaultFontPath();
+            if (!fontPath) {
+                return;
+            }
+
+            guillaume::Text textObj(text);
+            textObj.setPosition(worldTransform.position);
+            textObj.setRotation(worldTransform.rotation);
+
+            guillaume::Font font(*fontPath, 24);
+            renderer.drawText(textObj, font);
+        }
+    );
+
+    button1Render.setClickedHandler([](guillaume::ecs::ComponentRegistry &componentRegistry,
+        const guillaume::ecs::Entity::Identifier &identityIdentifier,
+        guillaume::Renderer &renderer) {
+            const auto &bound =
+                componentRegistry.getComponent<guillaume::components::Bound>(identityIdentifier);
+
+            const auto worldTransform =
+                guillaume::systems::detail::calculateWorldTransform(componentRegistry, identityIdentifier);
+
+            guillaume::shapes::Rectangle rectangle;
+            rectangle.setPosition(worldTransform.position);
+            rectangle.setRotation(worldTransform.rotation);
+            rectangle.setScale(worldTransform.scale);
+            rectangle.setSize({bound.getSize()[0], bound.getSize()[1]});
+            rectangle.setColor({0, 0, 255, 255});
+
+            renderer.drawRectangle(rectangle);
+
+            if (!componentRegistry.hasComponent<guillaume::components::Text>(identityIdentifier)) {
+                return;
+            }
+
+            const auto &textComponent =
+                componentRegistry.getComponent<guillaume::components::Text>(identityIdentifier);
+            std::string text = textComponent.getContent();
+            if (text.empty()) {
+                return;
+            }
+
+            const auto &fontPath = resolveDefaultFontPath();
+            if (!fontPath) {
+                return;
+            }
+
+            guillaume::Text textObj(text);
+            textObj.setPosition(worldTransform.position);
+            textObj.setRotation(worldTransform.rotation);
+
+            guillaume::Font font(*fontPath, 24);
+            renderer.drawText(textObj, font);
+        }
+    );
     return application.run();
 }
