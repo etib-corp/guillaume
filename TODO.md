@@ -9,3 +9,5 @@
 - Manage onClick and onRelease events, and if the click is released outside the starting element.
 - Add persistent data storage
 - list all entities needed in an application
+- Add mouse position to mouse click onClick and onRelease handlers
+- Add possibility to choose the button for click events

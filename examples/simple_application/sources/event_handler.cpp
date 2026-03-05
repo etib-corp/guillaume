@@ -56,9 +56,8 @@ void EventHandler::pollEvents(void) {
             break;
         }
 
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
         case SDL_EVENT_MOUSE_BUTTON_UP: {
-            getLogger().debug("Mouse button event at (" +
+            getLogger().debug("Mouse button released event at (" +
                               std::to_string(sdlEvent.button.x) + ", " +
                               std::to_string(sdlEvent.button.y) + ")");
             auto mouseEvent =
@@ -66,8 +65,20 @@ void EventHandler::pollEvents(void) {
             mouseEvent->setPosition({static_cast<float>(sdlEvent.button.x),
                                      static_cast<float>(sdlEvent.button.y)});
             mouseEvent->setButtonState(
-                convertMouseButton(sdlEvent.button.button),
-                sdlEvent.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
+                convertMouseButton(sdlEvent.button.button), false);
+            event = std::move(mouseEvent);
+            break;
+        }
+        case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+            getLogger().debug("Mouse button clicked event at (" +
+                              std::to_string(sdlEvent.button.x) + ", " +
+                              std::to_string(sdlEvent.button.y) + ")");
+            auto mouseEvent =
+                std::make_unique<utility::event::MouseButtonEvent>();
+            mouseEvent->setPosition({static_cast<float>(sdlEvent.button.x),
+                                     static_cast<float>(sdlEvent.button.y)});
+            mouseEvent->setButtonState(
+                convertMouseButton(sdlEvent.button.button), true);
             event = std::move(mouseEvent);
             break;
         }

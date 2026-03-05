@@ -138,12 +138,12 @@ void Hover::update(ecs::ComponentRegistry &componentRegistry,
                                                     worldTransform.rotation);
 
     if (isInside) {
-        if (hover.getIsHovered()) {
+        if (hover.isHovered()) {
             // Already hovering, no change
             return;
         }
 
-        hover.setIsHovered(true);
+        hover.setHovered(true);
         const auto onHover = hover.getOnHoverHandler();
         if (onHover) {
             onHover();
@@ -151,12 +151,12 @@ void Hover::update(ecs::ComponentRegistry &componentRegistry,
         return;
     }
 
-    if (!hover.getIsHovered()) {
+    if (!hover.isHovered()) {
         // Mouse is outside and wasn't hovering, no change
         return;
     }
 
-    hover.setIsHovered(false);
+    hover.setHovered(false);
     const auto onUnhover = hover.getOnUnhoverHandler();
     if (onUnhover) {
         onUnhover();

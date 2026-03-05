@@ -30,6 +30,7 @@
 #include "guillaume/components/click.hpp"
 #include "guillaume/components/hover.hpp"
 #include "guillaume/components/relationship.hpp"
+#include "guillaume/components/render.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -42,9 +43,8 @@ namespace guillaume::entities {
  * @see components::Text
  */
 class Button
-    : public ecs::EntityFiller<components::Transform, components::Bound,
-                               components::Click, components::Hover,
-                               components::Text, components::Relationship> {
+    : public ecs::EntityFiller<components::Bound, components::Click, components::Hover, components::Relationship,
+                               components::Render, components::Text, components::Transform> {
   public:
         /**
          * @brief Builder for constructing `Button` entities.
@@ -189,9 +189,8 @@ class Button
      * @param componentRegistry Registry used to create and store components.
      */
     Button(ecs::ComponentRegistry &componentRegistry)
-        : ecs::EntityFiller<components::Transform, components::Bound,
-                            components::Click, components::Hover,
-                            components::Text, components::Relationship>(
+        : ecs::EntityFiller<components::Bound, components::Click, components::Hover, components::Relationship,
+                               components::Render, components::Text, components::Transform>(
               componentRegistry) {}
 
     /**
