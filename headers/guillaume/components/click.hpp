@@ -46,6 +46,7 @@ class Click : public ecs::Component {
 
   private:
     Handler _onClick; ///< Click event handler
+    Handler _onRelease; ///< Release event handler
     bool _isClicked{false}; ///< Flag indicating if the entity is currently clicked
 
   public:
@@ -66,11 +67,23 @@ class Click : public ecs::Component {
     void setOnClickHandler(const Handler &handler) { _onClick = handler; }
 
     /**
+     * @brief Set the onRelease event handler.
+     * @param handler The function to call on release events.
+     */
+    void setOnReleaseHandler(const Handler &handler) { _onRelease = handler; }
+
+    /**
      * @brief Get the onClick event handler.
      * @return The onClick event handler.
      */
     Handler getOnClickHandler(void) const { return _onClick; }
 
+    /**
+     * @brief Get the onRelease event handler.
+     * @return The onRelease event handler.
+     */
+    Handler getOnReleaseHandler(void) const { return _onRelease; }
+    
     /**
      * @brief Check if the entity is currently clicked.
      * @return True if the entity is clicked, false otherwise.

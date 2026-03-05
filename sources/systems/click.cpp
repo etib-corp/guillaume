@@ -108,7 +108,13 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
             }
             if (!nextEvent->isButtonPressed(
                     utility::event::MouseButtonEvent::MouseButton::LEFT)) {
-                click.setClicked(false);
+                if (click.isClicked()) {
+                    click.setClicked(false);
+                    const auto onRelease = click.getOnReleaseHandler();
+                    if (onRelease) {
+                        onRelease();
+                    }
+                }
                 continue;
             }
             _pendingClickEvent = std::move(nextEvent);
@@ -120,7 +126,6 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
     if (!_pendingClickEvent) {
         return;
     }
-
 
     const auto &bound =
         componentRegistry.getComponent<components::Bound>(identityIdentifier);

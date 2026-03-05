@@ -77,12 +77,15 @@ int main(int argc, char *argv[]) {
     button1Hover.setOnUnhoverHandler(
         [&button1Text]() { button1Text.setContent("Button 1"); });
 
-    bool isButton1Clicked = false;
     auto &button1Click = ecs.getComponent<guillaume::components::Click>(*button1);
     button1Click.setOnClickHandler(
-        [&button1Text, &isButton1Clicked]() {
-            isButton1Clicked = !isButton1Clicked;
-            button1Text.setContent(isButton1Clicked ? "Button 1 (clicked)" : "Button 1");
+        [&button1Text]() {
+            button1Text.setContent("Button 1 (clicked)");
+        }
+    );
+    button1Click.setOnReleaseHandler(
+        [&button1Text]() {
+            button1Text.setContent("Button 1");
         }
     );
 
