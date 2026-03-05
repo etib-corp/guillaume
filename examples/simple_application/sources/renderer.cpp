@@ -102,6 +102,11 @@ Renderer::Renderer(void)
 
     SDL_GL_SetSwapInterval(1);
 
+    if (!SDL_StartTextInput(_window)) {
+        getLogger().warning("Failed to start SDL text input: " +
+                            std::string(SDL_GetError()));
+    }
+
     int windowWidth = 0;
     int windowHeight = 0;
     if (!SDL_GetWindowSize(_window, &windowWidth, &windowHeight)) {
@@ -135,6 +140,10 @@ Renderer::~Renderer(void) {
     }
     _fontCache.clear();
 
+    if (_window) {
+        SDL_StopTextInput(_window);
+    }
+
     if (_glContext) {
         SDL_GL_DestroyContext(_glContext);
     }
@@ -160,6 +169,8 @@ void Renderer::drawTriangle(const guillaume::shapes::Triangle &triangle) {
     getLogger().debug("Drawing a triangle shape");
 
     auto position = triangle.getPosition();
+    const auto cameraPosition = getCamera().getPosition();
+    position -= cameraPosition;
     auto color = triangle.getColor();
     auto scale = triangle.getScale();
     auto rotation = triangle.getRotation();
@@ -188,6 +199,8 @@ void Renderer::drawRectangle(const guillaume::shapes::Rectangle &rectangle) {
     getLogger().debug("Drawing a rectangle shape");
 
     auto position = rectangle.getPosition();
+    const auto cameraPosition = getCamera().getPosition();
+    position -= cameraPosition;
     auto size = rectangle.getSize();
     auto color = rectangle.getColor();
     auto scale = rectangle.getScale();
@@ -221,6 +234,8 @@ void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
     getLogger().debug("Drawing a circle shape");
 
     auto position = circle.getPosition();
+    const auto cameraPosition = getCamera().getPosition();
+    position -= cameraPosition;
     auto color = circle.getColor();
     auto scale = circle.getScale();
 
@@ -262,6 +277,20 @@ Renderer::measureText(const guillaume::Text &text,
         getLogger().error("Failed to measure text: " +
                           std::string(SDL_GetError()));
         return {0.0f, 0.0f};
+    }
+
+    return {static_cast<float>(width), static_cast<float>(height)};
+}
+
+guillaume::Renderer::ViewportSize Renderer::getViewportSize(void) const {
+    if (!_window) {
+        return {1.0f, 1.0f};
+    }
+
+    int width = 0;
+    int height = 0;
+    if (!SDL_GetWindowSize(_window, &width, &height)) {
+        return {1.0f, 1.0f};
     }
 
     return {static_cast<float>(width), static_cast<float>(height)};
@@ -310,6 +339,8 @@ void Renderer::drawText(const guillaume::Text &text,
                  GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
 
     auto position = text.getPosition();
+    const auto cameraPosition = getCamera().getPosition();
+    position -= cameraPosition;
     auto rotation = text.getRotation();
     float width = static_cast<float>(converted->w);
     float height = static_cast<float>(converted->h);

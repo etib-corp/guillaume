@@ -20,24 +20,20 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs.hpp"
+#pragma once
 
-namespace guillaume {
+#include <gtest/gtest.h>
 
-ECS::ECS(event::EventBus &eventBus, Renderer &renderer)
-    : _eventBus(eventBus), _renderer(renderer) {
-    this->getLogger().info("Initializing ECS with core systems");
-    registerSystem<systems::Click>(
-        std::make_unique<systems::Click>(_eventBus, _renderer));
-    registerSystem<systems::Hover>(
-        std::make_unique<systems::Hover>(_eventBus, _renderer));
-    registerSystem<systems::Render>(
-        std::make_unique<systems::Render>(_renderer));
-    registerSystem<systems::KeyboardControl>(
-        std::make_unique<systems::KeyboardControl>(_eventBus));
-    registerSystem<systems::TextInput>(
-        std::make_unique<systems::TextInput>(_eventBus));
-    this->getLogger().info("ECS initialization complete");
-}
+#include <guillaume/systems/keyboard_control.hpp>
 
-} // namespace guillaume
+namespace guillaume::systems::tests {
+
+class TestSystemsKeyboardControl : public ::testing::Test {
+  protected:
+    TestSystemsKeyboardControl(void) = default;
+    ~TestSystemsKeyboardControl(void) override = default;
+    void SetUp(void) override {}
+    void TearDown(void) override {}
+};
+
+} // namespace guillaume::systems::tests

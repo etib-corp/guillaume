@@ -20,20 +20,36 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "guillaume/systems/text_input.hpp"
 
-#include <gtest/gtest.h>
+namespace guillaume::systems {
 
-#include <guillaume/systems/keyboard.hpp>
+TextInput::TextInput(event::EventBus &eventBus)
+    : _textInputSubscriber(eventBus) {}
 
-namespace guillaume::systems::tests {
+void TextInput::update(ecs::ComponentRegistry &componentRegistry,
+                       const ecs::Entity::Identifier &identityIdentifier) {
+    if (!_textInputSubscriber.hasPendingEvents()) {
+        return;
+    }
 
-class TestKeyboard : public ::testing::Test {
-  protected:
-    TestKeyboard(void) = default;
-    ~TestKeyboard(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+    auto &text =
+        componentRegistry.getComponent<components::Text>(identityIdentifier);
+    std::string content = text.getContent();
 
-} // namespace guillaume::systems::tests
+    while (_textInputSubscriber.hasPendingEvents()) {
+        const auto textInputEvent = _textInputSubscriber.getNextEvent();
+        if (!textInputEvent) {
+            continue;
+        }
+
+        const auto committedText = textInputEvent->getText();
+        if (!committedText.empty()) {
+            content += committedText;
+        }
+    }
+
+    text.setContent(content);
+}
+
+} // namespace guillaume::systems

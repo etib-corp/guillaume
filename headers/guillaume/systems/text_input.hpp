@@ -30,32 +30,33 @@
 #include "guillaume/event/event_subscriber.hpp"
 
 #include <utility/event/event.hpp>
-#include <utility/event/keyboard_event.hpp>
+#include <utility/event/text_input_event.hpp>
 
 namespace guillaume::systems {
 
 /**
- * @brief System handling keyboard input for text entities.
+ * @brief System handling committed text input events for text entities.
  * @see components::Text
  */
-class Keyboard : public ecs::SystemFiller<components::Text, components::Focus> {
+class TextInput
+    : public ecs::SystemFiller<components::Text, components::Focus> {
   private:
-    event::EventSubscriber<utility::event::KeyboardEvent> _keyboardSubscriber;
+    event::EventSubscriber<utility::event::TextInputEvent> _textInputSubscriber;
 
   public:
     /**
-     * @brief Default constructor for the Keyboard system.
+     * @brief Default constructor for the TextInput system.
      * @param eventBus The event bus to subscribe to.
      */
-    Keyboard(event::EventBus &eventBus);
+    TextInput(event::EventBus &eventBus);
 
     /**
-     * @brief Default destructor for the Keyboard system.
+     * @brief Default destructor for the TextInput system.
      */
-    ~Keyboard(void) = default;
+    ~TextInput(void) = default;
 
     /**
-     * @brief Update the Keyboard system for the specified entity.
+     * @brief Update the TextInput system for the specified entity.
      * @param componentRegistry The component registry instance.
      * @param identityIdentifier The identifier of the entity to update.
      */

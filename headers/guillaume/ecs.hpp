@@ -31,8 +31,9 @@
 
 #include "guillaume/systems/click.hpp"
 #include "guillaume/systems/hover.hpp"
-#include "guillaume/systems/keyboard.hpp"
+#include "guillaume/systems/keyboard_control.hpp"
 #include "guillaume/systems/render.hpp"
+#include "guillaume/systems/text_input.hpp"
 
 namespace guillaume {
 

@@ -24,32 +24,44 @@
 #include "guillaume/systems/detail/world_transform_utils.hpp"
 
 #include <cmath>
+#include <optional>
 
 namespace {
 
-// Helper function to convert screen-space mouse position to world-space
-// position Assumes orthographic projection (camera projects from Z distance
-// towards Z=0 plane)
-static typename guillaume::components::Transform::Position
-convertMouseToWorldPosition(
-    const typename guillaume::Renderer::Position &mousePos2D,
-    const typename guillaume::Renderer::Position &cameraPos) {
+/**
+ * @brief Intersect a world-space ray with the UI plane.
+ * @param ray Input world-space ray.
+ * @param planeZ Target plane depth.
+ * @return Intersection point when it exists, otherwise nullopt.
+ */
+static std::optional<typename guillaume::components::Transform::Position>
+intersectRayWithUiPlane(const typename guillaume::Renderer::Ray &ray,
+                        const float planeZ = 0.0f) {
+    const auto origin = ray.getOrigin();
+    const auto direction = ray.getDirection();
 
-    // For orthographic projection, we assume:
-    // - Mouse position is in screen coordinates (x, y in pixel space)
-    // - We need to transform it considering camera position
-    // - Z component determines depth for 2D UI elements
+    constexpr float epsilon = 1.0e-6f;
+    if (std::abs(direction[2]) <= epsilon) {
+        return std::nullopt;
+    }
 
-    // Simple orthographic transformation:
-    // Screen (x, y) maps directly to world (x, y) with camera offset
-    typename guillaume::components::Transform::Position worldPos;
-    worldPos[0] = mousePos2D[0] - cameraPos[0];
-    worldPos[1] = mousePos2D[1] - cameraPos[1];
-    worldPos[2] = 0.0f;
+    const float distanceParameter = (planeZ - origin[2]) / direction[2];
+    if (distanceParameter < 0.0f) {
+        return std::nullopt;
+    }
 
-    return worldPos;
+    return ray.pointAt(distanceParameter);
 }
 
+/**
+ * @brief Test whether a world point lies inside a rotated/scaled entity bound.
+ * @param point Point in world space.
+ * @param entityCenter Entity center in world space.
+ * @param boundSize Entity unscaled bound size.
+ * @param entityScale Entity world scale.
+ * @param entityRotation Entity world rotation.
+ * @return True when the point is inside projected bounds.
+ */
 static bool isPointInsideEntityBounds(
     const typename guillaume::components::Transform::Position &point,
     const typename guillaume::components::Transform::Position &entityCenter,
@@ -90,14 +102,19 @@ void Hover::update(ecs::ComponentRegistry &componentRegistry,
         auto event = _mouseMotionSubscriber.getNextEvent();
         if (event) {
             const auto mousePosition = event->getPosition();
-            const auto cameraPos = _renderer.getCameraPosition();
             typename guillaume::components::Transform::Position mousePos3D;
             mousePos3D[0] = mousePosition[0];
             mousePos3D[1] = mousePosition[1];
             mousePos3D[2] = 0.0f;
-            const auto worldMousePos =
-                convertMouseToWorldPosition(mousePos3D, cameraPos);
-            _renderer.setLastMousePosition(worldMousePos);
+
+            const auto mouseRay =
+                _renderer.getViewRayFromScreenPosition(mousePos3D);
+            _renderer.setLastMouseRay(mouseRay);
+
+            const auto worldMousePos = intersectRayWithUiPlane(mouseRay);
+            if (worldMousePos) {
+                _renderer.setLastMousePosition(*worldMousePos);
+            }
         }
     }
 
@@ -113,11 +130,12 @@ void Hover::update(ecs::ComponentRegistry &componentRegistry,
 
     guillaume::components::Transform::Position trueCenter;
     trueCenter[0] = worldTransform.position[0];
-    trueCenter[1] = worldTransform.position[1] - (size[1] * worldTransform.scale[1] / 2.0f);
+    trueCenter[1] =
+        worldTransform.position[1] - (size[1] * worldTransform.scale[1] / 2.0f);
 
-    const bool isInside = isPointInsideEntityBounds(
-        worldMousePos, trueCenter, size, worldTransform.scale,
-        worldTransform.rotation);
+    const bool isInside = isPointInsideEntityBounds(worldMousePos, trueCenter,
+                                                    size, worldTransform.scale,
+                                                    worldTransform.rotation);
 
     if (isInside) {
         if (hover.isHovered()) {
