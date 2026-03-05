@@ -31,6 +31,11 @@
 #include "guillaume/renderer.hpp"
 
 namespace guillaume::components {
+
+  /**
+   * @brief Component representing renderable entities.
+   * @see systems::Render
+   */
     class Render : public ecs::Component {
       public:
         /**
@@ -41,7 +46,7 @@ namespace guillaume::components {
             ecs::ComponentRegistry &componentRegistry,
             const ecs::Entity::Identifier &identityIdentifier,
             Renderer &renderer
-        )>;
+        )>; ///< Render event handler type
 
       private:
         Handler _normal = nullptr; ///< Render event handler
