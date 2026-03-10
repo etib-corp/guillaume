@@ -29,9 +29,9 @@ namespace guillaume::tests {
 void TestStorage::SetUp(void) {
     const auto timestamp =
         std::chrono::steady_clock::now().time_since_epoch().count();
-    _localStoragePath = std::filesystem::temp_directory_path() /
-                        ("guillaume-storage-test-" +
-                         std::to_string(timestamp) + ".db");
+    _localStoragePath =
+        std::filesystem::temp_directory_path() /
+        ("guillaume-storage-test-" + std::to_string(timestamp) + ".db");
 
     SessionStorage sessionStorage;
     sessionStorage.clear();

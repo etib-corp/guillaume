@@ -43,9 +43,9 @@ class Input : public ecs::EntityFiller<components::Transform, components::Bound,
                                        components::Text, components::Focus,
                                        components::Relationship> {
   public:
-        /**
-         * @brief Builder for constructing `Input` entities.
-         */
+    /**
+     * @brief Builder for constructing `Input` entities.
+     */
     class Builder {
       private:
         ecs::ComponentRegistry &_componentRegistry;
@@ -153,15 +153,15 @@ class Input : public ecs::EntityFiller<components::Transform, components::Bound,
      */
     class Director {
       public:
-                /**
-                 * @brief Construct an input with provided attributes.
-                 * @tparam BuilderType Concrete builder type.
-                 * @param builder Builder instance.
-                 * @param position Input position.
-                 * @param size Input size.
-                 * @param content Input initial content.
-                 * @param parentIdentifier Parent entity identifier.
-                 */
+        /**
+         * @brief Construct an input with provided attributes.
+         * @tparam BuilderType Concrete builder type.
+         * @param builder Builder instance.
+         * @param position Input position.
+         * @param size Input size.
+         * @param content Input initial content.
+         * @param parentIdentifier Parent entity identifier.
+         */
         template <typename BuilderType>
         void
         constructInput(BuilderType &builder,

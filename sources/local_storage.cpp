@@ -138,11 +138,10 @@ void LocalStorage::clear(void) {
 }
 
 void LocalStorage::initializeSchema(void) {
-    executeStatement(
-        "CREATE TABLE IF NOT EXISTS local_storage ("
-        "key TEXT PRIMARY KEY, "
-        "value TEXT NOT NULL"
-        ");");
+    executeStatement("CREATE TABLE IF NOT EXISTS local_storage ("
+                     "key TEXT PRIMARY KEY, "
+                     "value TEXT NOT NULL"
+                     ");");
 }
 
 bool LocalStorage::executeStatement(const std::string &sql) const {

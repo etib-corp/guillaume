@@ -98,7 +98,8 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         _pendingClickEvent.reset();
         _evaluatedEntities.clear();
     }
-    auto &click = componentRegistry.getComponent<components::Click>(identityIdentifier);
+    auto &click =
+        componentRegistry.getComponent<components::Click>(identityIdentifier);
 
     if (!_pendingClickEvent) {
         while (_mouseButtonSubscriber.hasPendingEvents()) {
@@ -112,7 +113,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
                     click.setClicked(false);
                     const auto onRelease = click.getOnReleaseHandler();
                     if (onRelease) {
-                        onRelease();
+                        onRelease(nextEvent->getPosition());
                     }
                 }
                 continue;
@@ -170,7 +171,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         return;
     }
 
-    onClick();
+    onClick(_pendingClickEvent->getPosition());
     _pendingClickEvent.reset();
     _evaluatedEntities.clear();
 }

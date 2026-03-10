@@ -40,7 +40,7 @@ namespace guillaume {
 class SessionStorage : public Storage {
   private:
     static std::unordered_map<std::string, std::string>
-        _storage; ///< Shared in-memory storage map
+        _storage;             ///< Shared in-memory storage map
     static std::mutex _mutex; ///< Synchronizes access to shared storage
 
   public:

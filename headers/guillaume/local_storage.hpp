@@ -42,8 +42,8 @@ namespace guillaume {
 class LocalStorage : public Storage {
   private:
     std::filesystem::path _storageFilePath; ///< Backing SQLite database file
-    sqlite3 *_database; ///< SQLite connection handle
-    mutable std::mutex _mutex; ///< Synchronizes SQLite access
+    sqlite3 *_database;                     ///< SQLite connection handle
+    mutable std::mutex _mutex;              ///< Synchronizes SQLite access
 
     /**
      * @brief Initialize database schema.

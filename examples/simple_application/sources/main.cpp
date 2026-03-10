@@ -18,7 +18,6 @@
 
 #include <iostream>
 
-
 #include "application.hpp"
 
 namespace {
@@ -47,15 +46,16 @@ std::optional<std::string> resolveDefaultFontPath(void) {
 int main(int argc, char *argv[]) {
     simple_application::Application application(argc, argv);
 
-    guillaume::LocalStorage localStorage(
-        std::filesystem::current_path() /
-        ".simple-application-storage.db");
+    guillaume::LocalStorage localStorage(std::filesystem::current_path() /
+                                         ".simple-application-storage.db");
     guillaume::SessionStorage sessionStorage;
 
-    const int launchCount = localStorage.getItemAs<int>("launchCount").value_or(0) + 1;
+    const int launchCount =
+        localStorage.getItemAs<int>("launchCount").value_or(0) + 1;
     localStorage.setItem("launchCount", launchCount);
 
-    const int sessionClicks = sessionStorage.getItemAs<int>("sessionClicks").value_or(0);
+    const int sessionClicks =
+        sessionStorage.getItemAs<int>("sessionClicks").value_or(0);
     localStorage.setItem("lastRunSessionClicks", sessionClicks);
     sessionStorage.setItem("sessionClicks", 0);
 
@@ -87,44 +87,49 @@ int main(int argc, char *argv[]) {
     button1Text.setContent("Launch #" + std::to_string(launchCount));
 
     // Button 1 handlers
-    auto &button1Hover = ecs.getComponent<guillaume::components::Hover>(*button1);
+    auto &button1Hover =
+        ecs.getComponent<guillaume::components::Hover>(*button1);
     button1Hover.setOnHoverHandler(
         [&button1Text]() { button1Text.setContent("Button 1 (hover)"); });
     button1Hover.setOnUnhoverHandler(
         [&button1Text]() { button1Text.setContent("Button 1"); });
 
-    auto &button1Click = ecs.getComponent<guillaume::components::Click>(*button1);
+    auto &button1Click =
+        ecs.getComponent<guillaume::components::Click>(*button1);
     button1Click.setOnClickHandler(
-        [&button1Text, &localStorage, &sessionStorage]() {
-            const int totalClicks =
-                localStorage.getItemAs<int>("totalClicks").value_or(0) + 1;
-            const int newSessionClicks =
-                sessionStorage.getItemAs<int>("sessionClicks").value_or(0) + 1;
+        [&button1Text, &localStorage, &sessionStorage](utility::event::MouseMotionEvent::MousePosition position) {
+        const int totalClicks =
+            localStorage.getItemAs<int>("totalClicks").value_or(0) + 1;
+        const int newSessionClicks =
+            sessionStorage.getItemAs<int>("sessionClicks").value_or(0) + 1;
 
-            localStorage.setItem("totalClicks", totalClicks);
-            sessionStorage.setItem("sessionClicks", newSessionClicks);
+        localStorage.setItem("totalClicks", totalClicks);
+        sessionStorage.setItem("sessionClicks", newSessionClicks);
 
-            button1Text.setContent("Clicks: " + std::to_string(totalClicks) +
-                                   " / Session: " +
-                                   std::to_string(newSessionClicks));
-        }
+        button1Text.setContent(
+            "Clicks: " + std::to_string(totalClicks) +
+            " / Session: " + std::to_string(newSessionClicks));
     );
     button1Click.setOnReleaseHandler(
-        [&button1Text]() {
+        [&button1Text](
+            utility::event::MouseMotionEvent::MousePosition position) {
             button1Text.setContent("Button 1");
-        }
-    );
+        });
 
-    auto &button1Render = ecs.getComponent<guillaume::components::Render>(*button1);
+    auto &button1Render =
+        ecs.getComponent<guillaume::components::Render>(*button1);
 
-    button1Render.setNormalHandler([](guillaume::ecs::ComponentRegistry &componentRegistry,
-        const guillaume::ecs::Entity::Identifier &identityIdentifier,
-        guillaume::Renderer &renderer) {
+    button1Render.setNormalHandler(
+        [](guillaume::ecs::ComponentRegistry &componentRegistry,
+           const guillaume::ecs::Entity::Identifier &identityIdentifier,
+           guillaume::Renderer &renderer) {
             const auto &bound =
-                componentRegistry.getComponent<guillaume::components::Bound>(identityIdentifier);
+                componentRegistry.getComponent<guillaume::components::Bound>(
+                    identityIdentifier);
 
             const auto worldTransform =
-                guillaume::systems::detail::calculateWorldTransform(componentRegistry, identityIdentifier);
+                guillaume::systems::detail::calculateWorldTransform(
+                    componentRegistry, identityIdentifier);
 
             guillaume::shapes::Rectangle rectangle;
             rectangle.setPosition(worldTransform.position);
@@ -135,12 +140,14 @@ int main(int argc, char *argv[]) {
 
             renderer.drawRectangle(rectangle);
 
-            if (!componentRegistry.hasComponent<guillaume::components::Text>(identityIdentifier)) {
+            if (!componentRegistry.hasComponent<guillaume::components::Text>(
+                    identityIdentifier)) {
                 return;
             }
 
             const auto &textComponent =
-                componentRegistry.getComponent<guillaume::components::Text>(identityIdentifier);
+                componentRegistry.getComponent<guillaume::components::Text>(
+                    identityIdentifier);
             std::string text = textComponent.getContent();
             if (text.empty()) {
                 return;
@@ -157,17 +164,19 @@ int main(int argc, char *argv[]) {
 
             guillaume::Font font(*fontPath, 24);
             renderer.drawText(textObj, font);
-        }
-    );
+        });
 
-    button1Render.setHoveredHandler([](guillaume::ecs::ComponentRegistry &componentRegistry,
-        const guillaume::ecs::Entity::Identifier &identityIdentifier,
-        guillaume::Renderer &renderer) {
+    button1Render.setHoveredHandler(
+        [](guillaume::ecs::ComponentRegistry &componentRegistry,
+           const guillaume::ecs::Entity::Identifier &identityIdentifier,
+           guillaume::Renderer &renderer) {
             const auto &bound =
-                componentRegistry.getComponent<guillaume::components::Bound>(identityIdentifier);
+                componentRegistry.getComponent<guillaume::components::Bound>(
+                    identityIdentifier);
 
             const auto worldTransform =
-                guillaume::systems::detail::calculateWorldTransform(componentRegistry, identityIdentifier);
+                guillaume::systems::detail::calculateWorldTransform(
+                    componentRegistry, identityIdentifier);
 
             guillaume::shapes::Rectangle rectangle;
             rectangle.setPosition(worldTransform.position);
@@ -178,12 +187,14 @@ int main(int argc, char *argv[]) {
 
             renderer.drawRectangle(rectangle);
 
-            if (!componentRegistry.hasComponent<guillaume::components::Text>(identityIdentifier)) {
+            if (!componentRegistry.hasComponent<guillaume::components::Text>(
+                    identityIdentifier)) {
                 return;
             }
 
             const auto &textComponent =
-                componentRegistry.getComponent<guillaume::components::Text>(identityIdentifier);
+                componentRegistry.getComponent<guillaume::components::Text>(
+                    identityIdentifier);
             std::string text = textComponent.getContent();
             if (text.empty()) {
                 return;
@@ -200,17 +211,19 @@ int main(int argc, char *argv[]) {
 
             guillaume::Font font(*fontPath, 24);
             renderer.drawText(textObj, font);
-        }
-    );
+        });
 
-    button1Render.setClickedHandler([](guillaume::ecs::ComponentRegistry &componentRegistry,
-        const guillaume::ecs::Entity::Identifier &identityIdentifier,
-        guillaume::Renderer &renderer) {
+    button1Render.setClickedHandler(
+        [](guillaume::ecs::ComponentRegistry &componentRegistry,
+           const guillaume::ecs::Entity::Identifier &identityIdentifier,
+           guillaume::Renderer &renderer) {
             const auto &bound =
-                componentRegistry.getComponent<guillaume::components::Bound>(identityIdentifier);
+                componentRegistry.getComponent<guillaume::components::Bound>(
+                    identityIdentifier);
 
             const auto worldTransform =
-                guillaume::systems::detail::calculateWorldTransform(componentRegistry, identityIdentifier);
+                guillaume::systems::detail::calculateWorldTransform(
+                    componentRegistry, identityIdentifier);
 
             guillaume::shapes::Rectangle rectangle;
             rectangle.setPosition(worldTransform.position);
@@ -221,12 +234,14 @@ int main(int argc, char *argv[]) {
 
             renderer.drawRectangle(rectangle);
 
-            if (!componentRegistry.hasComponent<guillaume::components::Text>(identityIdentifier)) {
+            if (!componentRegistry.hasComponent<guillaume::components::Text>(
+                    identityIdentifier)) {
                 return;
             }
 
             const auto &textComponent =
-                componentRegistry.getComponent<guillaume::components::Text>(identityIdentifier);
+                componentRegistry.getComponent<guillaume::components::Text>(
+                    identityIdentifier);
             std::string text = textComponent.getContent();
             if (text.empty()) {
                 return;
@@ -243,7 +258,6 @@ int main(int argc, char *argv[]) {
 
             guillaume::Font font(*fontPath, 24);
             renderer.drawText(textObj, font);
-        }
-    );
+        });
     return application.run();
 }

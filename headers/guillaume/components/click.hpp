@@ -23,6 +23,7 @@
 #pragma once
 
 #include <functional>
+#include <utility/event/mouse_motion_event.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
@@ -33,7 +34,8 @@ namespace guillaume::components {
  *
  * @code
  * components::Click click;
- * click.setOnClickHandler([]() {
+ * click.setOnClickHandler([](utility::event::MouseMotionEvent::MousePosition
+ * position) {
  *     // Handle click.
  * });
  * @endcode
@@ -42,12 +44,15 @@ namespace guillaume::components {
  */
 class Click : public ecs::Component {
   public:
-    using Handler = std::function<void(void)>; ///< Click event handler type
+    using Handler = std::function<void(
+        utility::event::MouseMotionEvent::MousePosition)>; ///< Click event
+                                                           ///< handler type
 
   private:
-    Handler _onClick; ///< Click event handler
+    Handler _onClick;   ///< Click event handler
     Handler _onRelease; ///< Release event handler
-    bool _isClicked{false}; ///< Flag indicating if the entity is currently clicked
+    bool _isClicked{
+        false}; ///< Flag indicating if the entity is currently clicked
 
   public:
     /**
@@ -83,7 +88,7 @@ class Click : public ecs::Component {
      * @return The onRelease event handler.
      */
     Handler getOnReleaseHandler(void) const { return _onRelease; }
-    
+
     /**
      * @brief Check if the entity is currently clicked.
      * @return True if the entity is clicked, false otherwise.
