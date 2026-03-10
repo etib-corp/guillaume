@@ -40,9 +40,9 @@ namespace guillaume::entities {
 class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
                                        components::Relationship> {
   public:
-        /**
-         * @brief Builder for constructing `Panel` entities.
-         */
+    /**
+     * @brief Builder for constructing `Panel` entities.
+     */
     class Builder {
       private:
         ecs::ComponentRegistry &_componentRegistry;
@@ -147,13 +147,13 @@ class Panel : public ecs::EntityFiller<components::Transform, components::Bound,
      */
     class Director {
       public:
-                /**
-                 * @brief Construct a panel with provided attributes.
-                 * @tparam BuilderType Concrete builder type.
-                 * @param builder Builder instance.
-                 * @param position Panel position.
-                 * @param size Panel size.
-                 */
+        /**
+         * @brief Construct a panel with provided attributes.
+         * @tparam BuilderType Concrete builder type.
+         * @param builder Builder instance.
+         * @param position Panel position.
+         * @param size Panel size.
+         */
         template <typename BuilderType>
         void constructPanel(BuilderType &builder,
                             const components::Transform::Position &position,

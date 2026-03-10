@@ -43,12 +43,14 @@ namespace guillaume::entities {
  * @see components::Text
  */
 class Button
-    : public ecs::EntityFiller<components::Bound, components::Click, components::Hover, components::Relationship,
-                               components::Render, components::Text, components::Transform> {
+    : public ecs::EntityFiller<components::Bound, components::Click,
+                               components::Hover, components::Relationship,
+                               components::Render, components::Text,
+                               components::Transform> {
   public:
-        /**
-         * @brief Builder for constructing `Button` entities.
-         */
+    /**
+     * @brief Builder for constructing `Button` entities.
+     */
     class Builder {
       private:
         ecs::ComponentRegistry &_componentRegistry;
@@ -156,16 +158,16 @@ class Button
      */
     class Director {
       public:
-                /**
-                 * @brief Construct a button with provided attributes.
-                 * @tparam BuilderType Concrete builder type.
-                 * @param builder Builder instance.
-                 * @param position Button position.
-                 * @param rotation Button rotation.
-                 * @param size Button size.
-                 * @param content Button label text.
-                 * @param parentIdentifier Parent entity identifier.
-                 */
+        /**
+         * @brief Construct a button with provided attributes.
+         * @tparam BuilderType Concrete builder type.
+         * @param builder Builder instance.
+         * @param position Button position.
+         * @param rotation Button rotation.
+         * @param size Button size.
+         * @param content Button label text.
+         * @param parentIdentifier Parent entity identifier.
+         */
         template <typename BuilderType>
         void
         constructButton(BuilderType &builder,
@@ -189,9 +191,10 @@ class Button
      * @param componentRegistry Registry used to create and store components.
      */
     Button(ecs::ComponentRegistry &componentRegistry)
-        : ecs::EntityFiller<components::Bound, components::Click, components::Hover, components::Relationship,
-                               components::Render, components::Text, components::Transform>(
-              componentRegistry) {}
+        : ecs::EntityFiller<components::Bound, components::Click,
+                            components::Hover, components::Relationship,
+                            components::Render, components::Text,
+                            components::Transform>(componentRegistry) {}
 
     /**
      * @brief Virtual destructor for Button.

@@ -20,6 +20,26 @@
  SOFTWARE.
  */
 
-#include "guillaume/components/render.hpp"
+#pragma once
 
-namespace guillaume::components {} // namespace guillaume::components
+#include <filesystem>
+
+#include <gtest/gtest.h>
+
+#include <guillaume/local_storage.hpp>
+#include <guillaume/session_storage.hpp>
+
+namespace guillaume::tests {
+
+class TestStorage : public ::testing::Test {
+  protected:
+    std::filesystem::path _localStoragePath;
+
+    TestStorage(void) = default;
+    ~TestStorage(void) override = default;
+
+    void SetUp(void) override;
+    void TearDown(void) override;
+};
+
+} // namespace guillaume::tests

@@ -98,7 +98,8 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         _pendingClickEvent.reset();
         _evaluatedEntities.clear();
     }
-    auto &click = componentRegistry.getComponent<components::Click>(identityIdentifier);
+    auto &click =
+        componentRegistry.getComponent<components::Click>(identityIdentifier);
 
     if (!_pendingClickEvent) {
         while (_mouseButtonSubscriber.hasPendingEvents()) {

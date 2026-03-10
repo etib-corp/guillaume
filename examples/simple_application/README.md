@@ -24,3 +24,19 @@ The simple_application is a complete implementation of **SDL3 GPU acceleration**
 **Resource Management** with proper cleanup  
 **Error Handling** with logging  
 **3D Shape Support** with full position vectors  
+
+## Storage Usage Example
+
+The example now demonstrates Guillaume storage utilities:
+
+- `LocalStorage` persists data across restarts in
+  `.simple-application-storage.db`.
+- `SessionStorage` keeps data only for the current process session.
+
+On startup, the app increments a persistent `launchCount` value. When clicking
+the button, it updates:
+
+- `totalClicks` in `LocalStorage` (persisted)
+- `sessionClicks` in `SessionStorage` (session scoped)
+
+The button label displays both counters to make storage behavior visible.

@@ -20,6 +20,35 @@
  SOFTWARE.
  */
 
-#include "guillaume/components/render.hpp"
+#include "guillaume/session_storage.hpp"
 
-namespace guillaume::components {} // namespace guillaume::components
+namespace guillaume {
+
+std::unordered_map<std::string, std::string> SessionStorage::_storage;
+std::mutex SessionStorage::_mutex;
+
+void SessionStorage::setItem(const std::string &key, const std::string &value) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    _storage[key] = value;
+}
+
+std::optional<std::string> SessionStorage::getItem(const std::string &key) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _storage.find(key);
+    if (it == _storage.end()) {
+        return std::nullopt;
+    }
+    return it->second;
+}
+
+void SessionStorage::removeItem(const std::string &key) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    _storage.erase(key);
+}
+
+void SessionStorage::clear(void) {
+    std::lock_guard<std::mutex> lock(_mutex);
+    _storage.clear();
+}
+
+} // namespace guillaume
