@@ -112,7 +112,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
                     click.setClicked(false);
                     const auto onRelease = click.getOnReleaseHandler();
                     if (onRelease) {
-                        onRelease();
+                        onRelease(nextEvent->getPosition());
                     }
                 }
                 continue;
@@ -170,7 +170,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         return;
     }
 
-    onClick();
+    onClick(_pendingClickEvent->getPosition());
     _pendingClickEvent.reset();
     _evaluatedEntities.clear();
 }
