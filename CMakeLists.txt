@@ -18,6 +18,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(utility)
 
+FetchContent_Declare(
+    sqlite3
+    GIT_REPOSITORY https://github.com/sjinks/sqlite3-cmake
+    GIT_TAG v3.49.1
+)
+FetchContent_MakeAvailable(sqlite3)
+
 # Include common functions
 include(cmake/CommonFunctions.cmake)
 
@@ -66,6 +73,7 @@ set_guillaume_target_properties(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         utility
+        SQLite::SQLite3
 )
 
 # Configure public interface
