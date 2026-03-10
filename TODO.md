@@ -1,13 +1,12 @@
-## Todo
-- J fix button hitboxes
-- C add missing char for keyboard input
-- J Review the mechanism of click and hover.
-- C add Ray and Camera classe to utility
-
 ## Ideas
+*Clément*
 - Make layout management
-- Manage onClick and onRelease events, and if the click is released outside the starting element.
 - Add persistent data storage
-- list all entities needed in an application
+
+*Julien*
+- Manage onClick and onRelease events, and if the click is released outside the starting element.
 - Add mouse position to mouse click onClick and onRelease handlers
 - Add possibility to choose the button for click events
+
+*Clément and Julien*
+- list all entities needed in an application
