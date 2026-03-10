@@ -11,6 +11,9 @@
 #include <guillaume/entities/input.hpp>
 #include <guillaume/entities/panel.hpp>
 
+#include <guillaume/local_storage.hpp>
+#include <guillaume/session_storage.hpp>
+
 #include <guillaume/systems/detail/world_transform_utils.hpp>
 
 #include <iostream>
@@ -44,6 +47,18 @@ std::optional<std::string> resolveDefaultFontPath(void) {
 int main(int argc, char *argv[]) {
     simple_application::Application application(argc, argv);
 
+    guillaume::LocalStorage localStorage(
+        std::filesystem::current_path() /
+        ".simple-application-storage.db");
+    guillaume::SessionStorage sessionStorage;
+
+    const int launchCount = localStorage.getItemAs<int>("launchCount").value_or(0) + 1;
+    localStorage.setItem("launchCount", launchCount);
+
+    const int sessionClicks = sessionStorage.getItemAs<int>("sessionClicks").value_or(0);
+    localStorage.setItem("lastRunSessionClicks", sessionClicks);
+    sessionStorage.setItem("sessionClicks", 0);
+
     auto &ecs = application.getECS();
     auto &componentRegistry = ecs.getComponentRegistry();
 
@@ -69,6 +84,7 @@ int main(int argc, char *argv[]) {
     panelRelationship.addChildIdentifier(button1->getIdentifier());
 
     auto &button1Text = ecs.getComponent<guillaume::components::Text>(*button1);
+    button1Text.setContent("Launch #" + std::to_string(launchCount));
 
     // Button 1 handlers
     auto &button1Hover = ecs.getComponent<guillaume::components::Hover>(*button1);
@@ -79,8 +95,18 @@ int main(int argc, char *argv[]) {
 
     auto &button1Click = ecs.getComponent<guillaume::components::Click>(*button1);
     button1Click.setOnClickHandler(
-        [&button1Text]() {
-            button1Text.setContent("Button 1 (clicked)");
+        [&button1Text, &localStorage, &sessionStorage]() {
+            const int totalClicks =
+                localStorage.getItemAs<int>("totalClicks").value_or(0) + 1;
+            const int newSessionClicks =
+                sessionStorage.getItemAs<int>("sessionClicks").value_or(0) + 1;
+
+            localStorage.setItem("totalClicks", totalClicks);
+            sessionStorage.setItem("sessionClicks", newSessionClicks);
+
+            button1Text.setContent("Clicks: " + std::to_string(totalClicks) +
+                                   " / Session: " +
+                                   std::to_string(newSessionClicks));
         }
     );
     button1Click.setOnReleaseHandler(
