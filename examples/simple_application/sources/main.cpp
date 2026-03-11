@@ -97,22 +97,24 @@ int main(int argc, char *argv[]) {
     auto &button1Click =
         ecs.getComponent<guillaume::components::Click>(*button1);
     button1Click.setOnClickHandler(
-        [&button1Text, &localStorage, &sessionStorage](utility::event::MouseMotionEvent::MousePosition position) {
-        const int totalClicks =
-            localStorage.getItemAs<int>("totalClicks").value_or(0) + 1;
-        const int newSessionClicks =
-            sessionStorage.getItemAs<int>("sessionClicks").value_or(0) + 1;
+        [&button1Text, &localStorage,
+         &sessionStorage](utility::event::MouseMotionEvent::MousePosition
+                          /* position */) {
+            const int totalClicks =
+                localStorage.getItemAs<int>("totalClicks").value_or(0) + 1;
+            const int newSessionClicks =
+                sessionStorage.getItemAs<int>("sessionClicks").value_or(0) + 1;
 
-        localStorage.setItem("totalClicks", totalClicks);
-        sessionStorage.setItem("sessionClicks", newSessionClicks);
+            localStorage.setItem("totalClicks", totalClicks);
+            sessionStorage.setItem("sessionClicks", newSessionClicks);
 
-        button1Text.setContent(
-            "Clicks: " + std::to_string(totalClicks) +
-            " / Session: " + std::to_string(newSessionClicks));
-    );
+            button1Text.setContent(
+                "Clicks: " + std::to_string(totalClicks) +
+                " / Session: " + std::to_string(newSessionClicks));
+        });
     button1Click.setOnReleaseHandler(
         [&button1Text](
-            utility::event::MouseMotionEvent::MousePosition position) {
+            utility::event::MouseMotionEvent::MousePosition /* position */) {
             button1Text.setContent("Button 1");
         });
 
