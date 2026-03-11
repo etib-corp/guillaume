@@ -33,7 +33,8 @@
 
 namespace {
 
-class TextInputFixture : public guillaume::systems::tests::TestSystemsTextInput {
+class TextInputFixture
+    : public guillaume::systems::tests::TestSystemsTextInput {
   protected:
     guillaume::event::EventBus eventBus;
     guillaume::systems::TextInput textInputSystem{eventBus};
@@ -41,10 +42,10 @@ class TextInputFixture : public guillaume::systems::tests::TestSystemsTextInput 
     guillaume::ecs::Entity::Identifier entityIdentifier{1};
 
     void SetUp(void) override {
-        componentRegistry
-            .addComponent<guillaume::components::Text>(entityIdentifier);
-        componentRegistry
-            .addComponent<guillaume::components::Focus>(entityIdentifier);
+        componentRegistry.addComponent<guillaume::components::Text>(
+            entityIdentifier);
+        componentRegistry.addComponent<guillaume::components::Focus>(
+            entityIdentifier);
     }
 
     void dispatchTextInputEvent(const std::string &textInput) {

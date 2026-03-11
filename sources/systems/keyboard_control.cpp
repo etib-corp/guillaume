@@ -46,8 +46,9 @@ namespace guillaume::systems {
 KeyboardControl::KeyboardControl(event::EventBus &eventBus)
     : _keyboardSubscriber(eventBus) {}
 
-void KeyboardControl::update(ecs::ComponentRegistry &componentRegistry,
-                             const ecs::Entity::Identifier &identityIdentifier) {
+void KeyboardControl::update(
+    ecs::ComponentRegistry &componentRegistry,
+    const ecs::Entity::Identifier &identityIdentifier) {
     if (!_keyboardSubscriber.hasPendingEvents()) {
         return;
     }

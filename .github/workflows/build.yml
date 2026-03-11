@@ -48,9 +48,9 @@ jobs:
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DBUILD_DOCS=OFF
-          -DBUILD_TESTING=ON
-          -DBUILD_EXAMPLES=ON
+          -DBUILD_GUILLAUME_DOCS=OFF
+          -DBUILD_GUILLAUME_TESTING=ON
+          -DBUILD_GUILLAUME_EXAMPLES=ON
           -S ${{ github.workspace }}
 
       - name: Build

@@ -40,10 +40,10 @@ class KeyboardControlFixture
     guillaume::ecs::Entity::Identifier entityIdentifier{1};
 
     void SetUp(void) override {
-        componentRegistry
-            .addComponent<guillaume::components::Text>(entityIdentifier);
-        componentRegistry
-            .addComponent<guillaume::components::Focus>(entityIdentifier);
+        componentRegistry.addComponent<guillaume::components::Text>(
+            entityIdentifier);
+        componentRegistry.addComponent<guillaume::components::Focus>(
+            entityIdentifier);
     }
 
     void setText(const std::string &content) {

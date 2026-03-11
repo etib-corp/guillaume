@@ -36,7 +36,8 @@ namespace guillaume::components {
  *
  * @code
  * components::Click click;
- * click.setOnClickHandler([](utility::event::MouseMotionEvent::MousePosition position) {
+ * click.setOnClickHandler([](utility::event::MouseMotionEvent::MousePosition
+ * position) {
  *     // Handle click.
  * });
  * @endcode
@@ -45,7 +46,9 @@ namespace guillaume::components {
  */
 class Click : public ecs::Component {
   public:
-    using Handler = std::function<void(utility::event::MouseMotionEvent::MousePosition)>; ///< Click event handler type
+    using Handler = std::function<void(
+        utility::event::MouseMotionEvent::MousePosition)>; ///< Click event
+                                                           ///< handler type
 
   private:
     std::map<utility::event::MouseButtonEvent::MouseButton, Handler> _onClickHandlers{}; ///< Click event handlers

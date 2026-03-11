@@ -18,6 +18,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(utility)
 
+FetchContent_Declare(
+    sqlite3
+    GIT_REPOSITORY https://github.com/sjinks/sqlite3-cmake
+    GIT_TAG v3.49.1
+)
+FetchContent_MakeAvailable(sqlite3)
+
 # Include common functions
 include(cmake/CommonFunctions.cmake)
 
@@ -66,6 +73,7 @@ set_guillaume_target_properties(${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         utility
+        SQLite::SQLite3
 )
 
 # Configure public interface
@@ -76,17 +84,17 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Optional components
-option(BUILD_TESTING "Build the tests" OFF)
-option(BUILD_DOCS "Build documentation" OFF)
-option(BUILD_EXAMPLES "Build the examples" OFF)
+option(BUILD_GUILLAUME_TESTING "Build the tests" OFF)
+option(BUILD_GUILLAUME_DOCS "Build documentation" OFF)
+option(BUILD_GUILLAUME_EXAMPLES "Build the examples" OFF)
 
-if(BUILD_TESTING)
+if(BUILD_GUILLAUME_TESTING)
     add_subdirectory(tests)
 else()
     message(STATUS "Skipping tests...")
 endif()
 
-if(BUILD_DOCS)
+if(BUILD_GUILLAUME_DOCS)
     # Find Doxygen package (keep usage compatible across CMake versions and CI images)
     find_package(Doxygen REQUIRED)
     if(NOT Doxygen_FOUND)
@@ -137,7 +145,7 @@ if(BUILD_DOCS)
     set(DOXYGEN_WARN_IF_DOC_ERROR YES)
     set(DOXYGEN_WARN_NO_PARAMDOC YES)
     set(DOXYGEN_QUIET NO)
-    set(DOXYGEN_WARN_AS_ERROR YES)
+    set(DOXYGEN_WARN_AS_ERROR FAIL_ON_WARNINGS)
 
     # Source browsing
     set(DOXYGEN_SOURCE_BROWSER YES)
@@ -169,7 +177,7 @@ else()
     message(STATUS "Skipping docs...")
 endif()
 
-if(BUILD_EXAMPLES)
+if(BUILD_GUILLAUME_EXAMPLES)
     add_subdirectory(examples)
 else()
     message(STATUS "Skipping examples...")
