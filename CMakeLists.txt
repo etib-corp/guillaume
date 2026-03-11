@@ -84,17 +84,17 @@ target_include_directories(${PROJECT_NAME}
 )
 
 # Optional components
-option(BUILD_TESTING "Build the tests" OFF)
-option(BUILD_DOCS "Build documentation" OFF)
-option(BUILD_EXAMPLES "Build the examples" OFF)
+option(BUILD_GUILLAUME_TESTING "Build the tests" OFF)
+option(BUILD_GUILLAUME_DOCS "Build documentation" OFF)
+option(BUILD_GUILLAUME_EXAMPLES "Build the examples" OFF)
 
-if(BUILD_TESTING)
+if(BUILD_GUILLAUME_TESTING)
     add_subdirectory(tests)
 else()
     message(STATUS "Skipping tests...")
 endif()
 
-if(BUILD_DOCS)
+if(BUILD_GUILLAUME_DOCS)
     # Find Doxygen package (keep usage compatible across CMake versions and CI images)
     find_package(Doxygen REQUIRED)
     if(NOT Doxygen_FOUND)
@@ -177,7 +177,7 @@ else()
     message(STATUS "Skipping docs...")
 endif()
 
-if(BUILD_EXAMPLES)
+if(BUILD_GUILLAUME_EXAMPLES)
     add_subdirectory(examples)
 else()
     message(STATUS "Skipping examples...")
