@@ -27,7 +27,7 @@
 // TODO #include "guillaume/components/focus.hpp"
 #include "guillaume/components/hover.hpp"
 #include "guillaume/components/render.hpp"
-
+#include <utility/event/mouse_button_event.hpp>
 
 namespace guillaume::systems {
 
@@ -41,7 +41,7 @@ void Render::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity
         componentRegistry.getComponent<components::Render>(identityIdentifier);
 
     if (componentRegistry.hasComponent<components::Click>(identityIdentifier) && renderComponent.getClickedHandler()) {
-        if (componentRegistry.getComponent<components::Click>(identityIdentifier).isClicked()) {
+        if (componentRegistry.getComponent<components::Click>(identityIdentifier).isEntityClicked()) {
             renderComponent.getClickedHandler()(componentRegistry, identityIdentifier, _renderer);
             return;
         }

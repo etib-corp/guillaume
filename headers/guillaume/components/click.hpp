@@ -23,7 +23,9 @@
 #pragma once
 
 #include <functional>
+#include <map>
 #include <utility/event/mouse_motion_event.hpp>
+#include <utility/event/mouse_button_event.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
@@ -46,15 +48,28 @@ class Click : public ecs::Component {
     using Handler = std::function<void(utility::event::MouseMotionEvent::MousePosition)>; ///< Click event handler type
 
   private:
-    Handler _onClick; ///< Click event handler
-    Handler _onRelease; ///< Release event handler
-    bool _isClicked{false}; ///< Flag indicating if the entity is currently clicked
+    std::map<utility::event::MouseButtonEvent::MouseButton, Handler> _onClickHandlers{}; ///< Click event handlers
+    std::map<utility::event::MouseButtonEvent::MouseButton, Handler> _onReleaseHandlers{}; ///< Release event handlers
+
+    std::map<utility::event::MouseButtonEvent::MouseButton, bool> _isClicked{}; ///< Flag indicating if the entity is currently clicked
+
+    bool _isEntityClicked{false}; ///< Flag indicating if the entity is currently clicked (any button)
 
   public:
     /**
      * @brief Default constructor for the Click component.
      */
-    Click(void) = default;
+    Click(void) {
+      for (const auto button : {utility::event::MouseButtonEvent::MouseButton::LEFT,
+                                utility::event::MouseButtonEvent::MouseButton::MIDDLE,
+                                utility::event::MouseButtonEvent::MouseButton::RIGHT,
+                                utility::event::MouseButtonEvent::MouseButton::X1,
+                                utility::event::MouseButtonEvent::MouseButton::X2}) {
+        _isClicked[button] = false;
+        _onClickHandlers[button] = nullptr;
+        _onReleaseHandlers[button] = nullptr;
+      }
+    };
 
     /**
      * @brief Default destructor for the Click component.
@@ -63,39 +78,56 @@ class Click : public ecs::Component {
 
     /**
      * @brief Set the onClick event handler.
+     * @param button The mouse button to associate with the handler.
      * @param handler The function to call on click events.
      */
-    void setOnClickHandler(const Handler &handler) { _onClick = handler; }
+    void setOnClickHandler(const utility::event::MouseButtonEvent::MouseButton &button, const Handler &handler) { _onClickHandlers[button] = handler; }
 
     /**
      * @brief Set the onRelease event handler.
+     * @param button The mouse button to associate with the handler.
      * @param handler The function to call on release events.
      */
-    void setOnReleaseHandler(const Handler &handler) { _onRelease = handler; }
+    void setOnReleaseHandler(const utility::event::MouseButtonEvent::MouseButton &button, const Handler &handler) { _onReleaseHandlers[button] = handler; }
 
     /**
      * @brief Get the onClick event handler.
      * @return The onClick event handler.
      */
-    Handler getOnClickHandler(void) const { return _onClick; }
+    const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &getOnClickHandlers() const {
+      return _onClickHandlers;
+    }
 
     /**
      * @brief Get the onRelease event handler.
      * @return The onRelease event handler.
      */
-    Handler getOnReleaseHandler(void) const { return _onRelease; }
+    const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &getOnReleaseHandlers() const {
+      return _onReleaseHandlers;
+    }
 
     /**
      * @brief Check if the entity is currently clicked.
+     * @param button The mouse button to check.
      * @return True if the entity is clicked, false otherwise.
      */
-    bool isClicked(void) const { return _isClicked; }
+    bool isClicked(const utility::event::MouseButtonEvent::MouseButton &button) const { return _isClicked.at(button); }
 
     /**
      * @brief Set the clicked state of the entity.
+     * @param button The mouse button to set.
      * @param clicked True if the entity is clicked, false otherwise.
      */
-    void setClicked(bool clicked) { _isClicked = clicked; }
+    void setClicked(const utility::event::MouseButtonEvent::MouseButton &button, bool clicked) {
+      _isEntityClicked = clicked && _onClickHandlers.at(button) != nullptr;
+      _isClicked[button] = clicked;
+    }
+
+    /**
+     * @brief Check if the entity is currently clicked (any button).
+     * @return True if the entity is clicked, false otherwise.
+     */
+    bool isEntityClicked() const { return _isEntityClicked; }
 };
 
 } // namespace guillaume::components

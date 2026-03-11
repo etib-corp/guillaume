@@ -92,29 +92,19 @@ namespace guillaume::systems {
 Click::Click(event::EventBus &eventBus, Renderer &renderer)
     : _mouseButtonSubscriber(eventBus), _renderer(renderer) {}
 
-void Click::update(ecs::ComponentRegistry &componentRegistry,
-                   const ecs::Entity::Identifier &identityIdentifier) {
+void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity::Identifier &identityIdentifier) {
+    static utility::event::MouseButtonEvent::MouseButtonsState buttonStates = utility::event::MouseButtonEvent::MouseButtonsState{0};
+
     if (_pendingClickEvent && _evaluatedEntities.contains(identityIdentifier)) {
+        buttonStates = _pendingClickEvent->getButtonsState();
         _pendingClickEvent.reset();
         _evaluatedEntities.clear();
     }
-    auto &click = componentRegistry.getComponent<components::Click>(identityIdentifier);
 
     if (!_pendingClickEvent) {
         while (_mouseButtonSubscriber.hasPendingEvents()) {
             auto nextEvent = _mouseButtonSubscriber.getNextEvent();
             if (!nextEvent) {
-                continue;
-            }
-            if (!nextEvent->isButtonPressed(
-                    utility::event::MouseButtonEvent::MouseButton::LEFT)) {
-                if (click.isClicked()) {
-                    click.setClicked(false);
-                    const auto onRelease = click.getOnReleaseHandler();
-                    if (onRelease) {
-                        onRelease(nextEvent->getPosition());
-                    }
-                }
                 continue;
             }
             _pendingClickEvent = std::move(nextEvent);
@@ -127,9 +117,8 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         return;
     }
 
-    const auto &bound =
-        componentRegistry.getComponent<components::Bound>(identityIdentifier);
-
+    auto &click = componentRegistry.getComponent<components::Click>(identityIdentifier);
+    const auto &bound = componentRegistry.getComponent<components::Bound>(identityIdentifier);
     const auto mousePosition = _pendingClickEvent->getPosition();
     typename guillaume::components::Transform::Position mousePos3D;
     mousePos3D[0] = mousePosition[0];
@@ -154,9 +143,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
     trueCenter[1] =
         worldTransform.position[1] - (size[1] * worldTransform.scale[1] / 2.0f);
 
-    const bool isInside = isPointInsideEntityBounds(*worldMousePos, trueCenter,
-                                                    size, worldTransform.scale,
-                                                    worldTransform.rotation);
+    const bool isInside = isPointInsideEntityBounds(*worldMousePos, trueCenter, size, worldTransform.scale, worldTransform.rotation);
 
     _evaluatedEntities.insert(identityIdentifier);
 
@@ -164,15 +151,19 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
         return;
     }
 
-    click.setClicked(true);
-    const auto onClick = click.getOnClickHandler();
-    if (!onClick) {
-        return;
+    utility::event::MouseButtonEvent::MouseButtonsState currentButtonStates = _pendingClickEvent->getButtonsState();
+    utility::event::MouseButtonEvent::MouseButtonsState changedButtons = currentButtonStates ^ buttonStates;
+
+    for (std::size_t buttonIndex = 0; buttonIndex < static_cast<std::size_t>(utility::event::MouseButtonEvent::MouseButton::LAST); ++buttonIndex) {
+        if (changedButtons.test(buttonIndex)) {
+            const bool isPressed = currentButtonStates.test(buttonIndex);
+            click.setClicked(static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex), isPressed);
+            const auto &onClickHandler = isPressed ? click.getOnClickHandlers().at(static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex))
+                                                 : click.getOnReleaseHandlers().at(static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex));
+            if (onClickHandler) {
+                onClickHandler(_pendingClickEvent->getPosition());
+            }
+        }
     }
-
-    onClick(_pendingClickEvent->getPosition());
-    _pendingClickEvent.reset();
-    _evaluatedEntities.clear();
 }
-
 } // namespace guillaume::systems
