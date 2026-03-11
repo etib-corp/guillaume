@@ -47,6 +47,7 @@ class Storage {
 
     /**
      * @brief Store a value for a key.
+        * @hidecallgraph
      * @param key Storage key.
      * @param value String value to store.
      */
@@ -54,6 +55,7 @@ class Storage {
 
     /**
      * @brief Store a string view value for a key.
+     * @hidecallgraph
      * @param key Storage key.
      * @param value String view value to store.
      */
@@ -63,6 +65,7 @@ class Storage {
 
     /**
      * @brief Store a C-string value for a key.
+     * @hidecallgraph
      * @param key Storage key.
      * @param value C-string value to store.
      */
@@ -72,6 +75,7 @@ class Storage {
 
     /**
      * @brief Store a boolean value for a key.
+        * @hidecallgraph
      * @tparam ValueType Boolean type.
      * @param key Storage key.
      * @param value Boolean value to store.
@@ -84,6 +88,7 @@ class Storage {
 
     /**
      * @brief Store a numeric value for a key.
+        * @hidecallgraph
      * @tparam ValueType Numeric type.
      * @param key Storage key.
      * @param value Numeric value to store.

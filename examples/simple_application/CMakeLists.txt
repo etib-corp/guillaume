@@ -21,15 +21,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SDL_ttf)
 
-# Fetch GLM for matrix operations
-FetchContent_Declare(
-    glm
-    GIT_REPOSITORY https://github.com/g-truc/glm.git
-    GIT_TAG 1.0.3
-)
-
-FetchContent_MakeAvailable(glm)
-
 find_package(OpenGL REQUIRED)
 
 # Set project name
@@ -54,7 +45,7 @@ target_include_directories(${EXAMPLE_NAME} PRIVATE
 target_link_libraries(${EXAMPLE_NAME} PRIVATE ${PROJECT_NAME})
 
 # Link against SDL3 and SDL3_ttf (GPU support included in SDL3)
-target_link_libraries(${EXAMPLE_NAME} PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf glm::glm OpenGL::GL)
+target_link_libraries(${EXAMPLE_NAME} PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf OpenGL::GL)
 
 # Set C++ standard
 set_property(TARGET ${EXAMPLE_NAME} PROPERTY CXX_STANDARD 20)
