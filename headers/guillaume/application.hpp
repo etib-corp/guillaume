@@ -36,6 +36,9 @@
 #include "event/event_bus.hpp"
 #include "event/event_handler.hpp"
 
+#include "local_storage.hpp"
+#include "session_storage.hpp"
+
 namespace guillaume {
 
 /**
@@ -66,6 +69,8 @@ class Application : protected utility::logging::Loggable<
     EventHandlerType _eventHandler; ///< Application event handler
     event::EventBus _eventBus;      ///< Event bus dispatching to systems
     std::unique_ptr<ECS> _ecs;      ///< ECS instance
+    LocalStorage _localStorage;     ///< Local storage for persistent data
+    SessionStorage _sessionStorage; ///< Session storage for temporary data
 
   public:
     /**
@@ -89,6 +94,18 @@ class Application : protected utility::logging::Loggable<
      * @return Reference to the ECS instance.
      */
     ECS &getECS(void) { return *_ecs; }
+
+    /**
+     * @brief Get the local storage instance.
+     * @return Reference to the LocalStorage instance.
+     */
+    LocalStorage &getLocalStorage(void) { return _localStorage; }
+
+    /**
+     * @brief Get the session storage instance.
+     * @return Reference to the SessionStorage instance.
+     */
+    SessionStorage &getSessionStorage(void) { return _sessionStorage; }
 
     /**
      * @brief Run the application main loop.

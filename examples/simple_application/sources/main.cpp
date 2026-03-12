@@ -46,18 +46,18 @@ std::optional<std::string> resolveDefaultFontPath(void) {
 int main(int argc, char *argv[]) {
     simple_application::Application application(argc, argv);
 
-    guillaume::LocalStorage localStorage(std::filesystem::current_path() /
-                                         ".simple-application-storage.db");
-    guillaume::SessionStorage sessionStorage;
+    const int launchCount = application.getLocalStorage()
+                                .getItemAs<int>("launchCount")
+                                .value_or(0) +
+                            1;
+    application.getLocalStorage().setItem("launchCount", launchCount);
 
-    const int launchCount =
-        localStorage.getItemAs<int>("launchCount").value_or(0) + 1;
-    localStorage.setItem("launchCount", launchCount);
-
-    const int sessionClicks =
-        sessionStorage.getItemAs<int>("sessionClicks").value_or(0);
-    localStorage.setItem("lastRunSessionClicks", sessionClicks);
-    sessionStorage.setItem("sessionClicks", 0);
+    const int sessionClicks = application.getSessionStorage()
+                                  .getItemAs<int>("sessionClicks")
+                                  .value_or(0);
+    application.getLocalStorage().setItem("lastRunSessionClicks",
+                                          sessionClicks);
+    application.getSessionStorage().setItem("sessionClicks", 0);
 
     auto &ecs = application.getECS();
     auto &componentRegistry = ecs.getComponentRegistry();
@@ -97,16 +97,21 @@ int main(int argc, char *argv[]) {
     auto &button1Click =
         ecs.getComponent<guillaume::components::Click>(*button1);
     button1Click.setOnClickHandler(
-        [&button1Text, &localStorage,
-         &sessionStorage](utility::event::MouseMotionEvent::MousePosition
-                          /* position */) {
-            const int totalClicks =
-                localStorage.getItemAs<int>("totalClicks").value_or(0) + 1;
-            const int newSessionClicks =
-                sessionStorage.getItemAs<int>("sessionClicks").value_or(0) + 1;
+        [&button1Text,
+         &application](utility::event::MouseMotionEvent::MousePosition
+                       /* position */) {
+            const int totalClicks = application.getLocalStorage()
+                                        .getItemAs<int>("totalClicks")
+                                        .value_or(0) +
+                                    1;
+            const int newSessionClicks = application.getSessionStorage()
+                                             .getItemAs<int>("sessionClicks")
+                                             .value_or(0) +
+                                         1;
 
-            localStorage.setItem("totalClicks", totalClicks);
-            sessionStorage.setItem("sessionClicks", newSessionClicks);
+            application.getLocalStorage().setItem("totalClicks", totalClicks);
+            application.getSessionStorage().setItem("sessionClicks",
+                                                    newSessionClicks);
 
             button1Text.setContent(
                 "Clicks: " + std::to_string(totalClicks) +
@@ -118,10 +123,9 @@ int main(int argc, char *argv[]) {
             button1Text.setContent("Button 1");
         });
 
-    auto &button1Render =
-        ecs.getComponent<guillaume::components::Render>(*button1);
+    auto &button = ecs.getComponent<guillaume::components::Render>(*button1);
 
-    button1Render.setNormalHandler(
+    button.setNormalHandler(
         [](guillaume::ecs::ComponentRegistry &componentRegistry,
            const guillaume::ecs::Entity::Identifier &identityIdentifier,
            guillaume::Renderer &renderer) {
@@ -168,7 +172,7 @@ int main(int argc, char *argv[]) {
             renderer.drawText(textObj, font);
         });
 
-    button1Render.setHoveredHandler(
+    button.setHoveredHandler(
         [](guillaume::ecs::ComponentRegistry &componentRegistry,
            const guillaume::ecs::Entity::Identifier &identityIdentifier,
            guillaume::Renderer &renderer) {
@@ -215,7 +219,7 @@ int main(int argc, char *argv[]) {
             renderer.drawText(textObj, font);
         });
 
-    button1Render.setClickedHandler(
+    button.setClickedHandler(
         [](guillaume::ecs::ComponentRegistry &componentRegistry,
            const guillaume::ecs::Entity::Identifier &identityIdentifier,
            guillaume::Renderer &renderer) {
