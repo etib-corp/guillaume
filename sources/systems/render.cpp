@@ -26,7 +26,6 @@
 // TODO #include "guillaume/components/focus.hpp"
 #include "guillaume/components/hover.hpp"
 #include "guillaume/components/render.hpp"
-#include <utility/event/mouse_button_event.hpp>
 
 namespace guillaume::systems {
 

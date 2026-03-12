@@ -97,7 +97,7 @@ class Click : public ecs::Component {
 
     /**
      * @brief Get the onClick event handler.
-     * @return The onClick event handler.
+     * @return A map of mouse buttons to their associated onClick event handlers.
      */
     const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &getOnClickHandlers() const {
       return _onClickHandlers;
@@ -105,7 +105,7 @@ class Click : public ecs::Component {
 
     /**
      * @brief Get the onRelease event handler.
-     * @return The onRelease event handler.
+     * @return A map of mouse buttons to their associated onRelease event handlers.
      */
     const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &getOnReleaseHandlers() const {
       return _onReleaseHandlers;
