@@ -93,10 +93,8 @@ Click::Click(event::EventBus &eventBus, Renderer &renderer)
     : _mouseButtonSubscriber(eventBus), _renderer(renderer) {}
 
 void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity::Identifier &identityIdentifier) {
-    static utility::event::MouseButtonEvent::MouseButtonsState buttonStates = utility::event::MouseButtonEvent::MouseButtonsState{0};
-
     if (_pendingClickEvent && _evaluatedEntities.contains(identityIdentifier)) {
-        buttonStates = _pendingClickEvent->getButtonsState();
+        _buttonStates = _pendingClickEvent->getButtonsState();
         _pendingClickEvent.reset();
         _evaluatedEntities.clear();
     }
@@ -147,21 +145,30 @@ void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity:
 
     _evaluatedEntities.insert(identityIdentifier);
 
-    if (!isInside) {
-        return;
-    }
-
     utility::event::MouseButtonEvent::MouseButtonsState currentButtonStates = _pendingClickEvent->getButtonsState();
-    utility::event::MouseButtonEvent::MouseButtonsState changedButtons = currentButtonStates ^ buttonStates;
+    utility::event::MouseButtonEvent::MouseButtonsState changedButtons = currentButtonStates ^ _buttonStates;
 
     for (std::size_t buttonIndex = 0; buttonIndex < static_cast<std::size_t>(utility::event::MouseButtonEvent::MouseButton::LAST); ++buttonIndex) {
         if (changedButtons.test(buttonIndex)) {
+            const auto button = static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex);
             const bool isPressed = currentButtonStates.test(buttonIndex);
-            click.setClicked(static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex), isPressed);
-            const auto &onClickHandler = isPressed ? click.getOnClickHandlers().at(static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex))
-                                                 : click.getOnReleaseHandlers().at(static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex));
-            if (onClickHandler) {
-                onClickHandler(_pendingClickEvent->getPosition());
+            if (isPressed && isInside) {
+                click.setPressedInside(button, true);
+                click.setClicked(button, true);
+                const auto &onClickHandler = click.getOnClickHandlers().at(button);
+                if (onClickHandler) {
+                    onClickHandler(_pendingClickEvent->getPosition());
+                }
+            } else if (!isPressed && click.isPressedInside(button) && isInside) {
+                click.setPressedInside(button, false);
+                click.setClicked(button, false);
+                const auto &onReleaseHandler = click.getOnReleaseHandlers().at(button);
+                if (onReleaseHandler) {
+                    onReleaseHandler(_pendingClickEvent->getPosition());
+                }
+            } else if (!isPressed) {
+                click.setClicked(button, false);
+                click.setPressedInside(button, false);
             }
         }
     }

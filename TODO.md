@@ -9,7 +9,7 @@
 - [x] Add persistent data storage
 
 ### *Julien*
-- [ ] Manage onClick and onRelease events, and if the click is released outside the starting element.
+- [x] Manage onClick and onRelease events, and if the click is released outside the starting element.
 - [x] Add mouse position to mouse click onClick and onRelease handlers
 - [x] Add possibility to choose the button for click events
 

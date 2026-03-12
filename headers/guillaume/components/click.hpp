@@ -55,6 +55,7 @@ class Click : public ecs::Component {
     std::map<utility::event::MouseButtonEvent::MouseButton, Handler> _onReleaseHandlers{}; ///< Release event handlers
 
     std::map<utility::event::MouseButtonEvent::MouseButton, bool> _isClicked{}; ///< Flag indicating if the entity is currently clicked
+    std::map<utility::event::MouseButtonEvent::MouseButton, bool> _pressedInside{}; ///< Flag indicating if the button was pressed inside the entity bounds
 
     bool _isEntityClicked{false}; ///< Flag indicating if the entity is currently clicked (any button)
 
@@ -69,6 +70,7 @@ class Click : public ecs::Component {
                                 utility::event::MouseButtonEvent::MouseButton::X1,
                                 utility::event::MouseButtonEvent::MouseButton::X2}) {
         _isClicked[button] = false;
+        _pressedInside[button] = false;
         _onClickHandlers[button] = nullptr;
         _onReleaseHandlers[button] = nullptr;
       }
@@ -131,6 +133,24 @@ class Click : public ecs::Component {
      * @return True if the entity is clicked, false otherwise.
      */
     bool isEntityClicked() const { return _isEntityClicked; }
+
+    /**
+     * @brief Set whether a button was pressed inside the entity bounds.
+     * @param button The mouse button.
+     * @param pressedInside True if the button was pressed inside, false otherwise.
+     */
+    void setPressedInside(const utility::event::MouseButtonEvent::MouseButton &button, bool pressedInside) {
+      _pressedInside[button] = pressedInside;
+    }
+
+    /**
+     * @brief Check if a button was pressed inside the entity bounds.
+     * @param button The mouse button.
+     * @return True if the button was pressed inside, false otherwise.
+     */
+    bool isPressedInside(const utility::event::MouseButtonEvent::MouseButton &button) const {
+      return _pressedInside.at(button);
+    }
 };
 
 } // namespace guillaume::components
