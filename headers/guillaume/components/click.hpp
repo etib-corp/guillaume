@@ -36,7 +36,7 @@ namespace guillaume::components {
  *
  * @code
  * components::Click click;
- * click.setOnClickHandler([](utility::event::MouseMotionEvent::MousePosition
+ * click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::LEFT, [](utility::event::MouseMotionEvent::MousePosition
  * position) {
  *     // Handle click.
  * });
@@ -124,7 +124,7 @@ class Click : public ecs::Component {
      * @param clicked True if the entity is clicked, false otherwise.
      */
     void setClicked(const utility::event::MouseButtonEvent::MouseButton &button, bool clicked) {
-      _isEntityClicked = clicked && _onClickHandlers.at(button) != nullptr;
+      _isEntityClicked = clicked;
       _isClicked[button] = clicked;
     }
 

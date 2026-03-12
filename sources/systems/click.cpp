@@ -159,6 +159,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity:
                 if (onClickHandler) {
                     onClickHandler(_pendingClickEvent->getPosition());
                 }
+                break;
             } else if (!isPressed && click.isPressedInside(button) && isInside) {
                 click.setPressedInside(button, false);
                 click.setClicked(button, false);
@@ -166,6 +167,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity:
                 if (onReleaseHandler) {
                     onReleaseHandler(_pendingClickEvent->getPosition());
                 }
+                break;
             } else if (!isPressed) {
                 click.setClicked(button, false);
                 click.setPressedInside(button, false);
