@@ -20,24 +20,24 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs.hpp"
+#include "guillaume/scene.hpp"
 
 namespace guillaume {
 
-ECS::ECS(event::EventBus &eventBus, Renderer &renderer)
-    : _eventBus(eventBus), _renderer(renderer) {
-    this->getLogger().info("Initializing ECS with core systems");
-    registerSystem<systems::Click>(
-        std::make_unique<systems::Click>(_eventBus, _renderer));
-    registerSystem<systems::Hover>(
-        std::make_unique<systems::Hover>(_eventBus, _renderer));
-    registerSystem<systems::Render>(
-        std::make_unique<systems::Render>(_renderer));
-    registerSystem<systems::KeyboardControl>(
-        std::make_unique<systems::KeyboardControl>(_eventBus));
-    registerSystem<systems::TextInput>(
-        std::make_unique<systems::TextInput>(_eventBus));
-    this->getLogger().info("ECS initialization complete");
+Scene::Scene(void) : _application(nullptr) {}
+
+Scene::~Scene(void) {}
+
+void Scene::addEntity(ecs::Entity &entity) {
+    const auto identityIdentifier = entity.getIdentifier();
+    _entities.push_back(identityIdentifier);
+    _entitySignatures[identityIdentifier] = entity.getSignature();
+}
+
+void Scene::setEntitySignature(
+    const ecs::Entity::Identifier &identityIdentifier,
+    const ecs::Entity::Signature &signature) {
+    _entitySignatures[identityIdentifier] = signature;
 }
 
 } // namespace guillaume

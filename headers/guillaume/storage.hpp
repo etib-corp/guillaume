@@ -47,7 +47,7 @@ class Storage {
 
     /**
      * @brief Store a value for a key.
-        * @hidecallgraph
+     * @hidecallgraph
      * @param key Storage key.
      * @param value String value to store.
      */
@@ -75,7 +75,7 @@ class Storage {
 
     /**
      * @brief Store a boolean value for a key.
-        * @hidecallgraph
+     * @hidecallgraph
      * @tparam ValueType Boolean type.
      * @param key Storage key.
      * @param value Boolean value to store.
@@ -88,7 +88,7 @@ class Storage {
 
     /**
      * @brief Store a numeric value for a key.
-        * @hidecallgraph
+     * @hidecallgraph
      * @tparam ValueType Numeric type.
      * @param key Storage key.
      * @param value Numeric value to store.

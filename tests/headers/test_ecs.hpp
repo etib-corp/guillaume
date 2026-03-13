@@ -24,8 +24,6 @@
 
 #include <gtest/gtest.h>
 
-#include <guillaume/ecs.hpp>
-
 namespace guillaume::tests {
 
 class Test : public ::testing::Test {
