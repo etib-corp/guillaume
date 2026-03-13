@@ -43,6 +43,18 @@ std::optional<std::string> resolveDefaultFontPath(void) {
 
 } // namespace
 
+class MainScene : public guillaume::Scene {
+  public:
+    MainScene(void) : guillaume::Scene() {}
+    ~MainScene(void) = default;
+};
+
+class SettingsScene : public guillaume::Scene {
+  public:
+    SettingsScene(void) : guillaume::Scene() {}
+    ~SettingsScene(void) = default;
+};
+
 int main(int argc, char *argv[]) {
     simple_application::Application application(argc, argv);
 

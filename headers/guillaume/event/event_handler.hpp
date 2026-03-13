@@ -125,4 +125,11 @@ class EventHandler
     virtual void pollEvents(void) = 0;
 };
 
+/**
+ * @brief Concept to ensure a type inherits from EventHandler.
+ * @tparam Type The type to check.
+ */
+template <typename Type>
+concept InheritFromEventHandler = std::is_base_of_v<EventHandler, Type>;
+
 } // namespace guillaume::event

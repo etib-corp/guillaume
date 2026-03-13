@@ -32,6 +32,7 @@
 #include "ecs.hpp"
 #include "metadata.hpp"
 #include "renderer.hpp"
+#include "scene.hpp"
 
 #include "event/event_bus.hpp"
 #include "event/event_handler.hpp"
@@ -60,7 +61,9 @@ namespace guillaume {
  * @see event::EventHandler
  * @see Renderer
  */
-template <typename RendererType, typename EventHandlerType>
+template <InheritFromRenderer RendererType,
+          event::InheritFromEventHandler EventHandlerType,
+          InheritFromScene... SceneTypes>
 class Application : protected utility::logging::Loggable<
                         Application<RendererType, EventHandlerType>,
                         utility::logging::StandardLogger> {
@@ -71,6 +74,15 @@ class Application : protected utility::logging::Loggable<
     std::unique_ptr<ECS> _ecs;      ///< ECS instance
     LocalStorage _localStorage;     ///< Local storage for persistent data
     SessionStorage _sessionStorage; ///< Session storage for temporary data
+    std::map<std::string, std::unique_ptr<Scene>>
+        _scenes; ///< Registered scenes
+
+    template <InheritFromScene SceneType> void registerScene(void) {
+        _scenes.emplace(typeid(SceneType).name(),
+                        std::make_unique<SceneType>());
+        this->getLogger().debug("Registered scene: " +
+                                std::string(typeid(SceneType).name()));
+    }
 
   public:
     /**
@@ -82,6 +94,7 @@ class Application : protected utility::logging::Loggable<
             [this](std::unique_ptr<utility::event::Event> &event) {
                 this->_eventBus.publish(std::move(event));
             });
+        (registerScene<SceneTypes>(), ...);
     }
 
     /**
