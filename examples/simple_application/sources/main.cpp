@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 
     auto &button1Click =
         ecs.getComponent<guillaume::components::Click>(*button1);
-    button1Click.setOnClickHandler(
+    button1Click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::LEFT,
         [&button1Text, &localStorage,
          &sessionStorage](utility::event::MouseMotionEvent::MousePosition
                           /* position */) {
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
                 "Clicks: " + std::to_string(totalClicks) +
                 " / Session: " + std::to_string(newSessionClicks));
         });
-    button1Click.setOnReleaseHandler(
+    button1Click.setOnReleaseHandler(utility::event::MouseButtonEvent::MouseButton::LEFT,
         [&button1Text](
             utility::event::MouseMotionEvent::MousePosition /* position */) {
             button1Text.setContent("Button 1");
