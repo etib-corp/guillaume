@@ -8,6 +8,8 @@ class Main : public guillaume::Scene {
   public:
     Main(void);
     ~Main(void);
+
+    void onApplicationAttached(void) override;
 };
 
 } // namespace simple_application::scenes

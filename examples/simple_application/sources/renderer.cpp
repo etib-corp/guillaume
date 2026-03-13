@@ -260,12 +260,11 @@ void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
 utility::math::Vector<std::float_t, 2>
 Renderer::measureText(const guillaume::Text &text,
                       const guillaume::Font &font) {
-    getLogger().debug("Measuring text: " + text.getContent() +
-                      " with font: " + font.getFontPath());
+    getLogger().debug("Measuring text: " + text.getContent());
 
     TTF_Font *ttfFont = getOrLoadFont(font);
-    if (!ttfFont) {
-        getLogger().error("Failed to load font for measurement");
+        if (!ttfFont) {
+            getLogger().error("Failed to load font for measurement");
         return {0.0f, 0.0f};
     }
 
@@ -298,8 +297,7 @@ guillaume::Renderer::ViewportSize Renderer::getViewportSize(void) const {
 
 void Renderer::drawText(const guillaume::Text &text,
                         const guillaume::Font &font) {
-    getLogger().debug("Drawing text: " + text.getContent() +
-                      " with font: " + font.getFontPath());
+    getLogger().debug("Drawing text: " + text.getContent());
 
     TTF_Font *ttfFont = getOrLoadFont(font);
     if (!ttfFont) {

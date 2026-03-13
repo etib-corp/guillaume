@@ -24,6 +24,20 @@
 
 namespace guillaume {
 
-Scene::Scene(void) {}
+Scene::Scene(void) : _application(nullptr) {}
+
+Scene::~Scene(void) {}
+
+void Scene::addEntity(ecs::Entity &entity) {
+    const auto identityIdentifier = entity.getIdentifier();
+    _entities.push_back(identityIdentifier);
+    _entitySignatures[identityIdentifier] = entity.getSignature();
+}
+
+void Scene::setEntitySignature(
+    const ecs::Entity::Identifier &identityIdentifier,
+    const ecs::Entity::Signature &signature) {
+    _entitySignatures[identityIdentifier] = signature;
+}
 
 } // namespace guillaume
