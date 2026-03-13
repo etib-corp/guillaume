@@ -62,7 +62,7 @@ class Click : public ecs::SystemFiller<components::Click, components::Transform,
     Renderer &_renderer;
     std::unique_ptr<utility::event::MouseButtonEvent> _pendingClickEvent;
     std::unordered_set<ecs::Entity::Identifier> _evaluatedEntities;
-    utility::event::MouseButtonEvent::MouseButtonsState _buttonStates = utility::event::MouseButtonEvent::MouseButtonsState{0}; ///< Current state of mouse buttons
+    utility::event::MouseButtonEvent::MouseButtonsState _buttonStates{0}; ///< Current state of mouse buttons
 
   public:
     /**
