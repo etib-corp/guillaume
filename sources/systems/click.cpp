@@ -92,7 +92,8 @@ namespace guillaume::systems {
 Click::Click(event::EventBus &eventBus, Renderer &renderer)
     : _mouseButtonSubscriber(eventBus), _renderer(renderer) {}
 
-void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity::Identifier &identityIdentifier) {
+void Click::update(ecs::ComponentRegistry &componentRegistry,
+                   const ecs::Entity::Identifier &identityIdentifier) {
     if (_pendingClickEvent && _evaluatedEntities.contains(identityIdentifier)) {
         _buttonStates = _pendingClickEvent->getButtonsState();
         _pendingClickEvent.reset();
@@ -115,8 +116,10 @@ void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity:
         return;
     }
 
-    auto &click = componentRegistry.getComponent<components::Click>(identityIdentifier);
-    const auto &bound = componentRegistry.getComponent<components::Bound>(identityIdentifier);
+    auto &click =
+        componentRegistry.getComponent<components::Click>(identityIdentifier);
+    const auto &bound =
+        componentRegistry.getComponent<components::Bound>(identityIdentifier);
     const auto mousePosition = _pendingClickEvent->getPosition();
     typename guillaume::components::Transform::Position mousePos3D;
     mousePos3D[0] = mousePosition[0];
@@ -141,29 +144,41 @@ void Click::update(ecs::ComponentRegistry &componentRegistry, const ecs::Entity:
     trueCenter[1] =
         worldTransform.position[1] - (size[1] * worldTransform.scale[1] / 2.0f);
 
-    const bool isInside = isPointInsideEntityBounds(*worldMousePos, trueCenter, size, worldTransform.scale, worldTransform.rotation);
+    const bool isInside = isPointInsideEntityBounds(*worldMousePos, trueCenter,
+                                                    size, worldTransform.scale,
+                                                    worldTransform.rotation);
 
     _evaluatedEntities.insert(identityIdentifier);
 
-    utility::event::MouseButtonEvent::MouseButtonsState currentButtonStates = _pendingClickEvent->getButtonsState();
-    utility::event::MouseButtonEvent::MouseButtonsState changedButtons = currentButtonStates ^ _buttonStates;
+    utility::event::MouseButtonEvent::MouseButtonsState currentButtonStates =
+        _pendingClickEvent->getButtonsState();
+    utility::event::MouseButtonEvent::MouseButtonsState changedButtons =
+        currentButtonStates ^ _buttonStates;
 
-    for (std::size_t buttonIndex = 0; buttonIndex < static_cast<std::size_t>(utility::event::MouseButtonEvent::MouseButton::LAST); ++buttonIndex) {
+    for (std::size_t buttonIndex = 0;
+         buttonIndex < static_cast<std::size_t>(
+                           utility::event::MouseButtonEvent::MouseButton::LAST);
+         ++buttonIndex) {
         if (changedButtons.test(buttonIndex)) {
-            const auto button = static_cast<utility::event::MouseButtonEvent::MouseButton>(buttonIndex);
+            const auto button =
+                static_cast<utility::event::MouseButtonEvent::MouseButton>(
+                    buttonIndex);
             const bool isPressed = currentButtonStates.test(buttonIndex);
             if (isPressed && isInside) {
                 click.setPressedInside(button, true);
                 click.setClicked(button, true);
-                const auto &onClickHandler = click.getOnClickHandlers().at(button);
+                const auto &onClickHandler =
+                    click.getOnClickHandlers().at(button);
                 if (onClickHandler) {
                     onClickHandler(_pendingClickEvent->getPosition());
                 }
                 break;
-            } else if (!isPressed && click.isPressedInside(button) && isInside) {
+            } else if (!isPressed && click.isPressedInside(button) &&
+                       isInside) {
                 click.setPressedInside(button, false);
                 click.setClicked(button, false);
-                const auto &onReleaseHandler = click.getOnReleaseHandlers().at(button);
+                const auto &onReleaseHandler =
+                    click.getOnReleaseHandlers().at(button);
                 if (onReleaseHandler) {
                     onReleaseHandler(_pendingClickEvent->getPosition());
                 }

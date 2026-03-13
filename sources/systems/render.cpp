@@ -41,9 +41,13 @@ void Render::update(ecs::ComponentRegistry &componentRegistry,
     guillaume::components::Render &renderComponent =
         componentRegistry.getComponent<components::Render>(identityIdentifier);
 
-    if (componentRegistry.hasComponent<components::Click>(identityIdentifier) && renderComponent.getClickedHandler()) {
-        if (componentRegistry.getComponent<components::Click>(identityIdentifier).isEntityClicked()) {
-            renderComponent.getClickedHandler()(componentRegistry, identityIdentifier, _renderer);
+    if (componentRegistry.hasComponent<components::Click>(identityIdentifier) &&
+        renderComponent.getClickedHandler()) {
+        if (componentRegistry
+                .getComponent<components::Click>(identityIdentifier)
+                .isEntityClicked()) {
+            renderComponent.getClickedHandler()(componentRegistry,
+                                                identityIdentifier, _renderer);
             return;
         }
     }

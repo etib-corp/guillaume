@@ -75,10 +75,11 @@ namespace guillaume {
 template <InheritFromRenderer RendererType,
           event::InheritFromEventHandler EventHandlerType,
           InheritFromScene... SceneTypes>
-class Application : protected utility::logging::Loggable<
-                        Application<RendererType, EventHandlerType, SceneTypes...>,
-                        utility::logging::StandardLogger>,
-                    public SceneApplication {
+class Application
+    : protected utility::logging::Loggable<
+          Application<RendererType, EventHandlerType, SceneTypes...>,
+          utility::logging::StandardLogger>,
+      public SceneApplication {
   private:
     RendererType _renderer;              ///< Main application renderer
     EventHandlerType _eventHandler;      ///< Application event handler
@@ -323,9 +324,7 @@ class Application : protected utility::logging::Loggable<
      * @brief Get the session storage instance.
      * @return Reference to the SessionStorage instance.
      */
-    SessionStorage &getSessionStorage(void) override {
-        return _sessionStorage;
-    }
+    SessionStorage &getSessionStorage(void) override { return _sessionStorage; }
 
     /**
      * @brief Run the application main loop.

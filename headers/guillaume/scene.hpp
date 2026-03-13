@@ -40,26 +40,26 @@ class SessionStorage;
  * @brief Application context exposed to scenes.
  */
 class SceneApplication {
-    public:
-        virtual ~SceneApplication(void) = default;
+  public:
+    virtual ~SceneApplication(void) = default;
 
-        /**
-         * @brief Request a scene switch by scene type name key.
-         * @param sceneTypeName Scene key generated from typeid(SceneType).name().
-         */
-        virtual void requestSceneChange(const std::string &sceneTypeName) = 0;
+    /**
+     * @brief Request a scene switch by scene type name key.
+     * @param sceneTypeName Scene key generated from typeid(SceneType).name().
+     */
+    virtual void requestSceneChange(const std::string &sceneTypeName) = 0;
 
-        /**
-         * @brief Get local storage from the owning application.
-         * @return Reference to local storage.
-         */
-        virtual LocalStorage &getLocalStorage(void) = 0;
+    /**
+     * @brief Get local storage from the owning application.
+     * @return Reference to local storage.
+     */
+    virtual LocalStorage &getLocalStorage(void) = 0;
 
-        /**
-         * @brief Get session storage from the owning application.
-         * @return Reference to session storage.
-         */
-        virtual SessionStorage &getSessionStorage(void) = 0;
+    /**
+     * @brief Get session storage from the owning application.
+     * @return Reference to session storage.
+     */
+    virtual SessionStorage &getSessionStorage(void) = 0;
 };
 
 /**
@@ -73,7 +73,7 @@ class Scene {
     std::vector<ecs::Entity::Identifier>
         _entities; ///< Entity identifiers owned by the scene
     std::map<ecs::Entity::Identifier, ecs::Entity::Signature>
-        _entitySignatures; ///< Entity signatures tracked per scene
+        _entitySignatures;          ///< Entity signatures tracked per scene
     SceneApplication *_application; ///< Application context attached to scene
 
   protected:
@@ -92,7 +92,9 @@ class Scene {
      * @brief Get local storage from the attached application.
      * @return Reference to local storage.
      */
-    LocalStorage &getLocalStorage(void) { return getApplication().getLocalStorage(); }
+    LocalStorage &getLocalStorage(void) {
+        return getApplication().getLocalStorage();
+    }
 
     /**
      * @brief Get session storage from the attached application.

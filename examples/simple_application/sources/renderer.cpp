@@ -263,8 +263,8 @@ Renderer::measureText(const guillaume::Text &text,
     getLogger().debug("Measuring text: " + text.getContent());
 
     TTF_Font *ttfFont = getOrLoadFont(font);
-        if (!ttfFont) {
-            getLogger().error("Failed to load font for measurement");
+    if (!ttfFont) {
+        getLogger().error("Failed to load font for measurement");
         return {0.0f, 0.0f};
     }
 
