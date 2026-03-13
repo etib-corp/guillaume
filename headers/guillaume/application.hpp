@@ -76,7 +76,7 @@ template <InheritFromRenderer RendererType,
           event::InheritFromEventHandler EventHandlerType,
           InheritFromScene... SceneTypes>
 class Application : protected utility::logging::Loggable<
-                        Application<RendererType, EventHandlerType>,
+                        Application<RendererType, EventHandlerType, SceneTypes...>,
                         utility::logging::StandardLogger>,
                     public SceneApplication {
   private:
