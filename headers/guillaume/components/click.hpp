@@ -24,8 +24,8 @@
 
 #include <functional>
 #include <map>
-#include <utility/event/mouse_motion_event.hpp>
 #include <utility/event/mouse_button_event.hpp>
+#include <utility/event/mouse_motion_event.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
@@ -36,8 +36,8 @@ namespace guillaume::components {
  *
  * @code
  * components::Click click;
- * click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::LEFT, [](utility::event::MouseMotionEvent::MousePosition
- * position) {
+ * click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::LEFT,
+ * [](utility::event::MouseMotionEvent::MousePosition position) {
  *     // Handle click.
  * });
  * @endcode
@@ -51,29 +51,36 @@ class Click : public ecs::Component {
                                                            ///< handler type
 
   private:
-    std::map<utility::event::MouseButtonEvent::MouseButton, Handler> _onClickHandlers{}; ///< Click event handlers
-    std::map<utility::event::MouseButtonEvent::MouseButton, Handler> _onReleaseHandlers{}; ///< Release event handlers
+    std::map<utility::event::MouseButtonEvent::MouseButton, Handler>
+        _onClickHandlers{}; ///< Click event handlers
+    std::map<utility::event::MouseButtonEvent::MouseButton, Handler>
+        _onReleaseHandlers{}; ///< Release event handlers
 
-    std::map<utility::event::MouseButtonEvent::MouseButton, bool> _isClicked{}; ///< Flag indicating if the entity is currently clicked
-    std::map<utility::event::MouseButtonEvent::MouseButton, bool> _pressedInside{}; ///< Flag indicating if the button was pressed inside the entity bounds
+    std::map<utility::event::MouseButtonEvent::MouseButton, bool>
+        _isClicked{}; ///< Flag indicating if the entity is currently clicked
+    std::map<utility::event::MouseButtonEvent::MouseButton, bool>
+        _pressedInside{}; ///< Flag indicating if the button was pressed inside
+                          ///< the entity bounds
 
-    bool _isEntityClicked{false}; ///< Flag indicating if the entity is currently clicked (any button)
+    bool _isEntityClicked{false}; ///< Flag indicating if the entity is
+                                  ///< currently clicked (any button)
 
   public:
     /**
      * @brief Default constructor for the Click component.
      */
     Click(void) {
-      for (const auto button : {utility::event::MouseButtonEvent::MouseButton::LEFT,
-                                utility::event::MouseButtonEvent::MouseButton::MIDDLE,
-                                utility::event::MouseButtonEvent::MouseButton::RIGHT,
-                                utility::event::MouseButtonEvent::MouseButton::X1,
-                                utility::event::MouseButtonEvent::MouseButton::X2}) {
-        _isClicked[button] = false;
-        _pressedInside[button] = false;
-        _onClickHandlers[button] = nullptr;
-        _onReleaseHandlers[button] = nullptr;
-      }
+        for (const auto button :
+             {utility::event::MouseButtonEvent::MouseButton::LEFT,
+              utility::event::MouseButtonEvent::MouseButton::MIDDLE,
+              utility::event::MouseButtonEvent::MouseButton::RIGHT,
+              utility::event::MouseButtonEvent::MouseButton::X1,
+              utility::event::MouseButtonEvent::MouseButton::X2}) {
+            _isClicked[button] = false;
+            _pressedInside[button] = false;
+            _onClickHandlers[button] = nullptr;
+            _onReleaseHandlers[button] = nullptr;
+        }
     };
 
     /**
@@ -86,29 +93,41 @@ class Click : public ecs::Component {
      * @param button The mouse button to associate with the handler.
      * @param handler The function to call on click events.
      */
-    void setOnClickHandler(const utility::event::MouseButtonEvent::MouseButton &button, const Handler &handler) { _onClickHandlers[button] = handler; }
+    void setOnClickHandler(
+        const utility::event::MouseButtonEvent::MouseButton &button,
+        const Handler &handler) {
+        _onClickHandlers[button] = handler;
+    }
 
     /**
      * @brief Set the onRelease event handler.
      * @param button The mouse button to associate with the handler.
      * @param handler The function to call on release events.
      */
-    void setOnReleaseHandler(const utility::event::MouseButtonEvent::MouseButton &button, const Handler &handler) { _onReleaseHandlers[button] = handler; }
+    void setOnReleaseHandler(
+        const utility::event::MouseButtonEvent::MouseButton &button,
+        const Handler &handler) {
+        _onReleaseHandlers[button] = handler;
+    }
 
     /**
      * @brief Get the onClick event handler.
-     * @return A map of mouse buttons to their associated onClick event handlers.
+     * @return A map of mouse buttons to their associated onClick event
+     * handlers.
      */
-    const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &getOnClickHandlers() const {
-      return _onClickHandlers;
+    const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &
+    getOnClickHandlers() const {
+        return _onClickHandlers;
     }
 
     /**
      * @brief Get the onRelease event handler.
-     * @return A map of mouse buttons to their associated onRelease event handlers.
+     * @return A map of mouse buttons to their associated onRelease event
+     * handlers.
      */
-    const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &getOnReleaseHandlers() const {
-      return _onReleaseHandlers;
+    const std::map<utility::event::MouseButtonEvent::MouseButton, Handler> &
+    getOnReleaseHandlers() const {
+        return _onReleaseHandlers;
     }
 
     /**
@@ -116,16 +135,20 @@ class Click : public ecs::Component {
      * @param button The mouse button to check.
      * @return True if the entity is clicked, false otherwise.
      */
-    bool isClicked(const utility::event::MouseButtonEvent::MouseButton &button) const { return _isClicked.at(button); }
+    bool isClicked(
+        const utility::event::MouseButtonEvent::MouseButton &button) const {
+        return _isClicked.at(button);
+    }
 
     /**
      * @brief Set the clicked state of the entity.
      * @param button The mouse button to set.
      * @param clicked True if the entity is clicked, false otherwise.
      */
-    void setClicked(const utility::event::MouseButtonEvent::MouseButton &button, bool clicked) {
-      _isEntityClicked = clicked;
-      _isClicked[button] = clicked;
+    void setClicked(const utility::event::MouseButtonEvent::MouseButton &button,
+                    bool clicked) {
+        _isEntityClicked = clicked;
+        _isClicked[button] = clicked;
     }
 
     /**
@@ -137,10 +160,13 @@ class Click : public ecs::Component {
     /**
      * @brief Set whether a button was pressed inside the entity bounds.
      * @param button The mouse button.
-     * @param pressedInside True if the button was pressed inside, false otherwise.
+     * @param pressedInside True if the button was pressed inside, false
+     * otherwise.
      */
-    void setPressedInside(const utility::event::MouseButtonEvent::MouseButton &button, bool pressedInside) {
-      _pressedInside[button] = pressedInside;
+    void setPressedInside(
+        const utility::event::MouseButtonEvent::MouseButton &button,
+        bool pressedInside) {
+        _pressedInside[button] = pressedInside;
     }
 
     /**
@@ -148,8 +174,9 @@ class Click : public ecs::Component {
      * @param button The mouse button.
      * @return True if the button was pressed inside, false otherwise.
      */
-    bool isPressedInside(const utility::event::MouseButtonEvent::MouseButton &button) const {
-      return _pressedInside.at(button);
+    bool isPressedInside(
+        const utility::event::MouseButtonEvent::MouseButton &button) const {
+        return _pressedInside.at(button);
     }
 };
 

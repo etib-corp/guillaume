@@ -213,4 +213,11 @@ class Renderer
     }
 };
 
+/**
+ * @brief Concept to ensure a type inherits from Renderer.
+ * @tparam Type The type to check.
+ */
+template <typename Type>
+concept InheritFromRenderer = std::is_base_of_v<Renderer, Type>;
+
 } // namespace guillaume
