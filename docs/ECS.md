@@ -17,7 +17,7 @@ System membership is signature-based. When an entity gains or loses components, 
 
 ## System update flow
 
-At runtime, the application calls `ECS::routine()`, which iterates every system and calls `System::routine()` with the active scene component registry to update each registered entity. That method delegates to each system's `update()` implementation for the entity. See [sources/ecs/system.cpp](sources/ecs/system.cpp) and [headers/guillaume/ecs/system.hpp](headers/guillaume/ecs/system.hpp).
+At runtime, the application's main loop calls `Application::routine()`, which iterates every system and calls `System::routine()` with the active scene component registry to update each registered entity. That method delegates to each system's `update()` implementation for the entity. See [sources/ecs/system.cpp](sources/ecs/system.cpp) and [headers/guillaume/ecs/system.hpp](headers/guillaume/ecs/system.hpp).
 
 Systems typically inherit from `ecs::SystemFiller<...>` to declare their required components. This determines the signature used for membership. See [headers/guillaume/ecs/system_filler.hpp](headers/guillaume/ecs/system_filler.hpp) and the system headers in [headers/guillaume/systems](headers/guillaume/systems).
 
