@@ -182,6 +182,7 @@ void Settings::onApplicationAttached(void) {
         componentRegistry.getComponent<guillaume::components::Click>(
             backToMainButton->getIdentifier());
     backToMainClick.setOnClickHandler(
+        utility::event::MouseButtonEvent::MouseButton::LEFT,
         [this](utility::event::MouseMotionEvent::MousePosition
                /* position */) { setActiveScene<Main>(); });
 

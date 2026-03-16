@@ -195,6 +195,7 @@ void Main::onApplicationAttached(void) {
         componentRegistry.getComponent<guillaume::components::Click>(
             button1->getIdentifier());
     button1Click.setOnClickHandler(
+        utility::event::MouseButtonEvent::MouseButton::LEFT,
         [&button1Text, this](utility::event::MouseMotionEvent::MousePosition
                              /* position */) {
             const int totalClicks =
@@ -212,6 +213,7 @@ void Main::onApplicationAttached(void) {
                 " / Session: " + std::to_string(newSessionClicks));
         });
     button1Click.setOnReleaseHandler(
+        utility::event::MouseButtonEvent::MouseButton::LEFT,
         [&button1Text](
             utility::event::MouseMotionEvent::MousePosition /* position */) {
             button1Text.setContent("Button 1");
@@ -237,6 +239,7 @@ void Main::onApplicationAttached(void) {
         componentRegistry.getComponent<guillaume::components::Click>(
             swapToSettingsButton->getIdentifier());
     swapToSettingsClick.setOnClickHandler(
+        utility::event::MouseButtonEvent::MouseButton::LEFT,
         [this](utility::event::MouseMotionEvent::MousePosition
                /* position */) { setActiveScene<Settings>(); });
     configureButtonRender(componentRegistry, *swapToSettingsButton,
