@@ -66,7 +66,40 @@ void drawButtonWithColor(
     rectangle.setSize({bound.getSize()[0], bound.getSize()[1]});
     rectangle.setColor({color[0], color[1], color[2], color[3]});
 
-    renderer.drawRectangle(rectangle);
+    std::vector<utility::math::Vector<float, 3>> vertices = {
+        {rectangle.getPosition()[0] - rectangle.getSize()[0] / 2.0f,
+         rectangle.getPosition()[1] - rectangle.getSize()[1] / 2.0f,
+         rectangle.getPosition()[2]},
+        {rectangle.getPosition()[0] + rectangle.getSize()[0] / 2.0f,
+         rectangle.getPosition()[1] - rectangle.getSize()[1] / 2.0f,
+         rectangle.getPosition()[2]},
+        {rectangle.getPosition()[0] + rectangle.getSize()[0] / 2.0f,
+         rectangle.getPosition()[1] + rectangle.getSize()[1] / 2.0f,
+         rectangle.getPosition()[2]},
+        {rectangle.getPosition()[0] - rectangle.getSize()[0] / 2.0f,
+         rectangle.getPosition()[1] + rectangle.getSize()[1] / 2.0f,
+         rectangle.getPosition()[2]},
+    };
+
+    std::vector<utility::math::Color<uint8_t>> colors = {
+        {color[0], color[1], color[2], color[3]},
+        {color[0], color[1], color[2], color[3]},
+        {color[0], color[1], color[2], color[3]},
+        {color[0], color[1], color[2], color[3]},
+    };
+
+    std::vector<utility::math::Vertex<float, uint8_t>> vertexData = {
+        utility::math::Vertex<float, uint8_t>(vertices[0], {0.0f, 0.0f, 1.0f},
+                                               {0.0f, 0.0f}, colors[0]),
+        utility::math::Vertex<float, uint8_t>(vertices[1], {0.0f, 0.0f, 1.0f},
+                                               {1.0f, 0.0f}, colors[1]),
+        utility::math::Vertex<float, uint8_t>(vertices[2], {0.0f, 0.0f, 1.0f},
+                                               {1.0f, 1.0f}, colors[2]),
+        utility::math::Vertex<float, uint8_t>(vertices[3], {0.0f, 0.0f, 1.0f},
+                                               {0.0f, 1.0f}, colors[3]),
+    };
+
+    renderer.drawVertices(vertexData);
 
     if (!componentRegistry.hasComponent<guillaume::components::Text>(
             identityIdentifier)) {
