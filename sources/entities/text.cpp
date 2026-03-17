@@ -20,20 +20,6 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "guillaume/entities/text.hpp"
 
-#include <gtest/gtest.h>
-
-#include <guillaume/components/relationship.hpp>
-
-namespace guillaume::components::tests {
-
-class TestRelationship : public ::testing::Test {
-  protected:
-    TestRelationship(void) = default;
-    ~TestRelationship(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
-
-} // namespace guillaume::components::tests
+namespace guillaume::entities {} // namespace guillaume::entities

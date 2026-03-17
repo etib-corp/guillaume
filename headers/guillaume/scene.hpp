@@ -26,10 +26,12 @@
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
-#include <vector>
+
+#include <utility/logging/loggable.hpp>
+#include <utility/logging/standard_logger.hpp>
 
 #include "ecs/component_registry.hpp"
-#include "ecs/entity.hpp"
+#include "ecs/entity_registry.hpp"
 
 namespace guillaume {
 
@@ -66,14 +68,13 @@ class SceneApplication {
  * @brief Represents a scene in the application, which can contain entities and
  * systems. Scenes can be switched to change the active content.
  */
-class Scene {
+class Scene
+    : public utility::logging::Loggable<Scene,
+                                        utility::logging::StandardLogger> {
   private:
     ecs::ComponentRegistry
-        _componentRegistry; ///< Component registry for the scene
-    std::vector<ecs::Entity::Identifier>
-        _entities; ///< Entity identifiers owned by the scene
-    std::map<ecs::Entity::Identifier, ecs::Entity::Signature>
-        _entitySignatures;          ///< Entity signatures tracked per scene
+        _componentRegistry;              ///< Component registry for the scene
+    ecs::EntityRegistry _entityRegistry; ///< Entity registry for the scene
     SceneApplication *_application; ///< Application context attached to scene
 
   protected:
@@ -104,14 +105,6 @@ class Scene {
         return getApplication().getSessionStorage();
     }
 
-    /**
-     * @brief Request a scene switch.
-     * @tparam SceneType Target scene type.
-     */
-    template <typename SceneType> void setActiveScene(void) {
-        getApplication().requestSceneChange(typeid(SceneType).name());
-    }
-
   public:
     /**
      * @brief Default constructor for Scene.
@@ -132,12 +125,7 @@ class Scene {
     }
 
     /**
-     * @brief Called once after the scene has been attached to the application.
-     */
-    virtual void onApplicationAttached(void) {}
-
-    /**
-     * @brief Get the scene component registry.
+     * @brief Get the component registry for this scene.
      * @return Reference to the component registry.
      */
     ecs::ComponentRegistry &getComponentRegistry(void) {
@@ -145,43 +133,55 @@ class Scene {
     }
 
     /**
-     * @brief Get the scene component registry (const).
-     * @return Const reference to the component registry.
+     * @brief Get the component registry for this scene.
+     * @return Reference to the component registry.
      */
-    const ecs::ComponentRegistry &getComponentRegistry(void) const {
-        return _componentRegistry;
-    }
+    ecs::EntityRegistry &getEntityRegistry(void) { return _entityRegistry; }
 
     /**
-     * @brief Register an entity as part of the scene.
-     * @param entity The entity to register.
+     * @brief Callback invoked when the scene is created. Override to perform
+     * initialization logic.
      */
-    void addEntity(ecs::Entity &entity);
+    virtual void onCreate(void);
 
     /**
-     * @brief Update the stored signature for an entity in this scene.
-     * @param identityIdentifier The entity identifier.
-     * @param signature The latest entity signature.
+     * @brief Callback invoked when the scene starts. Override to perform logic
+     * that should run when the scene becomes visible.
      */
-    void setEntitySignature(const ecs::Entity::Identifier &identityIdentifier,
-                            const ecs::Entity::Signature &signature);
+    virtual void onStart(void);
 
     /**
-     * @brief Get the list of entity identifiers belonging to the scene.
-     * @return Const reference to entity identifiers.
+     * @brief Callback invoked when the scene is paused. Override to perform
+     * logic that should run when the scene loses focus but is still partially
+     * visible. This may occur when another scene is overlaid on top of this
+     * one.
      */
-    const std::vector<ecs::Entity::Identifier> &getEntities(void) const {
-        return _entities;
-    }
+    virtual void onPause(void);
 
     /**
-     * @brief Get tracked entity signatures for this scene.
-     * @return Const reference to the signatures map.
+     * @brief Callback invoked when the scene resumes from a paused state.
+     * Override to perform logic that should run when the scene regains focus
+     * after being paused.
      */
-    const std::map<ecs::Entity::Identifier, ecs::Entity::Signature> &
-    getEntitySignatures(void) const {
-        return _entitySignatures;
-    }
+    virtual void onResume(void);
+
+    /**
+     * @brief Callback invoked when the scene stops. Override to perform cleanup
+     * logic that should run when the scene is no longer visible.
+     */
+    virtual void onStop(void);
+
+    /**
+     * @brief Callback invoked when the scene is restarted. Override to perform
+     * logic that should run when the scene is restarted after being stopped.
+     */
+    virtual void onRestart(void);
+
+    /**
+     * @brief Callback invoked when the scene is destroyed. Override to perform
+     * final cleanup logic before the scene is removed from memory.
+     */
+    virtual void onDestroy(void);
 };
 
 /**

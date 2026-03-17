@@ -1,5 +1,4 @@
 /*
-/*
  Copyright (c) 2026 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,6 +20,20 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#include "guillaume/ecs/entity_registry.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs {
+
+void EntityRegistry::addEntity(Entity &entity) {
+    const auto identityIdentifier = entity.getIdentifier();
+    _entities.push_back(identityIdentifier);
+    _entitySignatures[identityIdentifier] = entity.getSignature();
+}
+
+void EntityRegistry::setEntitySignature(
+    const Entity::Identifier &identityIdentifier,
+    const Entity::Signature &signature) {
+    _entitySignatures[identityIdentifier] = signature;
+}
+
+} // namespace guillaume::ecs

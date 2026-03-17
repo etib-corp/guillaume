@@ -1,5 +1,4 @@
 /*
-/*
  Copyright (c) 2026 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,6 +20,20 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#pragma once
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+#include <gtest/gtest.h>
+
+#include <guillaume/ecs/entity_registry.hpp>
+
+namespace guillaume::ecs::tests {
+
+class TestEntityRegistry : public ::testing::Test {
+  protected:
+    TestEntityRegistry(void) = default;
+    ~TestEntityRegistry(void) override = default;
+    void SetUp(void) override {}
+    void TearDown(void) override {}
+};
+
+} // namespace guillaume::ecs::tests

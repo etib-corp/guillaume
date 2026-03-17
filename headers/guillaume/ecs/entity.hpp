@@ -71,7 +71,8 @@ class Entity {
 
   protected:
     /**
-     * @brief Set the entity's signature based on the specified component types.
+     * @brief Set the entity's signature based on the specified component
+     * types.
      * @tparam ComponentTypes The component types that define the entity's
      * signature.
      */

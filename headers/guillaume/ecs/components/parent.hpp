@@ -27,28 +27,26 @@
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::components {
+namespace guillaume::ecs::components {
 
 /**
- * @brief Component representing a relationship between entities.
+ * @brief Component representing a parent-child relationship between entities.
  */
-class Relationship : public ecs::Component {
+class Parent : public ecs::Component {
   private:
     ecs::Entity::Identifier parentIdentifier{
         ecs::Entity::InvalidIdentifier}; ///< Parent entity identifier
-    std::vector<ecs::Entity::Identifier>
-        childrenIdentifiers; ///< Children entity identifiers
 
   public:
     /**
-     * @brief Default constructor for the Relationship component.
+     * @brief Default constructor for the Parent component.
      */
-    Relationship(void) = default;
+    Parent(void) = default;
 
     /**
-     * @brief Default destructor for the Relationship component.
+     * @brief Default destructor for the Parent component.
      */
-    ~Relationship(void) = default;
+    ~Parent(void) = default;
 
     /**
      * @brief Set the parent entity identifier.
@@ -65,23 +63,6 @@ class Relationship : public ecs::Component {
     ecs::Entity::Identifier getParentIdentifier(void) const {
         return parentIdentifier;
     }
-
-    /**
-     * @brief Add a child entity identifier.
-     * @param identifier The child entity identifier to add.
-     */
-    void addChildIdentifier(ecs::Entity::Identifier identifier) {
-        childrenIdentifiers.push_back(identifier);
-    }
-
-    /**
-     * @brief Get the children entity identifiers.
-     * @return The children entity identifiers.
-     */
-    const std::vector<ecs::Entity::Identifier> &
-    getChildrenIdentifiers(void) const {
-        return childrenIdentifiers;
-    }
 };
 
-} // namespace guillaume::components
+} // namespace guillaume::ecs::components

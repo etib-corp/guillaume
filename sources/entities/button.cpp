@@ -1,5 +1,4 @@
 /*
-/*
  Copyright (c) 2026 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,6 +20,26 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#include "guillaume/entities/button.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::entities {
+
+Button::Button::Builder::Builder(void) : ecs::NodeEntityBuilder() {}
+
+Button::Builder::~Builder(void) {}
+
+Button::Director::Director(ecs::ComponentRegistry &componentRegistry)
+    : ecs::EntityDirector(componentRegistry) {}
+
+Button::Director::~Director(void) {}
+
+Button::Button(ecs::ComponentRegistry &registry, TogleState toggleState,
+               ColorStyle colorStyle, Shape shape, Size size,
+               MorphState morphState)
+    : ecs::NodeEntityFiller<components::Click, components::Hover,
+                            components::Transform, components::Render>(
+          registry) {}
+
+Button::~Button() {}
+
+} // namespace guillaume::entities

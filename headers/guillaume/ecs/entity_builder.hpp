@@ -22,38 +22,43 @@
 
 #pragma once
 
-#include "guillaume/ecs/tree_component_registry_filler.hpp"
+#include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity.hpp"
 
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/click.hpp"
-#include "guillaume/components/focus.hpp"
-#include "guillaume/components/hover.hpp"
-#include "guillaume/components/text.hpp"
-#include "guillaume/components/transform.hpp"
-
-namespace guillaume {
+namespace guillaume::ecs {
 
 /**
- * @brief Component registry class registering all core components.
- * @see ecs::TreeComponentRegistryFiller
+ * @brief Base class for building entities with specific components.
+ *
+ * This class provides an interface for creating entities and managing their
+ * components. It is intended to be inherited by specific entity builders that
+ * define the components and structure of the entities they create.
  */
-class ComponentRegistry
-    : public ecs::TreeComponentRegistryFiller<
-          components::Bound, components::Click, components::Focus,
-          components::Hover, components::Text, components::Transform> {
+class EntityBuilder {
   public:
     /**
-     * @brief Default constructor.
+     * @brief Default constructor for the EntityBuilder class.
      */
-    ComponentRegistry(void)
-        : ecs::TreeComponentRegistryFiller<
-              components::Bound, components::Click, components::Focus,
-              components::Hover, components::Text, components::Transform>() {}
+    EntityBuilder(void);
 
     /**
-     * @brief Default destructor.
+     * @brief Default destructor for the EntityBuilder class.
      */
-    virtual ~ComponentRegistry(void) = default;
+    virtual ~EntityBuilder(void);
+
+    /**
+     * @brief Get the entity being built.
+     * @param componentRegistry The component registry used to create and
+     * initialize entity components.
+     * @return Unique pointer to the entity being built.
+     */
+    virtual std::unique_ptr<Entity>
+    getEntity(ecs::ComponentRegistry &componentRegistry) = 0;
+
+    /**
+     * @brief Reset the builder to its initial state for creating a new entity.
+     */
+    virtual void reset(void) = 0;
 };
 
-} // namespace guillaume
+} // namespace guillaume::ecs

@@ -1,5 +1,4 @@
 /*
-/*
  Copyright (c) 2026 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,6 +20,12 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs {
+
+EntityBuilder::EntityBuilder(void) {}
+
+EntityBuilder::~EntityBuilder(void) {}
+
+} // namespace guillaume::ecs

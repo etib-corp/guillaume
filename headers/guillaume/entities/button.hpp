@@ -24,182 +24,211 @@
 
 #include <memory>
 
-#include "guillaume/ecs/entity_filler.hpp"
+#include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_director.hpp"
+#include "guillaume/ecs/node_entity_builder.hpp"
+#include "guillaume/ecs/node_entity_filler.hpp"
 
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/click.hpp"
 #include "guillaume/components/hover.hpp"
-#include "guillaume/components/relationship.hpp"
 #include "guillaume/components/render.hpp"
-#include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 
 namespace guillaume::entities {
 
 /**
- * @brief Entity representing a clickable text button.
- * @see components::Click
- * @see components::Hover
- * @see components::Text
+ * @brief Button entity class representing a UI button with various components.
  */
 class Button
-    : public ecs::EntityFiller<components::Bound, components::Click,
-                               components::Hover, components::Relationship,
-                               components::Render, components::Text,
-                               components::Transform> {
+    : public ecs::NodeEntityFiller<components::Click, components::Hover,
+                                   components::Transform, components::Render> {
   public:
     /**
-     * @brief Builder for constructing `Button` entities.
+     * @brief State of a toggle button, which can be either Default or Selected.
      */
-    class Builder {
+    enum class TogleState { Default, Selected };
+
+    /**
+     * @brief Color style of the button.
+     */
+    enum class ColorStyle { Elevated, Filled, Tonal, Outlined, Text };
+
+    /**
+     * @brief Shape of the button.
+     */
+    enum class Shape { Round, Square };
+
+    /**
+     * @brief Size of the button.
+     */
+    enum class Size { ExtraSmall, Small, Medium, Large, ExtraLarge };
+
+    /**
+     * @brief Morph state of the button, which can be Default, Pressed, or
+     * Selected.
+     */
+    enum class MorphState { Default, Pressed, Selected };
+
+    /**
+     * @brief Builder used to configure and create `Button` entities.
+     */
+    class Builder : public ecs::NodeEntityBuilder {
       private:
-        ecs::ComponentRegistry &_componentRegistry;
-        std::unique_ptr<Button> _button;
-
-        ecs::Entity::Identifier getIdentifier(void) const {
-            return _button->getIdentifier();
-        }
+        std::unique_ptr<Button>
+            _button; ///< Unique pointer to the Button entity being built
+        TogleState _toggleState; ///< Current toggle state
+        ColorStyle _colorStyle;  ///< Button color style
+        Shape _shape;            ///< Button shape
+        Size _size;              ///< Button size
+        MorphState _morphState;  ///< Current morph state
 
       public:
         /**
-         * @brief Construct a new button builder.
-         * @param componentRegistry Registry used to create and configure
-         * components.
+         * @brief Construct a new Button Builder object.
          */
-        Builder(ecs::ComponentRegistry &componentRegistry)
-            : _componentRegistry(componentRegistry) {
-            reset();
+        Builder(void);
+
+        /**
+         * @brief Default destructor for the Button Builder class.
+         */
+        ~Builder(void);
+
+        /**
+         * @brief Get the entity being built.
+         * @param componentRegistry The component registry used to create and
+         * initialize button components.
+         * @return Unique pointer to the Button entity being built.
+         */
+        std::unique_ptr<ecs::Entity>
+        getEntity(ecs::ComponentRegistry &componentRegistry) override {
+            _button = std::make_unique<Button>(componentRegistry, _toggleState,
+                                               _colorStyle, _shape, _size,
+                                               _morphState);
+            return std::move(_button);
         }
 
         /**
-         * @brief Default destructor.
+         * @brief Reset the builder to its initial state for creating a new
+         * Button entity.
          */
-        ~Builder(void) = default;
-
-        /**
-         * @brief Reset the builder with a fresh `Button` instance.
-         */
-        void reset(void) {
-            _button = std::make_unique<Button>(_componentRegistry);
+        void reset(void) override {
+            _button.reset();
+            _toggleState = TogleState::Default;
+            _colorStyle = ColorStyle::Filled;
+            _shape = Shape::Round;
+            _size = Size::Small;
+            _morphState = MorphState::Default;
         }
 
         /**
-         * @brief Set button local position.
-         * @param position New local position.
+         * @brief Set the toggle state of the button.
+         * @param toggleState The new toggle state to set.
+         * @return Reference to the builder for chaining.
          */
-        void setPosition(const components::Transform::Position &position) {
-            _componentRegistry
-                .getComponent<components::Transform>(getIdentifier())
-                .setPosition(position);
+        Builder &withToggleState(TogleState toggleState) {
+            _toggleState = toggleState;
+            return *this;
         }
 
         /**
-         * @brief Set button local rotation.
-         * @param rotation New local rotation.
+         * @brief Set the color style of the button.
+         * @param colorStyle The new color style to set.
+         * @return Reference to the builder for chaining.
          */
-        void setRotation(const components::Transform::Rotation &rotation) {
-            _componentRegistry
-                .getComponent<components::Transform>(getIdentifier())
-                .setRotation(rotation);
+        Builder &withColorStyle(ColorStyle colorStyle) {
+            _colorStyle = colorStyle;
+            return *this;
         }
 
         /**
-         * @brief Set button local scale.
-         * @param scale New local scale.
+         * @brief Set the shape of the button.
+         * @param shape The new shape to set.
+         * @return Reference to the builder for chaining.
          */
-        void setScale(const components::Transform::Scale &scale) {
-            _componentRegistry
-                .getComponent<components::Transform>(getIdentifier())
-                .setScale(scale);
+        Builder &withShape(Shape shape) {
+            _shape = shape;
+            return *this;
         }
 
         /**
-         * @brief Set button bound size.
-         * @param size New bound size.
+         * @brief Set the size of the button.
+         * @param size The new size to set.
+         * @return Reference to the builder for chaining.
          */
-        void setSize(const components::Bound::Size &size) {
-            _componentRegistry.getComponent<components::Bound>(getIdentifier())
-                .setSize(size);
+        Builder &withSize(Size size) {
+            _size = size;
+            return *this;
         }
 
         /**
-         * @brief Set button displayed text.
-         * @param content Text content.
+         * @brief Set the morph state of the button.
+         * @param morphState The new morph state to set.
+         * @return Reference to the builder for chaining.
          */
-        void setText(const std::string &content) {
-            _componentRegistry.getComponent<components::Text>(getIdentifier())
-                .setContent(content);
-        }
-
-        /**
-         * @brief Set parent entity identifier.
-         * @param parentIdentifier Identifier of the parent entity.
-         */
-        void
-        setParentIdentifier(const ecs::Entity::Identifier &parentIdentifier) {
-            _componentRegistry
-                .getComponent<components::Relationship>(getIdentifier())
-                .setParentIdentifier(parentIdentifier);
-        }
-
-        /**
-         * @brief Finalize and return the built button.
-         * @return The constructed button entity.
-         */
-        std::unique_ptr<Button> getProduct(void) {
-            auto product = std::move(_button);
-            reset();
-            return product;
+        Builder &withMorphState(MorphState morphState) {
+            _morphState = morphState;
+            return *this;
         }
     };
 
     /**
-     * @brief Director orchestrating `Button::Builder` construction steps.
+     * @brief Director that orchestrates `Button::Builder` to create
+     * preconfigured button entities.
      */
-    class Director {
+    class Director : public ecs::EntityDirector {
+      private:
+        Builder
+            _builder; ///< Builder instance for constructing the Button entity
+
       public:
         /**
-         * @brief Construct a button with provided attributes.
-         * @tparam BuilderType Concrete builder type.
-         * @param builder Builder instance.
-         * @param position Button position.
-         * @param rotation Button rotation.
-         * @param size Button size.
-         * @param content Button label text.
-         * @param parentIdentifier Parent entity identifier.
+         * @brief Construct a new Button Director object.
+         * @param componentRegistry The component registry used for button
+         * entity creation.
          */
-        template <typename BuilderType>
-        void
-        constructButton(BuilderType &builder,
-                        const components::Transform::Position &position,
-                        const components::Transform::Rotation &rotation,
-                        const components::Bound::Size &size,
-                        const std::string &content,
-                        const ecs::Entity::Identifier &parentIdentifier) const {
-            builder.reset();
-            builder.setPosition(position);
-            builder.setRotation(rotation);
-            builder.setScale({1.0f, 1.0f, 1.0f});
-            builder.setSize(size);
-            builder.setText(content);
-            builder.setParentIdentifier(parentIdentifier);
+        Director(ecs::ComponentRegistry &componentRegistry);
+
+        /**
+         * @brief Default destructor for the Button Director class.
+         */
+        ~Director(void);
+
+        /**
+         * @brief Create a default Button entity using the builder.
+         * @param builder The builder instance used to configure and create the
+         * default button.
+         * @return Unique pointer to the created Button entity.
+         */
+        std::unique_ptr<ecs::Entity> makeDefaultButton(Builder &builder) {
+            return builder.withToggleState(TogleState::Default)
+                .withColorStyle(ColorStyle::Filled)
+                .withShape(Shape::Round)
+                .withSize(Size::Small)
+                .withMorphState(MorphState::Default)
+                .getEntity(getComponentRegistry());
         }
     };
 
+  private:
+  public:
     /**
-     * @brief Construct a new Button entity filler.
-     * @param componentRegistry Registry used to create and store components.
+     * @brief Default constructor for the Button entity.
+     * @param registry Reference to the component registry for initializing
+     * components.
+     * @param toggleState Initial toggle state for the button.
+     * @param colorStyle Initial color style for the button.
+     * @param shape Initial shape for the button.
+     * @param size Initial size for the button.
+     * @param morphState Initial morph state for the button.
      */
-    Button(ecs::ComponentRegistry &componentRegistry)
-        : ecs::EntityFiller<components::Bound, components::Click,
-                            components::Hover, components::Relationship,
-                            components::Render, components::Text,
-                            components::Transform>(componentRegistry) {}
+    Button(ecs::ComponentRegistry &registry, TogleState toggleState,
+           ColorStyle colorStyle, Shape shape, Size size,
+           MorphState morphState);
 
     /**
-     * @brief Virtual destructor for Button.
+     * @brief Default destructor for the Button entity.
      */
-    ~Button(void) override = default;
+    ~Button(void);
 };
 
 } // namespace guillaume::entities

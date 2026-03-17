@@ -1,5 +1,4 @@
 /*
-/*
  Copyright (c) 2026 ETIB Corporation
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -21,6 +20,39 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#pragma once
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+#include "guillaume/ecs/component_registry.hpp"
+
+namespace guillaume::ecs {
+
+/**
+ * @brief Base director class orchestrating entity construction with a
+ * component registry.
+ */
+class EntityDirector {
+  private:
+    ComponentRegistry
+        &_registry; ///< Reference to the component registry for entity creation
+
+  protected:
+    /**
+     * @brief Get the component registry reference.
+     * @return Reference to the component registry.
+     */
+    ComponentRegistry &getComponentRegistry(void) { return _registry; }
+
+  public:
+    /**
+     * @brief Construct a new EntityDirector object.
+     * @param registry Reference to the component registry for entity creation.
+     */
+    EntityDirector(ComponentRegistry &registry);
+
+    /**
+     * @brief Default destructor for the EntityDirector class.
+     */
+    ~EntityDirector(void);
+};
+
+} // namespace guillaume::ecs

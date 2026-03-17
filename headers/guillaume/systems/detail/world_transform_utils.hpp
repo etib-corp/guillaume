@@ -22,8 +22,10 @@
 
 #pragma once
 
-#include "guillaume/components/relationship.hpp"
+#include "guillaume/ecs/components/parent.hpp"
+
 #include "guillaume/components/transform.hpp"
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity.hpp"
 
@@ -60,13 +62,13 @@ calculateWorldTransform(ecs::ComponentRegistry &componentRegistry,
     WorldTransform worldTransform{
         transform.getPosition(), transform.getRotation(), transform.getScale()};
 
-    if (!componentRegistry.hasComponent<components::Relationship>(entityId)) {
+    if (!componentRegistry.hasComponent<ecs::components::Parent>(entityId)) {
         return worldTransform;
     }
 
-    const auto &relationship =
-        componentRegistry.getComponent<components::Relationship>(entityId);
-    const auto parentId = relationship.getParentIdentifier();
+    const auto &parent =
+        componentRegistry.getComponent<ecs::components::Parent>(entityId);
+    const auto parentId = parent.getParentIdentifier();
 
     if (parentId == ecs::Entity::InvalidIdentifier) {
         return worldTransform;
