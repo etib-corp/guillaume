@@ -34,7 +34,7 @@ namespace guillaume::ecs::components {
  */
 class Parent : public ecs::Component {
   private:
-    ecs::Entity::Identifier parentIdentifier{
+    ecs::Entity::Identifier _parentIdentifier{
         ecs::Entity::InvalidIdentifier}; ///< Parent entity identifier
 
   public:
@@ -53,7 +53,7 @@ class Parent : public ecs::Component {
      * @param identifier The new parent entity identifier.
      */
     void setParentIdentifier(ecs::Entity::Identifier identifier) {
-        parentIdentifier = identifier;
+        _parentIdentifier = identifier;
     }
 
     /**
@@ -61,7 +61,7 @@ class Parent : public ecs::Component {
      * @return The parent entity identifier.
      */
     ecs::Entity::Identifier getParentIdentifier(void) const {
-        return parentIdentifier;
+        return _parentIdentifier;
     }
 };
 
