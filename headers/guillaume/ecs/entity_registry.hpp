@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <map>
+#include <memory>
 #include <vector>
 
 #include "guillaume/ecs/entity.hpp"
@@ -34,10 +34,8 @@ namespace guillaume::ecs {
  */
 class EntityRegistry {
   private:
-    std::vector<Entity::Identifier>
-        _entities; ///< Entity identifiers registered in the scene
-    std::map<Entity::Identifier, Entity::Signature>
-        _entitySignatures; ///< Entity signatures tracked by identifier
+    std::vector<std::unique_ptr<Entity>>
+        _entities; ///< Entities registered in the scene
 
   public:
     /**
@@ -54,32 +52,27 @@ class EntityRegistry {
      * @brief Register an entity in the registry.
      * @param entity The entity to register.
      */
-    void addEntity(Entity &entity);
+    void addEntity(std::unique_ptr<Entity> entity);
 
     /**
-     * @brief Update the signature for a registered entity.
-     * @param identityIdentifier The entity identifier.
-     * @param signature The entity signature.
+     * @brief Get all registered entities.
+     * @return Const reference to registered entities.
      */
-    void setEntitySignature(const Entity::Identifier &identityIdentifier,
-                            const Entity::Signature &signature);
-
-    /**
-     * @brief Get all registered entity identifiers.
-     * @return Const reference to entity identifiers.
-     */
-    const std::vector<Entity::Identifier> &getEntities(void) const {
+    const std::vector<std::unique_ptr<Entity>> &getEntities(void) const {
         return _entities;
     }
 
     /**
-     * @brief Get tracked entity signatures.
-     * @return Const reference to the signatures map.
+     * @brief Get all registered entity identifier that match the specified
+     * signature.
+     * @param systemSignature The signature to match against registered
+     * entities.
+     * @return A vector containing matching entity identifiers.
+     * @note This is used for systems to query entities that match their
+     * required component signature.
      */
-    const std::map<Entity::Identifier, Entity::Signature> &
-    getEntitySignatures(void) const {
-        return _entitySignatures;
-    }
+    std::vector<Entity::Identifier>
+    getEntityWithSignature(Entity::Signature systemSignature) const;
 };
 
 } // namespace guillaume::ecs

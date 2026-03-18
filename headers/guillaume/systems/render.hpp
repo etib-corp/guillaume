@@ -56,10 +56,10 @@ class Render
     /**
      * @brief Update the Render system for the specified entity.
      * @param componentRegistry The component registry instance.
-     * @param identityIdentifier The identifier of the entity to update.
+     * @param entityIdentifier The identifier of the entity to update.
      */
     void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &identityIdentifier) override;
+                const ecs::Entity::Identifier &entityIdentifier) override;
 };
 
 } // namespace guillaume::systems

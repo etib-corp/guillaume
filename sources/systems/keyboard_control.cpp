@@ -46,15 +46,14 @@ namespace guillaume::systems {
 KeyboardControl::KeyboardControl(event::EventBus &eventBus)
     : _keyboardSubscriber(eventBus) {}
 
-void KeyboardControl::update(
-    ecs::ComponentRegistry &componentRegistry,
-    const ecs::Entity::Identifier &identityIdentifier) {
+void KeyboardControl::update(ecs::ComponentRegistry &componentRegistry,
+                             const ecs::Entity::Identifier &entityIdentifier) {
     if (!_keyboardSubscriber.hasPendingEvents()) {
         return;
     }
 
     auto &text =
-        componentRegistry.getComponent<components::Text>(identityIdentifier);
+        componentRegistry.getComponent<components::Text>(entityIdentifier);
     std::string content = text.getContent();
 
     while (_keyboardSubscriber.hasPendingEvents()) {

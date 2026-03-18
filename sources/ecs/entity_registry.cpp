@@ -24,16 +24,19 @@
 
 namespace guillaume::ecs {
 
-void EntityRegistry::addEntity(Entity &entity) {
-    const auto identityIdentifier = entity.getIdentifier();
-    _entities.push_back(identityIdentifier);
-    _entitySignatures[identityIdentifier] = entity.getSignature();
+void EntityRegistry::addEntity(std::unique_ptr<Entity> entity) {
+    _entities.push_back(std::move(entity));
 }
 
-void EntityRegistry::setEntitySignature(
-    const Entity::Identifier &identityIdentifier,
-    const Entity::Signature &signature) {
-    _entitySignatures[identityIdentifier] = signature;
+std::vector<Entity::Identifier>
+EntityRegistry::getEntityWithSignature(Entity::Signature systemSignature) const {
+    std::vector<Entity::Identifier> matchingIdentifiers;
+    for (const auto &entity : _entities) {
+        if ((entity->getSignature() & systemSignature) == systemSignature) {
+            matchingIdentifiers.push_back(entity->getIdentifier());
+        }
+    }
+    return matchingIdentifiers;
 }
 
 } // namespace guillaume::ecs

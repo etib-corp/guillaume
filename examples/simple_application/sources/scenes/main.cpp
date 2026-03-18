@@ -25,6 +25,10 @@ Main::Main(void) : guillaume::Scene() {
                             std::to_string(iconEntity->getIdentifier()));
     this->getLogger().debug("Created text entity with ID: " +
                             std::to_string(textEntity->getIdentifier()));
+
+    this->getEntityRegistry().addEntity(std::move(buttonEntity));
+    this->getEntityRegistry().addEntity(std::move(iconEntity));
+    this->getEntityRegistry().addEntity(std::move(textEntity));
 }
 
 Main::~Main(void) {}

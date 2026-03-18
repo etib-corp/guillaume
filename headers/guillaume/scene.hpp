@@ -22,10 +22,7 @@
 
 #pragma once
 
-#include <map>
 #include <stdexcept>
-#include <string>
-#include <typeinfo>
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
@@ -133,8 +130,8 @@ class Scene
     }
 
     /**
-     * @brief Get the component registry for this scene.
-     * @return Reference to the component registry.
+     * @brief Get the entity registry for this scene.
+     * @return Reference to the entity registry.
      */
     ecs::EntityRegistry &getEntityRegistry(void) { return _entityRegistry; }
 

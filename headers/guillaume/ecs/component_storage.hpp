@@ -42,16 +42,16 @@ class IComponentStorage {
 
     /**
      * @brief Remove a component for an entity.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      */
-    virtual void remove(const Entity::Identifier &identityIdentifier) = 0;
+    virtual void remove(const Entity::Identifier &entityIdentifier) = 0;
 
     /**
      * @brief Check if a component exists for an entity.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      * @return True if a component exists.
      */
-    virtual bool has(const Entity::Identifier &identityIdentifier) const = 0;
+    virtual bool has(const Entity::Identifier &entityIdentifier) const = 0;
 };
 
 /**
@@ -82,16 +82,16 @@ class ComponentStorage : public IComponentStorage {
 
     /**
      * @brief Add or replace a component for an entity.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      * @param args Arguments forwarded to the component constructor.
      * @return Reference to the stored component.
      * @note If a component already exists for the entity, it is replaced.
      */
     template <typename... Args>
-    ComponentType &emplace(const Entity::Identifier &identityIdentifier,
+    ComponentType &emplace(const Entity::Identifier &entityIdentifier,
                            Args &&...args) {
         auto [iterator, inserted] = _components.emplace(
-            identityIdentifier, ComponentType(std::forward<Args>(args)...));
+            entityIdentifier, ComponentType(std::forward<Args>(args)...));
         if (!inserted) {
             iterator->second = ComponentType(std::forward<Args>(args)...);
         }
@@ -100,12 +100,12 @@ class ComponentStorage : public IComponentStorage {
 
     /**
      * @brief Find a component for an entity.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      * @return Pointer to the component or nullptr.
      * @retval nullptr No component exists for the entity.
      */
-    ComponentType *find(const Entity::Identifier &identityIdentifier) {
-        auto iterator = _components.find(identityIdentifier);
+    ComponentType *find(const Entity::Identifier &entityIdentifier) {
+        auto iterator = _components.find(entityIdentifier);
         if (iterator == _components.end()) {
             return nullptr;
         }
@@ -114,13 +114,13 @@ class ComponentStorage : public IComponentStorage {
 
     /**
      * @brief Find a component for an entity (const).
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      * @return Pointer to the component or nullptr.
      * @retval nullptr No component exists for the entity.
      */
     const ComponentType *
-    find(const Entity::Identifier &identityIdentifier) const {
-        auto iterator = _components.find(identityIdentifier);
+    find(const Entity::Identifier &entityIdentifier) const {
+        auto iterator = _components.find(entityIdentifier);
         if (iterator == _components.end()) {
             return nullptr;
         }
@@ -129,19 +129,19 @@ class ComponentStorage : public IComponentStorage {
 
     /**
      * @brief Remove a component for an entity.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      */
-    void remove(const Entity::Identifier &identityIdentifier) override {
-        _components.erase(identityIdentifier);
+    void remove(const Entity::Identifier &entityIdentifier) override {
+        _components.erase(entityIdentifier);
     }
 
     /**
      * @brief Check if a component exists for an entity.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      * @return True if a component exists.
      */
-    bool has(const Entity::Identifier &identityIdentifier) const override {
-        return _components.find(identityIdentifier) != _components.end();
+    bool has(const Entity::Identifier &entityIdentifier) const override {
+        return _components.find(entityIdentifier) != _components.end();
     }
 };
 

@@ -34,8 +34,6 @@
 
 #include <utility/demangle.hpp>
 
-#include "component_registry.hpp"
-#include "ecs/component_type_id.hpp"
 #include "ecs/system_registry.hpp"
 #include "metadata.hpp"
 #include "renderer.hpp"
@@ -143,7 +141,6 @@ class Application
         }
         startOrResumeScene(scene);
         _activeScene = &scene;
-        syncSystemsWithActiveScene();
     }
 
     template <ecs::InheritFromSystem SystemType>
@@ -180,20 +177,6 @@ class Application
         }
         this->getLogger().debug("Registered scene: " +
                                 utility::demangle<SceneType>());
-    }
-
-    void syncSystemsWithActiveScene(void) {
-        const ecs::Entity::Signature emptySignature;
-
-        for (const auto &[sceneName, scene] : _scenes) {
-            (void)sceneName;
-            const bool isActive = scene.get() == _activeScene;
-            for (const auto &[identityIdentifier, signature] :
-                 scene->getEntityRegistry().getEntitySignatures()) {
-                _systemRegistry.onEntitySignatureChanged(
-                    identityIdentifier, isActive ? signature : emptySignature);
-            }
-        }
     }
 
   public:
@@ -295,11 +278,11 @@ class Application
      * @brief Run one system update pass for the active scene.
      */
     void routine(void) {
-        syncSystemsWithActiveScene();
+        auto &entityRegistry = getActiveScene().getEntityRegistry();
         auto &componentRegistry = getActiveScene().getComponentRegistry();
         for (const auto &[systemType, system] : _systemRegistry.getSystems()) {
             (void)systemType;
-            system->routine(componentRegistry);
+            system->routine(componentRegistry, entityRegistry);
         }
     }
 

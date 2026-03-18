@@ -34,7 +34,6 @@
 
 #include <utility/demangle.hpp>
 
-#include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/system.hpp"
 
 namespace guillaume::ecs {
@@ -138,19 +137,6 @@ class SystemRegistry
         return _systems;
     }
 
-    /**
-     * @brief Add an entity to all compatible systems based on its signature.
-     * @param entity The entity to add.
-     */
-    void addEntityToSystems(Entity &entity);
-
-    /**
-     * @brief Update system membership for an entity signature change.
-     * @param identityIdentifier The entity identifier.
-     * @param signature The updated entity signature.
-     */
-    void onEntitySignatureChanged(const Entity::Identifier &identityIdentifier,
-                                  const Entity::Signature &signature);
 };
 
 } // namespace guillaume::ecs

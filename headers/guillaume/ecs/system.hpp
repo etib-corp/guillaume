@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <bitset>
 #include <functional>
 #include <vector>
@@ -34,6 +33,7 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/component_type_id.hpp"
 #include "guillaume/ecs/entity.hpp"
+#include "guillaume/ecs/entity_registry.hpp"
 
 namespace guillaume::ecs {
 
@@ -49,8 +49,7 @@ class System
     : protected utility::logging::Loggable<System,
                                            utility::logging::StandardLogger> {
   private:
-    Entity::Signature _signature;              ///< System signature
-    std::vector<Entity::Identifier> _entities; ///< Managed entities
+    Entity::Signature _signature; ///< System signature
 
   protected:
     /**
@@ -81,37 +80,21 @@ class System
     Entity::Signature getSignature(void) const { return _signature; }
 
     /**
-     * @brief Add an entity to be managed by the system.
-     * @param entityIdentifier The identifier of the entity to add.
-     */
-    void addEntity(Entity::Identifier entityIdentifier);
-
-    /**
-     * @brief Remove an entity from the system.
-     * @param entityIdentifier The identifier of the entity to remove.
-     */
-    void removeEntity(Entity::Identifier entityIdentifier);
-
-    /**
-     * @brief Check if an entity is already managed.
-     * @param entityIdentifier The identifier of the entity.
-     * @return True if the entity is present.
-     */
-    bool hasEntity(Entity::Identifier entityIdentifier) const;
-
-    /**
      * @brief Routine to update all managed entities.
      * @param componentRegistry The component registry instance.
+     * @param entityRegistry The entity registry used to query matching
+     * entities.
      */
-    void routine(ecs::ComponentRegistry &componentRegistry);
+    void routine(ecs::ComponentRegistry &componentRegistry,
+           ecs::EntityRegistry &entityRegistry);
 
     /**
      * @brief Update the system, processing relevant entities.
      * @param componentRegistry The component registry instance.
-     * @param identityIdentifier The identifier of the entity to update.
+     * @param entityIdentifier The identifier of the entity to update.
      */
     virtual void update(ecs::ComponentRegistry &componentRegistry,
-                        const ecs::Entity::Identifier &identityIdentifier) = 0;
+                        const ecs::Entity::Identifier &entityIdentifier) = 0;
 };
 
 /**

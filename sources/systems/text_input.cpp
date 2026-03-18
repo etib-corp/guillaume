@@ -28,13 +28,13 @@ TextInput::TextInput(event::EventBus &eventBus)
     : _textInputSubscriber(eventBus) {}
 
 void TextInput::update(ecs::ComponentRegistry &componentRegistry,
-                       const ecs::Entity::Identifier &identityIdentifier) {
+                       const ecs::Entity::Identifier &entityIdentifier) {
     if (!_textInputSubscriber.hasPendingEvents()) {
         return;
     }
 
     auto &text =
-        componentRegistry.getComponent<components::Text>(identityIdentifier);
+        componentRegistry.getComponent<components::Text>(entityIdentifier);
     std::string content = text.getContent();
 
     while (_textInputSubscriber.hasPendingEvents()) {

@@ -46,7 +46,7 @@ class Render : public ecs::Component {
      */
     using Handler =
         std::function<void(ecs::ComponentRegistry &componentRegistry,
-                           const ecs::Entity::Identifier &identityIdentifier,
+                           const ecs::Entity::Identifier &entityIdentifier,
                            Renderer &renderer)>; ///< Render event handler type
 
   private:
