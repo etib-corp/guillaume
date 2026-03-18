@@ -10,19 +10,19 @@ class Settings : public guillaume::Scene {
 
     ~Settings(void);
 
-    void onCreate(void);
+    void onCreate(void) override;
 
-    void onStart(void);
+    void onStart(void) override;
 
-    void onPause(void);
+    void onPause(void) override;
 
-    void onResume(void);
+    void onResume(void) override;
 
-    void onStop(void);
+    void onStop(void) override;
 
-    void onRestart(void);
+    void onRestart(void) override;
 
-    void onDestroy(void);
+    void onDestroy(void) override;
 };
 
 } // namespace simple_application::scenes
