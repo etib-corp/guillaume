@@ -33,6 +33,8 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
+#include <utility/demangle.hpp>
+
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/component_storage.hpp"
 #include "guillaume/ecs/entity.hpp"
@@ -126,7 +128,7 @@ class ComponentRegistry
         auto &storage = getOrCreateStorage<ComponentType>();
         storage.emplace(identityIdentifier);
         getLogger().debug("Registered component of type " +
-                          std::string(typeid(ComponentType).name()) +
+                          utility::demangle<ComponentType>() +
                           " for entity " + std::to_string(identityIdentifier));
     }
 

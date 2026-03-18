@@ -32,6 +32,8 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
+#include <utility/demangle.hpp>
+
 #include "component_registry.hpp"
 #include "ecs/component_type_id.hpp"
 #include "ecs/system_registry.hpp"
@@ -148,7 +150,7 @@ class Application
     void registerSystem(std::unique_ptr<SystemType> system) {
         _systemRegistry.registerNewSystem<SystemType>(std::move(system));
         this->getLogger().debug("Registered system: " +
-                                std::string(typeid(SystemType).name()));
+                                utility::demangle<SystemType>());
     }
 
     void registerCoreSystems(void) {
@@ -177,7 +179,7 @@ class Application
             activateScene(*iterator->second);
         }
         this->getLogger().debug("Registered scene: " +
-                                std::string(typeid(SceneType).name()));
+                                utility::demangle<SceneType>());
     }
 
     void syncSystemsWithActiveScene(void) {

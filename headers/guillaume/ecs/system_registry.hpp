@@ -32,6 +32,8 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
+#include <utility/demangle.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/system.hpp"
 
@@ -110,7 +112,7 @@ class SystemRegistry
     void registerNewSystem(std::unique_ptr<SystemType> system) {
         _systems[std::type_index(typeid(SystemType))] = std::move(system);
         getLogger().debug("Registered system of type " +
-                          std::string(typeid(SystemType).name()));
+                          utility::demangle<SystemType>());
     }
 
     /**

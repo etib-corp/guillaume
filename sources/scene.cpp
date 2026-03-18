@@ -22,8 +22,6 @@
 
 #include "guillaume/scene.hpp"
 
-#include "guillaume/entities/button.hpp"
-
 namespace guillaume {
 
 Scene::Scene(void) : _application(nullptr) {}
