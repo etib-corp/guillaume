@@ -167,7 +167,6 @@ void Renderer::present(void) {
 
 void Renderer::drawTriangle(const guillaume::shapes::Triangle &triangle) {
     getLogger().warning("Drawing a triangle shape is deprecated. Use drawVertices() with a triangle instead for better performance and flexibility.");
-    return;
 
     auto position = triangle.getPosition();
     const auto cameraPosition = getCamera().getPosition();
@@ -198,7 +197,6 @@ void Renderer::drawTriangle(const guillaume::shapes::Triangle &triangle) {
 
 void Renderer::drawRectangle(const guillaume::shapes::Rectangle &rectangle) {
     getLogger().warning("Drawing a rectangle shape is deprecated. Use drawVertices() with a quad instead for better performance and flexibility.");
-    return;
 
     auto position = rectangle.getPosition();
     const auto cameraPosition = getCamera().getPosition();
@@ -234,7 +232,6 @@ void Renderer::drawRectangle(const guillaume::shapes::Rectangle &rectangle) {
 
 void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
     getLogger().warning("Drawing a circle shape is deprecated. Use drawVertices() with a triangle fan instead for better performance and flexibility.");
-    return;
 
     auto position = circle.getPosition();
     const auto cameraPosition = getCamera().getPosition();
@@ -261,14 +258,16 @@ void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
 }
 
 void Renderer::drawVertices(const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) {
+    const auto cameraPosition = getCamera().getPosition();
+
     glDisable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-
     glBegin(GL_TRIANGLE_FAN);
     for (const auto &vertex : vertices) {
         glColor4ub(vertex.getColor().red(), vertex.getColor().green(),
                    vertex.getColor().blue(), vertex.getColor().alpha());
         auto position = vertex.getPosition();
+        position -= cameraPosition;
         glVertex3f(position[0], position[1], position[2]);
     }
     glEnd();

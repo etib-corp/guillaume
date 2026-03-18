@@ -29,7 +29,7 @@ namespace simple_application::scenes {
 namespace {
 
 std::optional<std::string> resolveDefaultFontPath(void) {
-    static const std::vector<std::string> candidates = {
+    static const std::array<std::string, 6> candidates = {
         "/System/Library/Fonts/Helvetica.ttc",
         "/System/Library/Fonts/Avenir.ttc",
         "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
@@ -50,7 +50,7 @@ std::optional<std::string> resolveDefaultFontPath(void) {
 void drawButtonWithColor(
     guillaume::ecs::ComponentRegistry &componentRegistry,
     const guillaume::ecs::Entity::Identifier &identityIdentifier,
-    guillaume::Renderer &renderer, const std::array<std::uint8_t, 4> &color) {
+    guillaume::Renderer &renderer, const utility::math::Color<uint8_t> &color) {
     const auto &bound =
         componentRegistry.getComponent<guillaume::components::Bound>(
             identityIdentifier);
@@ -64,28 +64,48 @@ void drawButtonWithColor(
     rectangle.setRotation(worldTransform.rotation);
     rectangle.setScale(worldTransform.scale);
     rectangle.setSize({bound.getSize()[0], bound.getSize()[1]});
-    rectangle.setColor({color[0], color[1], color[2], color[3]});
+    rectangle.setColor(color);
 
-    std::vector<utility::math::Vector<float, 3>> vertices = {
-        {rectangle.getPosition()[0] - rectangle.getSize()[0] / 2.0f,
-         rectangle.getPosition()[1] - rectangle.getSize()[1] / 2.0f,
-         rectangle.getPosition()[2]},
-        {rectangle.getPosition()[0] + rectangle.getSize()[0] / 2.0f,
-         rectangle.getPosition()[1] - rectangle.getSize()[1] / 2.0f,
-         rectangle.getPosition()[2]},
-        {rectangle.getPosition()[0] + rectangle.getSize()[0] / 2.0f,
-         rectangle.getPosition()[1] + rectangle.getSize()[1] / 2.0f,
-         rectangle.getPosition()[2]},
-        {rectangle.getPosition()[0] - rectangle.getSize()[0] / 2.0f,
-         rectangle.getPosition()[1] + rectangle.getSize()[1] / 2.0f,
-         rectangle.getPosition()[2]},
+    const auto position = rectangle.getPosition();
+    const auto size = rectangle.getSize();
+    const auto scale = rectangle.getScale();
+    const float halfWidth =
+        static_cast<float>(size[0]) * static_cast<float>(scale[0]) * 0.5f;
+    const float halfHeight =
+        static_cast<float>(size[1]) * static_cast<float>(scale[1]) * 0.5f;
+    const float rotation = rectangle.getRotation()[2];
+    const float cosR = std::cos(rotation);
+    const float sinR = std::sin(rotation);
+
+    const utility::math::Vector<float, 3> localBottomLeft{-halfWidth,
+                                                        -halfHeight, 0.0f};
+    const utility::math::Vector<float, 3> localBottomRight{halfWidth,
+                                                        -halfHeight, 0.0f};
+    const utility::math::Vector<float, 3> localTopRight{halfWidth, halfHeight,
+                                                        0.0f};
+    const utility::math::Vector<float, 3> localTopLeft{-halfWidth, halfHeight,
+                                                    0.0f};
+    auto rotateAndTranslate =
+        [&](const utility::math::Vector<float, 3> &local)
+        -> utility::math::Vector<float, 3> {
+            const float x = local[0];
+            const float y = local[1];
+            const float rotatedX = x * cosR - y * sinR;
+            const float rotatedY = x * sinR + y * cosR;
+            return {position[0] + rotatedX, position[1] + rotatedY,
+                    position[2]};
+        };
+
+    std::array<utility::math::Vector<float, 3>, 4> vertices = {
+        rotateAndTranslate(localBottomLeft),
+        rotateAndTranslate(localBottomRight),
+        rotateAndTranslate(localTopRight),
+        rotateAndTranslate(localTopLeft),
     };
 
-    std::vector<utility::math::Color<uint8_t>> colors = {
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
-        {color[0], color[1], color[2], color[3]},
+    std::array<utility::math::Color<uint8_t>, 4> colors = {
+        rectangle.getColor(), rectangle.getColor(), rectangle.getColor(),
+        rectangle.getColor(),
     };
 
     std::vector<utility::math::Vertex<float, uint8_t>> vertexData = {
@@ -129,9 +149,9 @@ void drawButtonWithColor(
 
 void configureButtonRender(guillaume::ecs::ComponentRegistry &componentRegistry,
                            guillaume::ecs::Entity &button,
-                           const std::array<std::uint8_t, 4> &normalColor,
-                           const std::array<std::uint8_t, 4> &hoverColor,
-                           const std::array<std::uint8_t, 4> &clickedColor) {
+                           const utility::math::Color<uint8_t> &normalColor,
+                           const utility::math::Color<uint8_t> &hoverColor,
+                           const utility::math::Color<uint8_t> &clickedColor) {
     auto &render =
         componentRegistry.getComponent<guillaume::components::Render>(
             button.getIdentifier());

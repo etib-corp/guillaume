@@ -112,7 +112,9 @@ class Renderer
 
     /**
      * @brief Draw a set of vertices forming a mesh.
-     * @param vertices The list of vertex positions.
+     * @param vertices The list of vertices, each containing position and any additional attributes
+     * (such as texture coordinates, color, etc.) required by the concrete renderer implementation. The vertices are
+     * interpreted using the renderer's default primitive topology (typically a triangle list) to form the mesh.
      */
     virtual void drawVertices(const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) = 0;
 
