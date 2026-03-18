@@ -52,7 +52,7 @@ class EntityDirector {
     /**
      * @brief Default destructor for the EntityDirector class.
      */
-    ~EntityDirector(void);
+    virtual ~EntityDirector(void);
 };
 
 } // namespace guillaume::ecs
