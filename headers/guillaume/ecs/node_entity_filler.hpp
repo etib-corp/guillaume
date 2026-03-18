@@ -50,8 +50,8 @@ class NodeEntityFiller
     virtual ~NodeEntityFiller(void) = default;
 
     /**
-     * @brief Get the parent entity identifier for this node entity.
-     * @return The identifier of the parent entity.
+     * @brief Get the child entity identifiers for this node entity.
+     * @return The identifiers of the child entities.
      */
     std::vector<Entity::Identifier> getChildIdentifiers(void) const {
         return this->getComponentRegistry()
