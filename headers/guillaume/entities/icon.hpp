@@ -23,6 +23,7 @@
 #pragma once
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/leaf_entity_builder.hpp"
 #include "guillaume/ecs/leaf_entity_filler.hpp"
 
@@ -33,12 +34,15 @@
 namespace guillaume::entities {
 
 /**
- * @brief Icon component for the button.
+ * @brief Icon component
  */
 class Icon
     : public ecs::LeafEntityFiller<components::Transform, components::Icon,
                                    components::Render> {
-
+  public:
+    /**
+     * @brief Builder used to configure and create `Icon` entities.
+     */
     class Builder : public ecs::LeafEntityBuilder {
       private:
         std::unique_ptr<Icon>
@@ -47,7 +51,6 @@ class Icon
       public:
         /**
          * @brief Construct a new Icon Builder object.
-         * @param componentRegistry The component registry to register
          * components to.
          */
         Builder(void);
@@ -59,6 +62,7 @@ class Icon
 
         /**
          * @brief Get the entity being built.
+         * @param componentRegistry The component registry used to create and
          * @return Unique pointer to the Icon entity being built.
          */
         std::unique_ptr<ecs::Entity>
@@ -72,6 +76,38 @@ class Icon
          * Icon entity.
          */
         void reset(void) override { _icon.reset(); }
+    };
+
+    /**
+     * @brief Director that orchestrates `Icon::Builder` to create
+     * preconfigured icon entities.
+     */
+    class Director : public ecs::EntityDirector {
+      private:
+        Builder _builder; ///< Builder instance for constructing the Icon entity
+
+      public:
+        /**
+         * @brief Construct a new Icon Director object.
+         * @param componentRegistry The component registry used for icon
+         * entity creation.
+         */
+        Director(ecs::ComponentRegistry &componentRegistry);
+
+        /**
+         * @brief Default destructor for the Icon Director class.
+         */
+        ~Director(void);
+
+        /**
+         * @brief Create a default Icon entity using the builder.
+         * @param builder The builder instance used to configure and create the
+         * default icon
+         * @return Unique pointer to the created Icon entity.
+         */
+        std::unique_ptr<ecs::Entity> makeDefaultIcon(Builder &builder) {
+            return builder.getEntity(getComponentRegistry());
+        }
     };
 
   public:

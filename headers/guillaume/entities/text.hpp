@@ -23,6 +23,7 @@
 #pragma once
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/leaf_entity_builder.hpp"
 #include "guillaume/ecs/leaf_entity_filler.hpp"
 
@@ -33,12 +34,16 @@
 namespace guillaume::entities {
 
 /**
- * @brief Text component for the button.
+ * @brief Text component
  */
 class Text
     : public ecs::LeafEntityFiller<components::Transform, components::Text,
                                    components::Render> {
 
+  public:
+    /**
+     * @brief Builder used to configure and create `Text` entities.
+     */
     class Builder : public ecs::LeafEntityBuilder {
       private:
         std::unique_ptr<Text>
@@ -47,8 +52,6 @@ class Text
       public:
         /**
          * @brief Construct a new Text Builder object.
-         * @param componentRegistry The component registry to register
-         * components to.
          */
         Builder(void);
 
@@ -59,6 +62,8 @@ class Text
 
         /**
          * @brief Get the entity being built.
+         * @param componentRegistry The component registry used to create and
+         * register components.
          * @return Unique pointer to the Text entity being built.
          */
         std::unique_ptr<ecs::Entity>
@@ -74,10 +79,43 @@ class Text
         void reset(void) override { _text.reset(); }
     };
 
+    /**
+     * @brief Director that orchestrates `Text::Builder` to create
+     * preconfigured text entities.
+     */
+    class Director : public ecs::EntityDirector {
+      private:
+        Builder _builder; ///< Builder instance for constructing the Text entity
+
+      public:
+        /**
+         * @brief Construct a new Text Director object.
+         * @param componentRegistry The component registry used for text
+         * entity creation.
+         */
+        Director(ecs::ComponentRegistry &componentRegistry);
+
+        /**
+         * @brief Default destructor for the Text Director class.
+         */
+        ~Director(void);
+
+        /**
+         * @brief Create a default Text entity using the builder.
+         * @param builder The builder instance used to configure and create the
+         * default text
+         * @return Unique pointer to the created Text entity.
+         */
+        std::unique_ptr<ecs::Entity> makeDefaultText(Builder &builder) {
+            return builder.getEntity(getComponentRegistry());
+        }
+    };
+
   public:
     /**
      * @brief Default constructor for the Text component.
      * @param registry Reference to the component registry for initializing
+     * components.
      */
     Text(ecs::ComponentRegistry &registry);
 

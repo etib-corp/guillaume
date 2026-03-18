@@ -22,4 +22,21 @@
 
 #include "guillaume/entities/icon.hpp"
 
-namespace guillaume::entities {} // namespace guillaume::entities
+namespace guillaume::entities {
+
+Icon::Icon::Builder::Builder(void) : ecs::LeafEntityBuilder() {}
+
+Icon::Builder::~Builder(void) {}
+
+Icon::Director::Director(ecs::ComponentRegistry &componentRegistry)
+    : ecs::EntityDirector(componentRegistry) {}
+
+Icon::Director::~Director(void) {}
+
+Icon::Icon(ecs::ComponentRegistry &registry)
+    : ecs::LeafEntityFiller<components::Transform, components::Icon,
+                            components::Render>(registry) {}
+
+Icon::~Icon() {}
+
+} // namespace guillaume::entities

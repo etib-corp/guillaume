@@ -22,4 +22,21 @@
 
 #include "guillaume/entities/text.hpp"
 
-namespace guillaume::entities {} // namespace guillaume::entities
+namespace guillaume::entities {
+
+Text::Text::Builder::Builder(void) : ecs::LeafEntityBuilder() {}
+
+Text::Builder::~Builder(void) {}
+
+Text::Director::Director(ecs::ComponentRegistry &componentRegistry)
+    : ecs::EntityDirector(componentRegistry) {}
+
+Text::Director::~Director(void) {}
+
+Text::Text(ecs::ComponentRegistry &registry)
+    : ecs::LeafEntityFiller<components::Transform, components::Text,
+                            components::Render>(registry) {}
+
+Text::~Text() {}
+
+} // namespace guillaume::entities

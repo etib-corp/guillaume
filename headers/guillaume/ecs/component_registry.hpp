@@ -128,8 +128,8 @@ class ComponentRegistry
         auto &storage = getOrCreateStorage<ComponentType>();
         storage.emplace(identityIdentifier);
         getLogger().debug("Registered component of type " +
-                          utility::demangle<ComponentType>() +
-                          " for entity " + std::to_string(identityIdentifier));
+                          utility::demangle<ComponentType>() + " for entity " +
+                          std::to_string(identityIdentifier));
     }
 
   protected:
