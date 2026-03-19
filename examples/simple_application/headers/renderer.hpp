@@ -93,31 +93,40 @@ class Renderer : public guillaume::Renderer {
     /**
      * @brief Draws a triangle shape using OpenGL.
      * @param triangle The triangle shape to draw (with Z-depth).
-     * @deprecated This method is deprecated and may be removed in future versions. Use drawVertices() with a triangle instead for better performance and flexibility.
+     * @deprecated This method is deprecated and may be removed in future
+     * versions. Use drawVertices() with a triangle instead for better
+     * performance and flexibility.
      */
     void drawTriangle(const guillaume::shapes::Triangle &triangle) override;
 
     /**
      * @brief Draws a rectangle shape using OpenGL.
      * @param rectangle The rectangle shape to draw (with Z-depth).
-     * @deprecated This method is deprecated and may be removed in future versions. Use drawVertices() with a quad instead for better performance and flexibility.
+     * @deprecated This method is deprecated and may be removed in future
+     * versions. Use drawVertices() with a quad instead for better performance
+     * and flexibility.
      */
     void drawRectangle(const guillaume::shapes::Rectangle &rectangle) override;
 
     /**
      * @brief Draws a circle shape using OpenGL.
      * @param circle The circle shape to draw (with Z-depth).
-     * @deprecated This method is deprecated and may be removed in future versions. Use drawVertices() with a triangle fan instead for better performance and flexibility.
+     * @deprecated This method is deprecated and may be removed in future
+     * versions. Use drawVertices() with a triangle fan instead for better
+     * performance and flexibility.
      */
     void drawCircle(const guillaume::shapes::Circle &circle) override;
 
     /**
      * @brief Draw a set of vertices forming a mesh.
-     * @param vertices The list of vertices, each containing position and any additional attributes
-     * (such as texture coordinates, color, etc.) required by the concrete renderer implementation. The vertices are
-     * interpreted using the renderer's default primitive topology (typically a triangle list) to form the mesh.
+     * @param vertices The list of vertices, each containing position and any
+     * additional attributes (such as texture coordinates, color, etc.) required
+     * by the concrete renderer implementation. The vertices are interpreted
+     * using the renderer's default primitive topology (typically a triangle
+     * list) to form the mesh.
      */
-    void drawVertices(const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) override;
+    void drawVertices(const std::vector<utility::math::Vertex<float, uint8_t>>
+                          &vertices) override;
 
     /**
      * @brief Measures the pixel dimensions of a given text string when rendered

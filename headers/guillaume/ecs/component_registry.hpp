@@ -61,12 +61,10 @@ class EntityComponentNotFoundException : public std::exception {
      * @brief Construct a new Component Not Found Exception object.
      * @param entityIdentifier The identifier of the entity.
      */
-    EntityComponentNotFoundException(
-        const Entity::Identifier &entityIdentifier)
+    EntityComponentNotFoundException(const Entity::Identifier &entityIdentifier)
         : _entityIdentifier(entityIdentifier) {
         _message = "Component of type " + _componentTypeName +
-                   " not found for entity " +
-                   std::to_string(_entityIdentifier);
+                   " not found for entity " + std::to_string(_entityIdentifier);
     }
 
     /**

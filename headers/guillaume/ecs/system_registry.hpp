@@ -136,7 +136,6 @@ class SystemRegistry
     getSystems(void) const {
         return _systems;
     }
-
 };
 
 } // namespace guillaume::ecs

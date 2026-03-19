@@ -28,8 +28,8 @@ void EntityRegistry::addEntity(std::unique_ptr<Entity> entity) {
     _entities.push_back(std::move(entity));
 }
 
-std::vector<Entity::Identifier>
-EntityRegistry::getEntityWithSignature(Entity::Signature systemSignature) const {
+std::vector<Entity::Identifier> EntityRegistry::getEntityWithSignature(
+    Entity::Signature systemSignature) const {
     std::vector<Entity::Identifier> matchingIdentifiers;
     for (const auto &entity : _entities) {
         if ((entity->getSignature() & systemSignature) == systemSignature) {

@@ -33,9 +33,118 @@ Text::Director::Director(ecs::ComponentRegistry &componentRegistry)
 
 Text::Director::~Director(void) {}
 
+void Text::normalRender(ecs::ComponentRegistry &registry,
+                        const ecs::Entity::Identifier &id, Renderer &renderer) {
+
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 0, 0, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {0, 255, 0, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {0, 0, 255, 255}},
+    });
+}
+
+void Text::hoveredRender(ecs::ComponentRegistry &registry,
+                         const ecs::Entity::Identifier &id,
+                         Renderer &renderer) {
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 255, 0, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {255, 0, 255, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {0, 255, 255, 255}},
+    });
+}
+
+void Text::clickedRender(ecs::ComponentRegistry &registry,
+                         const ecs::Entity::Identifier &id,
+                         Renderer &renderer) {
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {255, 255, 255, 255}},
+    });
+}
+
+void Text::activeRender(ecs::ComponentRegistry &registry,
+                        const ecs::Entity::Identifier &id, Renderer &renderer) {
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {255, 255, 255, 255}},
+    });
+}
+
 Text::Text(ecs::ComponentRegistry &registry)
-    : ecs::LeafEntityFiller<components::Transform, components::Text,
-                            components::Render>(registry) {}
+    : ecs::LeafEntityFiller<components::Transform, components::Bound,
+                            components::Text, components::Render>(registry) {
+    registry.getComponent<components::Transform>(getIdentifier())
+        .setPosition({0.0f, 0.0f, 0.0f})
+        .setRotation({0.0f, 0.0f, 0.0f})
+        .setScale({1.0f, 1.0f, 1.0f});
+
+    registry.getComponent<components::Bound>(getIdentifier())
+        .setSize({20.0f, 20.0f});
+
+    registry.getComponent<components::Text>(getIdentifier())
+        .setContent("Hello, World!");
+
+    registry.getComponent<components::Render>(getIdentifier())
+        .setNormalHandler([this](ecs::ComponentRegistry &registry,
+                                 const ecs::Entity::Identifier &id,
+                                 Renderer &renderer) {
+            normalRender(registry, id, renderer);
+        })
+        .setHoveredHandler([this](ecs::ComponentRegistry &registry,
+                                  const ecs::Entity::Identifier &id,
+                                  Renderer &renderer) {
+            hoveredRender(registry, id, renderer);
+        })
+        .setClickedHandler([this](ecs::ComponentRegistry &registry,
+                                  const ecs::Entity::Identifier &id,
+                                  Renderer &renderer) {
+            clickedRender(registry, id, renderer);
+        })
+        .setActiveHandler([this](ecs::ComponentRegistry &registry,
+                                 const ecs::Entity::Identifier &id,
+                                 Renderer &renderer) {
+            activeRender(registry, id, renderer);
+        });
+        
+}
 
 Text::~Text() {}
 

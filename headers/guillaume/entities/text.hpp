@@ -27,6 +27,7 @@
 #include "guillaume/ecs/leaf_entity_builder.hpp"
 #include "guillaume/ecs/leaf_entity_filler.hpp"
 
+#include "guillaume/components/bound.hpp"
 #include "guillaume/components/render.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
@@ -37,8 +38,8 @@ namespace guillaume::entities {
  * @brief Text component
  */
 class Text
-    : public ecs::LeafEntityFiller<components::Transform, components::Text,
-                                   components::Render> {
+    : public ecs::LeafEntityFiller<components::Transform, components::Bound,
+                                   components::Text, components::Render> {
 
   public:
     /**
@@ -110,6 +111,38 @@ class Text
             return builder.getEntity(getComponentRegistry());
         }
     };
+
+  private:
+    /**
+     * @brief Render handler for the normal state of the button.
+     * @param renderer The renderer to use for drawing the button.
+     */
+    void normalRender(ecs::ComponentRegistry &registry,
+                      const ecs::Entity::Identifier &id, Renderer &renderer);
+
+    /**
+     * @brief Render handler for the hovered state of the button.
+     * @param renderer The renderer to use for drawing the button in hovered
+     * state.
+     */
+    void hoveredRender(ecs::ComponentRegistry &registry,
+                       const ecs::Entity::Identifier &id, Renderer &renderer);
+
+    /**
+     * @brief Render handler for the clicked state of the button.
+     * @param renderer The renderer to use for drawing the button in clicked
+     * state.
+     */
+    void clickedRender(ecs::ComponentRegistry &registry,
+                       const ecs::Entity::Identifier &id, Renderer &renderer);
+
+    /**
+     * @brief Render handler for the active state of the button.
+     * @param renderer The renderer to use for drawing the button in active
+     * state.
+     */
+    void activeRender(ecs::ComponentRegistry &registry,
+                      const ecs::Entity::Identifier &id, Renderer &renderer);
 
   public:
     /**

@@ -86,7 +86,7 @@ class System
      * entities.
      */
     void routine(ecs::ComponentRegistry &componentRegistry,
-           ecs::EntityRegistry &entityRegistry);
+                 ecs::EntityRegistry &entityRegistry);
 
     /**
      * @brief Update the system, processing relevant entities.

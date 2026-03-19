@@ -92,31 +92,37 @@ class Renderer
     /**
      * @brief Draw a triangle shape.
      * @param triangle The triangle to draw.
-     * @deprecated Use drawVertices() with a triangle instead for better performance and flexibility.
+     * @deprecated Use drawVertices() with a triangle instead for better
+     * performance and flexibility.
      */
     virtual void drawTriangle(const shapes::Triangle &triangle) = 0;
 
     /**
      * @brief Draw a rectangle shape.
      * @param rectangle The rectangle to draw.
-     * @deprecated Use drawVertices() with a quad instead for better performance and flexibility.
+     * @deprecated Use drawVertices() with a quad instead for better performance
+     * and flexibility.
      */
     virtual void drawRectangle(const shapes::Rectangle &rectangle) = 0;
 
     /**
      * @brief Draw a circle shape.
      * @param circle The circle to draw.
-     * @deprecated Use drawVertices() with a triangle fan instead for better performance and flexibility.
+     * @deprecated Use drawVertices() with a triangle fan instead for better
+     * performance and flexibility.
      */
     virtual void drawCircle(const shapes::Circle &circle) = 0;
 
     /**
      * @brief Draw a set of vertices forming a mesh.
-     * @param vertices The list of vertices, each containing position and any additional attributes
-     * (such as texture coordinates, color, etc.) required by the concrete renderer implementation. The vertices are
-     * interpreted using the renderer's default primitive topology (typically a triangle list) to form the mesh.
+     * @param vertices The list of vertices, each containing position and any
+     * additional attributes (such as texture coordinates, color, etc.) required
+     * by the concrete renderer implementation. The vertices are interpreted
+     * using the renderer's default primitive topology (typically a triangle
+     * list) to form the mesh.
      */
-    virtual void drawVertices(const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) = 0;
+    virtual void drawVertices(
+        const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) = 0;
 
     /**
      * @brief Measure the size of the given text using the specified font.

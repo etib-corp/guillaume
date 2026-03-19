@@ -25,6 +25,7 @@
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
+#include "guillaume/components/render.hpp"
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/renderer.hpp"
@@ -35,9 +36,10 @@ namespace guillaume::systems {
  * @brief System handling rendering of entities.
  * @see components::Transform
  * @see components::Bound
+ * @see components::Render
  */
-class Render
-    : public ecs::SystemFiller<components::Transform, components::Bound> {
+class Render : public ecs::SystemFiller<components::Transform,
+                                        components::Bound, components::Render> {
   private:
     Renderer &_renderer; ///< Renderer instance
 

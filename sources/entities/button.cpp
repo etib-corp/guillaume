@@ -33,12 +33,140 @@ Button::Director::Director(ecs::ComponentRegistry &componentRegistry)
 
 Button::Director::~Director(void) {}
 
+void Button::hoverHandler(void) {}
+
+void Button::unHoverHandler(void) {}
+
+void Button::leftClickHandler(
+    utility::event::MouseMotionEvent::MousePosition mousePosition) {}
+
+void Button::normalRender(ecs::ComponentRegistry &registry,
+                          const ecs::Entity::Identifier &id,
+                          Renderer &renderer) {
+
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 0, 0, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {0, 255, 0, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {0, 0, 255, 255}},
+    });
+}
+
+void Button::hoveredRender(ecs::ComponentRegistry &registry,
+                           const ecs::Entity::Identifier &id,
+                           Renderer &renderer) {
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 255, 0, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {255, 0, 255, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {0, 255, 255, 255}},
+    });
+}
+
+void Button::clickedRender(ecs::ComponentRegistry &registry,
+                           const ecs::Entity::Identifier &id,
+                           Renderer &renderer) {
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {255, 255, 255, 255}},
+    });
+}
+
+void Button::activeRender(ecs::ComponentRegistry &registry,
+                          const ecs::Entity::Identifier &id,
+                          Renderer &renderer) {
+    renderer.drawVertices({
+        {{0.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {1.0f, 0.0f},
+         {255, 255, 255, 255}},
+        {{0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f},
+         {0.0f, 1.0f},
+         {255, 255, 255, 255}},
+    });
+}
+
 Button::Button(ecs::ComponentRegistry &registry, TogleState toggleState,
                ColorStyle colorStyle, Shape shape, Size size,
                MorphState morphState)
-    : ecs::NodeEntityFiller<components::Click, components::Hover,
-                            components::Transform, components::Render>(
-          registry) {}
+    : ecs::NodeEntityFiller<components::Transform, components::Bound,
+                            components::Hover, components::Click,
+                            components::Render>(
+
+          registry) {
+    registry.getComponent<components::Transform>(getIdentifier())
+        .setPosition({0.0f, 0.0f, 0.0f})
+        .setRotation({0.0f, 0.0f, 0.0f})
+        .setScale({1.0f, 1.0f, 1.0f});
+
+    registry.getComponent<components::Bound>(getIdentifier())
+        .setSize({20.0f, 20.0f});
+
+    registry.getComponent<components::Hover>(getIdentifier())
+        .setOnHoverHandler([this]() { this->hoverHandler(); })
+        .setOnUnhoverHandler([this]() { this->unHoverHandler(); });
+
+    registry.getComponent<components::Click>(getIdentifier())
+        .setOnClickHandler(
+            utility::event::MouseButtonEvent::MouseButton::LEFT,
+            [this](
+                utility::event::MouseMotionEvent::MousePosition mousePosition) {
+                this->leftClickHandler(mousePosition);
+            });
+
+    registry.getComponent<components::Render>(getIdentifier())
+        .setNormalHandler([this](ecs::ComponentRegistry &registry,
+                                 const ecs::Entity::Identifier &id,
+                                 Renderer &renderer) {
+            this->normalRender(registry, id, renderer);
+        })
+        .setHoveredHandler([this](ecs::ComponentRegistry &registry,
+                                  const ecs::Entity::Identifier &id,
+                                  Renderer &renderer) {
+            this->hoveredRender(registry, id, renderer);
+        })
+        .setClickedHandler([this](ecs::ComponentRegistry &registry,
+                                  const ecs::Entity::Identifier &id,
+                                  Renderer &renderer) {
+            this->clickedRender(registry, id, renderer);
+        })
+        .setActiveHandler([this](ecs::ComponentRegistry &registry,
+                                 const ecs::Entity::Identifier &id,
+                                 Renderer &renderer) {
+            this->activeRender(registry, id, renderer);
+        });
+}
 
 Button::~Button() {}
 
