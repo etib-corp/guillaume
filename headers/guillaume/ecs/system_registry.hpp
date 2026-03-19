@@ -32,7 +32,8 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
-#include "guillaume/ecs/component_registry.hpp"
+#include <utility/demangle.hpp>
+
 #include "guillaume/ecs/system.hpp"
 
 namespace guillaume::ecs {
@@ -110,7 +111,7 @@ class SystemRegistry
     void registerNewSystem(std::unique_ptr<SystemType> system) {
         _systems[std::type_index(typeid(SystemType))] = std::move(system);
         getLogger().debug("Registered system of type " +
-                          std::string(typeid(SystemType).name()));
+                          utility::demangle<SystemType>());
     }
 
     /**
@@ -135,20 +136,6 @@ class SystemRegistry
     getSystems(void) const {
         return _systems;
     }
-
-    /**
-     * @brief Add an entity to all compatible systems based on its signature.
-     * @param entity The entity to add.
-     */
-    void addEntityToSystems(Entity &entity);
-
-    /**
-     * @brief Update system membership for an entity signature change.
-     * @param identityIdentifier The entity identifier.
-     * @param signature The updated entity signature.
-     */
-    void onEntitySignatureChanged(const Entity::Identifier &identityIdentifier,
-                                  const Entity::Signature &signature);
 };
 
 } // namespace guillaume::ecs

@@ -22,13 +22,12 @@
 
 #pragma once
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#include "guillaume/ecs/tree_component_registry_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/click.hpp"
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/hover.hpp"
-#include "guillaume/components/relationship.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -36,22 +35,20 @@ namespace guillaume {
 
 /**
  * @brief Component registry class registering all core components.
- * @see ecs::ComponentRegistryFiller
+ * @see ecs::TreeComponentRegistryFiller
  */
 class ComponentRegistry
-    : public ecs::ComponentRegistryFiller<
+    : public ecs::TreeComponentRegistryFiller<
           components::Bound, components::Click, components::Focus,
-          components::Hover, components::Relationship, components::Text,
-          components::Transform> {
+          components::Hover, components::Text, components::Transform> {
   public:
     /**
      * @brief Default constructor.
      */
     ComponentRegistry(void)
-        : ecs::ComponentRegistryFiller<
+        : ecs::TreeComponentRegistryFiller<
               components::Bound, components::Click, components::Focus,
-              components::Hover, components::Relationship, components::Text,
-              components::Transform>() {}
+              components::Hover, components::Text, components::Transform>() {}
 
     /**
      * @brief Default destructor.

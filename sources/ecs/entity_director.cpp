@@ -20,6 +20,13 @@
  SOFTWARE.
  */
 
-#include "guillaume/components/relationship.hpp"
+#include "guillaume/ecs/entity_director.hpp"
 
-namespace guillaume::components {} // namespace guillaume::components
+namespace guillaume::ecs {
+
+EntityDirector::EntityDirector(ComponentRegistry &registry)
+    : _registry(registry) {}
+
+EntityDirector::~EntityDirector(void) {}
+
+} // namespace guillaume::ecs

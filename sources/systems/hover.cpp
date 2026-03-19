@@ -93,7 +93,7 @@ Hover::Hover(event::EventBus &eventBus, Renderer &renderer)
     : _mouseMotionSubscriber(eventBus), _renderer(renderer) {}
 
 void Hover::update(ecs::ComponentRegistry &componentRegistry,
-                   const ecs::Entity::Identifier &identityIdentifier) {
+                   const ecs::Entity::Identifier &entityIdentifier) {
     if (!_mouseMotionSubscriber.hasPendingEvents()) {
         // No new events, but we still need to check current mouse position
         // Use the renderer's stored mouse position
@@ -119,13 +119,13 @@ void Hover::update(ecs::ComponentRegistry &componentRegistry,
     }
 
     const auto &bound =
-        componentRegistry.getComponent<components::Bound>(identityIdentifier);
+        componentRegistry.getComponent<components::Bound>(entityIdentifier);
     auto &hover =
-        componentRegistry.getComponent<components::Hover>(identityIdentifier);
+        componentRegistry.getComponent<components::Hover>(entityIdentifier);
 
     const auto worldMousePos = _renderer.getLastMousePosition();
     const auto worldTransform =
-        detail::calculateWorldTransform(componentRegistry, identityIdentifier);
+        detail::calculateWorldTransform(componentRegistry, entityIdentifier);
     const auto size = bound.getSize();
 
     guillaume::components::Transform::Position trueCenter;

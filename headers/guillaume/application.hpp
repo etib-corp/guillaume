@@ -32,8 +32,8 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
-#include "component_registry.hpp"
-#include "ecs/component_type_id.hpp"
+#include <utility/demangle.hpp>
+
 #include "ecs/system_registry.hpp"
 #include "metadata.hpp"
 #include "renderer.hpp"
@@ -81,6 +81,13 @@ class Application
           utility::logging::StandardLogger>,
       public SceneApplication {
   private:
+    enum class SceneLifecycleState {
+        Created,
+        Started,
+        Paused,
+        Stopped,
+    };
+
     RendererType _renderer;              ///< Main application renderer
     EventHandlerType _eventHandler;      ///< Application event handler
     event::EventBus _eventBus;           ///< Event bus dispatching to systems
@@ -88,14 +95,59 @@ class Application
     LocalStorage _localStorage;          ///< Local storage for persistent data
     SessionStorage _sessionStorage;      ///< Session storage for temporary data
     std::map<std::string, std::unique_ptr<Scene>>
-        _scenes;         ///< Registered scenes
+        _scenes; ///< Registered scenes
+    std::map<Scene *, SceneLifecycleState>
+        _sceneStates;    ///< Runtime lifecycle state for each scene
     Scene *_activeScene; ///< Active scene used by ECS runtime
+
+    void startOrResumeScene(Scene &scene) {
+        auto &state = _sceneStates.at(&scene);
+        switch (state) {
+        case SceneLifecycleState::Created:
+            scene.onStart();
+            state = SceneLifecycleState::Started;
+            break;
+        case SceneLifecycleState::Paused:
+            scene.onResume();
+            state = SceneLifecycleState::Started;
+            break;
+        case SceneLifecycleState::Stopped:
+            scene.onRestart();
+            state = SceneLifecycleState::Started;
+            break;
+        case SceneLifecycleState::Started:
+            break;
+        }
+    }
+
+    void stopScene(Scene &scene) {
+        auto &state = _sceneStates.at(&scene);
+        if (state == SceneLifecycleState::Started) {
+            scene.onPause();
+            state = SceneLifecycleState::Paused;
+        }
+        if (state == SceneLifecycleState::Paused) {
+            scene.onStop();
+            state = SceneLifecycleState::Stopped;
+        }
+    }
+
+    void activateScene(Scene &scene) {
+        if (&scene == _activeScene) {
+            return;
+        }
+        if (_activeScene != nullptr) {
+            stopScene(*_activeScene);
+        }
+        startOrResumeScene(scene);
+        _activeScene = &scene;
+    }
 
     template <ecs::InheritFromSystem SystemType>
     void registerSystem(std::unique_ptr<SystemType> system) {
         _systemRegistry.registerNewSystem<SystemType>(std::move(system));
         this->getLogger().debug("Registered system: " +
-                                std::string(typeid(SystemType).name()));
+                                utility::demangle<SystemType>());
     }
 
     void registerCoreSystems(void) {
@@ -115,27 +167,16 @@ class Application
         auto [iterator, inserted] = _scenes.emplace(
             typeid(SceneType).name(), std::make_unique<SceneType>());
         iterator->second->setApplication(*this);
-        iterator->second->onApplicationAttached();
+        if (inserted) {
+            auto &scene = *iterator->second;
+            scene.onCreate();
+            _sceneStates.emplace(&scene, SceneLifecycleState::Created);
+        }
         if (inserted && _activeScene == nullptr) {
-            _activeScene = iterator->second.get();
-            syncSystemsWithActiveScene();
+            activateScene(*iterator->second);
         }
         this->getLogger().debug("Registered scene: " +
-                                std::string(typeid(SceneType).name()));
-    }
-
-    void syncSystemsWithActiveScene(void) {
-        const ecs::Entity::Signature emptySignature;
-
-        for (const auto &[sceneName, scene] : _scenes) {
-            (void)sceneName;
-            const bool isActive = scene.get() == _activeScene;
-            for (const auto &[identityIdentifier, signature] :
-                 scene->getEntitySignatures()) {
-                _systemRegistry.onEntitySignatureChanged(
-                    identityIdentifier, isActive ? signature : emptySignature);
-            }
-        }
+                                utility::demangle<SceneType>());
     }
 
   public:
@@ -154,7 +195,22 @@ class Application
     /**
      * @brief Default destructor
      */
-    virtual ~Application(void) = default;
+    virtual ~Application(void) {
+        for (auto &[sceneName, scene] : _scenes) {
+            (void)sceneName;
+            try {
+                if (_sceneStates.contains(scene.get())) {
+                    stopScene(*scene);
+                }
+                scene->onDestroy();
+            } catch (const std::exception &exception) {
+                this->getLogger().error(std::string("Scene shutdown error: ") +
+                                        exception.what());
+            } catch (...) {
+                this->getLogger().error("Unknown scene shutdown error");
+            }
+        }
+    }
 
     /**
      * @brief Get a registered scene by type.
@@ -175,7 +231,7 @@ class Application
      */
     template <InheritFromScene SceneType> void setActiveScene(void) {
         auto &scene = getScene<SceneType>();
-        _activeScene = &scene;
+        activateScene(scene);
     }
 
     /**
@@ -187,7 +243,7 @@ class Application
         if (iterator == _scenes.end()) {
             throw std::out_of_range("Requested scene type is not registered");
         }
-        _activeScene = iterator->second.get();
+        activateScene(*iterator->second);
     }
 
     /**
@@ -213,104 +269,20 @@ class Application
     }
 
     /**
-     * @brief Get the active scene component registry.
-     * @return Reference to active scene component registry.
-     */
-    ecs::ComponentRegistry &getComponentRegistry(void) {
-        return getActiveScene().getComponentRegistry();
-    }
-
-    /**
      * @brief Get the shared system registry.
      * @return Reference to system registry.
      */
     ecs::SystemRegistry &getSystemRegistry(void) { return _systemRegistry; }
 
     /**
-     * @brief Add or replace a component for an entity in the active scene.
-     * @tparam ComponentType The component type.
-     * @param entity Entity to update.
-     * @param args Constructor arguments for the component.
-     * @return Reference to the stored component.
-     */
-    template <ecs::InheritFromComponent ComponentType, typename... Args>
-    ComponentType &addComponent(ecs::Entity &entity, Args &&...args) {
-        auto &component =
-            getComponentRegistry().template addComponent<ComponentType>(
-                entity.getIdentifier(), std::forward<Args>(args)...);
-        auto signature = entity.getSignature();
-        signature.set(ecs::ComponentTypeId::get<ComponentType>());
-        entity.setSignature(signature);
-        getActiveScene().setEntitySignature(entity.getIdentifier(), signature);
-        _systemRegistry.onEntitySignatureChanged(entity.getIdentifier(),
-                                                 signature);
-        return component;
-    }
-
-    /**
-     * @brief Remove a component from an entity in the active scene.
-     * @tparam ComponentType The component type.
-     * @param entity Entity to update.
-     */
-    template <ecs::InheritFromComponent ComponentType>
-    void removeComponent(ecs::Entity &entity) {
-        getComponentRegistry().template removeComponent<ComponentType>(
-            entity.getIdentifier());
-        auto signature = entity.getSignature();
-        signature.reset(ecs::ComponentTypeId::get<ComponentType>());
-        entity.setSignature(signature);
-        getActiveScene().setEntitySignature(entity.getIdentifier(), signature);
-        _systemRegistry.onEntitySignatureChanged(entity.getIdentifier(),
-                                                 signature);
-    }
-
-    /**
-     * @brief Check whether an entity has a component in the active scene.
-     * @tparam ComponentType Component type to check.
-     * @param entity Entity to inspect.
-     * @return True when the component exists for the entity.
-     */
-    template <ecs::InheritFromComponent ComponentType>
-    bool hasComponent(const ecs::Entity &entity) const {
-        return getActiveScene()
-            .getComponentRegistry()
-            .template hasComponent<ComponentType>(entity.getIdentifier());
-    }
-
-    /**
-     * @brief Get a component of an entity from the active scene.
-     * @tparam ComponentType Component type.
-     * @param entity Entity to inspect.
-     * @return Reference to the component.
-     */
-    template <ecs::InheritFromComponent ComponentType>
-    ComponentType &getComponent(ecs::Entity &entity) {
-        return getComponentRegistry().template getComponent<ComponentType>(
-            entity.getIdentifier());
-    }
-
-    /**
-     * @brief Get a component of an entity from the active scene (const).
-     * @tparam ComponentType Component type.
-     * @param entity Entity to inspect.
-     * @return Const reference to the component.
-     */
-    template <ecs::InheritFromComponent ComponentType>
-    const ComponentType &getComponent(const ecs::Entity &entity) const {
-        return getActiveScene()
-            .getComponentRegistry()
-            .template getComponent<ComponentType>(entity.getIdentifier());
-    }
-
-    /**
      * @brief Run one system update pass for the active scene.
      */
     void routine(void) {
-        syncSystemsWithActiveScene();
-        auto &componentRegistry = getComponentRegistry();
+        auto &entityRegistry = getActiveScene().getEntityRegistry();
+        auto &componentRegistry = getActiveScene().getComponentRegistry();
         for (const auto &[systemType, system] : _systemRegistry.getSystems()) {
             (void)systemType;
-            system->routine(componentRegistry);
+            system->routine(componentRegistry, entityRegistry);
         }
     }
 
@@ -338,16 +310,9 @@ class Application
                 if (!_eventHandler.gotNewEvents()) {
                     continue;
                 }
-
-                // Clear the screen before rendering
                 _renderer.clear();
-
-                // Update all ECS systems
                 routine();
-
-                // Present the rendered frame
                 _renderer.present();
-
                 this->getLogger().debug("Processed a frame");
             } catch (const std::exception &exception) {
                 this->getLogger().error(std::string("Application error: ") +

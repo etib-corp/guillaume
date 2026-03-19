@@ -34,7 +34,7 @@ namespace guillaume::components {
  */
 class Bound : public ecs::Component {
   public:
-    using Size = utility::math::Vector<float, 3>; ///< Size type
+    using Size = utility::math::Vector<float, 2>; ///< Size type
 
   private:
     Size _size; ///< Size of the bounding parallelepiped

@@ -33,6 +33,8 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
+#include <utility/demangle.hpp>
+
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/component_storage.hpp"
 #include "guillaume/ecs/entity.hpp"
@@ -47,7 +49,7 @@ namespace guillaume::ecs {
 template <InheritFromComponent ComponentType>
 class EntityComponentNotFoundException : public std::exception {
   private:
-    const Entity::Identifier _identityIdentifier; ///< Identifier of the entity
+    const Entity::Identifier _entityIdentifier; ///< Identifier of the entity
     std::type_index _componentTypeIndex{
         typeid(ComponentType)}; ///< Type index of the missing component
     std::string _componentTypeName{
@@ -57,14 +59,12 @@ class EntityComponentNotFoundException : public std::exception {
   public:
     /**
      * @brief Construct a new Component Not Found Exception object.
-     * @param identityIdentifier The identifier of the entity.
+     * @param entityIdentifier The identifier of the entity.
      */
-    EntityComponentNotFoundException(
-        const Entity::Identifier &identityIdentifier)
-        : _identityIdentifier(identityIdentifier) {
+    EntityComponentNotFoundException(const Entity::Identifier &entityIdentifier)
+        : _entityIdentifier(entityIdentifier) {
         _message = "Component of type " + _componentTypeName +
-                   " not found for entity " +
-                   std::to_string(_identityIdentifier);
+                   " not found for entity " + std::to_string(_entityIdentifier);
     }
 
     /**
@@ -118,16 +118,16 @@ class ComponentRegistry
     /**
      * @brief Register a component for an entity.
      * @tparam ComponentType The type of the component to register.
-     * @param identityIdentifier The entity identifier to which the
+     * @param entityIdentifier The entity identifier to which the
      * component will be associated.
      */
     template <InheritFromComponent ComponentType>
-    void registerComponent(const Entity::Identifier &identityIdentifier) {
+    void registerComponent(const Entity::Identifier &entityIdentifier) {
         auto &storage = getOrCreateStorage<ComponentType>();
-        storage.emplace(identityIdentifier);
+        storage.emplace(entityIdentifier);
         getLogger().debug("Registered component of type " +
-                          std::string(typeid(ComponentType).name()) +
-                          " for entity " + std::to_string(identityIdentifier));
+                          utility::demangle<ComponentType>() + " for entity " +
+                          std::to_string(entityIdentifier));
     }
 
   protected:
@@ -154,73 +154,73 @@ class ComponentRegistry
     /**
      * @brief Register a component for an entity.
      * @tparam NeededComponentTypes The types of the components to register.
-     * @param identityIdentifier The entity identifier to which the
+     * @param entityIdentifier The entity identifier to which the
      * component will be associated.
      */
     template <InheritFromComponent... NeededComponentTypes>
     void
-    registerComponentsForEntity(const Entity::Identifier &identityIdentifier) {
-        (registerComponent<NeededComponentTypes>(identityIdentifier), ...);
+    registerComponentsForEntity(const Entity::Identifier &entityIdentifier) {
+        (registerComponent<NeededComponentTypes>(entityIdentifier), ...);
     }
 
     /**
      * @brief Add or replace a component for an entity.
      * @tparam ComponentType The type of the component to add.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      * @param args Arguments forwarded to the component constructor.
      * @return Reference to the stored component.
      * @note If a component already exists for the entity, it is replaced.
      */
     template <InheritFromComponent ComponentType, typename... Args>
-    ComponentType &addComponent(const Entity::Identifier &identityIdentifier,
+    ComponentType &addComponent(const Entity::Identifier &entityIdentifier,
                                 Args &&...args) {
         auto &storage = getOrCreateStorage<ComponentType>();
-        return storage.emplace(identityIdentifier, std::forward<Args>(args)...);
+        return storage.emplace(entityIdentifier, std::forward<Args>(args)...);
     }
 
     /**
      * @brief Check whether an entity has a component.
      * @tparam ComponentType The component type to check.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      * @return True if the component is present.
      */
     template <InheritFromComponent ComponentType>
-    bool hasComponent(const Entity::Identifier &identityIdentifier) const {
+    bool hasComponent(const Entity::Identifier &entityIdentifier) const {
         const std::type_index typeIndex(typeid(ComponentType));
         auto iterator = _storages.find(typeIndex);
         if (iterator == _storages.end()) {
             return false;
         }
-        return iterator->second->has(identityIdentifier);
+        return iterator->second->has(entityIdentifier);
     }
 
     /**
      * @brief Remove a component from an entity.
      * @tparam ComponentType The component type to remove.
-     * @param identityIdentifier The entity identifier.
+     * @param entityIdentifier The entity identifier.
      */
     template <InheritFromComponent ComponentType>
-    void removeComponent(const Entity::Identifier &identityIdentifier) {
+    void removeComponent(const Entity::Identifier &entityIdentifier) {
         auto &storage = getOrCreateStorage<ComponentType>();
-        storage.remove(identityIdentifier);
+        storage.remove(entityIdentifier);
     }
 
     /**
      * @brief Get a component for an entity.
      * @tparam ComponentType The type of the component to retrieve.
-     * @param identityIdentifier The entity identifier to which the
+     * @param entityIdentifier The entity identifier to which the
      * component belongs.
      * @return Reference to the requested component.
      * @throws EntityComponentNotFoundException<ComponentType> If the entity
      * does not have the component.
      */
     template <InheritFromComponent ComponentType>
-    ComponentType &getComponent(const Entity::Identifier &identityIdentifier) {
+    ComponentType &getComponent(const Entity::Identifier &entityIdentifier) {
         auto &storage = getOrCreateStorage<ComponentType>();
-        auto component = storage.find(identityIdentifier);
+        auto component = storage.find(entityIdentifier);
         if (!component) {
             throw EntityComponentNotFoundException<ComponentType>(
-                identityIdentifier);
+                entityIdentifier);
         }
         return *component;
     }
@@ -228,7 +228,7 @@ class ComponentRegistry
     /**
      * @brief Get a component for an entity (const).
      * @tparam ComponentType The type of the component to retrieve.
-     * @param identityIdentifier The entity identifier to which the
+     * @param entityIdentifier The entity identifier to which the
      * component belongs.
      * @return Reference to the requested component.
      * @throws EntityComponentNotFoundException<ComponentType> If the entity
@@ -236,20 +236,20 @@ class ComponentRegistry
      */
     template <InheritFromComponent ComponentType>
     const ComponentType &
-    getComponent(const Entity::Identifier &identityIdentifier) const {
+    getComponent(const Entity::Identifier &entityIdentifier) const {
         const std::type_index typeIndex(typeid(ComponentType));
         auto iterator = _storages.find(typeIndex);
         if (iterator == _storages.end()) {
             throw EntityComponentNotFoundException<ComponentType>(
-                identityIdentifier);
+                entityIdentifier);
         }
         const auto *storage =
             static_cast<const ComponentStorage<ComponentType> *>(
                 iterator->second.get());
-        const auto *component = storage->find(identityIdentifier);
+        const auto *component = storage->find(entityIdentifier);
         if (!component) {
             throw EntityComponentNotFoundException<ComponentType>(
-                identityIdentifier);
+                entityIdentifier);
         }
         return *component;
     }

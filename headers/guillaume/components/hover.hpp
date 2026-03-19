@@ -55,14 +55,22 @@ class Hover : public ecs::Component {
     /**
      * @brief Set the onHover event handler.
      * @param handler The function to call on hover events.
+     * @return Reference to this Hover component for chaining.
      */
-    void setOnHoverHandler(const Handler &handler) { _onHover = handler; }
+    Hover &setOnHoverHandler(const Handler &handler) {
+        _onHover = handler;
+        return *this;
+    }
 
     /**
      * @brief Set the onUnhover event handler.
      * @param handler The function to call when the cursor leaves the entity.
+     * @return Reference to this Hover component for chaining.
      */
-    void setOnUnhoverHandler(const Handler &handler) { _onUnhover = handler; }
+    Hover &setOnUnhoverHandler(const Handler &handler) {
+        _onUnhover = handler;
+        return *this;
+    }
 
     /**
      * @brief Get the onHover event handler.
@@ -85,8 +93,12 @@ class Hover : public ecs::Component {
     /**
      * @brief Set current hovered state.
      * @param isHovered Current hovered state.
+     * @return Reference to this Hover component for chaining.
      */
-    void setHovered(bool isHovered) { _isHovered = isHovered; }
+    Hover &setHovered(bool isHovered) {
+        _isHovered = isHovered;
+        return *this;
+    }
 };
 
 } // namespace guillaume::components

@@ -30,45 +30,42 @@
 namespace guillaume::systems {
 
 void Render::update(ecs::ComponentRegistry &componentRegistry,
-                    const ecs::Entity::Identifier &identityIdentifier) {
-    if (!componentRegistry.hasComponent<components::Render>(
-            identityIdentifier)) {
-        getLogger().warning("Entity " + std::to_string(identityIdentifier) +
+                    const ecs::Entity::Identifier &entityIdentifier) {
+    if (!componentRegistry.hasComponent<components::Render>(entityIdentifier)) {
+        getLogger().warning("Entity " + std::to_string(entityIdentifier) +
                             " does not have a Render component");
         return;
     }
 
     guillaume::components::Render &renderComponent =
-        componentRegistry.getComponent<components::Render>(identityIdentifier);
+        componentRegistry.getComponent<components::Render>(entityIdentifier);
 
-    if (componentRegistry.hasComponent<components::Click>(identityIdentifier) &&
+    if (componentRegistry.hasComponent<components::Click>(entityIdentifier) &&
         renderComponent.getClickedHandler()) {
-        if (componentRegistry
-                .getComponent<components::Click>(identityIdentifier)
+        if (componentRegistry.getComponent<components::Click>(entityIdentifier)
                 .isEntityClicked()) {
             renderComponent.getClickedHandler()(componentRegistry,
-                                                identityIdentifier, _renderer);
+                                                entityIdentifier, _renderer);
             return;
         }
     }
 
-    if (componentRegistry.hasComponent<components::Hover>(identityIdentifier) &&
+    if (componentRegistry.hasComponent<components::Hover>(entityIdentifier) &&
         renderComponent.getHoveredHandler()) {
-        if (componentRegistry
-                .getComponent<components::Hover>(identityIdentifier)
+        if (componentRegistry.getComponent<components::Hover>(entityIdentifier)
                 .isHovered()) {
             renderComponent.getHoveredHandler()(componentRegistry,
-                                                identityIdentifier, _renderer);
+                                                entityIdentifier, _renderer);
             return;
         }
     }
 
     if (renderComponent.getNormalHandler()) {
-        renderComponent.getNormalHandler()(componentRegistry,
-                                           identityIdentifier, _renderer);
+        renderComponent.getNormalHandler()(componentRegistry, entityIdentifier,
+                                           _renderer);
         return;
     }
-    getLogger().warning("Entity " + std::to_string(identityIdentifier) +
+    getLogger().warning("Entity " + std::to_string(entityIdentifier) +
                         " has Render component but no handlers defined");
 }
 } // namespace guillaume::systems

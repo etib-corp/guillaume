@@ -20,7 +20,39 @@
  SOFTWARE.
  */
 
-#include "components/test_relationship.hpp"
+#pragma once
 
-namespace guillaume::components::tests {
-} // namespace guillaume::components::tests
+#include "guillaume/ecs/component_registry.hpp"
+
+namespace guillaume::ecs {
+
+/**
+ * @brief Base director class orchestrating entity construction with a
+ * component registry.
+ */
+class EntityDirector {
+  private:
+    ComponentRegistry
+        &_registry; ///< Reference to the component registry for entity creation
+
+  protected:
+    /**
+     * @brief Get the component registry reference.
+     * @return Reference to the component registry.
+     */
+    ComponentRegistry &getComponentRegistry(void) { return _registry; }
+
+  public:
+    /**
+     * @brief Construct a new EntityDirector object.
+     * @param registry Reference to the component registry for entity creation.
+     */
+    EntityDirector(ComponentRegistry &registry);
+
+    /**
+     * @brief Default destructor for the EntityDirector class.
+     */
+    virtual ~EntityDirector(void);
+};
+
+} // namespace guillaume::ecs

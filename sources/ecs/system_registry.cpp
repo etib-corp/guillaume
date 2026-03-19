@@ -22,36 +22,4 @@
 
 #include "guillaume/ecs/system_registry.hpp"
 
-namespace guillaume::ecs {
-
-void SystemRegistry::addEntityToSystems(Entity &entity) {
-    const auto entitySignature = entity.getSignature();
-    const auto entityIdentifier = entity.getIdentifier();
-
-    onEntitySignatureChanged(entityIdentifier, entitySignature);
-}
-
-void SystemRegistry::onEntitySignatureChanged(
-    const Entity::Identifier &identityIdentifier,
-    const Entity::Signature &signature) {
-    getLogger().debug("Updating entity " + std::to_string(identityIdentifier) +
-                      " system membership");
-
-    for (const auto &[systemType, system] : _systems) {
-        const auto systemSignature = system->getSignature();
-        const bool matches = (signature & systemSignature) == systemSignature;
-        if (matches) {
-            system->addEntity(identityIdentifier);
-            getLogger().debug("Entity " + std::to_string(identityIdentifier) +
-                              " added to system " +
-                              std::string(systemType.name()));
-        } else if (system->hasEntity(identityIdentifier)) {
-            system->removeEntity(identityIdentifier);
-            getLogger().debug("Entity " + std::to_string(identityIdentifier) +
-                              " removed from system " +
-                              std::string(systemType.name()));
-        }
-    }
-}
-
-} // namespace guillaume::ecs
+namespace guillaume::ecs {} // namespace guillaume::ecs

@@ -63,8 +63,12 @@ class Transform : public ecs::Component {
     /**
      * @brief Set the position of the entity.
      * @param position The new position vector.
+     * @return Reference to this Transform component for chaining.
      */
-    void setPosition(const Position &position) { _position = position; }
+    Transform &setPosition(const Position &position) {
+        _position = position;
+        return *this;
+    }
 
     /**
      * @brief Get the rotation of the entity.
@@ -75,8 +79,12 @@ class Transform : public ecs::Component {
     /**
      * @brief Set the rotation of the entity.
      * @param rotation The new rotation vector.
+     * @return Reference to this Transform component for chaining.
      */
-    void setRotation(const Rotation &rotation) { _rotation = rotation; }
+    Transform &setRotation(const Rotation &rotation) {
+        _rotation = rotation;
+        return *this;
+    }
 
     /**
      * @brief Get the scale of the entity.
@@ -87,8 +95,12 @@ class Transform : public ecs::Component {
     /**
      * @brief Set the scale of the entity.
      * @param scale The new scale vector.
+     * @return Reference to this Transform component for chaining.
      */
-    void setScale(const Scale &scale) { _scale = scale; }
+    Transform &setScale(const Scale &scale) {
+        _scale = scale;
+        return *this;
+    }
 };
 
 } // namespace guillaume::components

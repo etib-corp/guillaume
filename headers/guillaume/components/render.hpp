@@ -46,7 +46,7 @@ class Render : public ecs::Component {
      */
     using Handler =
         std::function<void(ecs::ComponentRegistry &componentRegistry,
-                           const ecs::Entity::Identifier &identityIdentifier,
+                           const ecs::Entity::Identifier &entityIdentifier,
                            Renderer &renderer)>; ///< Render event handler type
 
   private:
@@ -70,55 +70,71 @@ class Render : public ecs::Component {
      * @brief Set the normal state render function.
      * @param handler The function that will be called when the component is in
      * normal state.
+     * @return Reference to this Render component for chaining.
      */
-    void setNormalHandler(const Handler &handler) { _normal = handler; }
+    Render &setNormalHandler(const Handler &handler) {
+        _normal = handler;
+        return *this;
+    }
 
     /**
      * @brief Set the hovered state render function.
      * @param handler The function that will be called when the component is in
      * hovered state.
+     * @return Reference to this Render component for chaining.
      */
-    void setHoveredHandler(const Handler &handler) { _hovered = handler; }
+    Render &setHoveredHandler(const Handler &handler) {
+        _hovered = handler;
+        return *this;
+    }
 
     /**
      * @brief Set the clicked state render function.
-     * @param handler The function that will be called when the component is in
-     * clicked state.
+     * @param handler The function that will be called when the component is
+     * in clicked state.
+     * @return Reference to this Render component for chaining.
      */
-    void setClickedHandler(const Handler &handler) { _clicked = handler; }
+    Render &setClickedHandler(const Handler &handler) {
+        _clicked = handler;
+        return *this;
+    }
 
     /**
      * @brief Set the active state render function.
-     * @param handler The function that will be called when the component is in
-     * active state.
+     * @param handler The function that will be called when the component is
+     * in active state.
+     * @return Reference to this Render component for chaining.
      */
-    void setActiveHandler(const Handler &handler) { _active = handler; }
+    Render &setActiveHandler(const Handler &handler) {
+        _active = handler;
+        return *this;
+    }
 
     /**
      * @brief Get the normal state render function.
-     * @return The function that will be called when the component is in normal
-     * state.
+     * @return The function that will be called when the component is in
+     * normal state.
      */
     const Handler &getNormalHandler(void) const { return _normal; }
 
     /**
      * @brief Get the hovered state render function.
-     * @return The function that will be called when the component is in hovered
-     * state.
+     * @return The function that will be called when the component is in
+     * hovered state.
      */
     const Handler &getHoveredHandler(void) const { return _hovered; }
 
     /**
      * @brief Get the clicked state render function.
-     * @return The function that will be called when the component is in clicked
-     * state.
+     * @return The function that will be called when the component is in
+     * clicked state.
      */
     const Handler &getClickedHandler(void) const { return _clicked; }
 
     /**
      * @brief Get the active state render function.
-     * @return The function that will be called when the component is in active
-     * state.
+     * @return The function that will be called when the component is in
+     * active state.
      */
     const Handler &getActiveHandler(void) const { return _active; }
 };

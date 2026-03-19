@@ -22,18 +22,24 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
+#include "guillaume/ecs/component.hpp"
 
-#include <guillaume/components/relationship.hpp>
+namespace guillaume::components {
 
-namespace guillaume::components::tests {
+/**
+ * @brief Component representing a icon element.
+ */
+class Icon : public ecs::Component {
+  public:
+    /**
+     * @brief Default constructor for the Icon component.
+     */
+    Icon(void) = default;
 
-class TestRelationship : public ::testing::Test {
-  protected:
-    TestRelationship(void) = default;
-    ~TestRelationship(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
+    /**
+     * @brief Default destructor for the Icon component.
+     */
+    ~Icon(void) = default;
 };
 
-} // namespace guillaume::components::tests
+} // namespace guillaume::components

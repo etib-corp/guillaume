@@ -27,44 +27,26 @@
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::components {
+namespace guillaume::ecs::components {
 
 /**
  * @brief Component representing a relationship between entities.
  */
-class Relationship : public ecs::Component {
+class Children : public ecs::Component {
   private:
-    ecs::Entity::Identifier parentIdentifier{
-        ecs::Entity::InvalidIdentifier}; ///< Parent entity identifier
     std::vector<ecs::Entity::Identifier>
         childrenIdentifiers; ///< Children entity identifiers
 
   public:
     /**
-     * @brief Default constructor for the Relationship component.
+     * @brief Default constructor for the Children component.
      */
-    Relationship(void) = default;
+    Children(void) = default;
 
     /**
-     * @brief Default destructor for the Relationship component.
+     * @brief Default destructor for the Children component.
      */
-    ~Relationship(void) = default;
-
-    /**
-     * @brief Set the parent entity identifier.
-     * @param identifier The new parent entity identifier.
-     */
-    void setParentIdentifier(ecs::Entity::Identifier identifier) {
-        parentIdentifier = identifier;
-    }
-
-    /**
-     * @brief Get the parent entity identifier.
-     * @return The parent entity identifier.
-     */
-    ecs::Entity::Identifier getParentIdentifier(void) const {
-        return parentIdentifier;
-    }
+    ~Children(void) = default;
 
     /**
      * @brief Add a child entity identifier.
@@ -72,6 +54,15 @@ class Relationship : public ecs::Component {
      */
     void addChildIdentifier(ecs::Entity::Identifier identifier) {
         childrenIdentifiers.push_back(identifier);
+    }
+
+    /**
+     * @brief Set the children entity identifiers.
+     * @param identifiers The new children entity identifiers.
+     */
+    void setChildIdentifiers(
+        const std::vector<ecs::Entity::Identifier> &identifiers) {
+        childrenIdentifiers = identifiers;
     }
 
     /**
@@ -84,4 +75,4 @@ class Relationship : public ecs::Component {
     }
 };
 
-} // namespace guillaume::components
+} // namespace guillaume::ecs::components

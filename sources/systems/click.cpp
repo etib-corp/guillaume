@@ -93,8 +93,8 @@ Click::Click(event::EventBus &eventBus, Renderer &renderer)
     : _mouseButtonSubscriber(eventBus), _renderer(renderer) {}
 
 void Click::update(ecs::ComponentRegistry &componentRegistry,
-                   const ecs::Entity::Identifier &identityIdentifier) {
-    if (_pendingClickEvent && _evaluatedEntities.contains(identityIdentifier)) {
+                   const ecs::Entity::Identifier &entityIdentifier) {
+    if (_pendingClickEvent && _evaluatedEntities.contains(entityIdentifier)) {
         _buttonStates = _pendingClickEvent->getButtonsState();
         _pendingClickEvent.reset();
         _evaluatedEntities.clear();
@@ -117,9 +117,9 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
     }
 
     auto &click =
-        componentRegistry.getComponent<components::Click>(identityIdentifier);
+        componentRegistry.getComponent<components::Click>(entityIdentifier);
     const auto &bound =
-        componentRegistry.getComponent<components::Bound>(identityIdentifier);
+        componentRegistry.getComponent<components::Bound>(entityIdentifier);
     const auto mousePosition = _pendingClickEvent->getPosition();
     typename guillaume::components::Transform::Position mousePos3D;
     mousePos3D[0] = mousePosition[0];
@@ -131,12 +131,12 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
 
     const auto worldMousePos = intersectRayWithUiPlane(mouseRay);
     if (!worldMousePos) {
-        _evaluatedEntities.insert(identityIdentifier);
+        _evaluatedEntities.insert(entityIdentifier);
         return;
     }
 
     const auto worldTransform =
-        detail::calculateWorldTransform(componentRegistry, identityIdentifier);
+        detail::calculateWorldTransform(componentRegistry, entityIdentifier);
     const auto size = bound.getSize();
 
     guillaume::components::Transform::Position trueCenter;
@@ -148,7 +148,7 @@ void Click::update(ecs::ComponentRegistry &componentRegistry,
                                                     size, worldTransform.scale,
                                                     worldTransform.rotation);
 
-    _evaluatedEntities.insert(identityIdentifier);
+    _evaluatedEntities.insert(entityIdentifier);
 
     utility::event::MouseButtonEvent::MouseButtonsState currentButtonStates =
         _pendingClickEvent->getButtonsState();
