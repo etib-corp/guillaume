@@ -810,4 +810,6 @@ class Theme {
     }
 };
 
+extern const Theme defaultTheme;
+
 } // namespace guillaume

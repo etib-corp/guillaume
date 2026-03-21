@@ -94,6 +94,8 @@ Click::Click(event::EventBus &eventBus, Renderer &renderer)
 
 void Click::update(ecs::ComponentRegistry &componentRegistry,
                    const ecs::Entity::Identifier &entityIdentifier) {
+    getLogger().debug("Updating Click system for entity " +
+                      std::to_string(entityIdentifier));
     if (_pendingClickEvent && _evaluatedEntities.contains(entityIdentifier)) {
         _buttonStates = _pendingClickEvent->getButtonsState();
         _pendingClickEvent.reset();

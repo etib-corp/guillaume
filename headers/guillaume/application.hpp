@@ -46,6 +46,7 @@
 #include "systems/hover.hpp"
 #include "systems/keyboard_control.hpp"
 #include "systems/render.hpp"
+#include "systems/text_render.hpp"
 #include "systems/text_input.hpp"
 
 #include "local_storage.hpp"
@@ -157,6 +158,8 @@ class Application
             std::make_unique<systems::Hover>(_eventBus, _renderer));
         registerSystem<systems::Render>(
             std::make_unique<systems::Render>(_renderer));
+        registerSystem<systems::TextRender>(
+            std::make_unique<systems::TextRender>(_renderer));
         registerSystem<systems::KeyboardControl>(
             std::make_unique<systems::KeyboardControl>(_eventBus));
         registerSystem<systems::TextInput>(

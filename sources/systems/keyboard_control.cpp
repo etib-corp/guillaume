@@ -48,6 +48,9 @@ KeyboardControl::KeyboardControl(event::EventBus &eventBus)
 
 void KeyboardControl::update(ecs::ComponentRegistry &componentRegistry,
                              const ecs::Entity::Identifier &entityIdentifier) {
+
+    getLogger().debug("Updating KeyboardControl system for entity " +
+                      std::to_string(entityIdentifier));
     if (!_keyboardSubscriber.hasPendingEvents()) {
         return;
     }

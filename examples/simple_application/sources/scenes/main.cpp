@@ -16,18 +16,15 @@ Main::Main(void) : guillaume::Scene() {
     guillaume::entities::Text::Builder textBuilder;
     guillaume::entities::Text::Director textDirector(
         this->getComponentRegistry());
-    auto buttonEntity = buttonDirector.makeDefaultButton(buttonBuilder);
-    auto iconEntity = iconDirector.makeDefaultIcon(iconBuilder);
-    auto textEntity = textDirector.makeDefaultText(textBuilder);
-    this->getLogger().debug("Created button entity with ID: " +
-                            std::to_string(buttonEntity->getIdentifier()));
-    this->getLogger().debug("Created icon entity with ID: " +
-                            std::to_string(iconEntity->getIdentifier()));
-    this->getLogger().debug("Created text entity with ID: " +
-                            std::to_string(textEntity->getIdentifier()));
+    auto buttonEntity =
+        buttonDirector.makeDefaultButton(buttonBuilder, "Click me!", [this]() {
+            this->getLogger().info("Button clicked!");
+        });
+    auto textEntity = textDirector.makeDefaultText(
+        textBuilder, "Hello, World!", 24,
+        guillaume::entities::Text::Color{255, 255, 255, 255});
 
     this->getEntityRegistry().addEntity(std::move(buttonEntity));
-    this->getEntityRegistry().addEntity(std::move(iconEntity));
     this->getEntityRegistry().addEntity(std::move(textEntity));
 }
 

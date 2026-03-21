@@ -165,104 +165,6 @@ void Renderer::present(void) {
     SDL_GL_SwapWindow(_window);
 }
 
-void Renderer::drawTriangle(const guillaume::shapes::Triangle &triangle) {
-    getLogger().warning(
-        "Drawing a triangle shape is deprecated. Use drawVertices() with a "
-        "triangle instead for better performance and flexibility.");
-
-    auto position = triangle.getPosition();
-    const auto cameraPosition = getCamera().getPosition();
-    position -= cameraPosition;
-    auto color = triangle.getColor();
-    auto scale = triangle.getScale();
-    auto rotation = triangle.getRotation();
-
-    float baseSize = 50.0f;
-    glDisable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
-
-    glPushMatrix();
-    glTranslatef(position[0], position[1], position[2]);
-    glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
-    glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
-    glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
-
-    glBegin(GL_TRIANGLES);
-    glVertex3f(0.0f, -baseSize * scale[1], 0.0f);
-    glVertex3f(-baseSize * scale[0], baseSize * scale[1], 0.0f);
-    glVertex3f(baseSize * scale[0], baseSize * scale[1], 0.0f);
-    glEnd();
-
-    glPopMatrix();
-}
-
-void Renderer::drawRectangle(const guillaume::shapes::Rectangle &rectangle) {
-    getLogger().warning(
-        "Drawing a rectangle shape is deprecated. Use drawVertices() with a "
-        "quad instead for better performance and flexibility.");
-
-    auto position = rectangle.getPosition();
-    const auto cameraPosition = getCamera().getPosition();
-    position -= cameraPosition;
-    auto size = rectangle.getSize();
-    auto color = rectangle.getColor();
-    auto scale = rectangle.getScale();
-    auto rotation = rectangle.getRotation();
-
-    glDisable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
-
-    float width = size[0] * scale[0];
-    float height = size[1] * scale[1];
-
-    glPushMatrix();
-    glTranslatef(position[0], position[1], position[2]);
-    glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
-    glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
-    glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
-    glTranslatef(-width / 2.0f, -height / 2.0f, 0.0f);
-
-    glBegin(GL_QUADS);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glVertex3f(width, 0.0f, 0.0f);
-    glVertex3f(width, height, 0.0f);
-    glVertex3f(0.0f, height, 0.0f);
-    glEnd();
-
-    glPopMatrix();
-}
-
-void Renderer::drawCircle(const guillaume::shapes::Circle &circle) {
-    getLogger().warning(
-        "Drawing a circle shape is deprecated. Use drawVertices() with a "
-        "triangle fan instead for better performance and flexibility.");
-
-    auto position = circle.getPosition();
-    const auto cameraPosition = getCamera().getPosition();
-    position -= cameraPosition;
-    auto color = circle.getColor();
-    auto scale = circle.getScale();
-
-    float radius = 50.0f * scale[0];
-    glDisable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
-
-    const int segments = 64;
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(position[0], position[1], position[2]);
-    for (int i = 0; i <= segments; ++i) {
-        float angle = static_cast<float>(i) / static_cast<float>(segments) *
-                      6.28318530718f;
-        float x = position[0] + std::cos(angle) * radius;
-        float y = position[1] + std::sin(angle) * radius;
-        glVertex3f(x, y, position[2]);
-    }
-    glEnd();
-}
-
 void Renderer::drawVertices(
     const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) {
     const auto cameraPosition = getCamera().getPosition();
@@ -281,11 +183,11 @@ void Renderer::drawVertices(
 }
 
 utility::math::Vector<std::float_t, 2>
-Renderer::measureText(const guillaume::Text &text,
-                      const guillaume::Font &font) {
+Renderer::measureText(const guillaume::drawables::Text &text,
+                      const std::string &fontPath) {
     getLogger().debug("Measuring text: " + text.getContent());
 
-    TTF_Font *ttfFont = getOrLoadFont(font);
+    TTF_Font *ttfFont = getOrLoadFont(fontPath, text.getFontSize());
     if (!ttfFont) {
         getLogger().error("Failed to load font for measurement");
         return {0.0f, 0.0f};
@@ -318,11 +220,11 @@ guillaume::Renderer::ViewportSize Renderer::getViewportSize(void) const {
     return {static_cast<float>(width), static_cast<float>(height)};
 }
 
-void Renderer::drawText(const guillaume::Text &text,
-                        const guillaume::Font &font) {
+void Renderer::drawText(const guillaume::drawables::Text &text,
+                        const std::string &fontPath) {
     getLogger().debug("Drawing text: " + text.getContent());
 
-    TTF_Font *ttfFont = getOrLoadFont(font);
+    TTF_Font *ttfFont = getOrLoadFont(fontPath, text.getFontSize());
     if (!ttfFont) {
         getLogger().error("Failed to load font for rendering");
         return;
@@ -401,17 +303,22 @@ void Renderer::drawText(const guillaume::Text &text,
     glEnable(GL_DEPTH_TEST);
 }
 
-TTF_Font *Renderer::getOrLoadFont(const guillaume::Font &font) {
-    std::string fontKey =
-        font.getFontPath() + ":" + std::to_string(font.getFontSize());
+TTF_Font *Renderer::getOrLoadFont(const std::string &fontPath,
+                                  std::size_t fontSize) {
+    if (fontSize == 0) {
+        getLogger().warning(
+            "Requested font size is 0, using fallback size 24");
+        fontSize = 24;
+    }
+
+    std::string fontKey = fontPath + ":" + std::to_string(fontSize);
 
     auto it = _fontCache.find(fontKey);
     if (it != _fontCache.end()) {
         return it->second;
     }
 
-    TTF_Font *ttfFont =
-        TTF_OpenFont(font.getFontPath().c_str(), font.getFontSize());
+    TTF_Font *ttfFont = TTF_OpenFont(fontPath.c_str(), fontSize);
     if (!ttfFont) {
         getLogger().error("Failed to load font: " +
                           std::string(SDL_GetError()));

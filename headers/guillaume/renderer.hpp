@@ -34,18 +34,13 @@
 #include <utility/math/vector.hpp>
 #include <utility/math/vertex.hpp>
 
-#include "guillaume/shapes/circle.hpp"
-#include "guillaume/shapes/rectangle.hpp"
-#include "guillaume/shapes/triangle.hpp"
-
-#include "guillaume/font.hpp"
-#include "guillaume/text.hpp"
+#include "guillaume/drawables/text.hpp"
 
 namespace guillaume {
 
 /**
  * @brief Renderer interface.
- * @see Shape
+ * @see Drawable
  * @see Text
  * @see Font
  */
@@ -90,30 +85,6 @@ class Renderer
     virtual void present(void) = 0;
 
     /**
-     * @brief Draw a triangle shape.
-     * @param triangle The triangle to draw.
-     * @deprecated Use drawVertices() with a triangle instead for better
-     * performance and flexibility.
-     */
-    virtual void drawTriangle(const shapes::Triangle &triangle) = 0;
-
-    /**
-     * @brief Draw a rectangle shape.
-     * @param rectangle The rectangle to draw.
-     * @deprecated Use drawVertices() with a quad instead for better performance
-     * and flexibility.
-     */
-    virtual void drawRectangle(const shapes::Rectangle &rectangle) = 0;
-
-    /**
-     * @brief Draw a circle shape.
-     * @param circle The circle to draw.
-     * @deprecated Use drawVertices() with a triangle fan instead for better
-     * performance and flexibility.
-     */
-    virtual void drawCircle(const shapes::Circle &circle) = 0;
-
-    /**
      * @brief Draw a set of vertices forming a mesh.
      * @param vertices The list of vertices, each containing position and any
      * additional attributes (such as texture coordinates, color, etc.) required
@@ -125,13 +96,16 @@ class Renderer
         const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) = 0;
 
     /**
-     * @brief Measure the size of the given text using the specified font.
+     * @brief Measures the pixel dimensions of a given text string when rendered
+     * with a specific font.
      * @param text The text to measure.
-     * @param font The font to use for measurement.
-     * @return The size of the text as a 2D vector (width, height).
+     * @param fontPath The file path to the font to use for measurement.
+     * @return A 2D vector containing the width and height of the rendered text
+     * in pixels in the form of utility::math::Vector<std::float_t, 2>.
      */
     virtual utility::math::Vector<std::float_t, 2>
-    measureText(const Text &text, const Font &font) = 0;
+    measureText(const drawables::Text &text,
+                const std::string &fontPath) = 0;
 
     /**
      * @brief Get the current viewport size in pixels.
@@ -140,11 +114,12 @@ class Renderer
     virtual ViewportSize getViewportSize(void) const { return {1.0f, 1.0f}; }
 
     /**
-     * @brief Draw text using a specific font.
+     * @brief Measure the size of the given text using the specified font.
      * @param text The text to draw.
-     * @param font The font to use.
+     * @param fontPath The file path to the font to use for measurement.
      */
-    virtual void drawText(const Text &text, const Font &font) = 0;
+    virtual void drawText(const drawables::Text &text,
+                          const std::string &fontPath) = 0;
 
     /**
      * @brief Get the camera position in 3D space.

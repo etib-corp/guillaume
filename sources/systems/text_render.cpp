@@ -1,0 +1,61 @@
+/*
+ Copyright (c) 2026 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+
+#include "guillaume/systems/text_render.hpp"
+
+#include "guillaume/drawables/text.hpp"
+
+namespace guillaume::systems {
+
+TextRender::TextRender(Renderer &renderer)
+    : ecs::SystemFiller<components::Transform, components::Text>(),
+      _renderer(renderer),
+      _defaultFont("assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf") {}
+
+TextRender::~TextRender(void) {}
+
+void TextRender::update(ecs::ComponentRegistry &componentRegistry,
+                        const ecs::Entity::Identifier &entityIdentifier) {
+    getLogger().debug("Updating TextRender system for entity " +
+                      std::to_string(entityIdentifier));
+    if (!componentRegistry.hasComponent<components::Text>(entityIdentifier) ||
+        !componentRegistry.hasComponent<components::Transform>(
+            entityIdentifier)) {
+        getLogger().warning("Entity " + std::to_string(entityIdentifier) +
+                            " does not have Text and Transform components");
+        return;
+    }
+
+    const auto &transformComponent =
+        componentRegistry.getComponent<components::Transform>(entityIdentifier);
+    const auto &textComponent =
+        componentRegistry.getComponent<components::Text>(entityIdentifier);
+
+    drawables::Text text(
+        transformComponent.getPosition(), transformComponent.getRotation(),
+        transformComponent.getScale(), textComponent.getColor(),
+        textComponent.getContent(), textComponent.getFontSize());
+
+    _renderer.drawText(text, _defaultFont);
+}
+
+} // namespace guillaume::systems

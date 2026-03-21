@@ -31,6 +31,8 @@ namespace guillaume::systems {
 
 void Render::update(ecs::ComponentRegistry &componentRegistry,
                     const ecs::Entity::Identifier &entityIdentifier) {
+    getLogger().debug("Updating Render system for entity " +
+                   std::to_string(entityIdentifier));
     if (!componentRegistry.hasComponent<components::Render>(entityIdentifier)) {
         getLogger().warning("Entity " + std::to_string(entityIdentifier) +
                             " does not have a Render component");

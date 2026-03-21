@@ -94,6 +94,8 @@ Hover::Hover(event::EventBus &eventBus, Renderer &renderer)
 
 void Hover::update(ecs::ComponentRegistry &componentRegistry,
                    const ecs::Entity::Identifier &entityIdentifier) {
+    getLogger().debug("Updating Hover system for entity " +
+                      std::to_string(entityIdentifier));
     if (!_mouseMotionSubscriber.hasPendingEvents()) {
         // No new events, but we still need to check current mouse position
         // Use the renderer's stored mouse position

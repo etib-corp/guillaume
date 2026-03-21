@@ -38,17 +38,26 @@ namespace guillaume::entities {
  * @brief Text component
  */
 class Text
-    : public ecs::LeafEntityFiller<components::Transform, components::Bound,
-                                   components::Text, components::Render> {
+    : public ecs::LeafEntityFiller<components::Transform, components::Text> {
+
+  public:
+    using Color = utility::math::Color<uint8_t>; ///< Color type (RGBA)
 
   public:
     /**
      * @brief Builder used to configure and create `Text` entities.
      */
     class Builder : public ecs::LeafEntityBuilder {
+      public:
+        using Color = utility::math::Color<uint8_t>; ///< Color type (RGBA)
+
       private:
         std::unique_ptr<Text>
-            _text; ///< Unique pointer to the Text entity being built
+            _text;            ///< Unique pointer to the Text entity being built
+        std::string _content; ///< Text content to be set in the Text component
+        std::size_t _fontSize = 24; ///< Font size to be set in the Text component
+        Color _color = {255, 255, 255,
+                        255}; ///< Color to be set in the Text component
 
       public:
         /**
@@ -68,16 +77,33 @@ class Text
          * @return Unique pointer to the Text entity being built.
          */
         std::unique_ptr<ecs::Entity>
-        getEntity(ecs::ComponentRegistry &componentRegistry) override {
-            _text = std::make_unique<Text>(componentRegistry);
-            return std::move(_text);
-        }
+        getEntity(ecs::ComponentRegistry &componentRegistry) override;
 
         /**
          * @brief Reset the builder to its initial state for creating a new
          * Text entity.
          */
-        void reset(void) override { _text.reset(); }
+        void reset(void) override;
+
+        /**
+         * @brief Set the text content for the Text component.
+         * @param content The text content to set.
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withContent(const std::string &content);
+
+        /**
+         * @brief Set the font size for the Text component.
+         * @param fontSize The font size to set.
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withFontSize(std::size_t fontSize);
+        /**
+         * @brief Set the color for the Text component.
+         * @param color The color to set (RGBA).
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withColor(const Color &color);
     };
 
     /**
@@ -105,52 +131,39 @@ class Text
          * @brief Create a default Text entity using the builder.
          * @param builder The builder instance used to configure and create the
          * default text
+         * @param content The text content for the default Text entity.
+         * @param fontSize The font size for the default Text entity.
+         * @param color The color for the default Text entity (RGBA).
          * @return Unique pointer to the created Text entity.
          */
-        std::unique_ptr<ecs::Entity> makeDefaultText(Builder &builder) {
-            return builder.getEntity(getComponentRegistry());
+        std::unique_ptr<ecs::Entity> makeDefaultText(Builder &builder,
+                                                     const std::string &content,
+                                                     std::size_t fontSize,
+                                                     const Color &color) {
+            return builder.withContent(content)
+                .withFontSize(fontSize)
+                .withColor(color)
+                .getEntity(getComponentRegistry());
         }
     };
 
   private:
-    /**
-     * @brief Render handler for the normal state of the button.
-     * @param renderer The renderer to use for drawing the button.
-     */
-    void normalRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the hovered state of the button.
-     * @param renderer The renderer to use for drawing the button in hovered
-     * state.
-     */
-    void hoveredRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the clicked state of the button.
-     * @param renderer The renderer to use for drawing the button in clicked
-     * state.
-     */
-    void clickedRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the active state of the button.
-     * @param renderer The renderer to use for drawing the button in active
-     * state.
-     */
-    void activeRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
+    std::string _content;  ///< Text content to be set in the Text component
+    std::size_t _fontSize = 24; ///< Font size to be set in the Text component
+    Color _color = {255, 255, 255,
+                    255}; ///< Color to be set in the Text component
 
   public:
     /**
      * @brief Default constructor for the Text component.
      * @param registry Reference to the component registry for initializing
      * components.
+     * @param content The text content to initialize the Text component with.
+     * @param fontSize The font size to initialize the Text component with.
+     * @param color The color to initialize the Text component with (RGBA).F
      */
-    Text(ecs::ComponentRegistry &registry);
+        Text(ecs::ComponentRegistry &registry, const std::string &content,
+          std::size_t fontSize, const Color &color);
 
     /**
      * @brief Default destructor for the Text component.
