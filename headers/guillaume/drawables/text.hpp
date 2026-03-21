@@ -50,8 +50,8 @@ class Text : public Drawable {
      * @param content The text content.
      * @param fontSize Font size of the text.
      */
-        Text(Position position, Rotation rotation, Scale scale, Color color,
-          const std::string &content, std::size_t fontSize);
+    Text(Position position, Rotation rotation, Scale scale, Color color,
+         const std::string &content, std::size_t fontSize);
 
     /**
      * @brief Destructor

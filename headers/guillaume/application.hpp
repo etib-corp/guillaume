@@ -46,8 +46,8 @@
 #include "systems/hover.hpp"
 #include "systems/keyboard_control.hpp"
 #include "systems/render.hpp"
-#include "systems/text_render.hpp"
 #include "systems/text_input.hpp"
+#include "systems/text_render.hpp"
 
 #include "local_storage.hpp"
 #include "session_storage.hpp"

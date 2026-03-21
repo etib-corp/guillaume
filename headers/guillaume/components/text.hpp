@@ -38,10 +38,10 @@ namespace guillaume::components {
  */
 class Text : public ecs::Component {
   private:
-    std::string _content;                 ///< Text content
-    std::size_t _fontSize = 24;           ///< Font size of the text
-    utility::math::Color<uint8_t> _color = {
-        255, 255, 255, 255}; ///< Color of the text (RGBA)
+    std::string _content;       ///< Text content
+    std::size_t _fontSize = 24; ///< Font size of the text
+    utility::math::Color<uint8_t> _color = {255, 255, 255,
+                                            255}; ///< Color of the text (RGBA)
 
   public:
     /**

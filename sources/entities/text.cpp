@@ -63,9 +63,9 @@ Text::Director::Director(ecs::ComponentRegistry &componentRegistry)
 Text::Director::~Director(void) {}
 
 Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
-                     std::size_t fontSize, const Color &color)
-        : ecs::LeafEntityFiller<components::Transform, components::Text>(registry),
-            _content(content), _fontSize(fontSize), _color(color) {
+           std::size_t fontSize, const Color &color)
+    : ecs::LeafEntityFiller<components::Transform, components::Text>(registry),
+      _content(content), _fontSize(fontSize), _color(color) {
     registry.getComponent<components::Transform>(getIdentifier())
         .setPosition({200.0f, 200.0f, 0.0f})
         .setRotation({0.0f, 0.0f, 0.0f})

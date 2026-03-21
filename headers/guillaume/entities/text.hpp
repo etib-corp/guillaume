@@ -55,7 +55,8 @@ class Text
         std::unique_ptr<Text>
             _text;            ///< Unique pointer to the Text entity being built
         std::string _content; ///< Text content to be set in the Text component
-        std::size_t _fontSize = 24; ///< Font size to be set in the Text component
+        std::size_t _fontSize =
+            24; ///< Font size to be set in the Text component
         Color _color = {255, 255, 255,
                         255}; ///< Color to be set in the Text component
 
@@ -148,7 +149,7 @@ class Text
     };
 
   private:
-    std::string _content;  ///< Text content to be set in the Text component
+    std::string _content; ///< Text content to be set in the Text component
     std::size_t _fontSize = 24; ///< Font size to be set in the Text component
     Color _color = {255, 255, 255,
                     255}; ///< Color to be set in the Text component
@@ -162,8 +163,8 @@ class Text
      * @param fontSize The font size to initialize the Text component with.
      * @param color The color to initialize the Text component with (RGBA).F
      */
-        Text(ecs::ComponentRegistry &registry, const std::string &content,
-          std::size_t fontSize, const Color &color);
+    Text(ecs::ComponentRegistry &registry, const std::string &content,
+         std::size_t fontSize, const Color &color);
 
     /**
      * @brief Default destructor for the Text component.

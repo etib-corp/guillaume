@@ -306,8 +306,7 @@ void Renderer::drawText(const guillaume::drawables::Text &text,
 TTF_Font *Renderer::getOrLoadFont(const std::string &fontPath,
                                   std::size_t fontSize) {
     if (fontSize == 0) {
-        getLogger().warning(
-            "Requested font size is 0, using fallback size 24");
+        getLogger().warning("Requested font size is 0, using fallback size 24");
         fontSize = 24;
     }
 

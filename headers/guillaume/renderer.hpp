@@ -104,8 +104,7 @@ class Renderer
      * in pixels in the form of utility::math::Vector<std::float_t, 2>.
      */
     virtual utility::math::Vector<std::float_t, 2>
-    measureText(const drawables::Text &text,
-                const std::string &fontPath) = 0;
+    measureText(const drawables::Text &text, const std::string &fontPath) = 0;
 
     /**
      * @brief Get the current viewport size in pixels.
