@@ -30,7 +30,6 @@ namespace guillaume::components {
 
 /**
  * @brief Component representing a transform in space.
- * @see systems::Render
  */
 class Transform : public ecs::Component {
   public:

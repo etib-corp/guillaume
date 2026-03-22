@@ -44,7 +44,7 @@
 
 #include "systems/interaction.hpp"
 #include "systems/keyboard_control.hpp"
-#include "systems/render.hpp"
+#include "systems/rectangle_render.hpp"
 #include "systems/text_input.hpp"
 #include "systems/text_render.hpp"
 
@@ -153,14 +153,14 @@ class Application
     void registerCoreSystems(void) {
         registerSystem<systems::Interaction>(
             std::make_unique<systems::Interaction>(_eventBus, _renderer));
-        registerSystem<systems::Render>(
-            std::make_unique<systems::Render>(_renderer));
         registerSystem<systems::TextRender>(
             std::make_unique<systems::TextRender>(_renderer));
         registerSystem<systems::KeyboardControl>(
             std::make_unique<systems::KeyboardControl>(_eventBus));
         registerSystem<systems::TextInput>(
             std::make_unique<systems::TextInput>(_eventBus));
+        registerSystem<systems::RectangleRender>(
+            std::make_unique<systems::RectangleRender>(_renderer));
     }
 
     template <InheritFromScene SceneType> void registerScene(void) {

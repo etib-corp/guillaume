@@ -20,7 +20,6 @@
  SOFTWARE.
  */
 
-#include "drawables/test_rectangle.hpp"
+#include "guillaume/components/color.hpp"
 
-namespace guillaume::drawables::tests {
-} // namespace guillaume::drawables::tests
+namespace guillaume::components {} // namespace guillaume::components

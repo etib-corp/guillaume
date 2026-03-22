@@ -28,7 +28,6 @@
 #include "guillaume/ecs/leaf_entity_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
-#include "guillaume/components/render.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 

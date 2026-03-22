@@ -29,10 +29,11 @@
 #include "guillaume/ecs/node_entity_builder.hpp"
 #include "guillaume/ecs/node_entity_filler.hpp"
 
+#include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/click.hpp"
+#include "guillaume/components/color.hpp"
 #include "guillaume/components/hover.hpp"
-#include "guillaume/components/render.hpp"
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/entities/icon.hpp"
@@ -46,7 +47,7 @@ namespace guillaume::entities {
 class Button
     : public ecs::NodeEntityFiller<components::Transform, components::Bound,
                                    components::Hover, components::Click,
-                                   components::Render> {
+                                   components::Color, components::Borders> {
   public:
     /**
      * @brief State of a toggle button, which can be either Default or Selected.
@@ -263,39 +264,16 @@ class Button
      * @param mousePosition The position of the mouse when the left click event
      * occurred.
      */
-    void leftClickHandler(
+    void leftClickPressHandler(
         utility::event::MouseMotionEvent::MousePosition mousePosition);
 
     /**
-     * @brief Render handler for the normal state of the button.
-     * @param renderer The renderer to use for drawing the button.
+     * @brief Left click release event handler for the button.
+     * @param mousePosition The position of the mouse when the left click
+     * release event occurred.
      */
-    void normalRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the hovered state of the button.
-     * @param renderer The renderer to use for drawing the button in hovered
-     * state.
-     */
-    void hoveredRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the clicked state of the button.
-     * @param renderer The renderer to use for drawing the button in clicked
-     * state.
-     */
-    void clickedRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the active state of the button.
-     * @param renderer The renderer to use for drawing the button in active
-     * state.
-     */
-    void activeRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
+    void leftClickReleaseHandler(
+        utility::event::MouseMotionEvent::MousePosition mousePosition);
 
   public:
     /**

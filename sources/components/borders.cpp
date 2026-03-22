@@ -20,20 +20,6 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "guillaume/components/borders.hpp"
 
-#include <gtest/gtest.h>
-
-#include <guillaume/systems/render.hpp>
-
-namespace guillaume::systems::tests {
-
-class TestRender : public ::testing::Test {
-  protected:
-    TestRender(void) = default;
-    ~TestRender(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
-
-} // namespace guillaume::systems::tests
+namespace guillaume::components {} // namespace guillaume::components

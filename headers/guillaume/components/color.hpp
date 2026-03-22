@@ -30,6 +30,39 @@ namespace guillaume::components {
 /**
  * @brief Component representing a color.
  */
-class Color : public ecs::Component, public utility::math::Color<uint8_t> {};
+class Color : public ecs::Component {
+
+  private:
+    utility::math::Color<std::uint8_t> _color; ///< The color value
+
+  public:
+    /**
+     * @brief Constructor for the Color component.
+     */
+    explicit Color(void) : _color() {}
+
+    /**
+     * @brief Default destructor for the Color component.
+     */
+    ~Color(void) = default;
+
+    /**
+     * @brief Get the color value.
+     * @return The color value.
+     */
+    const utility::math::Color<std::uint8_t> &getColor() const {
+        return _color;
+    }
+
+    /**
+     * @brief Set the color value.
+     * @param color The new color value to set.
+     * @return Reference to this Color component for chaining.
+     */
+    Color &setColor(const utility::math::Color<std::uint8_t> &color) {
+        _color = color;
+        return *this;
+    }
+};
 
 } // namespace guillaume::components

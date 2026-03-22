@@ -30,7 +30,6 @@ namespace guillaume::components {
 
 /**
  * @brief Component representing a bounding parallelepiped.
- * @see systems::Render
  */
 class Bound : public ecs::Component {
   public:

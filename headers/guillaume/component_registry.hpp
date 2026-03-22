@@ -24,8 +24,10 @@
 
 #include "guillaume/ecs/tree_component_registry_filler.hpp"
 
+#include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/click.hpp"
+#include "guillaume/components/color.hpp"
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/hover.hpp"
 #include "guillaume/components/text.hpp"
@@ -40,7 +42,8 @@ namespace guillaume {
 class ComponentRegistry
     : public ecs::TreeComponentRegistryFiller<
           components::Bound, components::Click, components::Focus,
-          components::Hover, components::Text, components::Transform> {
+          components::Hover, components::Text, components::Transform,
+          components::Color, components::Borders> {
   public:
     /**
      * @brief Default constructor.
@@ -48,7 +51,8 @@ class ComponentRegistry
     ComponentRegistry(void)
         : ecs::TreeComponentRegistryFiller<
               components::Bound, components::Click, components::Focus,
-              components::Hover, components::Text, components::Transform>() {}
+              components::Hover, components::Text, components::Transform,
+              components::Color, components::Borders>() {}
 
     /**
      * @brief Default destructor.
