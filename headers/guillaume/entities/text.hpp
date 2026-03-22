@@ -36,11 +36,11 @@ namespace guillaume::entities {
 /**
  * @brief Text component
  */
-class Text
-    : public ecs::LeafEntityFiller<components::Transform, components::Text> {
+class Text : public ecs::LeafEntityFiller<components::Transform,
+                                          components::Bound, components::Text> {
 
   public:
-    using Color = utility::math::Color<uint8_t>; ///< Color type (RGBA)
+    using Color = utility::graphics::Color<uint8_t>; ///< Color type (RGBA)
 
   public:
     /**
@@ -54,7 +54,7 @@ class Text
      */
     class Builder : public ecs::LeafEntityBuilder<Text> {
       public:
-        using Color = utility::math::Color<uint8_t>; ///< Color type (RGBA)
+        using Color = utility::graphics::Color<uint8_t>; ///< Color type (RGBA)
 
       private:
         std::unique_ptr<Text>

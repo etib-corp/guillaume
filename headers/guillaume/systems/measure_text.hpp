@@ -22,8 +22,11 @@
 
 #pragma once
 
+#include <string>
+
 #include "guillaume/ecs/system_filler.hpp"
 
+#include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -32,30 +35,32 @@
 namespace guillaume::systems {
 
 /**
- * @brief System handling text rendering from ECS components.
+ * @brief System measuring text and synchronizing it to bound sizes.
  * @see components::Text
+ * @see components::Bound
  * @see components::Transform
  */
-class TextRender
-    : public ecs::SystemFiller<components::Transform, components::Text> {
+class MeasureText
+    : public ecs::SystemFiller<components::Transform, components::Text,
+                               components::Bound> {
   private:
     Renderer &_renderer;          ///< Renderer instance
-    std::string _defaultFontPath; ///< Default font for text rendering
+    std::string _defaultFontPath; ///< Default font used for text measurement
 
   public:
     /**
-     * @brief Construct a text rendering system.
-     * @param renderer The renderer used to draw text.
+     * @brief Construct a text measuring system.
+     * @param renderer The renderer used to measure text.
      */
-    TextRender(Renderer &renderer);
+    MeasureText(Renderer &renderer);
 
     /**
      * @brief Default destructor.
      */
-    ~TextRender(void);
+    ~MeasureText(void);
 
     /**
-     * @brief Update the TextRender system for one entity.
+     * @brief Update the MeasureText system for one entity.
      * @param componentRegistry The component registry.
      * @param entityIdentifier The target entity identifier.
      */

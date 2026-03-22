@@ -22,27 +22,30 @@
 
 #include <utility/graphics/text.hpp>
 
-#include "guillaume/systems/text_render.hpp"
+#include "guillaume/systems/measure_text.hpp"
 
 namespace guillaume::systems {
 
-TextRender::TextRender(Renderer &renderer)
-    : ecs::SystemFiller<components::Transform, components::Text>(),
+MeasureText::MeasureText(Renderer &renderer)
+    : ecs::SystemFiller<components::Transform, components::Text,
+                        components::Bound>(),
       _renderer(renderer),
       _defaultFontPath(
           "assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf") {}
 
-TextRender::~TextRender(void) {}
+MeasureText::~MeasureText(void) {}
 
-void TextRender::update(ecs::ComponentRegistry &componentRegistry,
-                        const ecs::Entity::Identifier &entityIdentifier) {
-    getLogger().debug("Updating TextRender system for entity " +
+void MeasureText::update(ecs::ComponentRegistry &componentRegistry,
+                         const ecs::Entity::Identifier &entityIdentifier) {
+    getLogger().debug("Updating MeasureText system for entity " +
                       std::to_string(entityIdentifier));
     if (!componentRegistry.hasComponent<components::Text>(entityIdentifier) ||
         !componentRegistry.hasComponent<components::Transform>(
-            entityIdentifier)) {
+            entityIdentifier) ||
+        !componentRegistry.hasComponent<components::Bound>(entityIdentifier)) {
         getLogger().warning("Entity " + std::to_string(entityIdentifier) +
-                            " does not have Text and Transform components");
+                            " does not have Text, Transform and Bound "
+                            "components");
         return;
     }
 
@@ -50,6 +53,8 @@ void TextRender::update(ecs::ComponentRegistry &componentRegistry,
         componentRegistry.getComponent<components::Transform>(entityIdentifier);
     const auto &textComponent =
         componentRegistry.getComponent<components::Text>(entityIdentifier);
+    auto &boundComponent =
+        componentRegistry.getComponent<components::Bound>(entityIdentifier);
 
     utility::graphics::Text text;
     text.setPosition(transformComponent.getPosition())
@@ -60,7 +65,7 @@ void TextRender::update(ecs::ComponentRegistry &componentRegistry,
         .setFontSize(textComponent.getFontSize())
         .setFontPath(_defaultFontPath);
 
-    _renderer.drawText(text);
+    boundComponent.setSize(_renderer.measureText(text));
 }
 
 } // namespace guillaume::systems

@@ -24,7 +24,7 @@
 
 #include <string>
 
-#include <utility/math/color.hpp>
+#include <utility/graphics/color.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
@@ -40,8 +40,8 @@ class Text : public ecs::Component {
   private:
     std::string _content;       ///< Text content
     std::size_t _fontSize = 24; ///< Font size of the text
-    utility::math::Color<uint8_t> _color = {255, 255, 255,
-                                            255}; ///< Color of the text (RGBA)
+    utility::graphics::Color<uint8_t> _color = {
+        255, 255, 255, 255}; ///< Color of the text (RGBA)
 
   public:
     /**
@@ -90,14 +90,14 @@ class Text : public ecs::Component {
      * @brief Get the color of the text.
      * @return The text color.
      */
-    utility::math::Color<uint8_t> getColor(void) const { return _color; }
+    utility::graphics::Color<uint8_t> getColor(void) const { return _color; }
 
     /**
      * @brief Set the color of the text.
      * @param color The new text color.
      * @return The Text component for chaining.
      */
-    Text &setColor(utility::math::Color<uint8_t> color) {
+    Text &setColor(utility::graphics::Color<uint8_t> color) {
         _color = color;
         return *this;
     }

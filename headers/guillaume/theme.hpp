@@ -28,7 +28,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <utility/math/color.hpp>
+#include <utility/graphics/color.hpp>
 
 namespace guillaume {
 
@@ -117,7 +117,7 @@ enum class ThemePaletteRole {
  */
 class ExtendedColor {
   public:
-    using Color = utility::math::Color<std::uint8_t>; ///< Color type (RGBA)
+    using Color = utility::graphics::Color<std::uint8_t>; ///< Color type (RGBA)
 
   private:
     Color _color;
@@ -206,7 +206,7 @@ class ExtendedColor {
  */
 class Scheme {
   public:
-    using Color = utility::math::Color<std::uint8_t>; ///< Color type (RGBA)
+    using Color = utility::graphics::Color<std::uint8_t>; ///< Color type (RGBA)
 
   private:
     std::array<ExtendedColor, static_cast<std::size_t>(SchemeColorRole::Count)>

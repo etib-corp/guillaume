@@ -98,28 +98,25 @@ class Renderer : public guillaume::Renderer {
      * using the renderer's default primitive topology (typically a triangle
      * list) to form the mesh.
      */
-    void drawVertices(const std::vector<utility::math::Vertex<float, uint8_t>>
-                          &vertices) override;
+    void drawVertices(
+        const std::vector<utility::graphics::Vertex<float, uint8_t>> &vertices)
+        override;
 
     /**
      * @brief Measure the size of the given text using the specified font.
      * @param text The text to draw.
-     * @param fontPath The file path to the font to use for measurement.
      */
-    void drawText(const guillaume::drawables::Text &text,
-                  const std::string &fontPath) override;
+    void drawText(const utility::graphics::Text &text) override;
 
     /**
      * @brief Measures the pixel dimensions of a given text string when rendered
      * with a specific font.
      * @param text The text to measure.
-     * @param fontPath The file path to the font to use for measurement.
      * @return A 2D vector containing the width and height of the rendered text
      * in pixels in the form of utility::math::Vector<std::float_t, 2>.
      */
     utility::math::Vector<std::float_t, 2>
-    measureText(const guillaume::drawables::Text &text,
-                const std::string &fontPath) override;
+    measureText(const utility::graphics::Text &text) override;
 
     /**
      * @brief Get the renderer viewport size in pixels.

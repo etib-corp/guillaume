@@ -20,18 +20,20 @@
  SOFTWARE.
  */
 
-#include "guillaume/drawable.hpp"
+#pragma once
 
-namespace guillaume {
+#include <gtest/gtest.h>
 
-Drawable::Drawable(void)
-    : _position({0.0f, 0.0f, 0.0f}), _rotation({0.0f, 0.0f, 0.0f}),
-      _scale({1.0f, 1.0f, 1.0f}), _color({255, 255, 255, 255}) {}
+#include <guillaume/systems/measure_text.hpp>
 
-Drawable::Drawable(Position position, Rotation rotation, Scale scale,
-                   Color color)
-    : _position(position), _rotation(rotation), _scale(scale), _color(color) {}
+namespace guillaume::systems::tests {
 
-Drawable::~Drawable(void) {}
+class TestMeasureText : public ::testing::Test {
+  protected:
+    TestMeasureText(void) = default;
+    ~TestMeasureText(void) override = default;
+    void SetUp(void) override {}
+    void TearDown(void) override {}
+};
 
-} // namespace guillaume
+} // namespace guillaume::systems::tests

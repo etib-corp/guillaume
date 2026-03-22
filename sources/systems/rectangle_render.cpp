@@ -104,7 +104,7 @@ RectangleRender::roundedRectVertices(const Vec2 &center, float theta, float sx,
 
 RectangleRender::Vertex
 RectangleRender::createVertex(const Vec2 &pos,
-                              const utility::math::Color<uint8_t> &color) {
+                              const utility::graphics::Color<uint8_t> &color) {
     Vertex v;
     v.setPosition(Position({pos[0], pos[1], 0.0f}));
     v.setColor(color);

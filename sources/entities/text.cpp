@@ -74,12 +74,16 @@ void Text::Director::makeDefaultText(Builder &builder,
 
 Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
            const std::size_t &fontSize, const Color &color)
-    : ecs::LeafEntityFiller<components::Transform, components::Text>(registry),
+    : ecs::LeafEntityFiller<components::Transform, components::Bound,
+                            components::Text>(registry),
       _content(content), _fontSize(fontSize), _color(color) {
     registry.getComponent<components::Transform>(getIdentifier())
         .setPosition({200.0f, 200.0f, 0.0f})
         .setRotation({0.0f, 0.0f, 0.0f})
         .setScale({1.0f, 1.0f, 1.0f});
+
+    registry.getComponent<components::Bound>(getIdentifier())
+        .setSize({200.0f, 50.0f});
 
     registry.getComponent<components::Text>(getIdentifier())
         .setContent(_content)

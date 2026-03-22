@@ -44,6 +44,7 @@
 
 #include "systems/interaction.hpp"
 #include "systems/keyboard_control.hpp"
+#include "systems/measure_text.hpp"
 #include "systems/rectangle_render.hpp"
 #include "systems/text_input.hpp"
 #include "systems/text_render.hpp"
@@ -151,6 +152,8 @@ class Application
     }
 
     void registerCoreSystems(void) {
+        registerSystem<systems::MeasureText>(
+            std::make_unique<systems::MeasureText>(_renderer));
         registerSystem<systems::Interaction>(
             std::make_unique<systems::Interaction>(_eventBus, _renderer));
         registerSystem<systems::TextRender>(

@@ -29,12 +29,13 @@
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
-#include <utility/math/camera.hpp>
-#include <utility/math/ray.hpp>
-#include <utility/math/vector.hpp>
-#include <utility/math/vertex.hpp>
 
-#include "guillaume/drawables/text.hpp"
+#include <utility/graphics/camera.hpp>
+#include <utility/graphics/ray.hpp>
+#include <utility/graphics/text.hpp>
+#include <utility/graphics/vertex.hpp>
+
+#include <utility/math/vector.hpp>
 
 namespace guillaume {
 
@@ -48,8 +49,8 @@ class Renderer
     : protected utility::logging::Loggable<Renderer,
                                            utility::logging::StandardLogger> {
   public:
-    using Camera = utility::math::Camera<float>;      ///< Camera model type
-    using Ray = utility::math::Ray<float, 3>;         ///< Picking ray type
+    using Camera = utility::graphics::Camera<float>;  ///< Camera model type
+    using Ray = utility::graphics::Ray<float, 3>;     ///< Picking ray type
     using Position = utility::math::Vector<float, 3>; ///< Camera position type
     using Rotation = utility::math::Vector<float, 3>; ///< Camera rotation type
     using ViewportSize =
@@ -92,19 +93,19 @@ class Renderer
      * using the renderer's default primitive topology (typically a triangle
      * list) to form the mesh.
      */
-    virtual void drawVertices(
-        const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) = 0;
+    virtual void
+    drawVertices(const std::vector<utility::graphics::Vertex<float, uint8_t>>
+                     &vertices) = 0;
 
     /**
      * @brief Measures the pixel dimensions of a given text string when rendered
      * with a specific font.
      * @param text The text to measure.
-     * @param fontPath The file path to the font to use for measurement.
      * @return A 2D vector containing the width and height of the rendered text
      * in pixels in the form of utility::math::Vector<std::float_t, 2>.
      */
     virtual utility::math::Vector<std::float_t, 2>
-    measureText(const drawables::Text &text, const std::string &fontPath) = 0;
+    measureText(const utility::graphics::Text &text) = 0;
 
     /**
      * @brief Get the current viewport size in pixels.
@@ -115,10 +116,8 @@ class Renderer
     /**
      * @brief Measure the size of the given text using the specified font.
      * @param text The text to draw.
-     * @param fontPath The file path to the font to use for measurement.
      */
-    virtual void drawText(const drawables::Text &text,
-                          const std::string &fontPath) = 0;
+    virtual void drawText(const utility::graphics::Text &text) = 0;
 
     /**
      * @brief Get the camera position in 3D space.

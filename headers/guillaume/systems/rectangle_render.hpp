@@ -46,7 +46,7 @@ class RectangleRender
   private:
     using Vec2 = utility::math::Vector<float, 2>;
     using Position = utility::math::Vector<float, 3>;
-    using Vertex = utility::math::Vertex<float, uint8_t>;
+    using Vertex = utility::graphics::Vertex<float, uint8_t>;
 
     static constexpr float kEpsilon = 0.001f;
     static constexpr float kPi = 3.14159265358979323846f;
@@ -64,7 +64,7 @@ class RectangleRender
                                                  float sizeY, float radius,
                                                  int arcSegments = 16);
     static Vertex createVertex(const Vec2 &pos,
-                               const utility::math::Color<uint8_t> &color);
+                               const utility::graphics::Color<uint8_t> &color);
 
   public:
     /**

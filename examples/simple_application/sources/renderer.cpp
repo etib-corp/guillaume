@@ -166,7 +166,7 @@ void Renderer::present(void) {
 }
 
 void Renderer::drawVertices(
-    const std::vector<utility::math::Vertex<float, uint8_t>> &vertices) {
+    const std::vector<utility::graphics::Vertex<float, uint8_t>> &vertices) {
     const auto cameraPosition = getCamera().getPosition();
 
     glDisable(GL_TEXTURE_2D);
@@ -183,11 +183,10 @@ void Renderer::drawVertices(
 }
 
 utility::math::Vector<std::float_t, 2>
-Renderer::measureText(const guillaume::drawables::Text &text,
-                      const std::string &fontPath) {
+Renderer::measureText(const utility::graphics::Text &text) {
     getLogger().debug("Measuring text: " + text.getContent());
 
-    TTF_Font *ttfFont = getOrLoadFont(fontPath, text.getFontSize());
+    TTF_Font *ttfFont = getOrLoadFont(text.getFontPath(), text.getFontSize());
     if (!ttfFont) {
         getLogger().error("Failed to load font for measurement");
         return {0.0f, 0.0f};
@@ -220,11 +219,10 @@ guillaume::Renderer::ViewportSize Renderer::getViewportSize(void) const {
     return {static_cast<float>(width), static_cast<float>(height)};
 }
 
-void Renderer::drawText(const guillaume::drawables::Text &text,
-                        const std::string &fontPath) {
+void Renderer::drawText(const utility::graphics::Text &text) {
     getLogger().debug("Drawing text: " + text.getContent());
 
-    TTF_Font *ttfFont = getOrLoadFont(fontPath, text.getFontSize());
+    TTF_Font *ttfFont = getOrLoadFont(text.getFontPath(), text.getFontSize());
     if (!ttfFont) {
         getLogger().error("Failed to load font for rendering");
         return;
