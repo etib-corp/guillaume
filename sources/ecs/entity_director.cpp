@@ -24,8 +24,7 @@
 
 namespace guillaume::ecs {
 
-EntityDirector::EntityDirector(ComponentRegistry &registry)
-    : _registry(registry) {}
+EntityDirector::EntityDirector(void) {}
 
 EntityDirector::~EntityDirector(void) {}
 

@@ -24,124 +24,52 @@
 
 namespace guillaume::entities {
 
-Icon::Icon::Builder::Builder(void) : ecs::LeafEntityBuilder() {}
+Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+                             ecs::EntityRegistry &entityRegistry)
+    : ecs::LeafEntityBuilder<Icon>(componentRegistry, entityRegistry) {}
 
 Icon::Builder::~Builder(void) {}
 
-Icon::Director::Director(ecs::ComponentRegistry &componentRegistry)
-    : ecs::EntityDirector(componentRegistry) {}
+void Icon::Builder::registerEntity(void) {
+    _icon = std::make_unique<Icon>(getComponentRegistry(), _iconName, _style);
+    getEntityRegistry().addEntity(std::move(_icon));
+}
+
+void Icon::Builder::reset(void) {
+    _icon.reset();
+    _iconName.clear();
+    _style = Style::Outlined;
+}
+
+Icon::Builder &Icon::Builder::withIconName(const std::string &iconName) {
+    _iconName = iconName;
+    return *this;
+}
+
+Icon::Builder &Icon::Builder::withStyle(const Style &style) {
+    _style = style;
+    return *this;
+}
+
+Icon::Director::Director(void) : ecs::EntityDirector() {}
 
 Icon::Director::~Director(void) {}
 
-void Icon::normalRender(ecs::ComponentRegistry &registry,
-                        const ecs::Entity::Identifier &id, Renderer &renderer) {
-
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 0, 0, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {0, 255, 0, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {0, 0, 255, 255}},
-    });
+void Icon::Director::makeDefaultIcon(Builder &builder,
+                                     const std::string &iconName) {
+    builder.withIconName(iconName).registerEntity();
 }
 
-void Icon::hoveredRender(ecs::ComponentRegistry &registry,
-                         const ecs::Entity::Identifier &id,
-                         Renderer &renderer) {
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 255, 0, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {255, 0, 255, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {0, 255, 255, 255}},
-    });
-}
-
-void Icon::clickedRender(ecs::ComponentRegistry &registry,
-                         const ecs::Entity::Identifier &id,
-                         Renderer &renderer) {
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {255, 255, 255, 255}},
-    });
-}
-
-void Icon::activeRender(ecs::ComponentRegistry &registry,
-                        const ecs::Entity::Identifier &id, Renderer &renderer) {
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {255, 255, 255, 255}},
-    });
-}
-
-Icon::Icon(ecs::ComponentRegistry &registry)
-    : ecs::LeafEntityFiller<components::Transform, components::Bound,
-                            components::Icon, components::Render>(registry) {
+Icon::Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
+           const Style &style)
+    : ecs::LeafEntityFiller<components::Transform, components::Icon>(registry),
+      _iconName(iconName), _style(style) {
     registry.getComponent<components::Transform>(getIdentifier())
         .setPosition({0.0f, 0.0f, 0.0f})
         .setRotation({0.0f, 0.0f, 0.0f})
         .setScale({1.0f, 1.0f, 1.0f});
 
-    registry.getComponent<components::Bound>(getIdentifier())
-        .setSize({20.0f, 20.0f});
-
     registry.getComponent<components::Icon>(getIdentifier());
-
-    registry.getComponent<components::Render>(getIdentifier())
-        .setNormalHandler([this](ecs::ComponentRegistry &registry,
-                                 const ecs::Entity::Identifier &id,
-                                 Renderer &renderer) {
-            normalRender(registry, id, renderer);
-        })
-        .setHoveredHandler([this](ecs::ComponentRegistry &registry,
-                                  const ecs::Entity::Identifier &id,
-                                  Renderer &renderer) {
-            hoveredRender(registry, id, renderer);
-        })
-        .setClickedHandler([this](ecs::ComponentRegistry &registry,
-                                  const ecs::Entity::Identifier &id,
-                                  Renderer &renderer) {
-            clickedRender(registry, id, renderer);
-        })
-        .setActiveHandler([this](ecs::ComponentRegistry &registry,
-                                 const ecs::Entity::Identifier &id,
-                                 Renderer &renderer) {
-            activeRender(registry, id, renderer);
-        });
 }
 
 Icon::~Icon() {}

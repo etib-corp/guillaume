@@ -29,32 +29,50 @@
 
 namespace guillaume::entities {
 
-Button::Button::Builder::Builder(void) : ecs::NodeEntityBuilder() {}
+Button::Button::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+                                 ecs::EntityRegistry &entityRegistry)
+    : ecs::NodeEntityBuilder<Button>(componentRegistry, entityRegistry) {
+    _iconBuilder =
+        std::make_unique<Icon::Builder>(componentRegistry, entityRegistry);
+    _textBuilder =
+        std::make_unique<Text::Builder>(componentRegistry, entityRegistry);
+    reset();
+}
 
 Button::Builder::~Builder(void) {}
 
-Button::Director::Director(ecs::ComponentRegistry &componentRegistry)
-    : ecs::EntityDirector(componentRegistry) {}
-
-Button::Director::~Director(void) {}
-
-std::unique_ptr<ecs::Entity>
-Button::Builder::getEntity(ecs::ComponentRegistry &componentRegistry) {
-    _button =
-        std::make_unique<Button>(componentRegistry, _toggleState, _colorStyle,
-                                 _shape, _size, _morphState, _label, _onClick);
-    return std::move(_button);
+void Button::Builder::registerEntity(void) {
+    if (!_iconName.empty()) {
+        _iconDirector.makeDefaultIcon(*_iconBuilder, _iconName);
+    }
+    if (!_label.empty()) {
+        _textDirector.makeDefaultText(*_textBuilder, _label, 24,
+                                      Text::Color{255, 255, 255, 255});
+    }
+    _button = std::make_unique<Button>(this->getComponentRegistry(),
+                                       _toggleState, _colorStyle, _shape, _size,
+                                       _morphState, nullptr, nullptr, _onClick);
+    this->getEntityRegistry().addEntity(std::move(_button));
 }
 
 void Button::Builder::reset(void) {
+    ecs::NodeEntityBuilder<Button>::reset();
     _button.reset();
-    _toggleState = TogleState::Default;
+    _toggleState = ToggleState::Default;
     _colorStyle = ColorStyle::Filled;
-    _shape = Drawable::Round;
+    _shape = Shape::Round;
     _size = Size::Small;
     _morphState = MorphState::Default;
+    _icon.reset();
+    _textLabel.reset();
+    _iconName.clear();
     _label.clear();
-    _onClick = nullptr;
+    _onClick = {};
+}
+
+Button::Builder &Button::Builder::withIcon(const std::string &iconName) {
+    _iconName = iconName;
+    return *this;
 }
 
 Button::Builder &Button::Builder::withLabel(const std::string &label) {
@@ -63,47 +81,61 @@ Button::Builder &Button::Builder::withLabel(const std::string &label) {
 }
 
 Button::Builder &
-Button::Builder::withOnClick(std::function<void(void)> onClick) {
+Button::Builder::withOnClick(const std::function<void(void)> &onClick) {
     _onClick = std::move(onClick);
     return *this;
 }
 
-Button::Builder &Button::Builder::withToggleState(TogleState toggleState) {
+Button::Builder &
+Button::Builder::withToggleState(const ToggleState &toggleState) {
     _toggleState = toggleState;
     return *this;
 }
 
-Button::Builder &Button::Builder::withColorStyle(ColorStyle colorStyle) {
+Button::Builder &Button::Builder::withColorStyle(const ColorStyle &colorStyle) {
     _colorStyle = colorStyle;
     return *this;
 }
 
-Button::Builder &Button::Builder::withShape(Drawable shape) {
+Button::Builder &Button::Builder::withShape(const Shape &shape) {
     _shape = shape;
     return *this;
 }
 
-Button::Builder &Button::Builder::withSize(Size size) {
+Button::Builder &Button::Builder::withSize(const Size &size) {
     _size = size;
     return *this;
 }
 
-Button::Builder &Button::Builder::withMorphState(MorphState morphState) {
+Button::Builder &Button::Builder::withMorphState(const MorphState &morphState) {
     _morphState = morphState;
     return *this;
 }
 
-std::unique_ptr<ecs::Entity>
-Button::Director::makeDefaultButton(Builder &builder, const std::string &label,
-                                    std::function<void(void)> onClick) {
-    return builder.withLabel(label)
+Button::Director::Director(void) : ecs::EntityDirector() {}
+
+Button::Director::~Director(void) {}
+
+void Button::Director::makeTextButton(Builder &builder,
+                                      const std::string &label,
+                                      std::function<void(void)> onClick) {
+    builder.withLabel(label).withOnClick(onClick).registerEntity();
+}
+
+void Button::Director::makeIconButton(Builder &builder,
+                                      const std::string &iconName,
+                                      std::function<void(void)> onClick) {
+    builder.withIcon(iconName).withOnClick(onClick).registerEntity();
+}
+
+void Button::Director::makeIconTextButton(Builder &builder,
+                                          const std::string &iconName,
+                                          const std::string &label,
+                                          std::function<void(void)> onClick) {
+    builder.withIcon(iconName)
+        .withLabel(label)
         .withOnClick(onClick)
-        .withToggleState(TogleState::Default)
-        .withColorStyle(ColorStyle::Filled)
-        .withShape(Drawable::Round)
-        .withSize(Size::Small)
-        .withMorphState(MorphState::Default)
-        .getEntity(getComponentRegistry());
+        .registerEntity();
 }
 
 namespace {
@@ -149,7 +181,7 @@ auto getButtonDimensions(Button::Size size)
 }
 
 // Get corner radius based on size, shape, and morph state
-float getCornerRadius(Button::Size size, Button::Drawable shape,
+float getCornerRadius(Button::Size size, Button::Shape shape,
                       Button::MorphState morphState) {
     // Pressed state has reduced corner radius
     if (morphState == Button::MorphState::Pressed) {
@@ -180,7 +212,7 @@ float getCornerRadius(Button::Size size, Button::Drawable shape,
     }
 
     // Default state (round button)
-    if (shape == Button::Drawable::Round) {
+    if (shape == Button::Shape::Round) {
         return 9999.0f; // Full radius for round button
     }
 
@@ -202,7 +234,7 @@ float getCornerRadius(Button::Size size, Button::Drawable shape,
 auto getColorForStyle(Button::ColorStyle style,
                       [[maybe_unused]] Button::Size size, bool isEnabled,
                       bool isHovered, bool isFocused, bool isPressed,
-                      Button::TogleState toggleState) -> Color {
+                      Button::ToggleState toggleState) -> Color {
     const Color primary = getThemeColor(SchemeColorRole::Primary);
     const Color onPrimary = getThemeColor(SchemeColorRole::OnPrimary);
     const Color secondary = getThemeColor(SchemeColorRole::Secondary);
@@ -241,7 +273,7 @@ auto getColorForStyle(Button::ColorStyle style,
     }
 
     case Button::ColorStyle::Filled: {
-        if (toggleState == Button::TogleState::Selected) {
+        if (toggleState == Button::ToggleState::Selected) {
             return primary;
         }
         if (isPressed) {
@@ -257,7 +289,7 @@ auto getColorForStyle(Button::ColorStyle style,
     }
 
     case Button::ColorStyle::Tonal: {
-        if (toggleState == Button::TogleState::Selected) {
+        if (toggleState == Button::ToggleState::Selected) {
             return secondary;
         }
         if (isPressed) {
@@ -274,7 +306,7 @@ auto getColorForStyle(Button::ColorStyle style,
 
     case Button::ColorStyle::Outlined: {
         // Outlined button has transparent container, visible outline
-        if (toggleState == Button::TogleState::Selected) {
+        if (toggleState == Button::ToggleState::Selected) {
             return inverseSurface;
         }
         if (isPressed) {
@@ -309,7 +341,7 @@ auto getColorForStyle(Button::ColorStyle style,
 
 // Get label/text color based on style and state
 auto getLabelColorForStyle(Button::ColorStyle style, bool isEnabled,
-                           Button::TogleState toggleState) -> Color {
+                           Button::ToggleState toggleState) -> Color {
     const Color primary = getThemeColor(SchemeColorRole::Primary);
     const Color onPrimary = getThemeColor(SchemeColorRole::OnPrimary);
     const Color onSurface = getThemeColor(SchemeColorRole::OnSurface);
@@ -328,12 +360,12 @@ auto getLabelColorForStyle(Button::ColorStyle style, bool isEnabled,
     case Button::ColorStyle::Filled:
         return onPrimary;
     case Button::ColorStyle::Tonal:
-        return (toggleState == Button::TogleState::Selected)
+        return (toggleState == Button::ToggleState::Selected)
                    ? onSecondary
                    : onSecondaryContainer;
     case Button::ColorStyle::Outlined:
-        return (toggleState == Button::TogleState::Selected) ? inverseOnSurface
-                                                             : onSurface;
+        return (toggleState == Button::ToggleState::Selected) ? inverseOnSurface
+                                                              : onSurface;
     case Button::ColorStyle::Text:
         return primary;
     }
@@ -371,11 +403,11 @@ void Button::unHoverHandler(void) {
 
 void Button::leftClickHandler(
     utility::event::MouseMotionEvent::MousePosition mousePosition) {
-    if (_toggleState == TogleState::Default) {
-        _toggleState = TogleState::Selected;
+    if (_toggleState == ToggleState::Default) {
+        _toggleState = ToggleState::Selected;
         _morphState = MorphState::Selected;
     } else {
-        _toggleState = TogleState::Default;
+        _toggleState = ToggleState::Default;
         _morphState = MorphState::Default;
     }
     if (_onClick) {
@@ -494,8 +526,8 @@ void Button::activeRender(ecs::ComponentRegistry &registry,
     float cornerRadius = getCornerRadius(_size, _shape, MorphState::Selected);
 
     // Get container color with selected state
-    Color containerColor = getColorForStyle(_colorStyle, _size, true, false,
-                                            false, false, TogleState::Selected);
+    Color containerColor = getColorForStyle(
+        _colorStyle, _size, true, false, false, false, ToggleState::Selected);
 
     // Draw container with morphed shape
     drawables::Rectangle rectangle(
@@ -512,16 +544,17 @@ void Button::activeRender(ecs::ComponentRegistry &registry,
     }
 }
 
-Button::Button(ecs::ComponentRegistry &registry, TogleState toggleState,
-               ColorStyle colorStyle, Drawable shape, Size size,
-               MorphState morphState, std::string label,
+Button::Button(ecs::ComponentRegistry &registry, ToggleState toggleState,
+               ColorStyle colorStyle, Shape shape, Size size,
+               MorphState morphState, std::unique_ptr<ecs::Entity> icon,
+               std::unique_ptr<ecs::Entity> label,
                std::function<void(void)> onClick)
     : ecs::NodeEntityFiller<components::Transform, components::Bound,
                             components::Hover, components::Click,
                             components::Render>(registry),
       _toggleState(toggleState), _colorStyle(colorStyle), _shape(shape),
-      _size(size), _morphState(morphState), _label(label), _onClick(onClick) {
-
+      _size(size), _morphState(morphState), _icon(std::move(icon)),
+      _label(std::move(label)), _onClick(std::move(onClick)) {
     // Initialize button position, rotation, and scale
     registry.getComponent<components::Transform>(getIdentifier())
         .setPosition({100.0f, 100.0f, 100.0f})

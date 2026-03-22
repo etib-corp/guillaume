@@ -27,9 +27,7 @@
 #include "guillaume/ecs/leaf_entity_builder.hpp"
 #include "guillaume/ecs/leaf_entity_filler.hpp"
 
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/icon.hpp"
-#include "guillaume/components/render.hpp"
 #include "guillaume/components/transform.hpp"
 
 namespace guillaume::entities {
@@ -38,23 +36,32 @@ namespace guillaume::entities {
  * @brief Icon component
  */
 class Icon
-    : public ecs::LeafEntityFiller<components::Transform, components::Bound,
-                                   components::Icon, components::Render> {
+    : public ecs::LeafEntityFiller<components::Transform, components::Icon> {
   public:
+    /**
+     * @brief Style of the icon, which can be Outlined, Rounded, or Sharp.
+     */
+    enum class Style { Outlined, Rounded, Sharp };
+
     /**
      * @brief Builder used to configure and create `Icon` entities.
      */
-    class Builder : public ecs::LeafEntityBuilder {
+    class Builder : public ecs::LeafEntityBuilder<Icon> {
       private:
         std::unique_ptr<Icon>
             _icon; ///< Unique pointer to the Icon entity being built
+        std::string _iconName; ///< Name of the icon to be used
+        Style _style;          ///< Style of the icon
 
       public:
         /**
          * @brief Construct a new Icon Builder object.
+         * @param componentRegistry The component registry to register
          * components to.
+         * @param entityRegistry The entity registry to register entities to.
          */
-        Builder(void);
+        Builder(ecs::ComponentRegistry &componentRegistry,
+          ecs::EntityRegistry &entityRegistry);
 
         /**
          * @brief Default destructor for the Icon Builder class.
@@ -62,21 +69,29 @@ class Icon
         ~Builder(void);
 
         /**
-         * @brief Get the entity being built.
-         * @param componentRegistry The component registry used to create and
-         * @return Unique pointer to the Icon entity being built.
+         * @brief Build and register the icon entity.
          */
-        std::unique_ptr<ecs::Entity>
-        getEntity(ecs::ComponentRegistry &componentRegistry) override {
-            _icon = std::make_unique<Icon>(componentRegistry);
-            return std::move(_icon);
-        }
+        void registerEntity(void) override;
 
         /**
          * @brief Reset the builder to its initial state for creating a new
          * Icon entity.
          */
-        void reset(void) override { _icon.reset(); }
+        void reset(void) override;
+
+        /**
+         * @brief Set the name of the icon to be used for the Icon entity.
+         * @param iconName The name of the icon to set.
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withIconName(const std::string &iconName);
+
+        /**
+         * @brief Set the style of the icon to be used for the Icon entity.
+         * @param style The style of the icon to set.
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withStyle(const Style &style);
     };
 
     /**
@@ -84,16 +99,11 @@ class Icon
      * preconfigured icon entities.
      */
     class Director : public ecs::EntityDirector {
-      private:
-        Builder _builder; ///< Builder instance for constructing the Icon entity
-
       public:
         /**
          * @brief Construct a new Icon Director object.
-         * @param componentRegistry The component registry used for icon
-         * entity creation.
          */
-        Director(ecs::ComponentRegistry &componentRegistry);
+        Director(void);
 
         /**
          * @brief Default destructor for the Icon Director class.
@@ -104,52 +114,25 @@ class Icon
          * @brief Create a default Icon entity using the builder.
          * @param builder The builder instance used to configure and create the
          * default icon
-         * @return Unique pointer to the created Icon entity.
+         * @param iconName The icon name to assign to the created entity.
          */
-        std::unique_ptr<ecs::Entity> makeDefaultIcon(Builder &builder) {
-            return builder.getEntity(getComponentRegistry());
-        }
+        void makeDefaultIcon(Builder &builder, const std::string &iconName);
     };
 
   private:
-    /**
-     * @brief Render handler for the normal state of the button.
-     * @param renderer The renderer to use for drawing the button.
-     */
-    void normalRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the hovered state of the button.
-     * @param renderer The renderer to use for drawing the button in hovered
-     * state.
-     */
-    void hoveredRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the clicked state of the button.
-     * @param renderer The renderer to use for drawing the button in clicked
-     * state.
-     */
-    void clickedRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the active state of the button.
-     * @param renderer The renderer to use for drawing the button in active
-     * state.
-     */
-    void activeRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
+    std::string _iconName; ///< Name of the icon to be used for this Icon entity
+    Style _style; ///< Style of the icon to be used for this Icon entity
 
   public:
     /**
      * @brief Default constructor for the Icon component.
      * @param registry Reference to the component registry for initializing
      * components.
+     * @param iconName The name of the icon to be used for this Icon entity.
+     * @param style The style of the icon to be used for this Icon entity.
      */
-    Icon(ecs::ComponentRegistry &registry);
+    Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
+         const Style &style);
 
     /**
      * @brief Default destructor for the Icon component.

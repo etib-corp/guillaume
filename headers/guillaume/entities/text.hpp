@@ -45,9 +45,15 @@ class Text
 
   public:
     /**
+     * @brief Text type, which can be Normal, Condensed, Monospace, Serif, or
+     * Slab.
+     */
+    enum class Type { Normal, Condensed, Monospace, Serif, Slab };
+
+    /**
      * @brief Builder used to configure and create `Text` entities.
      */
-    class Builder : public ecs::LeafEntityBuilder {
+    class Builder : public ecs::LeafEntityBuilder<Text> {
       public:
         using Color = utility::math::Color<uint8_t>; ///< Color type (RGBA)
 
@@ -55,16 +61,18 @@ class Text
         std::unique_ptr<Text>
             _text;            ///< Unique pointer to the Text entity being built
         std::string _content; ///< Text content to be set in the Text component
-        std::size_t _fontSize =
-            24; ///< Font size to be set in the Text component
-        Color _color = {255, 255, 255,
-                        255}; ///< Color to be set in the Text component
+        std::size_t _fontSize; ///< Font size to be set in the Text component
+        Color _color;          ///< Color to be set in the Text component (RGBA)
 
       public:
         /**
          * @brief Construct a new Text Builder object.
+         * @param componentRegistry The component registry to register
+         * components to.
+         * @param entityRegistry The entity registry to register entities to.
          */
-        Builder(void);
+        Builder(ecs::ComponentRegistry &componentRegistry,
+          ecs::EntityRegistry &entityRegistry);
 
         /**
          * @brief Default destructor for the Text Builder class.
@@ -72,13 +80,9 @@ class Text
         ~Builder(void);
 
         /**
-         * @brief Get the entity being built.
-         * @param componentRegistry The component registry used to create and
-         * register components.
-         * @return Unique pointer to the Text entity being built.
+         * @brief Build and register the text entity.
          */
-        std::unique_ptr<ecs::Entity>
-        getEntity(ecs::ComponentRegistry &componentRegistry) override;
+        void registerEntity(void) override;
 
         /**
          * @brief Reset the builder to its initial state for creating a new
@@ -98,7 +102,7 @@ class Text
          * @param fontSize The font size to set.
          * @return Reference to the builder for chaining.
          */
-        Builder &withFontSize(std::size_t fontSize);
+        Builder &withFontSize(const std::size_t &fontSize);
         /**
          * @brief Set the color for the Text component.
          * @param color The color to set (RGBA).
@@ -112,16 +116,11 @@ class Text
      * preconfigured text entities.
      */
     class Director : public ecs::EntityDirector {
-      private:
-        Builder _builder; ///< Builder instance for constructing the Text entity
-
       public:
         /**
          * @brief Construct a new Text Director object.
-         * @param componentRegistry The component registry used for text
-         * entity creation.
          */
-        Director(ecs::ComponentRegistry &componentRegistry);
+        Director(void);
 
         /**
          * @brief Default destructor for the Text Director class.
@@ -135,17 +134,10 @@ class Text
          * @param content The text content for the default Text entity.
          * @param fontSize The font size for the default Text entity.
          * @param color The color for the default Text entity (RGBA).
-         * @return Unique pointer to the created Text entity.
          */
-        std::unique_ptr<ecs::Entity> makeDefaultText(Builder &builder,
-                                                     const std::string &content,
-                                                     std::size_t fontSize,
-                                                     const Color &color) {
-            return builder.withContent(content)
-                .withFontSize(fontSize)
-                .withColor(color)
-                .getEntity(getComponentRegistry());
-        }
+        void makeDefaultText(Builder &builder, const std::string &content,
+                 const std::size_t &fontSize,
+                 const Color &color);
     };
 
   private:
@@ -164,7 +156,7 @@ class Text
      * @param color The color to initialize the Text component with (RGBA).F
      */
     Text(ecs::ComponentRegistry &registry, const std::string &content,
-         std::size_t fontSize, const Color &color);
+         const std::size_t &fontSize, const Color &color);
 
     /**
      * @brief Default destructor for the Text component.

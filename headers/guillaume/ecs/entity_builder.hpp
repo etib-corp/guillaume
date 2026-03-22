@@ -22,8 +22,11 @@
 
 #pragma once
 
+#include <memory>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity.hpp"
+#include "guillaume/ecs/entity_registry.hpp"
 
 namespace guillaume::ecs {
 
@@ -34,26 +37,48 @@ namespace guillaume::ecs {
  * components. It is intended to be inherited by specific entity builders that
  * define the components and structure of the entities they create.
  */
-class EntityBuilder {
+template <typename EntityType> class EntityBuilder {
+  private:
+    ComponentRegistry &_componentRegistry; ///< Reference to the component
+                                           ///< registry for entity creation
+    EntityRegistry &_entityRegistry; ///< Reference to the entity registry for
+                                     ///< entity registration
+
+  protected:
+    /**
+     * @brief Get the component registry reference.
+     * @return Reference to the component registry.
+     */
+    ComponentRegistry &getComponentRegistry(void) { return _componentRegistry; }
+
+    /**
+     * @brief Get the entity registry reference.
+     * @return Reference to the entity registry.
+     */
+    EntityRegistry &getEntityRegistry(void) { return _entityRegistry; }
+
   public:
     /**
      * @brief Default constructor for the EntityBuilder class.
+     * @param componentRegistry The component registry to use for entity
+     * construction.
+    * @param entityRegistry The entity registry to use for entity
+    * construction.
      */
-    EntityBuilder(void);
+      EntityBuilder(ecs::ComponentRegistry &componentRegistry,
+           ecs::EntityRegistry &entityRegistry)
+       : _componentRegistry(componentRegistry),
+      _entityRegistry(entityRegistry) {}
 
     /**
      * @brief Default destructor for the EntityBuilder class.
      */
-    virtual ~EntityBuilder(void);
+    virtual ~EntityBuilder(void) = default;
 
     /**
-     * @brief Get the entity being built.
-     * @param componentRegistry The component registry used to create and
-     * initialize entity components.
-     * @return Unique pointer to the entity being built.
+     * @brief Build and register the entity in the entity registry.
      */
-    virtual std::unique_ptr<Entity>
-    getEntity(ecs::ComponentRegistry &componentRegistry) = 0;
+    virtual void registerEntity(void) = 0;
 
     /**
      * @brief Reset the builder to its initial state for creating a new entity.

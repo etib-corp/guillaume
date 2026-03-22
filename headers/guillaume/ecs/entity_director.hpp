@@ -31,23 +31,11 @@ namespace guillaume::ecs {
  * component registry.
  */
 class EntityDirector {
-  private:
-    ComponentRegistry
-        &_registry; ///< Reference to the component registry for entity creation
-
-  protected:
-    /**
-     * @brief Get the component registry reference.
-     * @return Reference to the component registry.
-     */
-    ComponentRegistry &getComponentRegistry(void) { return _registry; }
-
   public:
     /**
      * @brief Construct a new EntityDirector object.
-     * @param registry Reference to the component registry for entity creation.
      */
-    EntityDirector(ComponentRegistry &registry);
+    EntityDirector(void);
 
     /**
      * @brief Default destructor for the EntityDirector class.

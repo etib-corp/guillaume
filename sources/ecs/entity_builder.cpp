@@ -22,10 +22,4 @@
 
 #include "guillaume/ecs/entity_builder.hpp"
 
-namespace guillaume::ecs {
-
-EntityBuilder::EntityBuilder(void) {}
-
-EntityBuilder::~EntityBuilder(void) {}
-
-} // namespace guillaume::ecs
+namespace guillaume::ecs {} // namespace guillaume::ecs

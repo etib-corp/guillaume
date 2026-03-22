@@ -24,15 +24,16 @@
 
 namespace guillaume::entities {
 
-Text::Text::Builder::Builder(void) : ecs::LeafEntityBuilder() {}
+Text::Text::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+                             ecs::EntityRegistry &entityRegistry)
+    : ecs::LeafEntityBuilder<Text>(componentRegistry, entityRegistry) {}
 
 Text::Builder::~Builder(void) {}
 
-std::unique_ptr<ecs::Entity>
-Text::Builder::getEntity(ecs::ComponentRegistry &componentRegistry) {
-    _text =
-        std::make_unique<Text>(componentRegistry, _content, _fontSize, _color);
-    return std::move(_text);
+void Text::Builder::registerEntity(void) {
+    _text = std::make_unique<Text>(getComponentRegistry(), _content, _fontSize,
+                                   _color);
+    getEntityRegistry().addEntity(std::move(_text));
 }
 
 void Text::Builder::reset(void) {
@@ -47,8 +48,8 @@ Text::Builder &Text::Builder::withContent(const std::string &content) {
     return *this;
 }
 
-Text::Builder &Text::Builder::withFontSize(std::size_t fontSize) {
-    _fontSize = (fontSize == 0) ? 24 : fontSize;
+Text::Builder &Text::Builder::withFontSize(const std::size_t &fontSize) {
+    _fontSize = fontSize;
     return *this;
 }
 
@@ -57,13 +58,22 @@ Text::Builder &Text::Builder::withColor(const Color &color) {
     return *this;
 }
 
-Text::Director::Director(ecs::ComponentRegistry &componentRegistry)
-    : ecs::EntityDirector(componentRegistry) {}
+Text::Director::Director(void) : ecs::EntityDirector() {}
 
 Text::Director::~Director(void) {}
 
+void Text::Director::makeDefaultText(Builder &builder,
+                                     const std::string &content,
+                                     const std::size_t &fontSize,
+                                     const Color &color) {
+    builder.withContent(content)
+        .withFontSize(fontSize)
+        .withColor(color)
+        .registerEntity();
+}
+
 Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
-           std::size_t fontSize, const Color &color)
+           const std::size_t &fontSize, const Color &color)
     : ecs::LeafEntityFiller<components::Transform, components::Text>(registry),
       _content(content), _fontSize(fontSize), _color(color) {
     registry.getComponent<components::Transform>(getIdentifier())
