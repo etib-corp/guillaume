@@ -11,9 +11,9 @@ Main::Main(void) : guillaume::Scene() {
                                                        getEntityRegistry());
     guillaume::entities::Button::Director buttonDirector;
 
-    buttonDirector.makeIconTextButton(
-        buttonBuilder, "add", "Like",
-        [this]() { this->getLogger().info("Button clicked!"); });
+    buttonDirector.makeIconTextButton(buttonBuilder, "add", "Like", [this]() {
+        this->getLogger().info("Button clicked!");
+    });
 }
 
 Main::~Main(void) {}

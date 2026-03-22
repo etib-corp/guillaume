@@ -87,14 +87,14 @@ class Button
         Icon::Director
             _iconDirector; ///< Director for orchestrating icon creation
         std::unique_ptr<ecs::Entity>
-          _icon;               ///< Optional icon entity for the button
-        std::string _label;          ///< Text label for the button
+            _icon;          ///< Optional icon entity for the button
+        std::string _label; ///< Text label for the button
         std::unique_ptr<Text::Builder>
             _textBuilder; ///< Builder for constructing the button's text label
         Text::Director
             _textDirector; ///< Director for orchestrating text label creation
         std::unique_ptr<ecs::Entity>
-          _textLabel; ///< Optional text entity for the button
+            _textLabel; ///< Optional text entity for the button
         std::function<void(void)>
             _onClick;             ///< Click event handler for the button
         ToggleState _toggleState; ///< Current toggle state
@@ -111,7 +111,7 @@ class Button
          * @param entityRegistry The entity registry used to build entities.
          */
         Builder(ecs::ComponentRegistry &componentRegistry,
-          ecs::EntityRegistry &entityRegistry);
+                ecs::EntityRegistry &entityRegistry);
 
         /**
          * @brief Default destructor for the Button Builder class.
@@ -210,7 +210,7 @@ class Button
          * @param onClick The click event handler for the text button.
          */
         void makeTextButton(Builder &builder, const std::string &label,
-                std::function<void(void)> onClick);
+                            std::function<void(void)> onClick);
 
         /**
          * @brief Create an icon button entity using the builder.
@@ -220,7 +220,7 @@ class Button
          * @param onClick The click event handler for the icon button.
          */
         void makeIconButton(Builder &builder, const std::string &iconName,
-                std::function<void(void)> onClick);
+                            std::function<void(void)> onClick);
 
         /**
          * @brief Create an icon text button entity using the
@@ -232,8 +232,8 @@ class Button
          * @param onClick The click event handler for the button.
          */
         void makeIconTextButton(Builder &builder, const std::string &iconName,
-              const std::string &label,
-              std::function<void(void)> onClick);
+                                const std::string &label,
+                                std::function<void(void)> onClick);
     };
 
   private:
@@ -244,7 +244,7 @@ class Button
     MorphState _morphState;             ///< Current morph state of the button
     std::unique_ptr<ecs::Entity> _icon; ///< Optional icon entity for the button
     std::unique_ptr<ecs::Entity>
-      _label; ///< Optional label entity for the button
+        _label; ///< Optional label entity for the button
     std::function<void(void)> _onClick; ///< Click event handler for the button
 
   private:
@@ -313,8 +313,8 @@ class Button
      */
     Button(ecs::ComponentRegistry &registry, ToggleState toggleState,
            ColorStyle colorStyle, Shape shape, Size size, MorphState morphState,
-          std::unique_ptr<ecs::Entity> icon,
-          std::unique_ptr<ecs::Entity> label,
+           std::unique_ptr<ecs::Entity> icon,
+           std::unique_ptr<ecs::Entity> label,
            std::function<void(void)> onClick);
 
     /**

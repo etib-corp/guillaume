@@ -46,8 +46,8 @@ class NodeEntityBuilder : public LeafEntityBuilder<EntityType> {
      * @param entityRegistry The entity registry used to build entities.
      */
     NodeEntityBuilder(ecs::ComponentRegistry &componentRegistry,
-              ecs::EntityRegistry &entityRegistry)
-      : LeafEntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
+                      ecs::EntityRegistry &entityRegistry)
+        : LeafEntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
 
     /**
      * @brief Default destructor for the NodeEntityBuilder class.
@@ -63,8 +63,8 @@ class NodeEntityBuilder : public LeafEntityBuilder<EntityType> {
      * @brief Reset the builder to its initial state for creating a new entity.
      */
     void reset(void) override {
-      LeafEntityBuilder<EntityType>::reset();
-      _childIdentifiers.clear();
+        LeafEntityBuilder<EntityType>::reset();
+        _childIdentifiers.clear();
     }
 
     /**

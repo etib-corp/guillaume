@@ -72,7 +72,7 @@ class Text
          * @param entityRegistry The entity registry to register entities to.
          */
         Builder(ecs::ComponentRegistry &componentRegistry,
-          ecs::EntityRegistry &entityRegistry);
+                ecs::EntityRegistry &entityRegistry);
 
         /**
          * @brief Default destructor for the Text Builder class.
@@ -136,8 +136,7 @@ class Text
          * @param color The color for the default Text entity (RGBA).
          */
         void makeDefaultText(Builder &builder, const std::string &content,
-                 const std::size_t &fontSize,
-                 const Color &color);
+                             const std::size_t &fontSize, const Color &color);
     };
 
   private:

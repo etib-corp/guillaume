@@ -62,13 +62,13 @@ template <typename EntityType> class EntityBuilder {
      * @brief Default constructor for the EntityBuilder class.
      * @param componentRegistry The component registry to use for entity
      * construction.
-    * @param entityRegistry The entity registry to use for entity
-    * construction.
+     * @param entityRegistry The entity registry to use for entity
+     * construction.
      */
-      EntityBuilder(ecs::ComponentRegistry &componentRegistry,
-           ecs::EntityRegistry &entityRegistry)
-       : _componentRegistry(componentRegistry),
-      _entityRegistry(entityRegistry) {}
+    EntityBuilder(ecs::ComponentRegistry &componentRegistry,
+                  ecs::EntityRegistry &entityRegistry)
+        : _componentRegistry(componentRegistry),
+          _entityRegistry(entityRegistry) {}
 
     /**
      * @brief Default destructor for the EntityBuilder class.

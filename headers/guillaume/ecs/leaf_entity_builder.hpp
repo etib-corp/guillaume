@@ -42,8 +42,8 @@ class LeafEntityBuilder : public EntityBuilder<EntityType> {
      * @param entityRegistry The entity registry used to build entities.
      */
     LeafEntityBuilder(ecs::ComponentRegistry &componentRegistry,
-              ecs::EntityRegistry &entityRegistry)
-      : EntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
+                      ecs::EntityRegistry &entityRegistry)
+        : EntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
 
     /**
      * @brief Default destructor for the LeafEntityBuilder class.

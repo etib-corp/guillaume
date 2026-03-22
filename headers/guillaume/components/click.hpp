@@ -42,7 +42,7 @@ namespace guillaume::components {
  * });
  * @endcode
  *
- * @see systems::Click
+ * @see systems::Interaction
  */
 class Click : public ecs::Component {
   public:

@@ -20,20 +20,6 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "systems/test_interaction.hpp"
 
-#include <gtest/gtest.h>
-
-#include <guillaume/systems/click.hpp>
-
-namespace guillaume::systems::tests {
-
-class TestClick : public ::testing::Test {
-  protected:
-    TestClick(void) = default;
-    ~TestClick(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
-
-} // namespace guillaume::systems::tests
+namespace guillaume::systems::tests {} // namespace guillaume::systems::tests

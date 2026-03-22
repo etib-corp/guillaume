@@ -20,6 +20,20 @@
  SOFTWARE.
  */
 
-#include "systems/test_hover.hpp"
+#pragma once
 
-namespace guillaume::systems::tests {} // namespace guillaume::systems::tests
+#include <gtest/gtest.h>
+
+#include <guillaume/systems/interaction.hpp>
+
+namespace guillaume::systems::tests {
+
+class TestInteraction : public ::testing::Test {
+  protected:
+    TestInteraction(void) = default;
+    ~TestInteraction(void) override = default;
+    void SetUp(void) override {}
+    void TearDown(void) override {}
+};
+
+} // namespace guillaume::systems::tests

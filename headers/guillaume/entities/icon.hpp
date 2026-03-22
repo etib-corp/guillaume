@@ -61,7 +61,7 @@ class Icon
          * @param entityRegistry The entity registry to register entities to.
          */
         Builder(ecs::ComponentRegistry &componentRegistry,
-          ecs::EntityRegistry &entityRegistry);
+                ecs::EntityRegistry &entityRegistry);
 
         /**
          * @brief Default destructor for the Icon Builder class.

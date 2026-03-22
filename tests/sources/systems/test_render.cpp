@@ -20,6 +20,6 @@
  SOFTWARE.
  */
 
-#include "systems/test_click.hpp"
+#include "systems/test_render.hpp"
 
 namespace guillaume::systems::tests {} // namespace guillaume::systems::tests
