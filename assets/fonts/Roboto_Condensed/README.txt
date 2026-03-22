@@ -7,30 +7,30 @@ Roboto Condensed is a variable font with this axis:
   wght
 
 This means all the styles are contained in these files:
-  Roboto_Condensed/RobotoCondensed-VariableFont_wght.ttf
-  Roboto_Condensed/RobotoCondensed-Italic-VariableFont_wght.ttf
+  RobotoCondensed-VariableFont_wght.ttf
+  RobotoCondensed-Italic-VariableFont_wght.ttf
 
 If your app fully supports variable fonts, you can now pick intermediate styles
 that aren’t available as static fonts. Not all apps support variable fonts, and
 in those cases you can use the static font files for Roboto Condensed:
-  Roboto_Condensed/static/RobotoCondensed-Thin.ttf
-  Roboto_Condensed/static/RobotoCondensed-ExtraLight.ttf
-  Roboto_Condensed/static/RobotoCondensed-Light.ttf
-  Roboto_Condensed/static/RobotoCondensed-Regular.ttf
-  Roboto_Condensed/static/RobotoCondensed-Medium.ttf
-  Roboto_Condensed/static/RobotoCondensed-SemiBold.ttf
-  Roboto_Condensed/static/RobotoCondensed-Bold.ttf
-  Roboto_Condensed/static/RobotoCondensed-ExtraBold.ttf
-  Roboto_Condensed/static/RobotoCondensed-Black.ttf
-  Roboto_Condensed/static/RobotoCondensed-ThinItalic.ttf
-  Roboto_Condensed/static/RobotoCondensed-ExtraLightItalic.ttf
-  Roboto_Condensed/static/RobotoCondensed-LightItalic.ttf
-  Roboto_Condensed/static/RobotoCondensed-Italic.ttf
-  Roboto_Condensed/static/RobotoCondensed-MediumItalic.ttf
-  Roboto_Condensed/static/RobotoCondensed-SemiBoldItalic.ttf
-  Roboto_Condensed/static/RobotoCondensed-BoldItalic.ttf
-  Roboto_Condensed/static/RobotoCondensed-ExtraBoldItalic.ttf
-  Roboto_Condensed/static/RobotoCondensed-BlackItalic.ttf
+  static/RobotoCondensed-Thin.ttf
+  static/RobotoCondensed-ExtraLight.ttf
+  static/RobotoCondensed-Light.ttf
+  static/RobotoCondensed-Regular.ttf
+  static/RobotoCondensed-Medium.ttf
+  static/RobotoCondensed-SemiBold.ttf
+  static/RobotoCondensed-Bold.ttf
+  static/RobotoCondensed-ExtraBold.ttf
+  static/RobotoCondensed-Black.ttf
+  static/RobotoCondensed-ThinItalic.ttf
+  static/RobotoCondensed-ExtraLightItalic.ttf
+  static/RobotoCondensed-LightItalic.ttf
+  static/RobotoCondensed-Italic.ttf
+  static/RobotoCondensed-MediumItalic.ttf
+  static/RobotoCondensed-SemiBoldItalic.ttf
+  static/RobotoCondensed-BoldItalic.ttf
+  static/RobotoCondensed-ExtraBoldItalic.ttf
+  static/RobotoCondensed-BlackItalic.ttf
 
 Get started
 -----------

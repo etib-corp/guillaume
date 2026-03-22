@@ -7,20 +7,20 @@ Roboto Slab is a variable font with this axis:
   wght
 
 This means all the styles are contained in a single file:
-  Roboto_Slab/RobotoSlab-VariableFont_wght.ttf
+  RobotoSlab-VariableFont_wght.ttf
 
 If your app fully supports variable fonts, you can now pick intermediate styles
 that aren’t available as static fonts. Not all apps support variable fonts, and
 in those cases you can use the static font files for Roboto Slab:
-  Roboto_Slab/static/RobotoSlab-Thin.ttf
-  Roboto_Slab/static/RobotoSlab-ExtraLight.ttf
-  Roboto_Slab/static/RobotoSlab-Light.ttf
-  Roboto_Slab/static/RobotoSlab-Regular.ttf
-  Roboto_Slab/static/RobotoSlab-Medium.ttf
-  Roboto_Slab/static/RobotoSlab-SemiBold.ttf
-  Roboto_Slab/static/RobotoSlab-Bold.ttf
-  Roboto_Slab/static/RobotoSlab-ExtraBold.ttf
-  Roboto_Slab/static/RobotoSlab-Black.ttf
+  static/RobotoSlab-Thin.ttf
+  static/RobotoSlab-ExtraLight.ttf
+  static/RobotoSlab-Light.ttf
+  static/RobotoSlab-Regular.ttf
+  static/RobotoSlab-Medium.ttf
+  static/RobotoSlab-SemiBold.ttf
+  static/RobotoSlab-Bold.ttf
+  static/RobotoSlab-ExtraBold.ttf
+  static/RobotoSlab-Black.ttf
 
 Get started
 -----------
