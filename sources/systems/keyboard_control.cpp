@@ -66,7 +66,7 @@ void KeyboardControl::update(ecs::ComponentRegistry &componentRegistry,
         }
 
         if (keyboardEvent->getKeycode() ==
-            utility::event::KeyboardEvent::KeyCode::BACKSPACE) {
+            utility::event::KeyboardEvent::KeyCode::Backspace) {
             removeLastUtf8CodePoint(content);
         }
     }

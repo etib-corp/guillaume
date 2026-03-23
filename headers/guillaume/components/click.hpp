@@ -36,7 +36,7 @@ namespace guillaume::components {
  *
  * @code
  * components::Click click;
- * click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::LEFT,
+ * click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::Left,
  * [](utility::event::MouseMotionEvent::MousePosition position) {
  *     // Handle click.
  * });
@@ -71,9 +71,9 @@ class Click : public ecs::Component {
      */
     Click(void) {
         for (const auto button :
-             {utility::event::MouseButtonEvent::MouseButton::LEFT,
-              utility::event::MouseButtonEvent::MouseButton::MIDDLE,
-              utility::event::MouseButtonEvent::MouseButton::RIGHT,
+                         {utility::event::MouseButtonEvent::MouseButton::Left,
+                            utility::event::MouseButtonEvent::MouseButton::Middle,
+                            utility::event::MouseButtonEvent::MouseButton::Right,
               utility::event::MouseButtonEvent::MouseButton::X1,
               utility::event::MouseButtonEvent::MouseButton::X2}) {
             _isClicked[button] = false;

@@ -135,7 +135,8 @@ void Button::Director::makeIconTextButton(Builder &builder,
         .registerEntity();
 }
 
-void Button::hoverHandler(void) {}
+void Button::hoverHandler(void) {
+}
 
 void Button::unHoverHandler(void) {}
 
@@ -191,13 +192,13 @@ Button::Button(ecs::ComponentRegistry &registry, ToggleState toggleState,
     // Set up click event handlers
     registry.getComponent<components::Click>(getIdentifier())
         .setOnClickHandler(
-            utility::event::MouseButtonEvent::MouseButton::LEFT,
+            utility::event::MouseButtonEvent::MouseButton::Left,
             [this](
                 utility::event::MouseMotionEvent::MousePosition mousePosition) {
                 this->leftClickPressHandler(mousePosition);
             })
         .setOnReleaseHandler(
-            utility::event::MouseButtonEvent::MouseButton::LEFT,
+            utility::event::MouseButtonEvent::MouseButton::Left,
             [this](
                 utility::event::MouseMotionEvent::MousePosition mousePosition) {
                 this->leftClickReleaseHandler(mousePosition);

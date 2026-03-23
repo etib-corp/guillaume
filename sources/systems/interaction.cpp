@@ -279,7 +279,7 @@ void Interaction::processClick(ecs::ComponentRegistry &componentRegistry,
 
     for (std::size_t buttonIndex = 0;
          buttonIndex < static_cast<std::size_t>(
-                           utility::event::MouseButtonEvent::MouseButton::LAST);
+                           utility::event::MouseButtonEvent::MouseButton::Last);
          ++buttonIndex) {
         if (changedButtons.test(buttonIndex)) {
             const auto button =
