@@ -64,7 +64,7 @@ class Renderer : public guillaume::Renderer {
     std::unordered_map<std::string, TTF_Font *>
         _fontCache; ///< Cache for loaded fonts
 
-    TTF_Font *getOrLoadFont(const guillaume::Font &font);
+    TTF_Font *getOrLoadFont(const std::string &fontPath, std::size_t fontSize);
 
   public:
     /**
@@ -91,33 +91,6 @@ class Renderer : public guillaume::Renderer {
     void present(void) override;
 
     /**
-     * @brief Draws a triangle shape using OpenGL.
-     * @param triangle The triangle shape to draw (with Z-depth).
-     * @deprecated This method is deprecated and may be removed in future
-     * versions. Use drawVertices() with a triangle instead for better
-     * performance and flexibility.
-     */
-    void drawTriangle(const guillaume::shapes::Triangle &triangle) override;
-
-    /**
-     * @brief Draws a rectangle shape using OpenGL.
-     * @param rectangle The rectangle shape to draw (with Z-depth).
-     * @deprecated This method is deprecated and may be removed in future
-     * versions. Use drawVertices() with a quad instead for better performance
-     * and flexibility.
-     */
-    void drawRectangle(const guillaume::shapes::Rectangle &rectangle) override;
-
-    /**
-     * @brief Draws a circle shape using OpenGL.
-     * @param circle The circle shape to draw (with Z-depth).
-     * @deprecated This method is deprecated and may be removed in future
-     * versions. Use drawVertices() with a triangle fan instead for better
-     * performance and flexibility.
-     */
-    void drawCircle(const guillaume::shapes::Circle &circle) override;
-
-    /**
      * @brief Draw a set of vertices forming a mesh.
      * @param vertices The list of vertices, each containing position and any
      * additional attributes (such as texture coordinates, color, etc.) required
@@ -125,34 +98,31 @@ class Renderer : public guillaume::Renderer {
      * using the renderer's default primitive topology (typically a triangle
      * list) to form the mesh.
      */
-    void drawVertices(const std::vector<utility::math::Vertex<float, uint8_t>>
-                          &vertices) override;
+    void drawVertices(
+        const std::vector<utility::graphics::Vertex<float, uint8_t>> &vertices)
+        override;
+
+    /**
+     * @brief Measure the size of the given text using the specified font.
+     * @param text The text to draw.
+     */
+    void drawText(const utility::graphics::Text &text) override;
 
     /**
      * @brief Measures the pixel dimensions of a given text string when rendered
      * with a specific font.
      * @param text The text to measure.
-     * @param font The font to use for measurement.
      * @return A 2D vector containing the width and height of the rendered text
      * in pixels in the form of utility::math::Vector<std::float_t, 2>.
      */
     utility::math::Vector<std::float_t, 2>
-    measureText(const guillaume::Text &text,
-                const guillaume::Font &font) override;
+    measureText(const utility::graphics::Text &text) override;
 
     /**
      * @brief Get the renderer viewport size in pixels.
      * @return Width and height as a 2D vector.
      */
     ViewportSize getViewportSize(void) const override;
-
-    /**
-     * @brief Draws text using a specific font.
-     * @param text The text to draw.
-     * @param font The font to use for rendering the text.
-     */
-    void drawText(const guillaume::Text &text,
-                  const guillaume::Font &font) override;
 };
 
 } // namespace simple_application

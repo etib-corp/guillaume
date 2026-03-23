@@ -29,7 +29,8 @@ namespace guillaume::ecs {
 /**
  * @brief Base builder for entities that can be attached to a parent entity.
  */
-class LeafEntityBuilder : public EntityBuilder {
+template <typename EntityType>
+class LeafEntityBuilder : public EntityBuilder<EntityType> {
   private:
     Entity::Identifier _parentIdentifier{
         Entity::InvalidIdentifier}; ///< Parent entity identifier
@@ -37,22 +38,22 @@ class LeafEntityBuilder : public EntityBuilder {
   public:
     /**
      * @brief Constructor for the LeafEntityBuilder class.
+     * @param componentRegistry The component registry used to build entities.
+     * @param entityRegistry The entity registry used to build entities.
      */
-    LeafEntityBuilder(void);
+    LeafEntityBuilder(ecs::ComponentRegistry &componentRegistry,
+                      ecs::EntityRegistry &entityRegistry)
+        : EntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
 
     /**
      * @brief Default destructor for the LeafEntityBuilder class.
      */
-    virtual ~LeafEntityBuilder(void);
+    virtual ~LeafEntityBuilder(void) = default;
 
     /**
-     * @brief Get the entity being built.
-     * @param componentRegistry The component registry used to create and
-     * initialize entity components.
-     * @return Unique pointer to the entity being built.
+     * @brief Build and register the entity in the entity registry.
      */
-    virtual std::unique_ptr<ecs::Entity>
-    getEntity(ecs::ComponentRegistry &componentRegistry) = 0;
+    virtual void registerEntity(void) = 0;
 
     /**
      * @brief Reset the builder to its initial state for creating a new entity.

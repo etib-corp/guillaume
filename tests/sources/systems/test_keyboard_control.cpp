@@ -55,7 +55,7 @@ class KeyboardControlFixture
     void dispatchKeyboardEvent(
         const utility::event::KeyboardEvent::KeyCode keycode,
         const utility::event::KeyboardEvent::KeyModifiers modifiers =
-            utility::event::KeyboardEvent::KeyModifiers::NONE,
+            utility::event::KeyboardEvent::KeyModifiers::None,
         const bool isDownEvent = true) {
         auto event = std::make_unique<utility::event::KeyboardEvent>();
         event->setKeycode(keycode);
@@ -77,10 +77,10 @@ class KeyboardControlFixture
 TEST_F(KeyboardControlFixture, BackspaceRemovesLastUtf8CodePoint) {
     setText("A°");
 
-    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::BACKSPACE);
+    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
     EXPECT_EQ(getContent(), "A");
 
-    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::BACKSPACE);
+    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
     EXPECT_TRUE(getContent().empty());
 }
 
@@ -88,10 +88,10 @@ TEST_F(KeyboardControlFixture, IgnoresNonBackspaceAndKeyUpEvents) {
     setText("seed");
 
     dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::A,
-                          utility::event::KeyboardEvent::KeyModifiers::NONE,
+                          utility::event::KeyboardEvent::KeyModifiers::None,
                           true);
-    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::BACKSPACE,
-                          utility::event::KeyboardEvent::KeyModifiers::NONE,
+    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace,
+                          utility::event::KeyboardEvent::KeyModifiers::None,
                           false);
 
     EXPECT_EQ(getContent(), "seed");

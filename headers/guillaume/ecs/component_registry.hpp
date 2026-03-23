@@ -50,11 +50,11 @@ template <InheritFromComponent ComponentType>
 class EntityComponentNotFoundException : public std::exception {
   private:
     const Entity::Identifier _entityIdentifier; ///< Identifier of the entity
-    std::type_index _componentTypeIndex{
-        typeid(ComponentType)}; ///< Type index of the missing component
+
     std::string _componentTypeName{
-        _componentTypeIndex.name()}; ///< Name of the missing component type
-    mutable std::string _message;    ///< Cached exception message
+        utility::demangle<ComponentType>()}; ///< Name of the missing component
+                                             ///< type
+    mutable std::string _message;            ///< Cached exception message
 
   public:
     /**
@@ -72,14 +72,6 @@ class EntityComponentNotFoundException : public std::exception {
      * @return The exception message.
      */
     const char *what(void) const noexcept override { return _message.c_str(); }
-
-    /**
-     * @brief Get the type index of the missing component.
-     * @return The type index.
-     */
-    std::type_index getComponentTypeIndex(void) const {
-        return _componentTypeIndex;
-    }
 };
 
 /**

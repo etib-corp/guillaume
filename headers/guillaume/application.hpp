@@ -42,11 +42,12 @@
 #include "event/event_bus.hpp"
 #include "event/event_handler.hpp"
 
-#include "systems/click.hpp"
-#include "systems/hover.hpp"
+#include "systems/interaction.hpp"
 #include "systems/keyboard_control.hpp"
-#include "systems/render.hpp"
+#include "systems/measure_text.hpp"
+#include "systems/rectangle_render.hpp"
 #include "systems/text_input.hpp"
+#include "systems/text_render.hpp"
 
 #include "local_storage.hpp"
 #include "session_storage.hpp"
@@ -151,16 +152,18 @@ class Application
     }
 
     void registerCoreSystems(void) {
-        registerSystem<systems::Click>(
-            std::make_unique<systems::Click>(_eventBus, _renderer));
-        registerSystem<systems::Hover>(
-            std::make_unique<systems::Hover>(_eventBus, _renderer));
-        registerSystem<systems::Render>(
-            std::make_unique<systems::Render>(_renderer));
+        registerSystem<systems::MeasureText>(
+            std::make_unique<systems::MeasureText>(_renderer));
+        registerSystem<systems::Interaction>(
+            std::make_unique<systems::Interaction>(_eventBus, _renderer));
+        registerSystem<systems::TextRender>(
+            std::make_unique<systems::TextRender>(_renderer));
         registerSystem<systems::KeyboardControl>(
             std::make_unique<systems::KeyboardControl>(_eventBus));
         registerSystem<systems::TextInput>(
             std::make_unique<systems::TextInput>(_eventBus));
+        registerSystem<systems::RectangleRender>(
+            std::make_unique<systems::RectangleRender>(_renderer));
     }
 
     template <InheritFromScene SceneType> void registerScene(void) {

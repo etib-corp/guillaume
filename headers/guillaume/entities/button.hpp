@@ -29,11 +29,15 @@
 #include "guillaume/ecs/node_entity_builder.hpp"
 #include "guillaume/ecs/node_entity_filler.hpp"
 
+#include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/click.hpp"
+#include "guillaume/components/color.hpp"
 #include "guillaume/components/hover.hpp"
-#include "guillaume/components/render.hpp"
 #include "guillaume/components/transform.hpp"
+
+#include "guillaume/entities/icon.hpp"
+#include "guillaume/entities/text.hpp"
 
 namespace guillaume::entities {
 
@@ -43,12 +47,12 @@ namespace guillaume::entities {
 class Button
     : public ecs::NodeEntityFiller<components::Transform, components::Bound,
                                    components::Hover, components::Click,
-                                   components::Render> {
+                                   components::Color, components::Borders> {
   public:
     /**
      * @brief State of a toggle button, which can be either Default or Selected.
      */
-    enum class TogleState { Default, Selected };
+    enum class ToggleState { Default, Selected };
 
     /**
      * @brief Color style of the button.
@@ -74,21 +78,41 @@ class Button
     /**
      * @brief Builder used to configure and create `Button` entities.
      */
-    class Builder : public ecs::NodeEntityBuilder {
+    class Builder : public ecs::NodeEntityBuilder<Button> {
       private:
         std::unique_ptr<Button>
             _button; ///< Unique pointer to the Button entity being built
-        TogleState _toggleState; ///< Current toggle state
-        ColorStyle _colorStyle;  ///< Button color style
-        Shape _shape;            ///< Button shape
-        Size _size;              ///< Button size
-        MorphState _morphState;  ///< Current morph state
+        std::string _iconName; ///< Name of the icon to be used for the button
+        std::unique_ptr<Icon::Builder>
+            _iconBuilder; ///< Builder for constructing the button's icon
+        Icon::Director
+            _iconDirector; ///< Director for orchestrating icon creation
+        std::unique_ptr<ecs::Entity>
+            _icon;          ///< Optional icon entity for the button
+        std::string _label; ///< Text label for the button
+        std::unique_ptr<Text::Builder>
+            _textBuilder; ///< Builder for constructing the button's text label
+        Text::Director
+            _textDirector; ///< Director for orchestrating text label creation
+        std::unique_ptr<ecs::Entity>
+            _textLabel; ///< Optional text entity for the button
+        std::function<void(void)>
+            _onClick;             ///< Click event handler for the button
+        ToggleState _toggleState; ///< Current toggle state
+        ColorStyle _colorStyle;   ///< Button color style
+        Shape _shape;             ///< Button shape
+        Size _size;               ///< Button size
+        MorphState _morphState;   ///< Current morph state
 
       public:
         /**
          * @brief Construct a new Button Builder object.
+         * @param componentRegistry The component registry used to build
+         * entities.
+         * @param entityRegistry The entity registry used to build entities.
          */
-        Builder(void);
+        Builder(ecs::ComponentRegistry &componentRegistry,
+                ecs::EntityRegistry &entityRegistry);
 
         /**
          * @brief Default destructor for the Button Builder class.
@@ -96,81 +120,71 @@ class Button
         ~Builder(void);
 
         /**
-         * @brief Get the entity being built.
-         * @param componentRegistry The component registry used to create and
-         * initialize button components.
-         * @return Unique pointer to the Button entity being built.
+         * @brief Build and register the button entity.
          */
-        std::unique_ptr<ecs::Entity>
-        getEntity(ecs::ComponentRegistry &componentRegistry) override {
-            _button = std::make_unique<Button>(componentRegistry, _toggleState,
-                                               _colorStyle, _shape, _size,
-                                               _morphState);
-            return std::move(_button);
-        }
+        void registerEntity(void) override;
 
         /**
          * @brief Reset the builder to its initial state for creating a new
          * Button entity.
          */
-        void reset(void) override {
-            _button.reset();
-            _toggleState = TogleState::Default;
-            _colorStyle = ColorStyle::Filled;
-            _shape = Shape::Round;
-            _size = Size::Small;
-            _morphState = MorphState::Default;
-        }
+        void reset(void) override;
+
+        /**
+         * @brief Set the icon for the button.
+         * @param iconName The name of the icon to set for the button.
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withIcon(const std::string &iconName);
+
+        /**
+         * @brief Set the label text for the button.
+         * @param label The label text to set for the button.
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withLabel(const std::string &label);
+
+        /**
+         * @brief Set the click event handler for the button.
+         * @param onClick The new click event handler to set.
+         * @return Reference to the builder for chaining.
+         */
+        Builder &withOnClick(const std::function<void(void)> &onClick);
 
         /**
          * @brief Set the toggle state of the button.
          * @param toggleState The new toggle state to set.
          * @return Reference to the builder for chaining.
          */
-        Builder &withToggleState(TogleState toggleState) {
-            _toggleState = toggleState;
-            return *this;
-        }
+        Builder &withToggleState(const ToggleState &toggleState);
 
         /**
          * @brief Set the color style of the button.
          * @param colorStyle The new color style to set.
          * @return Reference to the builder for chaining.
          */
-        Builder &withColorStyle(ColorStyle colorStyle) {
-            _colorStyle = colorStyle;
-            return *this;
-        }
+        Builder &withColorStyle(const ColorStyle &colorStyle);
 
         /**
          * @brief Set the shape of the button.
          * @param shape The new shape to set.
          * @return Reference to the builder for chaining.
          */
-        Builder &withShape(Shape shape) {
-            _shape = shape;
-            return *this;
-        }
+        Builder &withShape(const Shape &shape);
 
         /**
          * @brief Set the size of the button.
          * @param size The new size to set.
          * @return Reference to the builder for chaining.
          */
-        Builder &withSize(Size size) {
-            _size = size;
-            return *this;
-        }
+        Builder &withSize(const Size &size);
 
         /**
          * @brief Set the morph state of the button.
          * @param morphState The new morph state to set.
          * @return Reference to the builder for chaining.
          */
-        Builder &withMorphState(MorphState morphState) {
-            _morphState = morphState;
-            return *this;
-        }
+        Builder &withMorphState(const MorphState &morphState);
     };
 
     /**
@@ -178,17 +192,11 @@ class Button
      * preconfigured button entities.
      */
     class Director : public ecs::EntityDirector {
-      private:
-        Builder
-            _builder; ///< Builder instance for constructing the Button entity
-
       public:
         /**
          * @brief Construct a new Button Director object.
-         * @param componentRegistry The component registry used for button
-         * entity creation.
          */
-        Director(ecs::ComponentRegistry &componentRegistry);
+        Director(void);
 
         /**
          * @brief Default destructor for the Button Director class.
@@ -196,27 +204,49 @@ class Button
         ~Director(void);
 
         /**
-         * @brief Create a default Button entity using the builder.
+         * @brief Create a text button entity using the builder.
          * @param builder The builder instance used to configure and create the
-         * default button.
-         * @return Unique pointer to the created Button entity.
+         * text button.
+         * @param label The label text for the button.
+         * @param onClick The click event handler for the text button.
          */
-        std::unique_ptr<ecs::Entity> makeDefaultButton(Builder &builder) {
-            return builder.withToggleState(TogleState::Default)
-                .withColorStyle(ColorStyle::Filled)
-                .withShape(Shape::Round)
-                .withSize(Size::Small)
-                .withMorphState(MorphState::Default)
-                .getEntity(getComponentRegistry());
-        }
+        void makeTextButton(Builder &builder, const std::string &label,
+                            std::function<void(void)> onClick);
+
+        /**
+         * @brief Create an icon button entity using the builder.
+         * @param builder The builder instance used to configure and create the
+         * icon button.
+         * @param iconName The name of the icon to use for the button.
+         * @param onClick The click event handler for the icon button.
+         */
+        void makeIconButton(Builder &builder, const std::string &iconName,
+                            std::function<void(void)> onClick);
+
+        /**
+         * @brief Create an icon text button entity using the
+         * builder.
+         * @param builder The builder instance used to configure
+         * and create the icon text button.
+         * @param iconName The name of the icon to use for the button.
+         * @param label The label text for the button.
+         * @param onClick The click event handler for the button.
+         */
+        void makeIconTextButton(Builder &builder, const std::string &iconName,
+                                const std::string &label,
+                                std::function<void(void)> onClick);
     };
 
   private:
-    TogleState _toggleState; ///< Current toggle state of the button
-    ColorStyle _colorStyle;  ///< Color style of the button
-    Shape _shape;            ///< Shape of the button
-    Size _size;              ///< Size of the button
-    MorphState _morphState;  ///< Current morph state of the button
+    ToggleState _toggleState;           ///< Current toggle state of the button
+    ColorStyle _colorStyle;             ///< Color style of the button
+    Shape _shape;                       ///< Shape of the button
+    Size _size;                         ///< Size of the button
+    MorphState _morphState;             ///< Current morph state of the button
+    std::unique_ptr<ecs::Entity> _icon; ///< Optional icon entity for the button
+    std::unique_ptr<ecs::Entity>
+        _label; ///< Optional label entity for the button
+    std::function<void(void)> _onClick; ///< Click event handler for the button
 
   private:
     /**
@@ -234,39 +264,16 @@ class Button
      * @param mousePosition The position of the mouse when the left click event
      * occurred.
      */
-    void leftClickHandler(
+    void leftClickPressHandler(
         utility::event::MouseMotionEvent::MousePosition mousePosition);
 
     /**
-     * @brief Render handler for the normal state of the button.
-     * @param renderer The renderer to use for drawing the button.
+     * @brief Left click release event handler for the button.
+     * @param mousePosition The position of the mouse when the left click
+     * release event occurred.
      */
-    void normalRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the hovered state of the button.
-     * @param renderer The renderer to use for drawing the button in hovered
-     * state.
-     */
-    void hoveredRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the clicked state of the button.
-     * @param renderer The renderer to use for drawing the button in clicked
-     * state.
-     */
-    void clickedRender(ecs::ComponentRegistry &registry,
-                       const ecs::Entity::Identifier &id, Renderer &renderer);
-
-    /**
-     * @brief Render handler for the active state of the button.
-     * @param renderer The renderer to use for drawing the button in active
-     * state.
-     */
-    void activeRender(ecs::ComponentRegistry &registry,
-                      const ecs::Entity::Identifier &id, Renderer &renderer);
+    void leftClickReleaseHandler(
+        utility::event::MouseMotionEvent::MousePosition mousePosition);
 
   public:
     /**
@@ -278,10 +285,15 @@ class Button
      * @param shape Initial shape for the button.
      * @param size Initial size for the button.
      * @param morphState Initial morph state for the button.
+     * @param icon Optional icon for the button.
+     * @param label Optional label text for the button.
+     * @param onClick Click event handler for the button.
      */
-    Button(ecs::ComponentRegistry &registry, TogleState toggleState,
-           ColorStyle colorStyle, Shape shape, Size size,
-           MorphState morphState);
+    Button(ecs::ComponentRegistry &registry, ToggleState toggleState,
+           ColorStyle colorStyle, Shape shape, Size size, MorphState morphState,
+           std::unique_ptr<ecs::Entity> icon,
+           std::unique_ptr<ecs::Entity> label,
+           std::function<void(void)> onClick);
 
     /**
      * @brief Default destructor for the Button entity.

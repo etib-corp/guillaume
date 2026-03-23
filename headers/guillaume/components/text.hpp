@@ -24,6 +24,8 @@
 
 #include <string>
 
+#include <utility/graphics/color.hpp>
+
 #include "guillaume/ecs/component.hpp"
 
 namespace guillaume::components {
@@ -36,7 +38,10 @@ namespace guillaume::components {
  */
 class Text : public ecs::Component {
   private:
-    std::string _content; ///< Text content
+    std::string _content;       ///< Text content
+    std::size_t _fontSize = 24; ///< Font size of the text
+    utility::graphics::Color<uint8_t> _color = {
+        255, 255, 255, 255}; ///< Color of the text (RGBA)
 
   public:
     /**
@@ -58,8 +63,44 @@ class Text : public ecs::Component {
     /**
      * @brief Set the text content.
      * @param content The new text content.
+     * @return The Text component for chaining.
      */
-    void setContent(const std::string &content) { _content = content; }
+    Text &setContent(const std::string &content) {
+        _content = content;
+        return *this;
+    }
+
+    /**
+     * @brief Get the font size of the text.
+     * @return The font size.
+     */
+    std::size_t getFontSize(void) const { return _fontSize; }
+
+    /**
+     * @brief Set the font size of the text.
+     * @param fontSize The new font size.
+     * @return The Text component for chaining.
+     */
+    Text &setFontSize(std::size_t fontSize) {
+        _fontSize = (fontSize == 0) ? 24 : fontSize;
+        return *this;
+    }
+
+    /**
+     * @brief Get the color of the text.
+     * @return The text color.
+     */
+    utility::graphics::Color<uint8_t> getColor(void) const { return _color; }
+
+    /**
+     * @brief Set the color of the text.
+     * @param color The new text color.
+     * @return The Text component for chaining.
+     */
+    Text &setColor(utility::graphics::Color<uint8_t> color) {
+        _color = color;
+        return *this;
+    }
 };
 
 } // namespace guillaume::components

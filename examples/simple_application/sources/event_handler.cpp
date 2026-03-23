@@ -124,40 +124,40 @@ EventHandler::convertKeyModifiers(SDL_Keymod modifiers) {
 
     if (modifiers & SDL_KMOD_LSHIFT)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::LSHIFT);
+            utility::event::KeyboardEvent::KeyModifiers::LeftShift);
     if (modifiers & SDL_KMOD_RSHIFT)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::RSHIFT);
+            utility::event::KeyboardEvent::KeyModifiers::RightShift);
     if (modifiers & SDL_KMOD_LCTRL)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::LCTRL);
+            utility::event::KeyboardEvent::KeyModifiers::LeftCtrl);
     if (modifiers & SDL_KMOD_RCTRL)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::RCTRL);
+            utility::event::KeyboardEvent::KeyModifiers::RightCtrl);
     if (modifiers & SDL_KMOD_LALT)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::LALT);
+            utility::event::KeyboardEvent::KeyModifiers::LeftAlt);
     if (modifiers & SDL_KMOD_RALT)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::RALT);
+            utility::event::KeyboardEvent::KeyModifiers::RightAlt);
     if (modifiers & SDL_KMOD_LGUI)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::LGUI);
+            utility::event::KeyboardEvent::KeyModifiers::LeftGUI);
     if (modifiers & SDL_KMOD_RGUI)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::RGUI);
+            utility::event::KeyboardEvent::KeyModifiers::RightGUI);
     if (modifiers & SDL_KMOD_NUM)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::NUM);
+            utility::event::KeyboardEvent::KeyModifiers::NumLock);
     if (modifiers & SDL_KMOD_CAPS)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::CAPS);
+            utility::event::KeyboardEvent::KeyModifiers::CapsLock);
     if (modifiers & SDL_KMOD_MODE)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::MODE);
+            utility::event::KeyboardEvent::KeyModifiers::AltGr);
     if (modifiers & SDL_KMOD_SCROLL)
         result |= static_cast<std::uint16_t>(
-            utility::event::KeyboardEvent::KeyModifiers::SCROLL);
+            utility::event::KeyboardEvent::KeyModifiers::ScrollLock);
 
     return static_cast<utility::event::KeyboardEvent::KeyModifiers>(result);
 }

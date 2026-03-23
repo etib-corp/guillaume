@@ -22,10 +22,4 @@
 
 #include "guillaume/ecs/node_entity_builder.hpp"
 
-namespace guillaume::ecs {
-
-NodeEntityBuilder::NodeEntityBuilder(void) : LeafEntityBuilder() {}
-
-NodeEntityBuilder::~NodeEntityBuilder(void) {}
-
-} // namespace guillaume::ecs
+namespace guillaume::ecs {} // namespace guillaume::ecs

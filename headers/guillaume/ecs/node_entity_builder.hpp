@@ -32,7 +32,8 @@ namespace guillaume::ecs {
  * @brief Base builder for entities that can have a parent and child
  * relationships.
  */
-class NodeEntityBuilder : public LeafEntityBuilder {
+template <typename EntityType>
+class NodeEntityBuilder : public LeafEntityBuilder<EntityType> {
   private:
     std::vector<Entity::Identifier>
         _childIdentifiers; ///< Child entity identifiers for the node being
@@ -41,27 +42,30 @@ class NodeEntityBuilder : public LeafEntityBuilder {
   public:
     /**
      * @brief Constructor for the NodeEntityBuilder class.
+     * @param componentRegistry The component registry used to build entities.
+     * @param entityRegistry The entity registry used to build entities.
      */
-    NodeEntityBuilder(void);
+    NodeEntityBuilder(ecs::ComponentRegistry &componentRegistry,
+                      ecs::EntityRegistry &entityRegistry)
+        : LeafEntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
 
     /**
      * @brief Default destructor for the NodeEntityBuilder class.
      */
-    virtual ~NodeEntityBuilder(void);
+    virtual ~NodeEntityBuilder(void) = default;
 
     /**
-     * @brief Get the entity being built.
-     * @param componentRegistry The component registry used to create and
-     * initialize entity components.
-     * @return Unique pointer to the entity being built.
+     * @brief Build and register the entity in the entity registry.
      */
-    virtual std::unique_ptr<Entity>
-    getEntity(ecs::ComponentRegistry &componentRegistry) = 0;
+    virtual void registerEntity(void) override = 0;
 
     /**
      * @brief Reset the builder to its initial state for creating a new entity.
      */
-    void reset(void) { _childIdentifiers.clear(); }
+    void reset(void) override {
+        LeafEntityBuilder<EntityType>::reset();
+        _childIdentifiers.clear();
+    }
 
     /**
      * @brief Add a child entity identifier to the node being built.

@@ -23,7 +23,7 @@ The simple_application is a complete implementation of **SDL3 GPU acceleration**
 **Color and Depth Rendering** with proper blending  
 **Resource Management** with proper cleanup  
 **Error Handling** with logging  
-**3D Shape Support** with full position vectors  
+**3D Drawable Support** with full position vectors  
 
 ## Storage Usage Example
 

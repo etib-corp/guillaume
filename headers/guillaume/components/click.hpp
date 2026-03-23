@@ -36,13 +36,13 @@ namespace guillaume::components {
  *
  * @code
  * components::Click click;
- * click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::LEFT,
+ * click.setOnClickHandler(utility::event::MouseButtonEvent::MouseButton::Left,
  * [](utility::event::MouseMotionEvent::MousePosition position) {
  *     // Handle click.
  * });
  * @endcode
  *
- * @see systems::Click
+ * @see systems::Interaction
  */
 class Click : public ecs::Component {
   public:
@@ -71,9 +71,9 @@ class Click : public ecs::Component {
      */
     Click(void) {
         for (const auto button :
-             {utility::event::MouseButtonEvent::MouseButton::LEFT,
-              utility::event::MouseButtonEvent::MouseButton::MIDDLE,
-              utility::event::MouseButtonEvent::MouseButton::RIGHT,
+                         {utility::event::MouseButtonEvent::MouseButton::Left,
+                            utility::event::MouseButtonEvent::MouseButton::Middle,
+                            utility::event::MouseButtonEvent::MouseButton::Right,
               utility::event::MouseButtonEvent::MouseButton::X1,
               utility::event::MouseButtonEvent::MouseButton::X2}) {
             _isClicked[button] = false;
@@ -92,22 +92,26 @@ class Click : public ecs::Component {
      * @brief Set the onClick event handler.
      * @param button The mouse button to associate with the handler.
      * @param handler The function to call on click events.
+     * @return Reference to this Click component for chaining.
      */
-    void setOnClickHandler(
+    Click &setOnClickHandler(
         const utility::event::MouseButtonEvent::MouseButton &button,
         const Handler &handler) {
         _onClickHandlers[button] = handler;
+        return *this;
     }
 
     /**
      * @brief Set the onRelease event handler.
      * @param button The mouse button to associate with the handler.
      * @param handler The function to call on release events.
+     * @return Reference to this Click component for chaining.
      */
-    void setOnReleaseHandler(
+    Click &setOnReleaseHandler(
         const utility::event::MouseButtonEvent::MouseButton &button,
         const Handler &handler) {
         _onReleaseHandlers[button] = handler;
+        return *this;
     }
 
     /**
@@ -144,11 +148,14 @@ class Click : public ecs::Component {
      * @brief Set the clicked state of the entity.
      * @param button The mouse button to set.
      * @param clicked True if the entity is clicked, false otherwise.
+     * @return Reference to this Click component for chaining.
      */
-    void setClicked(const utility::event::MouseButtonEvent::MouseButton &button,
-                    bool clicked) {
+    Click &
+    setClicked(const utility::event::MouseButtonEvent::MouseButton &button,
+               bool clicked) {
         _isEntityClicked = clicked;
         _isClicked[button] = clicked;
+        return *this;
     }
 
     /**
@@ -162,11 +169,13 @@ class Click : public ecs::Component {
      * @param button The mouse button.
      * @param pressedInside True if the button was pressed inside, false
      * otherwise.
+     * @return Reference to this Click component for chaining.
      */
-    void setPressedInside(
+    Click &setPressedInside(
         const utility::event::MouseButtonEvent::MouseButton &button,
         bool pressedInside) {
         _pressedInside[button] = pressedInside;
+        return *this;
     }
 
     /**

@@ -29,6 +29,8 @@ TextInput::TextInput(event::EventBus &eventBus)
 
 void TextInput::update(ecs::ComponentRegistry &componentRegistry,
                        const ecs::Entity::Identifier &entityIdentifier) {
+    getLogger().debug("Updating TextInput system for entity " +
+                      std::to_string(entityIdentifier));
     if (!_textInputSubscriber.hasPendingEvents()) {
         return;
     }

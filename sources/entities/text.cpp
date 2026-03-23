@@ -24,126 +24,71 @@
 
 namespace guillaume::entities {
 
-Text::Text::Builder::Builder(void) : ecs::LeafEntityBuilder() {}
+Text::Text::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+                             ecs::EntityRegistry &entityRegistry)
+    : ecs::LeafEntityBuilder<Text>(componentRegistry, entityRegistry) {}
 
 Text::Builder::~Builder(void) {}
 
-Text::Director::Director(ecs::ComponentRegistry &componentRegistry)
-    : ecs::EntityDirector(componentRegistry) {}
+void Text::Builder::registerEntity(void) {
+    _text = std::make_unique<Text>(getComponentRegistry(), _content, _fontSize,
+                                   _color);
+    getEntityRegistry().addEntity(std::move(_text));
+}
+
+void Text::Builder::reset(void) {
+    _text.reset();
+    _content.clear();
+    _fontSize = 24;
+    _color = {255, 255, 255, 255};
+}
+
+Text::Builder &Text::Builder::withContent(const std::string &content) {
+    _content = content;
+    return *this;
+}
+
+Text::Builder &Text::Builder::withFontSize(const std::size_t &fontSize) {
+    _fontSize = fontSize;
+    return *this;
+}
+
+Text::Builder &Text::Builder::withColor(const Color &color) {
+    _color = color;
+    return *this;
+}
+
+Text::Director::Director(void) : ecs::EntityDirector() {}
 
 Text::Director::~Director(void) {}
 
-void Text::normalRender(ecs::ComponentRegistry &registry,
-                        const ecs::Entity::Identifier &id, Renderer &renderer) {
-
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 0, 0, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {0, 255, 0, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {0, 0, 255, 255}},
-    });
+void Text::Director::makeDefaultText(Builder &builder,
+                                     const std::string &content,
+                                     const std::size_t &fontSize,
+                                     const Color &color) {
+    builder.withContent(content)
+        .withFontSize(fontSize)
+        .withColor(color)
+        .registerEntity();
 }
 
-void Text::hoveredRender(ecs::ComponentRegistry &registry,
-                         const ecs::Entity::Identifier &id,
-                         Renderer &renderer) {
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 255, 0, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {255, 0, 255, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {0, 255, 255, 255}},
-    });
-}
-
-void Text::clickedRender(ecs::ComponentRegistry &registry,
-                         const ecs::Entity::Identifier &id,
-                         Renderer &renderer) {
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {255, 255, 255, 255}},
-    });
-}
-
-void Text::activeRender(ecs::ComponentRegistry &registry,
-                        const ecs::Entity::Identifier &id, Renderer &renderer) {
-    renderer.drawVertices({
-        {{0.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{1.0f, 0.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {1.0f, 0.0f},
-         {255, 255, 255, 255}},
-        {{0.0f, 1.0f, 0.0f},
-         {0.0f, 0.0f, 1.0f},
-         {0.0f, 1.0f},
-         {255, 255, 255, 255}},
-    });
-}
-
-Text::Text(ecs::ComponentRegistry &registry)
+Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
+           const std::size_t &fontSize, const Color &color)
     : ecs::LeafEntityFiller<components::Transform, components::Bound,
-                            components::Text, components::Render>(registry) {
+                            components::Text>(registry),
+      _content(content), _fontSize(fontSize), _color(color) {
     registry.getComponent<components::Transform>(getIdentifier())
-        .setPosition({0.0f, 0.0f, 0.0f})
+        .setPosition({200.0f, 200.0f, 0.0f})
         .setRotation({0.0f, 0.0f, 0.0f})
         .setScale({1.0f, 1.0f, 1.0f});
 
     registry.getComponent<components::Bound>(getIdentifier())
-        .setSize({20.0f, 20.0f});
+        .setSize({200.0f, 50.0f});
 
     registry.getComponent<components::Text>(getIdentifier())
-        .setContent("Hello, World!");
-
-    registry.getComponent<components::Render>(getIdentifier())
-        .setNormalHandler([this](ecs::ComponentRegistry &registry,
-                                 const ecs::Entity::Identifier &id,
-                                 Renderer &renderer) {
-            normalRender(registry, id, renderer);
-        })
-        .setHoveredHandler([this](ecs::ComponentRegistry &registry,
-                                  const ecs::Entity::Identifier &id,
-                                  Renderer &renderer) {
-            hoveredRender(registry, id, renderer);
-        })
-        .setClickedHandler([this](ecs::ComponentRegistry &registry,
-                                  const ecs::Entity::Identifier &id,
-                                  Renderer &renderer) {
-            clickedRender(registry, id, renderer);
-        })
-        .setActiveHandler([this](ecs::ComponentRegistry &registry,
-                                 const ecs::Entity::Identifier &id,
-                                 Renderer &renderer) {
-            activeRender(registry, id, renderer);
-        });
-        
+        .setContent(_content)
+        .setFontSize(_fontSize)
+        .setColor(_color);
 }
 
 Text::~Text() {}

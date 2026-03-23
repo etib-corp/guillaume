@@ -47,40 +47,18 @@ Components are intentionally simple data holders. Event-driven components such a
 
 When adding new components, prefer plain data with minimal logic. Systems should own behavior and interpretation of component data. This keeps the ECS predictable and makes unit testing easier. Use `Application::addComponent()` instead of writing directly to the registry so entity signatures and system membership stay consistent.
 
-## systems::Click
+## systems::Interaction
 
 ```mermaid
 flowchart LR
   subgraph System
-    SysClick["systems::Click"]
+    SysInteraction["systems::Interaction"]
   end
 
   subgraph Component_Click
     CompClick["components::Click"]
     CompClickAttr1["onClick: Handler"]
     CompClick --> CompClickAttr1
-  end
-
-  subgraph Component_Transform
-    CompTransform["components::Transform"]
-    CompTransformAttr1["position: vec3"]
-    CompTransformAttr2["rotation: vec3"]
-    CompTransformAttr3["scale: vec3"]
-    CompTransform --> CompTransformAttr1
-    CompTransform --> CompTransformAttr2
-    CompTransform --> CompTransformAttr3
-  end
-
-  SysClick --> CompClick
-  SysClick --> CompTransform
-```
-
-## systems::Hover
-
-```mermaid
-flowchart LR
-  subgraph System
-    SysHover["systems::Hover"]
   end
 
   subgraph Component_Hover
@@ -99,8 +77,16 @@ flowchart LR
     CompTransform --> CompTransformAttr3
   end
 
-  SysHover --> CompHover
-  SysHover --> CompTransform
+  subgraph Component_Bound
+    CompBound["components::Bound"]
+    CompBoundAttr1["size: vec3"]
+    CompBound --> CompBoundAttr1
+  end
+
+  SysInteraction --> CompClick
+  SysInteraction --> CompHover
+  SysInteraction --> CompTransform
+  SysInteraction --> CompBound
 ```
 
 ## systems::KeyboardControl

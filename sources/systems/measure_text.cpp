@@ -1,0 +1,71 @@
+/*
+ Copyright (c) 2026 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+
+#include <utility/graphics/text.hpp>
+
+#include "guillaume/systems/measure_text.hpp"
+
+namespace guillaume::systems {
+
+MeasureText::MeasureText(Renderer &renderer)
+    : ecs::SystemFiller<components::Transform, components::Text,
+                        components::Bound>(),
+      _renderer(renderer),
+      _defaultFontPath(
+          "assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf") {}
+
+MeasureText::~MeasureText(void) {}
+
+void MeasureText::update(ecs::ComponentRegistry &componentRegistry,
+                         const ecs::Entity::Identifier &entityIdentifier) {
+    getLogger().debug("Updating MeasureText system for entity " +
+                      std::to_string(entityIdentifier));
+    if (!componentRegistry.hasComponent<components::Text>(entityIdentifier) ||
+        !componentRegistry.hasComponent<components::Transform>(
+            entityIdentifier) ||
+        !componentRegistry.hasComponent<components::Bound>(entityIdentifier)) {
+        getLogger().warning("Entity " + std::to_string(entityIdentifier) +
+                            " does not have Text, Transform and Bound "
+                            "components");
+        return;
+    }
+
+    const auto &transformComponent =
+        componentRegistry.getComponent<components::Transform>(entityIdentifier);
+    const auto &textComponent =
+        componentRegistry.getComponent<components::Text>(entityIdentifier);
+    auto &boundComponent =
+        componentRegistry.getComponent<components::Bound>(entityIdentifier);
+
+    utility::graphics::Text text;
+    text.setPosition(transformComponent.getPosition())
+        .setRotation(transformComponent.getRotation())
+        .setScale(transformComponent.getScale())
+        .setColor(textComponent.getColor())
+        .setContent(textComponent.getContent())
+        .setFontSize(textComponent.getFontSize())
+        .setFontPath(_defaultFontPath);
+
+    boundComponent.setSize(_renderer.measureText(text));
+}
+
+} // namespace guillaume::systems
