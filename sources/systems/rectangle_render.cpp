@@ -56,7 +56,7 @@ RectangleRender::roundedRectVertices(const Vec2 &center, float theta, float sx,
 
     const float hw = (sizeX / 2.0f) * std::abs(sx);
     const float hh = (sizeY / 2.0f) * std::abs(sy);
-    const float r = std::max(0.0f, std::min({radius, hw, hh}));
+    const float r = std::max(0.0f, (std::min)({radius, hw, hh}));
 
     std::vector<Vec2> localVertices;
 
