@@ -1,19 +1,9 @@
 #include "scenes/main.hpp"
 
-#include <guillaume/entities/button.hpp>
-#include <guillaume/entities/icon.hpp>
-#include <guillaume/entities/text.hpp>
-
 namespace simple_application::scenes {
 
-Main::Main(void) : guillaume::Scene() {
-    guillaume::entities::Button::Builder buttonBuilder(getComponentRegistry(),
-                                                       getEntityRegistry());
-    guillaume::entities::Button::Director buttonDirector;
-
-    buttonDirector.makeIconTextButton(buttonBuilder, "add", "Like", [this]() {
-        this->getLogger().info("Button clicked!");
-    });
+Main::Main(void) : guillaume::SceneFiller<panels::DefaultPanel>() {
+    getLogger().info("Main scene created with DefaultPanel");
 }
 
 Main::~Main(void) {}
