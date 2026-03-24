@@ -1,10 +1,10 @@
 #include "scenes/settings.hpp"
 
-#include <guillaume/entities/button.hpp>
-
 namespace simple_application::scenes {
 
-Settings::Settings(void) : guillaume::Scene() {}
+Settings::Settings(void) : guillaume::SceneFiller<panels::DefaultPanel>() {
+    getLogger().info("Settings scene created with DefaultPanel");
+}
 
 Settings::~Settings(void) {}
 

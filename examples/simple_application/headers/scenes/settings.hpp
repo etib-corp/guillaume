@@ -1,10 +1,11 @@
 #pragma once
 
 #include <guillaume/scene.hpp>
+#include "panels/default_panel.hpp"
 
 namespace simple_application::scenes {
 
-class Settings : public guillaume::Scene {
+class Settings : public guillaume::SceneFiller<panels::DefaultPanel> {
   public:
     Settings(void);
 

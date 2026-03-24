@@ -29,6 +29,7 @@
 
 #include "ecs/component_registry.hpp"
 #include "ecs/entity_registry.hpp"
+#include "entities/panel.hpp"
 
 namespace guillaume {
 
@@ -122,6 +123,14 @@ class Scene
     }
 
     /**
+     * @brief Add a panel entity to the scene's entity registry.
+     * @param panel Unique pointer to the panel entity to add.
+     */
+    void addPanel(std::unique_ptr<entities::Panel> panel) {
+        getEntityRegistry().addEntity(std::move(panel));
+    }
+
+    /**
      * @brief Get the component registry for this scene.
      * @return Reference to the component registry.
      */
@@ -187,5 +196,39 @@ class Scene
  */
 template <typename Type>
 concept InheritFromScene = std::is_base_of_v<Scene, Type>;
+
+/**
+ * @brief Scene filler that automatically creates and registers panels of specified types.
+ * @tparam PanelTypes Variadic template parameter pack of panel types to create and register.
+ */
+template <guillaume::entities::InheritFromPanel... PanelTypes>
+class SceneFiller : public Scene {
+  protected:
+    /**
+     * @brief Construct a new Scene Filler object.
+     * Automatically creates and registers panels of the specified types in the
+     * scene.
+     */
+    SceneFiller() : Scene() {
+        (registerPanel<PanelTypes>(), ...);
+    }
+
+    /**
+     * @brief Create and register a panel of the specified type in the scene.
+     * @tparam PanelType The type of panel to create and register.
+     */
+    template <entities::InheritFromPanel PanelType>
+    void registerPanel(void) {
+        auto panel = std::make_unique<PanelType>(getComponentRegistry(), getEntityRegistry(), utility::demangle<PanelType>());
+        addPanel(std::move(panel));
+    }
+
+  public:
+    /**
+     * @brief Default destructor for Scene Filler.
+     */
+    virtual ~SceneFiller(void) = default;
+
+};
 
 } // namespace guillaume
