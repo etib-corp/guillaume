@@ -29,72 +29,82 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/event/event_bus.hpp"
 
-namespace {
+namespace
+{
 
-class KeyboardControlFixture
-    : public guillaume::systems::tests::TestSystemsKeyboardControl {
-  protected:
-    guillaume::event::EventBus eventBus;
-    guillaume::systems::KeyboardControl keyboardControl{eventBus};
-    guillaume::ecs::ComponentRegistry componentRegistry;
-    guillaume::ecs::Entity::Identifier entityIdentifier{1};
+	class KeyboardControlFixture:
+		public guillaume::systems::tests::TestSystemsKeyboardControl
+	{
+		protected:
+		guillaume::event::EventBus eventBus;
+		guillaume::systems::KeyboardControl keyboardControl { eventBus };
+		guillaume::ecs::ComponentRegistry componentRegistry;
+		guillaume::ecs::Entity::Identifier entityIdentifier { 1 };
 
-    void SetUp(void) override {
-        componentRegistry.addComponent<guillaume::components::Text>(
-            entityIdentifier);
-        componentRegistry.addComponent<guillaume::components::Focus>(
-            entityIdentifier);
-    }
+		void SetUp(void) override
+		{
+			componentRegistry.addComponent<guillaume::components::Text>(
+				entityIdentifier);
+			componentRegistry.addComponent<guillaume::components::Focus>(
+				entityIdentifier);
+		}
 
-    void setText(const std::string &content) {
-        componentRegistry
-            .getComponent<guillaume::components::Text>(entityIdentifier)
-            .setContent(content);
-    }
+		void setText(const std::string &content)
+		{
+			componentRegistry
+				.getComponent<guillaume::components::Text>(entityIdentifier)
+				.setContent(content);
+		}
 
-    void dispatchKeyboardEvent(
-        const utility::event::KeyboardEvent::KeyCode keycode,
-        const utility::event::KeyboardEvent::KeyModifiers modifiers =
-            utility::event::KeyboardEvent::KeyModifiers::None,
-        const bool isDownEvent = true) {
-        auto event = std::make_unique<utility::event::KeyboardEvent>();
-        event->setKeycode(keycode);
-        event->setModifiers(modifiers);
-        event->setIsDownEvent(isDownEvent);
-        eventBus.publish(std::move(event));
-        keyboardControl.update(componentRegistry, entityIdentifier);
-    }
+		void dispatchKeyboardEvent(
+			const utility::event::KeyboardEvent::KeyCode keycode,
+			const utility::event::KeyboardEvent::KeyModifiers modifiers =
+				utility::event::KeyboardEvent::KeyModifiers::None,
+			const bool isDownEvent = true)
+		{
+			auto event = std::make_unique<utility::event::KeyboardEvent>();
+			event->setKeycode(keycode);
+			event->setModifiers(modifiers);
+			event->setIsDownEvent(isDownEvent);
+			eventBus.publish(std::move(event));
+			keyboardControl.update(componentRegistry, entityIdentifier);
+		}
 
-    std::string getContent(void) const {
-        return componentRegistry
-            .getComponent<guillaume::components::Text>(entityIdentifier)
-            .getContent();
-    }
-};
+		std::string getContent(void) const
+		{
+			return componentRegistry
+				.getComponent<guillaume::components::Text>(entityIdentifier)
+				.getContent();
+		}
+	};
 
-} // namespace
+}	 // namespace
 
-TEST_F(KeyboardControlFixture, BackspaceRemovesLastUtf8CodePoint) {
-    setText("A°");
+TEST_F(KeyboardControlFixture, BackspaceRemovesLastUtf8CodePoint)
+{
+	setText("A°");
 
-    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
-    EXPECT_EQ(getContent(), "A");
+	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
+	EXPECT_EQ(getContent(), "A");
 
-    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
-    EXPECT_TRUE(getContent().empty());
+	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
+	EXPECT_TRUE(getContent().empty());
 }
 
-TEST_F(KeyboardControlFixture, IgnoresNonBackspaceAndKeyUpEvents) {
-    setText("seed");
+TEST_F(KeyboardControlFixture, IgnoresNonBackspaceAndKeyUpEvents)
+{
+	setText("seed");
 
-    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::A,
-                          utility::event::KeyboardEvent::KeyModifiers::None,
-                          true);
-    dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace,
-                          utility::event::KeyboardEvent::KeyModifiers::None,
-                          false);
+	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::A,
+						  utility::event::KeyboardEvent::KeyModifiers::None,
+						  true);
+	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace,
+						  utility::event::KeyboardEvent::KeyModifiers::None,
+						  false);
 
-    EXPECT_EQ(getContent(), "seed");
+	EXPECT_EQ(getContent(), "seed");
 }
 
-namespace guillaume::systems::tests {} // namespace guillaume::systems::tests
+namespace guillaume::systems::tests
+{
+}	 // namespace guillaume::systems::tests

@@ -29,38 +29,40 @@
 
 #include "guillaume/renderer.hpp"
 
-namespace guillaume::systems {
+namespace guillaume::systems
+{
 
-/**
- * @brief System handling text rendering from ECS components.
- * @see components::Text
- * @see components::Transform
- */
-class TextRender
-    : public ecs::SystemFiller<components::Transform, components::Text> {
-  private:
-    Renderer &_renderer;          ///< Renderer instance
-    std::string _defaultFontPath; ///< Default font for text rendering
+	/**
+	 * @brief System handling text rendering from ECS components.
+	 * @see components::Text
+	 * @see components::Transform
+	 */
+	class TextRender:
+		public ecs::SystemFiller<components::Transform, components::Text>
+	{
+		private:
+		Renderer &_renderer;			 ///< Renderer instance
+		std::string _defaultFontPath;	 ///< Default font for text rendering
 
-  public:
-    /**
-     * @brief Construct a text rendering system.
-     * @param renderer The renderer used to draw text.
-     */
-    TextRender(Renderer &renderer);
+		public:
+		/**
+		 * @brief Construct a text rendering system.
+		 * @param renderer The renderer used to draw text.
+		 */
+		TextRender(Renderer &renderer);
 
-    /**
-     * @brief Default destructor.
-     */
-    ~TextRender(void);
+		/**
+		 * @brief Default destructor.
+		 */
+		~TextRender(void);
 
-    /**
-     * @brief Update the TextRender system for one entity.
-     * @param componentRegistry The component registry.
-     * @param entityIdentifier The target entity identifier.
-     */
-    void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &entityIdentifier) override;
-};
+		/**
+		 * @brief Update the TextRender system for one entity.
+		 * @param componentRegistry The component registry.
+		 * @param entityIdentifier The target entity identifier.
+		 */
+		void update(ecs::ComponentRegistry &componentRegistry,
+					const ecs::Entity::Identifier &entityIdentifier) override;
+	};
 
-} // namespace guillaume::systems
+}	 // namespace guillaume::systems

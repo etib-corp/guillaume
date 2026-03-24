@@ -27,58 +27,68 @@
 
 #include "guillaume/ecs/components/children.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief A node entity that have a parent and children.
- * @tparam ComponentTypes The types of components this entity will have.
- */
-template <InheritFromComponent... ComponentTypes>
-class NodeEntityFiller
-    : public LeafEntityFiller<ComponentTypes..., components::Children> {
-  public:
-    /**
-     * @brief Construct a new NodeEntityFiller object.
-     * @param registry The component registry to register components to.
-     */
-    NodeEntityFiller(ecs::ComponentRegistry &registry)
-        : LeafEntityFiller<ComponentTypes..., components::Children>(registry) {}
+	/**
+	 * @brief A node entity that have a parent and children.
+	 * @tparam ComponentTypes The types of components this entity will have.
+	 */
+	template<InheritFromComponent... ComponentTypes> class NodeEntityFiller:
+		public LeafEntityFiller<ComponentTypes..., components::Children>
+	{
+		public:
+		/**
+		 * @brief Construct a new NodeEntityFiller object.
+		 * @param registry The component registry to register components to.
+		 */
+		NodeEntityFiller(ecs::ComponentRegistry &registry)
+			: LeafEntityFiller<ComponentTypes..., components::Children>(
+				  registry)
+		{
+		}
 
-    /**
-     * @brief Default destructor for the NodeEntityFiller class.
-     */
-    virtual ~NodeEntityFiller(void) = default;
+		/**
+		 * @brief Default destructor for the NodeEntityFiller class.
+		 */
+		virtual ~NodeEntityFiller(void) = default;
 
-    /**
-     * @brief Get the child entity identifiers for this node entity.
-     * @return The identifiers of the child entities.
-     */
-    std::vector<Entity::Identifier> getChildIdentifiers(void) const {
-        return this->getComponentRegistry()
-            .template getComponent<components::Children>(this->getIdentifier())
-            .getChildIdentifiers();
-    };
+		/**
+		 * @brief Get the child entity identifiers for this node entity.
+		 * @return The identifiers of the child entities.
+		 */
+		std::vector<Entity::Identifier> getChildIdentifiers(void) const
+		{
+			return this->getComponentRegistry()
+				.template getComponent<components::Children>(
+					this->getIdentifier())
+				.getChildIdentifiers();
+		};
 
-    /**
-     * @brief Add a child entity identifier to this node entity.
-     * @param childIdentifier The identifier of the child entity to add.
-     */
-    void addChildIdentifier(const Entity::Identifier &childIdentifier) {
-        this->getComponentRegistry()
-            .template getComponent<components::Children>(this->getIdentifier())
-            .addChildIdentifier(childIdentifier);
-    };
+		/**
+		 * @brief Add a child entity identifier to this node entity.
+		 * @param childIdentifier The identifier of the child entity to add.
+		 */
+		void addChildIdentifier(const Entity::Identifier &childIdentifier)
+		{
+			this->getComponentRegistry()
+				.template getComponent<components::Children>(
+					this->getIdentifier())
+				.addChildIdentifier(childIdentifier);
+		};
 
-    /**
-     * @brief Set the child entity identifiers for this node entity.
-     * @param childIdentifiers The new child entity identifiers.
-     */
-    void setChildIdentifiers(
-        const std::vector<Entity::Identifier> &childIdentifiers) {
-        this->getComponentRegistry()
-            .template getComponent<components::Children>(this->getIdentifier())
-            .setChildIdentifiers(childIdentifiers);
-    };
-};
+		/**
+		 * @brief Set the child entity identifiers for this node entity.
+		 * @param childIdentifiers The new child entity identifiers.
+		 */
+		void setChildIdentifiers(
+			const std::vector<Entity::Identifier> &childIdentifiers)
+		{
+			this->getComponentRegistry()
+				.template getComponent<components::Children>(
+					this->getIdentifier())
+				.setChildIdentifiers(childIdentifiers);
+		};
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

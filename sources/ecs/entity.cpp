@@ -22,13 +22,18 @@
 
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-Entity::Identifier Entity::getNextIdentifier(void) {
-    static Identifier currentId = InvalidIdentifier;
-    return ++currentId;
-}
+	Entity::Identifier Entity::getNextIdentifier(void)
+	{
+		static Identifier currentId = InvalidIdentifier;
+		return ++currentId;
+	}
 
-Entity::Entity(void) : _identifier(getNextIdentifier()) {}
+	Entity::Entity(void)
+		: _identifier(getNextIdentifier())
+	{
+	}
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

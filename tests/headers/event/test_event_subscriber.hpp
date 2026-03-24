@@ -26,14 +26,20 @@
 
 #include <guillaume/event/event_subscriber.hpp>
 
-namespace guillaume::event::tests {
+namespace guillaume::event::tests
+{
 
-class TestEventSubscriber : public ::testing::Test {
-  protected:
-    TestEventSubscriber(void) = default;
-    ~TestEventSubscriber(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestEventSubscriber: public ::testing::Test
+	{
+		protected:
+		TestEventSubscriber(void)			= default;
+		~TestEventSubscriber(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::event::tests
+}	 // namespace guillaume::event::tests

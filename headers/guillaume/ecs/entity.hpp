@@ -28,93 +28,109 @@
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/component_type_id.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Non-template base class for entities in the ECS architecture.
- *
- * This base class provides common functionality that doesn't depend on
- * component types.
- * @see ComponentRegistry
- * @see System
- */
-class Entity {
-  public:
-    using Identifier = std::size_t;    ///< Type alias for entity identifiers
-    using Signature = std::bitset<64>; ///< Type alias for entity signatures
+	/**
+	 * @brief Non-template base class for entities in the ECS architecture.
+	 *
+	 * This base class provides common functionality that doesn't depend on
+	 * component types.
+	 * @see ComponentRegistry
+	 * @see System
+	 */
+	class Entity
+	{
+		public:
+		using Identifier =
+			std::size_t;	///< Type alias for entity identifiers
+		using Signature =
+			std::bitset<64>;	///< Type alias for entity signatures
 
-    constexpr static Identifier InvalidIdentifier = 0; ///< Invalid identifier
+		constexpr static Identifier InvalidIdentifier =
+			0;	  ///< Invalid identifier
 
-  private:
-    /**
-     * @brief Generate the next unique identifier for an entity.
-     * @return The next unique identifier.
-     */
-    static Identifier getNextIdentifier(void);
+		private:
+		/**
+		 * @brief Generate the next unique identifier for an entity.
+		 * @return The next unique identifier.
+		 */
+		static Identifier getNextIdentifier(void);
 
-  public:
-    /**
-     * @brief Generate a signature from the given component types.
-     * @tparam NeededComponents The component types.
-     * @return The generated signature.
-     */
-    template <InheritFromComponent... ComponentTypes>
-    static Signature getSignatureFromTypes(void) {
-        Signature signature;
-        (signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
-        return signature;
-    }
+		public:
+		/**
+		 * @brief Generate a signature from the given component types.
+		 * @tparam NeededComponents The component types.
+		 * @return The generated signature.
+		 */
+		template<InheritFromComponent... ComponentTypes>
+		static Signature getSignatureFromTypes(void)
+		{
+			Signature signature;
+			(signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
+			return signature;
+		}
 
-  private:
-    const Identifier _identifier; ///< Unique identifier
-    Signature _signature;         ///< Entity signature
+		private:
+		const Identifier _identifier;	 ///< Unique identifier
+		Signature _signature;			 ///< Entity signature
 
-  protected:
-    /**
-     * @brief Set the entity's signature based on the specified component
-     * types.
-     * @tparam ComponentTypes The component types that define the entity's
-     * signature.
-     */
-    template <InheritFromComponent... ComponentTypes> void setSignature(void) {
-        _signature = getSignatureFromTypes<ComponentTypes...>();
-    }
+		protected:
+		/**
+		 * @brief Set the entity's signature based on the specified component
+		 * types.
+		 * @tparam ComponentTypes The component types that define the entity's
+		 * signature.
+		 */
+		template<InheritFromComponent... ComponentTypes> void setSignature(void)
+		{
+			_signature = getSignatureFromTypes<ComponentTypes...>();
+		}
 
-  public:
-    /**
-     * @brief Default constructor for the Entity class.
-     */
-    Entity(void);
+		public:
+		/**
+		 * @brief Default constructor for the Entity class.
+		 */
+		Entity(void);
 
-    /**
-     * @brief Default destructor for the Entity class.
-     */
-    virtual ~Entity(void) = default;
+		/**
+		 * @brief Default destructor for the Entity class.
+		 */
+		virtual ~Entity(void) = default;
 
-    /**
-     * @brief Get the unique identifier of the entity.
-     * @return The entity's unique identifier.
-     */
-    Entity::Identifier getIdentifier(void) const { return _identifier; }
+		/**
+		 * @brief Get the unique identifier of the entity.
+		 * @return The entity's unique identifier.
+		 */
+		Entity::Identifier getIdentifier(void) const
+		{
+			return _identifier;
+		}
 
-    /**
-     * @brief Get the entity's signature.
-     * @return The entity's signature.
-     */
-    Entity::Signature getSignature(void) const { return _signature; }
+		/**
+		 * @brief Get the entity's signature.
+		 * @return The entity's signature.
+		 */
+		Entity::Signature getSignature(void) const
+		{
+			return _signature;
+		}
 
-    /**
-     * @brief Set the entity's signature.
-     * @param signature The new signature.
-     */
-    void setSignature(const Signature &signature) { _signature = signature; }
-};
+		/**
+		 * @brief Set the entity's signature.
+		 * @param signature The new signature.
+		 */
+		void setSignature(const Signature &signature)
+		{
+			_signature = signature;
+		}
+	};
 
-/**
- * @brief Concept to ensure a type inherits from Entity.
- * @tparam Type The type to check.
- */
-template <typename Type>
-concept InheritFromEntity = std::is_base_of_v<Entity, Type>;
+	/**
+	 * @brief Concept to ensure a type inherits from Entity.
+	 * @tparam Type The type to check.
+	 */
+	template<typename Type>
+	concept InheritFromEntity = std::is_base_of_v<Entity, Type>;
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

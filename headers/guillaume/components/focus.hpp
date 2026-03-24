@@ -26,40 +26,49 @@
 
 #include "guillaume/ecs/component.hpp"
 
-namespace guillaume::components {
+namespace guillaume::components
+{
 
-/**
- * @brief Component representing a focusable entity.
- */
-class Focus : public ecs::Component {
-  public:
-    using Handler = std::function<void(void)>; ///< Focus event handler type
+	/**
+	 * @brief Component representing a focusable entity.
+	 */
+	class Focus: public ecs::Component
+	{
+		public:
+		using Handler =
+			std::function<void(void)>;	  ///< Focus event handler type
 
-  private:
-    Handler _onFocus; ///< Focus event handler
+		private:
+		Handler _onFocus;	 ///< Focus event handler
 
-  public:
-    /**
-     * @brief Default constructor for the Focus component.
-     */
-    Focus(void) = default;
+		public:
+		/**
+		 * @brief Default constructor for the Focus component.
+		 */
+		Focus(void) = default;
 
-    /**
-     * @brief Default destructor for the Focus component.
-     */
-    ~Focus(void) = default;
+		/**
+		 * @brief Default destructor for the Focus component.
+		 */
+		~Focus(void) = default;
 
-    /**
-     * @brief Set the onFocus event handler.
-     * @param handler The function to call on focus events.
-     */
-    void setOnFocusHandler(const Handler &handler) { _onFocus = handler; }
+		/**
+		 * @brief Set the onFocus event handler.
+		 * @param handler The function to call on focus events.
+		 */
+		void setOnFocusHandler(const Handler &handler)
+		{
+			_onFocus = handler;
+		}
 
-    /**
-     * @brief Get the onFocus event handler.
-     * @return The onFocus event handler.
-     */
-    Handler getOnFocusHandler(void) const { return _onFocus; }
-};
+		/**
+		 * @brief Get the onFocus event handler.
+		 * @return The onFocus event handler.
+		 */
+		Handler getOnFocusHandler(void) const
+		{
+			return _onFocus;
+		}
+	};
 
-} // namespace guillaume::components
+}	 // namespace guillaume::components

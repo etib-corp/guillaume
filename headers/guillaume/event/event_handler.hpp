@@ -30,106 +30,129 @@
 
 #include <utility/event/event.hpp>
 
-namespace guillaume::event {
+namespace guillaume::event
+{
 
-/**
- * @brief Interface for event handlers.
- *
- * This class provides an abstract interface for handling events in the
- * Guillaume framework. Implementations should poll or process platform-specific
- * events and convert them to Guillaume Event objects.
- *
- * @code
- * class MyEventHandler : public event::EventHandler {
- *   public:
- *     void pollEvents(void) override {
- *         // Convert platform events to utility::event::Event and call
- * callback.
- *         // getEventCallback()(event);
- *     }
- * };
- * @endcode
- *
- * @see EventBus
- */
-class EventHandler
-    : protected utility::logging::Loggable<EventHandler,
-                                           utility::logging::StandardLogger> {
-  public:
-    using Handler = std::function<void(
-        std::unique_ptr<utility::event::Event> &)>; ///< Event handler type
+	/**
+	 * @brief Interface for event handlers.
+	 *
+	 * This class provides an abstract interface for handling events in the
+	 * Guillaume framework. Implementations should poll or process
+	 * platform-specific events and convert them to Guillaume Event objects.
+	 *
+	 * @code
+	 * class MyEventHandler : public event::EventHandler {
+	 *   public:
+	 *     void pollEvents(void) override {
+	 *         // Convert platform events to utility::event::Event and call
+	 * callback.
+	 *         // getEventCallback()(event);
+	 *     }
+	 * };
+	 * @endcode
+	 *
+	 * @see EventBus
+	 */
+	class EventHandler:
+		protected utility::logging::Loggable<EventHandler,
+											 utility::logging::StandardLogger>
+	{
+		public:
+		using Handler =
+			std::function<void(std::unique_ptr<utility::event::Event>
+								   &)>;	   ///< Event handler type
 
-  private:
-    Handler _callback;  ///< Event callback function
-    bool _shouldQuit;   ///< Flag indicating if a quit event was received
-    bool _gotNewEvents; ///< Flag indicating if new events were received
+		private:
+		Handler _callback;	   ///< Event callback function
+		bool _shouldQuit;	   ///< Flag indicating if a quit event was received
+		bool _gotNewEvents;	   ///< Flag indicating if new events were received
 
-  protected:
-    /**
-     * @brief Get the current event callback function.
-     * @return Reference to the event callback function.
-     */
-    Handler &getEventCallback(void) { return _callback; }
+		protected:
+		/**
+		 * @brief Get the current event callback function.
+		 * @return Reference to the event callback function.
+		 */
+		Handler &getEventCallback(void)
+		{
+			return _callback;
+		}
 
-    /**
-     * @brief Set the should quit flag.
-     * @param shouldQuit True if a quit event was received, false otherwise.
-     */
-    void setShouldQuit(bool shouldQuit) { _shouldQuit = shouldQuit; }
+		/**
+		 * @brief Set the should quit flag.
+		 * @param shouldQuit True if a quit event was received, false otherwise.
+		 */
+		void setShouldQuit(bool shouldQuit)
+		{
+			_shouldQuit = shouldQuit;
+		}
 
-    /**
-     * @brief Set the got new events flag.
-     * @param gotNewEvents True if new events were received, false otherwise.
-     */
-    void setGotNewEvents(bool gotNewEvents) { _gotNewEvents = gotNewEvents; }
+		/**
+		 * @brief Set the got new events flag.
+		 * @param gotNewEvents True if new events were received, false
+		 * otherwise.
+		 */
+		void setGotNewEvents(bool gotNewEvents)
+		{
+			_gotNewEvents = gotNewEvents;
+		}
 
-  public:
-    /**
-     * @brief Default constructor
-     */
-    EventHandler(void);
+		public:
+		/**
+		 * @brief Default constructor
+		 */
+		EventHandler(void);
 
-    /**
-     * @brief Default destructor
-     */
-    virtual ~EventHandler(void) = default;
+		/**
+		 * @brief Default destructor
+		 */
+		virtual ~EventHandler(void) = default;
 
-    /**
-     * @brief Set the event callback function.
-     *
-     * The callback will be invoked for each event when pollEvents() is called.
-     *
-     * @param callback Function to call when an event is received.
-     */
-    void setEventCallback(const Handler &callback) { _callback = callback; }
+		/**
+		 * @brief Set the event callback function.
+		 *
+		 * The callback will be invoked for each event when pollEvents() is
+		 * called.
+		 *
+		 * @param callback Function to call when an event is received.
+		 */
+		void setEventCallback(const Handler &callback)
+		{
+			_callback = callback;
+		}
 
-    /**
-     * @brief Check if a quit event has been received.
-     * @return True if a quit event was received, false otherwise.
-     */
-    bool shouldQuit(void) const { return _shouldQuit; }
+		/**
+		 * @brief Check if a quit event has been received.
+		 * @return True if a quit event was received, false otherwise.
+		 */
+		bool shouldQuit(void) const
+		{
+			return _shouldQuit;
+		}
 
-    /**
-     * @brief Check if new events were received in the last poll.
-     * @return True if new events were received, false otherwise.
-     */
-    bool gotNewEvents(void) const { return _gotNewEvents; }
+		/**
+		 * @brief Check if new events were received in the last poll.
+		 * @return True if new events were received, false otherwise.
+		 */
+		bool gotNewEvents(void) const
+		{
+			return _gotNewEvents;
+		}
 
-    /**
-     * @brief Poll for events and dispatch them.
-     *
-     * This method should check for pending events from the underlying platform,
-     * convert them to Event objects, and call the
-     * registered callback for each event.
-     */
-    virtual void pollEvents(void) = 0;
-};
+		/**
+		 * @brief Poll for events and dispatch them.
+		 *
+		 * This method should check for pending events from the underlying
+		 * platform, convert them to Event objects, and call the registered
+		 * callback for each event.
+		 */
+		virtual void pollEvents(void) = 0;
+	};
 
-/**
- * @brief Concept to ensure a type inherits from EventHandler.
- * @tparam Type The type to check.
- */
-template <typename Type>
-concept InheritFromEventHandler = std::is_base_of_v<EventHandler, Type>;
+	/**
+	 * @brief Concept to ensure a type inherits from EventHandler.
+	 * @tparam Type The type to check.
+	 */
+	template<typename Type>
+	concept InheritFromEventHandler = std::is_base_of_v<EventHandler, Type>;
 
-} // namespace guillaume::event
+}	 // namespace guillaume::event

@@ -33,31 +33,35 @@
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 
-namespace guillaume {
+namespace guillaume
+{
 
-/**
- * @brief Component registry class registering all core components.
- * @see ecs::TreeComponentRegistryFiller
- */
-class ComponentRegistry
-    : public ecs::TreeComponentRegistryFiller<
-          components::Bound, components::Click, components::Focus,
-          components::Hover, components::Text, components::Transform,
-          components::Color, components::Borders> {
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    ComponentRegistry(void)
-        : ecs::TreeComponentRegistryFiller<
-              components::Bound, components::Click, components::Focus,
-              components::Hover, components::Text, components::Transform,
-              components::Color, components::Borders>() {}
+	/**
+	 * @brief Component registry class registering all core components.
+	 * @see ecs::TreeComponentRegistryFiller
+	 */
+	class ComponentRegistry:
+		public ecs::TreeComponentRegistryFiller<
+			components::Bound, components::Click, components::Focus,
+			components::Hover, components::Text, components::Transform,
+			components::Color, components::Borders>
+	{
+		public:
+		/**
+		 * @brief Default constructor.
+		 */
+		ComponentRegistry(void)
+			: ecs::TreeComponentRegistryFiller<
+				  components::Bound, components::Click, components::Focus,
+				  components::Hover, components::Text, components::Transform,
+				  components::Color, components::Borders>()
+		{
+		}
 
-    /**
-     * @brief Default destructor.
-     */
-    virtual ~ComponentRegistry(void) = default;
-};
+		/**
+		 * @brief Default destructor.
+		 */
+		virtual ~ComponentRegistry(void) = default;
+	};
 
-} // namespace guillaume
+}	 // namespace guillaume

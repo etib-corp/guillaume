@@ -22,56 +22,77 @@
 
 #include "guillaume/entities/icon.hpp"
 
-namespace guillaume::entities {
+namespace guillaume::entities
+{
 
-Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
-                             ecs::EntityRegistry &entityRegistry)
-    : ecs::LeafEntityBuilder<Icon>(componentRegistry, entityRegistry) {}
+	Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+								 ecs::EntityRegistry &entityRegistry)
+		: ecs::LeafEntityBuilder<Icon>(componentRegistry, entityRegistry)
+	{
+	}
 
-Icon::Builder::~Builder(void) {}
+	Icon::Builder::~Builder(void)
+	{
+	}
 
-void Icon::Builder::registerEntity(void) {
-    _icon = std::make_unique<Icon>(getComponentRegistry(), _iconName, _style);
-    getEntityRegistry().addEntity(std::move(_icon));
-}
+	void Icon::Builder::registerEntity(void)
+	{
+		_icon =
+			std::make_unique<Icon>(getComponentRegistry(), _iconName, _style);
+		getEntityRegistry().addEntity(std::move(_icon));
+	}
 
-void Icon::Builder::reset(void) {
-    _icon.reset();
-    _iconName.clear();
-    _style = Style::Outlined;
-}
+	void Icon::Builder::reset(void)
+	{
+		_icon.reset();
+		_iconName.clear();
+		_style = Style::Outlined;
+	}
 
-Icon::Builder &Icon::Builder::withIconName(const std::string &iconName) {
-    _iconName = iconName;
-    return *this;
-}
+	Icon::Builder &Icon::Builder::withIconName(const std::string &iconName)
+	{
+		_iconName = iconName;
+		return *this;
+	}
 
-Icon::Builder &Icon::Builder::withStyle(const Style &style) {
-    _style = style;
-    return *this;
-}
+	Icon::Builder &Icon::Builder::withStyle(const Style &style)
+	{
+		_style = style;
+		return *this;
+	}
 
-Icon::Director::Director(void) : ecs::EntityDirector() {}
+	Icon::Director::Director(void)
+		: ecs::EntityDirector()
+	{
+	}
 
-Icon::Director::~Director(void) {}
+	Icon::Director::~Director(void)
+	{
+	}
 
-void Icon::Director::makeDefaultIcon(Builder &builder,
-                                     const std::string &iconName) {
-    builder.withIconName(iconName).registerEntity();
-}
+	void Icon::Director::makeDefaultIcon(Builder &builder,
+										 const std::string &iconName)
+	{
+		builder.withIconName(iconName).registerEntity();
+	}
 
-Icon::Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
-           const Style &style)
-    : ecs::LeafEntityFiller<components::Transform, components::Icon>(registry),
-      _iconName(iconName), _style(style) {
-    registry.getComponent<components::Transform>(getIdentifier())
-        .setPosition({0.0f, 0.0f, 0.0f})
-        .setRotation({0.0f, 0.0f, 0.0f})
-        .setScale({1.0f, 1.0f, 1.0f});
+	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
+			   const Style &style)
+		: ecs::LeafEntityFiller<components::Transform, components::Icon>(
+			  registry)
+		, _iconName(iconName)
+		, _style(style)
+	{
+		registry.getComponent<components::Transform>(getIdentifier())
+			.setPosition({ 0.0f, 0.0f, 0.0f })
+			.setRotation({ 0.0f, 0.0f, 0.0f })
+			.setScale({ 1.0f, 1.0f, 1.0f });
 
-    registry.getComponent<components::Icon>(getIdentifier());
-}
+		registry.getComponent<components::Icon>(getIdentifier());
+	}
 
-Icon::~Icon() {}
+	Icon::~Icon()
+	{
+	}
 
-} // namespace guillaume::entities
+}	 // namespace guillaume::entities

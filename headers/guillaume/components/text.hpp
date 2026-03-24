@@ -28,79 +28,94 @@
 
 #include "guillaume/ecs/component.hpp"
 
-namespace guillaume::components {
+namespace guillaume::components
+{
 
-/**
- * @brief Component representing a text element.
- * @see systems::KeyboardControl
- * @see systems::TextInput
- * @see guillaume::Text
- */
-class Text : public ecs::Component {
-  private:
-    std::string _content;       ///< Text content
-    std::size_t _fontSize = 24; ///< Font size of the text
-    utility::graphics::Color<uint8_t> _color = {
-        255, 255, 255, 255}; ///< Color of the text (RGBA)
+	/**
+	 * @brief Component representing a text element.
+	 * @see systems::KeyboardControl
+	 * @see systems::TextInput
+	 * @see guillaume::Text
+	 */
+	class Text: public ecs::Component
+	{
+		private:
+		std::string _content;		   ///< Text content
+		std::size_t _fontSize = 24;	   ///< Font size of the text
+		utility::graphics::Color<uint8_t> _color = {
+			255, 255, 255, 255
+		};	  ///< Color of the text (RGBA)
 
-  public:
-    /**
-     * @brief Default constructor for the Text component.
-     */
-    Text(void) = default;
+		public:
+		/**
+		 * @brief Default constructor for the Text component.
+		 */
+		Text(void) = default;
 
-    /**
-     * @brief Default destructor for the Text component.
-     */
-    ~Text(void) = default;
+		/**
+		 * @brief Default destructor for the Text component.
+		 */
+		~Text(void) = default;
 
-    /**
-     * @brief Get the text content.
-     * @return The text content.
-     */
-    const std::string &getContent(void) const { return _content; }
+		/**
+		 * @brief Get the text content.
+		 * @return The text content.
+		 */
+		const std::string &getContent(void) const
+		{
+			return _content;
+		}
 
-    /**
-     * @brief Set the text content.
-     * @param content The new text content.
-     * @return The Text component for chaining.
-     */
-    Text &setContent(const std::string &content) {
-        _content = content;
-        return *this;
-    }
+		/**
+		 * @brief Set the text content.
+		 * @param content The new text content.
+		 * @return The Text component for chaining.
+		 */
+		Text &setContent(const std::string &content)
+		{
+			_content = content;
+			return *this;
+		}
 
-    /**
-     * @brief Get the font size of the text.
-     * @return The font size.
-     */
-    std::size_t getFontSize(void) const { return _fontSize; }
+		/**
+		 * @brief Get the font size of the text.
+		 * @return The font size.
+		 */
+		std::size_t getFontSize(void) const
+		{
+			return _fontSize;
+		}
 
-    /**
-     * @brief Set the font size of the text.
-     * @param fontSize The new font size.
-     * @return The Text component for chaining.
-     */
-    Text &setFontSize(std::size_t fontSize) {
-        _fontSize = (fontSize == 0) ? 24 : fontSize;
-        return *this;
-    }
+		/**
+		 * @brief Set the font size of the text.
+		 * @param fontSize The new font size.
+		 * @return The Text component for chaining.
+		 */
+		Text &setFontSize(std::size_t fontSize)
+		{
+			_fontSize = (fontSize == 0) ? 24 : fontSize;
+			return *this;
+		}
 
-    /**
-     * @brief Get the color of the text.
-     * @return The text color.
-     */
-    utility::graphics::Color<uint8_t> getColor(void) const { return _color; }
+		/**
+		 * @brief Get the color of the text.
+		 * @return The text color.
+		 */
+		utility::graphics::Color<uint8_t> getColor(void) const
+		{
+			return _color;
+		}
 
-    /**
-     * @brief Set the color of the text.
-     * @param color The new text color.
-     * @return The Text component for chaining.
-     */
-    Text &setColor(utility::graphics::Color<uint8_t> color) {
-        _color = color;
-        return *this;
-    }
-};
+		/**
+		 * @brief Set the color of the text.
+		 * @param color The new text color.
+		 * @return The Text component for chaining.
+		 */
+		Text &setColor(utility::graphics::Color<uint8_t> color)
+		{
+			_color = color;
+			return *this;
+		}
+	};
 
-} // namespace guillaume::components
+}	 // namespace guillaume::components

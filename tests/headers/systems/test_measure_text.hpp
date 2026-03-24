@@ -26,14 +26,20 @@
 
 #include <guillaume/systems/measure_text.hpp>
 
-namespace guillaume::systems::tests {
+namespace guillaume::systems::tests
+{
 
-class TestMeasureText : public ::testing::Test {
-  protected:
-    TestMeasureText(void) = default;
-    ~TestMeasureText(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestMeasureText: public ::testing::Test
+	{
+		protected:
+		TestMeasureText(void)			= default;
+		~TestMeasureText(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::systems::tests
+}	 // namespace guillaume::systems::tests

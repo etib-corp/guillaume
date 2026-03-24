@@ -26,14 +26,20 @@
 
 #include <guillaume/components/hover.hpp>
 
-namespace guillaume::components::tests {
+namespace guillaume::components::tests
+{
 
-class TestHover : public ::testing::Test {
-  protected:
-    TestHover(void) = default;
-    ~TestHover(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestHover: public ::testing::Test
+	{
+		protected:
+		TestHover(void)			  = default;
+		~TestHover(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::components::tests
+}	 // namespace guillaume::components::tests

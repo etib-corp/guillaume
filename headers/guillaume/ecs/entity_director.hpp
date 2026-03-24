@@ -24,23 +24,25 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Base director class orchestrating entity construction with a
- * component registry.
- */
-class EntityDirector {
-  public:
-    /**
-     * @brief Construct a new EntityDirector object.
-     */
-    EntityDirector(void);
+	/**
+	 * @brief Base director class orchestrating entity construction with a
+	 * component registry.
+	 */
+	class EntityDirector
+	{
+		public:
+		/**
+		 * @brief Construct a new EntityDirector object.
+		 */
+		EntityDirector(void);
 
-    /**
-     * @brief Default destructor for the EntityDirector class.
-     */
-    virtual ~EntityDirector(void);
-};
+		/**
+		 * @brief Default destructor for the EntityDirector class.
+		 */
+		virtual ~EntityDirector(void);
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

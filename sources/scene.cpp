@@ -22,24 +22,44 @@
 
 #include "guillaume/scene.hpp"
 
-namespace guillaume {
+namespace guillaume
+{
 
-Scene::Scene(void) : _application(nullptr) {}
+	Scene::Scene(void)
+		: _application(nullptr)
+	{
+	}
 
-Scene::~Scene(void) {}
+	Scene::~Scene(void)
+	{
+	}
 
-void Scene::onCreate(void) {}
+	void Scene::onCreate(void)
+	{
+	}
 
-void Scene::onStart(void) {}
+	void Scene::onStart(void)
+	{
+	}
 
-void Scene::onPause(void) {}
+	void Scene::onPause(void)
+	{
+	}
 
-void Scene::onStop(void) {}
+	void Scene::onStop(void)
+	{
+	}
 
-void Scene::onResume(void) {}
+	void Scene::onResume(void)
+	{
+	}
 
-void Scene::onRestart(void) {}
+	void Scene::onRestart(void)
+	{
+	}
 
-void Scene::onDestroy(void) {}
+	void Scene::onDestroy(void)
+	{
+	}
 
-} // namespace guillaume
+}	 // namespace guillaume

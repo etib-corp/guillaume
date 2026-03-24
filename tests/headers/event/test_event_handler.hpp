@@ -26,14 +26,20 @@
 
 #include <guillaume/event/event_handler.hpp>
 
-namespace guillaume::event::tests {
+namespace guillaume::event::tests
+{
 
-class TestEventHandler : public ::testing::Test {
-  protected:
-    TestEventHandler(void) = default;
-    ~TestEventHandler(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestEventHandler: public ::testing::Test
+	{
+		protected:
+		TestEventHandler(void)			 = default;
+		~TestEventHandler(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::event::tests
+}	 // namespace guillaume::event::tests

@@ -26,14 +26,20 @@
 
 #include <guillaume/renderer.hpp>
 
-namespace guillaume::tests {
+namespace guillaume::tests
+{
 
-class TestRenderer : public ::testing::Test {
-  protected:
-    TestRenderer(void) = default;
-    ~TestRenderer(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestRenderer: public ::testing::Test
+	{
+		protected:
+		TestRenderer(void)			 = default;
+		~TestRenderer(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::tests
+}	 // namespace guillaume::tests

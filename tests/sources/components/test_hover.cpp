@@ -22,5 +22,6 @@
 
 #include "components/test_hover.hpp"
 
-namespace guillaume::components::tests {
-} // namespace guillaume::components::tests
+namespace guillaume::components::tests
+{
+}	 // namespace guillaume::components::tests

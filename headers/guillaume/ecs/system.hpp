@@ -35,73 +35,81 @@
 #include "guillaume/ecs/entity.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Base class for all systems in the ECS architecture.
- *
- * This base class provides common functionality that doesn't depend on
- * component types.
- * @see SystemRegistry
- * @see SystemFiller
- */
-class System
-    : protected utility::logging::Loggable<System,
-                                           utility::logging::StandardLogger> {
-  private:
-    Entity::Signature _signature; ///< System signature
+	/**
+	 * @brief Base class for all systems in the ECS architecture.
+	 *
+	 * This base class provides common functionality that doesn't depend on
+	 * component types.
+	 * @see SystemRegistry
+	 * @see SystemFiller
+	 */
+	class System:
+		protected utility::logging::Loggable<System,
+											 utility::logging::StandardLogger>
+	{
+		private:
+		Entity::Signature _signature;	 ///< System signature
 
-  protected:
-    /**
-     * @brief Set the system's signature based on the specified component types.
-     * @tparam ComponentTypes The component types that define the system's
-     * signature.
-     */
-    template <InheritFromComponent... ComponentTypes> void setSignature(void) {
-        _signature.reset();
-        (_signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
-    }
+		protected:
+		/**
+		 * @brief Set the system's signature based on the specified component
+		 * types.
+		 * @tparam ComponentTypes The component types that define the system's
+		 * signature.
+		 */
+		template<InheritFromComponent... ComponentTypes> void setSignature(void)
+		{
+			_signature.reset();
+			(_signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
+		}
 
-  public:
-    /**
-     * @brief Default constructor for the System class.
-     */
-    System(void) = default;
+		public:
+		/**
+		 * @brief Default constructor for the System class.
+		 */
+		System(void) = default;
 
-    /**
-     * @brief Default destructor for the System class.
-     */
-    virtual ~System(void) = default;
+		/**
+		 * @brief Default destructor for the System class.
+		 */
+		virtual ~System(void) = default;
 
-    /**
-     * @brief Get the system's signature.
-     * @return The system's signature.
-     */
-    Entity::Signature getSignature(void) const { return _signature; }
+		/**
+		 * @brief Get the system's signature.
+		 * @return The system's signature.
+		 */
+		Entity::Signature getSignature(void) const
+		{
+			return _signature;
+		}
 
-    /**
-     * @brief Routine to update all managed entities.
-     * @param componentRegistry The component registry instance.
-     * @param entityRegistry The entity registry used to query matching
-     * entities.
-     */
-    void routine(ecs::ComponentRegistry &componentRegistry,
-                 ecs::EntityRegistry &entityRegistry);
+		/**
+		 * @brief Routine to update all managed entities.
+		 * @param componentRegistry The component registry instance.
+		 * @param entityRegistry The entity registry used to query matching
+		 * entities.
+		 */
+		void routine(ecs::ComponentRegistry &componentRegistry,
+					 ecs::EntityRegistry &entityRegistry);
 
-    /**
-     * @brief Update the system, processing relevant entities.
-     * @param componentRegistry The component registry instance.
-     * @param entityIdentifier The identifier of the entity to update.
-     */
-    virtual void update(ecs::ComponentRegistry &componentRegistry,
-                        const ecs::Entity::Identifier &entityIdentifier) = 0;
-};
+		/**
+		 * @brief Update the system, processing relevant entities.
+		 * @param componentRegistry The component registry instance.
+		 * @param entityIdentifier The identifier of the entity to update.
+		 */
+		virtual void
+			update(ecs::ComponentRegistry &componentRegistry,
+				   const ecs::Entity::Identifier &entityIdentifier) = 0;
+	};
 
-/**
- * @brief Concept to ensure a type inherits from System.
- * @tparam Type The type to check.
- */
-template <typename Type>
-concept InheritFromSystem = std::is_base_of_v<System, Type>;
+	/**
+	 * @brief Concept to ensure a type inherits from System.
+	 * @tparam Type The type to check.
+	 */
+	template<typename Type>
+	concept InheritFromSystem = std::is_base_of_v<System, Type>;
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

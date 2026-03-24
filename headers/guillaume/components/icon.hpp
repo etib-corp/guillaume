@@ -24,22 +24,24 @@
 
 #include "guillaume/ecs/component.hpp"
 
-namespace guillaume::components {
+namespace guillaume::components
+{
 
-/**
- * @brief Component representing a icon element.
- */
-class Icon : public ecs::Component {
-  public:
-    /**
-     * @brief Default constructor for the Icon component.
-     */
-    Icon(void) = default;
+	/**
+	 * @brief Component representing a icon element.
+	 */
+	class Icon: public ecs::Component
+	{
+		public:
+		/**
+		 * @brief Default constructor for the Icon component.
+		 */
+		Icon(void) = default;
 
-    /**
-     * @brief Default destructor for the Icon component.
-     */
-    ~Icon(void) = default;
-};
+		/**
+		 * @brief Default destructor for the Icon component.
+		 */
+		~Icon(void) = default;
+	};
 
-} // namespace guillaume::components
+}	 // namespace guillaume::components

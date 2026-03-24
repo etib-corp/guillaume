@@ -32,40 +32,43 @@
 
 #include "guillaume/renderer.hpp"
 
-namespace guillaume::systems {
+namespace guillaume::systems
+{
 
-/**
- * @brief System measuring text and synchronizing it to bound sizes.
- * @see components::Text
- * @see components::Bound
- * @see components::Transform
- */
-class MeasureText
-    : public ecs::SystemFiller<components::Transform, components::Text,
-                               components::Bound> {
-  private:
-    Renderer &_renderer;          ///< Renderer instance
-    std::string _defaultFontPath; ///< Default font used for text measurement
+	/**
+	 * @brief System measuring text and synchronizing it to bound sizes.
+	 * @see components::Text
+	 * @see components::Bound
+	 * @see components::Transform
+	 */
+	class MeasureText:
+		public ecs::SystemFiller<components::Transform, components::Text,
+								 components::Bound>
+	{
+		private:
+		Renderer &_renderer;	///< Renderer instance
+		std::string
+			_defaultFontPath;	 ///< Default font used for text measurement
 
-  public:
-    /**
-     * @brief Construct a text measuring system.
-     * @param renderer The renderer used to measure text.
-     */
-    MeasureText(Renderer &renderer);
+		public:
+		/**
+		 * @brief Construct a text measuring system.
+		 * @param renderer The renderer used to measure text.
+		 */
+		MeasureText(Renderer &renderer);
 
-    /**
-     * @brief Default destructor.
-     */
-    ~MeasureText(void);
+		/**
+		 * @brief Default destructor.
+		 */
+		~MeasureText(void);
 
-    /**
-     * @brief Update the MeasureText system for one entity.
-     * @param componentRegistry The component registry.
-     * @param entityIdentifier The target entity identifier.
-     */
-    void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &entityIdentifier) override;
-};
+		/**
+		 * @brief Update the MeasureText system for one entity.
+		 * @param componentRegistry The component registry.
+		 * @param entityIdentifier The target entity identifier.
+		 */
+		void update(ecs::ComponentRegistry &componentRegistry,
+					const ecs::Entity::Identifier &entityIdentifier) override;
+	};
 
-} // namespace guillaume::systems
+}	 // namespace guillaume::systems

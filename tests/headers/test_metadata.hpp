@@ -26,14 +26,20 @@
 
 #include <guillaume/metadata.hpp>
 
-namespace guillaume::tests {
+namespace guillaume::tests
+{
 
-class TestMetadata : public ::testing::Test {
-  protected:
-    TestMetadata(void) = default;
-    ~TestMetadata(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestMetadata: public ::testing::Test
+	{
+		protected:
+		TestMetadata(void)			 = default;
+		~TestMetadata(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::tests
+}	 // namespace guillaume::tests

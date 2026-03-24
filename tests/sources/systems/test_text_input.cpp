@@ -31,52 +31,61 @@
 
 #include <utility/event/text_input_event.hpp>
 
-namespace {
+namespace
+{
 
-class TextInputFixture
-    : public guillaume::systems::tests::TestSystemsTextInput {
-  protected:
-    guillaume::event::EventBus eventBus;
-    guillaume::systems::TextInput textInputSystem{eventBus};
-    guillaume::ecs::ComponentRegistry componentRegistry;
-    guillaume::ecs::Entity::Identifier entityIdentifier{1};
+	class TextInputFixture:
+		public guillaume::systems::tests::TestSystemsTextInput
+	{
+		protected:
+		guillaume::event::EventBus eventBus;
+		guillaume::systems::TextInput textInputSystem { eventBus };
+		guillaume::ecs::ComponentRegistry componentRegistry;
+		guillaume::ecs::Entity::Identifier entityIdentifier { 1 };
 
-    void SetUp(void) override {
-        componentRegistry.addComponent<guillaume::components::Text>(
-            entityIdentifier);
-        componentRegistry.addComponent<guillaume::components::Focus>(
-            entityIdentifier);
-    }
+		void SetUp(void) override
+		{
+			componentRegistry.addComponent<guillaume::components::Text>(
+				entityIdentifier);
+			componentRegistry.addComponent<guillaume::components::Focus>(
+				entityIdentifier);
+		}
 
-    void dispatchTextInputEvent(const std::string &textInput) {
-        auto event = std::make_unique<utility::event::TextInputEvent>();
-        event->setText(textInput);
-        eventBus.publish(std::move(event));
-        textInputSystem.update(componentRegistry, entityIdentifier);
-    }
+		void dispatchTextInputEvent(const std::string &textInput)
+		{
+			auto event = std::make_unique<utility::event::TextInputEvent>();
+			event->setText(textInput);
+			eventBus.publish(std::move(event));
+			textInputSystem.update(componentRegistry, entityIdentifier);
+		}
 
-    std::string getContent(void) const {
-        return componentRegistry
-            .getComponent<guillaume::components::Text>(entityIdentifier)
-            .getContent();
-    }
-};
+		std::string getContent(void) const
+		{
+			return componentRegistry
+				.getComponent<guillaume::components::Text>(entityIdentifier)
+				.getContent();
+		}
+	};
 
-} // namespace
+}	 // namespace
 
-TEST_F(TextInputFixture, AppendsCommittedTextInput) {
-    dispatchTextInputEvent("a");
-    dispatchTextInputEvent("A");
-    dispatchTextInputEvent("7");
+TEST_F(TextInputFixture, AppendsCommittedTextInput)
+{
+	dispatchTextInputEvent("a");
+	dispatchTextInputEvent("A");
+	dispatchTextInputEvent("7");
 
-    EXPECT_EQ(getContent(), "aA7");
+	EXPECT_EQ(getContent(), "aA7");
 }
 
-TEST_F(TextInputFixture, AppendsPunctuationAndSymbolsFromTextInput) {
-    dispatchTextInputEvent(".,;:?!'\"");
-    dispatchTextInputEvent("()[]{}-_+=/\\*@#$%&~^`");
+TEST_F(TextInputFixture, AppendsPunctuationAndSymbolsFromTextInput)
+{
+	dispatchTextInputEvent(".,;:?!'\"");
+	dispatchTextInputEvent("()[]{}-_+=/\\*@#$%&~^`");
 
-    EXPECT_EQ(getContent(), ".,;:?!'\"()[]{}-_+=/\\*@#$%&~^`");
+	EXPECT_EQ(getContent(), ".,;:?!'\"()[]{}-_+=/\\*@#$%&~^`");
 }
 
-namespace guillaume::systems::tests {} // namespace guillaume::systems::tests
+namespace guillaume::systems::tests
+{
+}	 // namespace guillaume::systems::tests

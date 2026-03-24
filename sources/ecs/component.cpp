@@ -22,4 +22,6 @@
 
 #include "guillaume/ecs/component.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs
+{
+}	 // namespace guillaume::ecs

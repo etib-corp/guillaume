@@ -38,61 +38,63 @@
 #include <utility/event/mouse_button_event.hpp>
 #include <utility/event/mouse_motion_event.hpp>
 
-namespace guillaume::systems {
+namespace guillaume::systems
+{
 
-/**
- * @brief System handling pointer interactions (hover and click).
- * @see components::Hover
- * @see components::Click
- */
-class Interaction
-    : public ecs::SystemFiller<components::Transform, components::Bound> {
+	/**
+	 * @brief System handling pointer interactions (hover and click).
+	 * @see components::Hover
+	 * @see components::Click
+	 */
+	class Interaction:
+		public ecs::SystemFiller<components::Transform, components::Bound>
+	{
+		private:
+		event::EventSubscriber<utility::event::MouseButtonEvent>
+			_mouseButtonSubscriber;
+		event::EventSubscriber<utility::event::MouseMotionEvent>
+			_mouseMotionSubscriber;
+		Renderer &_renderer;
 
-  private:
-    event::EventSubscriber<utility::event::MouseButtonEvent>
-        _mouseButtonSubscriber;
-    event::EventSubscriber<utility::event::MouseMotionEvent>
-        _mouseMotionSubscriber;
-    Renderer &_renderer;
+		std::unique_ptr<utility::event::MouseButtonEvent> _pendingClickEvent;
+		std::unordered_set<ecs::Entity::Identifier> _evaluatedClickEntities;
+		utility::event::MouseButtonEvent::MouseButtonsState _buttonStates {
+			0
+		};	  ///< Last known state of mouse buttons
 
-    std::unique_ptr<utility::event::MouseButtonEvent> _pendingClickEvent;
-    std::unordered_set<ecs::Entity::Identifier> _evaluatedClickEntities;
-    utility::event::MouseButtonEvent::MouseButtonsState _buttonStates{
-        0}; ///< Last known state of mouse buttons
+		std::unique_ptr<utility::event::MouseMotionEvent> _pendingMotionEvent;
+		std::unordered_set<ecs::Entity::Identifier> _evaluatedMotionEntities;
 
-    std::unique_ptr<utility::event::MouseMotionEvent> _pendingMotionEvent;
-    std::unordered_set<ecs::Entity::Identifier> _evaluatedMotionEntities;
+		void updateMouseMotionState(
+			const ecs::Entity::Identifier &entityIdentifier);
+		void processHover(ecs::ComponentRegistry &componentRegistry,
+						  const ecs::Entity::Identifier &entityIdentifier,
+						  bool isInside);
+		void processClick(ecs::ComponentRegistry &componentRegistry,
+						  const ecs::Entity::Identifier &entityIdentifier,
+						  bool isInside);
 
-    void
-    updateMouseMotionState(const ecs::Entity::Identifier &entityIdentifier);
-    void processHover(ecs::ComponentRegistry &componentRegistry,
-                      const ecs::Entity::Identifier &entityIdentifier,
-                      bool isInside);
-    void processClick(ecs::ComponentRegistry &componentRegistry,
-                      const ecs::Entity::Identifier &entityIdentifier,
-                      bool isInside);
+		public:
+		/**
+		 * @brief Default constructor for the Interaction system.
+		 * @param eventBus The event bus to subscribe to.
+		 * @param renderer The renderer instance for camera and viewport
+		 * information.
+		 */
+		Interaction(event::EventBus &eventBus, Renderer &renderer);
 
-  public:
-    /**
-     * @brief Default constructor for the Interaction system.
-     * @param eventBus The event bus to subscribe to.
-     * @param renderer The renderer instance for camera and viewport
-     * information.
-     */
-    Interaction(event::EventBus &eventBus, Renderer &renderer);
+		/**
+		 * @brief Default destructor for the Interaction system.
+		 */
+		~Interaction(void) = default;
 
-    /**
-     * @brief Default destructor for the Interaction system.
-     */
-    ~Interaction(void) = default;
+		/**
+		 * @brief Update the Interaction system for the specified entity.
+		 * @param componentRegistry The component registry instance.
+		 * @param entityIdentifier The identifier of the entity to update.
+		 */
+		void update(ecs::ComponentRegistry &componentRegistry,
+					const ecs::Entity::Identifier &entityIdentifier) override;
+	};
 
-    /**
-     * @brief Update the Interaction system for the specified entity.
-     * @param componentRegistry The component registry instance.
-     * @param entityIdentifier The identifier of the entity to update.
-     */
-    void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &entityIdentifier) override;
-};
-
-} // namespace guillaume::systems
+}	 // namespace guillaume::systems

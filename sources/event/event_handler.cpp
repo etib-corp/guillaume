@@ -22,8 +22,13 @@
 
 #include "guillaume/event/event_handler.hpp"
 
-namespace guillaume::event {
+namespace guillaume::event
+{
 
-EventHandler::EventHandler(void) : _shouldQuit(false), _gotNewEvents(false) {}
+	EventHandler::EventHandler(void)
+		: _shouldQuit(false)
+		, _gotNewEvents(false)
+	{
+	}
 
-} // namespace guillaume::event
+}	 // namespace guillaume::event

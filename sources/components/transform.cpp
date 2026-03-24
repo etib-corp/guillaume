@@ -22,4 +22,6 @@
 
 #include "guillaume/components/transform.hpp"
 
-namespace guillaume::components {} // namespace guillaume::components
+namespace guillaume::components
+{
+}	 // namespace guillaume::components

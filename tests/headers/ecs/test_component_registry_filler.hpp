@@ -26,14 +26,20 @@
 
 #include <guillaume/ecs/component_registry_filler.hpp>
 
-namespace guillaume::ecs::tests {
+namespace guillaume::ecs::tests
+{
 
-class TestComponentRegistryFiller : public ::testing::Test {
-  protected:
-    TestComponentRegistryFiller(void) = default;
-    ~TestComponentRegistryFiller(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestComponentRegistryFiller: public ::testing::Test
+	{
+		protected:
+		TestComponentRegistryFiller(void)			= default;
+		~TestComponentRegistryFiller(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::ecs::tests
+}	 // namespace guillaume::ecs::tests

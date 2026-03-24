@@ -26,65 +26,72 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Templated Entity class that automatically sets its signature based
- * on the specified component types.
- * @tparam ComponentTypes The component types that define the entity's
- * signature.
- *
- * @code
- * // UI-style entity composed from common components.
- * class ButtonEntity
- *     : public ecs::EntityFiller<components::Transform,
- *                                components::Bound,
- *                                components::Click,
- *                                components::Text> {
- *   public:
- *     ButtonEntity(ecs::ComponentRegistry &registry)
- *         : ecs::EntityFiller<components::Transform,
- *                             components::Bound,
- *                             components::Click,
- *                             components::Text>(registry) {}
- * };
- *
- * ButtonEntity button(registry);
- * @endcode
- *
- * @see Entity
- * @see ComponentRegistry
- */
-template <InheritFromComponent... ComponentTypes>
-class EntityFiller : public Entity {
-  private:
-    ComponentRegistry &_componentRegistry;
+	/**
+	 * @brief Templated Entity class that automatically sets its signature based
+	 * on the specified component types.
+	 * @tparam ComponentTypes The component types that define the entity's
+	 * signature.
+	 *
+	 * @code
+	 * // UI-style entity composed from common components.
+	 * class ButtonEntity
+	 *     : public ecs::EntityFiller<components::Transform,
+	 *                                components::Bound,
+	 *                                components::Click,
+	 *                                components::Text> {
+	 *   public:
+	 *     ButtonEntity(ecs::ComponentRegistry &registry)
+	 *         : ecs::EntityFiller<components::Transform,
+	 *                             components::Bound,
+	 *                             components::Click,
+	 *                             components::Text>(registry) {}
+	 * };
+	 *
+	 * ButtonEntity button(registry);
+	 * @endcode
+	 *
+	 * @see Entity
+	 * @see ComponentRegistry
+	 */
+	template<InheritFromComponent... ComponentTypes> class EntityFiller:
+		public Entity
+	{
+		private:
+		ComponentRegistry &_componentRegistry;
 
-  protected:
-    /**
-     * @brief Get the Component Registry.
-     * @return Reference to the component registry.
-     */
-    ComponentRegistry &getComponentRegistry(void) { return _componentRegistry; }
+		protected:
+		/**
+		 * @brief Get the Component Registry.
+		 * @return Reference to the component registry.
+		 */
+		ComponentRegistry &getComponentRegistry(void)
+		{
+			return _componentRegistry;
+		}
 
-  public:
-    /**
-     * @brief Construct a new Entity Filler object.
-     * @param componentRegistry The component registry to register components
-     * to.
-     */
-    EntityFiller(ComponentRegistry &componentRegistry)
-        : Entity(), _componentRegistry(componentRegistry) {
-        setSignature<ComponentTypes...>();
-        _componentRegistry
-            .template registerComponentsForEntity<ComponentTypes...>(
-                getIdentifier());
-    }
+		public:
+		/**
+		 * @brief Construct a new Entity Filler object.
+		 * @param componentRegistry The component registry to register
+		 * components to.
+		 */
+		EntityFiller(ComponentRegistry &componentRegistry)
+			: Entity()
+			, _componentRegistry(componentRegistry)
+		{
+			setSignature<ComponentTypes...>();
+			_componentRegistry
+				.template registerComponentsForEntity<ComponentTypes...>(
+					getIdentifier());
+		}
 
-    /**
-     * @brief Default destructor for the Entity Filler class.
-     */
-    virtual ~EntityFiller(void) = default;
-};
+		/**
+		 * @brief Default destructor for the Entity Filler class.
+		 */
+		virtual ~EntityFiller(void) = default;
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

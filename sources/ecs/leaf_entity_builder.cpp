@@ -22,4 +22,6 @@
 
 #include "guillaume/ecs/leaf_entity_builder.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs
+{
+}	 // namespace guillaume::ecs

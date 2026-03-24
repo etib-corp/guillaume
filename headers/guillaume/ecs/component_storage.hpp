@@ -28,121 +28,128 @@
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Interface for type-erased component storage.
- */
-class IComponentStorage {
-  public:
-    /**
-     * @brief Virtual destructor.
-     */
-    virtual ~IComponentStorage(void) = default;
+	/**
+	 * @brief Interface for type-erased component storage.
+	 */
+	class IComponentStorage
+	{
+		public:
+		/**
+		 * @brief Virtual destructor.
+		 */
+		virtual ~IComponentStorage(void) = default;
 
-    /**
-     * @brief Remove a component for an entity.
-     * @param entityIdentifier The entity identifier.
-     */
-    virtual void remove(const Entity::Identifier &entityIdentifier) = 0;
+		/**
+		 * @brief Remove a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 */
+		virtual void remove(const Entity::Identifier &entityIdentifier) = 0;
 
-    /**
-     * @brief Check if a component exists for an entity.
-     * @param entityIdentifier The entity identifier.
-     * @return True if a component exists.
-     */
-    virtual bool has(const Entity::Identifier &entityIdentifier) const = 0;
-};
+		/**
+		 * @brief Check if a component exists for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @return True if a component exists.
+		 */
+		virtual bool has(const Entity::Identifier &entityIdentifier) const = 0;
+	};
 
-/**
- * @brief Storage for a single component type.
- * @tparam ComponentType The component type stored.
- */
-template <InheritFromComponent ComponentType>
-class ComponentStorage : public IComponentStorage {
-  public:
-    /**
-     * @brief Container type for components.
-     */
-    using Storage = std::unordered_map<Entity::Identifier, ComponentType>;
+	/**
+	 * @brief Storage for a single component type.
+	 * @tparam ComponentType The component type stored.
+	 */
+	template<InheritFromComponent ComponentType> class ComponentStorage:
+		public IComponentStorage
+	{
+		public:
+		/**
+		 * @brief Container type for components.
+		 */
+		using Storage = std::unordered_map<Entity::Identifier, ComponentType>;
 
-  private:
-    Storage _components;
+		private:
+		Storage _components;
 
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    ComponentStorage(void) = default;
+		public:
+		/**
+		 * @brief Default constructor.
+		 */
+		ComponentStorage(void) = default;
 
-    /**
-     * @brief Default destructor.
-     */
-    ~ComponentStorage(void) override = default;
+		/**
+		 * @brief Default destructor.
+		 */
+		~ComponentStorage(void) override = default;
 
-    /**
-     * @brief Add or replace a component for an entity.
-     * @param entityIdentifier The entity identifier.
-     * @param args Arguments forwarded to the component constructor.
-     * @return Reference to the stored component.
-     * @note If a component already exists for the entity, it is replaced.
-     */
-    template <typename... Args>
-    ComponentType &emplace(const Entity::Identifier &entityIdentifier,
-                           Args &&...args) {
-        auto [iterator, inserted] = _components.emplace(
-            entityIdentifier, ComponentType(std::forward<Args>(args)...));
-        if (!inserted) {
-            iterator->second = ComponentType(std::forward<Args>(args)...);
-        }
-        return iterator->second;
-    }
+		/**
+		 * @brief Add or replace a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @param args Arguments forwarded to the component constructor.
+		 * @return Reference to the stored component.
+		 * @note If a component already exists for the entity, it is replaced.
+		 */
+		template<typename... Args> ComponentType &
+			emplace(const Entity::Identifier &entityIdentifier, Args &&...args)
+		{
+			auto [iterator, inserted] = _components.emplace(
+				entityIdentifier, ComponentType(std::forward<Args>(args)...));
+			if (!inserted) {
+				iterator->second = ComponentType(std::forward<Args>(args)...);
+			}
+			return iterator->second;
+		}
 
-    /**
-     * @brief Find a component for an entity.
-     * @param entityIdentifier The entity identifier.
-     * @return Pointer to the component or nullptr.
-     * @retval nullptr No component exists for the entity.
-     */
-    ComponentType *find(const Entity::Identifier &entityIdentifier) {
-        auto iterator = _components.find(entityIdentifier);
-        if (iterator == _components.end()) {
-            return nullptr;
-        }
-        return &iterator->second;
-    }
+		/**
+		 * @brief Find a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @return Pointer to the component or nullptr.
+		 * @retval nullptr No component exists for the entity.
+		 */
+		ComponentType *find(const Entity::Identifier &entityIdentifier)
+		{
+			auto iterator = _components.find(entityIdentifier);
+			if (iterator == _components.end()) {
+				return nullptr;
+			}
+			return &iterator->second;
+		}
 
-    /**
-     * @brief Find a component for an entity (const).
-     * @param entityIdentifier The entity identifier.
-     * @return Pointer to the component or nullptr.
-     * @retval nullptr No component exists for the entity.
-     */
-    const ComponentType *
-    find(const Entity::Identifier &entityIdentifier) const {
-        auto iterator = _components.find(entityIdentifier);
-        if (iterator == _components.end()) {
-            return nullptr;
-        }
-        return &iterator->second;
-    }
+		/**
+		 * @brief Find a component for an entity (const).
+		 * @param entityIdentifier The entity identifier.
+		 * @return Pointer to the component or nullptr.
+		 * @retval nullptr No component exists for the entity.
+		 */
+		const ComponentType *
+			find(const Entity::Identifier &entityIdentifier) const
+		{
+			auto iterator = _components.find(entityIdentifier);
+			if (iterator == _components.end()) {
+				return nullptr;
+			}
+			return &iterator->second;
+		}
 
-    /**
-     * @brief Remove a component for an entity.
-     * @param entityIdentifier The entity identifier.
-     */
-    void remove(const Entity::Identifier &entityIdentifier) override {
-        _components.erase(entityIdentifier);
-    }
+		/**
+		 * @brief Remove a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 */
+		void remove(const Entity::Identifier &entityIdentifier) override
+		{
+			_components.erase(entityIdentifier);
+		}
 
-    /**
-     * @brief Check if a component exists for an entity.
-     * @param entityIdentifier The entity identifier.
-     * @return True if a component exists.
-     */
-    bool has(const Entity::Identifier &entityIdentifier) const override {
-        return _components.find(entityIdentifier) != _components.end();
-    }
-};
+		/**
+		 * @brief Check if a component exists for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @return True if a component exists.
+		 */
+		bool has(const Entity::Identifier &entityIdentifier) const override
+		{
+			return _components.find(entityIdentifier) != _components.end();
+		}
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

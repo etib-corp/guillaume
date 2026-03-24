@@ -32,36 +32,39 @@
 #include <utility/event/event.hpp>
 #include <utility/event/text_input_event.hpp>
 
-namespace guillaume::systems {
+namespace guillaume::systems
+{
 
-/**
- * @brief System handling committed text input events for text entities.
- * @see components::Text
- */
-class TextInput
-    : public ecs::SystemFiller<components::Text, components::Focus> {
-  private:
-    event::EventSubscriber<utility::event::TextInputEvent> _textInputSubscriber;
+	/**
+	 * @brief System handling committed text input events for text entities.
+	 * @see components::Text
+	 */
+	class TextInput:
+		public ecs::SystemFiller<components::Text, components::Focus>
+	{
+		private:
+		event::EventSubscriber<utility::event::TextInputEvent>
+			_textInputSubscriber;
 
-  public:
-    /**
-     * @brief Default constructor for the TextInput system.
-     * @param eventBus The event bus to subscribe to.
-     */
-    TextInput(event::EventBus &eventBus);
+		public:
+		/**
+		 * @brief Default constructor for the TextInput system.
+		 * @param eventBus The event bus to subscribe to.
+		 */
+		TextInput(event::EventBus &eventBus);
 
-    /**
-     * @brief Default destructor for the TextInput system.
-     */
-    ~TextInput(void) = default;
+		/**
+		 * @brief Default destructor for the TextInput system.
+		 */
+		~TextInput(void) = default;
 
-    /**
-     * @brief Update the TextInput system for the specified entity.
-     * @param componentRegistry The component registry instance.
-     * @param entityIdentifier The identifier of the entity to update.
-     */
-    void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &entityIdentifier) override;
-};
+		/**
+		 * @brief Update the TextInput system for the specified entity.
+		 * @param componentRegistry The component registry instance.
+		 * @param entityIdentifier The identifier of the entity to update.
+		 */
+		void update(ecs::ComponentRegistry &componentRegistry,
+					const ecs::Entity::Identifier &entityIdentifier) override;
+	};
 
-} // namespace guillaume::systems
+}	 // namespace guillaume::systems

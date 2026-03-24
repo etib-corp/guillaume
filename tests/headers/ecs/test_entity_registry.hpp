@@ -26,14 +26,20 @@
 
 #include <guillaume/ecs/entity_registry.hpp>
 
-namespace guillaume::ecs::tests {
+namespace guillaume::ecs::tests
+{
 
-class TestEntityRegistry : public ::testing::Test {
-  protected:
-    TestEntityRegistry(void) = default;
-    ~TestEntityRegistry(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestEntityRegistry: public ::testing::Test
+	{
+		protected:
+		TestEntityRegistry(void)		   = default;
+		~TestEntityRegistry(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::ecs::tests
+}	 // namespace guillaume::ecs::tests

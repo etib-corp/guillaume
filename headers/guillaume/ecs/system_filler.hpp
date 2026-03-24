@@ -25,27 +25,32 @@
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/system.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Templated System class that automatically sets its signature based
- * on the specified component types.
- * @tparam ComponentTypes The component types that define the system's
- * signature.
- * @see System
- */
-template <InheritFromComponent... ComponentTypes>
-class SystemFiller : public System {
-  public:
-    /**
-     * @brief Construct a new System Filler object and set its signature.
-     */
-    SystemFiller(void) { setSignature<ComponentTypes...>(); }
+	/**
+	 * @brief Templated System class that automatically sets its signature based
+	 * on the specified component types.
+	 * @tparam ComponentTypes The component types that define the system's
+	 * signature.
+	 * @see System
+	 */
+	template<InheritFromComponent... ComponentTypes> class SystemFiller:
+		public System
+	{
+		public:
+		/**
+		 * @brief Construct a new System Filler object and set its signature.
+		 */
+		SystemFiller(void)
+		{
+			setSignature<ComponentTypes...>();
+		}
 
-    /**
-     * @brief Default destructor for the SystemFiller class.
-     */
-    virtual ~SystemFiller(void) = default;
-};
+		/**
+		 * @brief Default destructor for the SystemFiller class.
+		 */
+		virtual ~SystemFiller(void) = default;
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

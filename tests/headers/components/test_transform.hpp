@@ -26,14 +26,20 @@
 
 #include <guillaume/components/transform.hpp>
 
-namespace guillaume::components::tests {
+namespace guillaume::components::tests
+{
 
-class TestTransform : public ::testing::Test {
-  protected:
-    TestTransform(void) = default;
-    ~TestTransform(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestTransform: public ::testing::Test
+	{
+		protected:
+		TestTransform(void)			  = default;
+		~TestTransform(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::components::tests
+}	 // namespace guillaume::components::tests

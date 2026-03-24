@@ -26,14 +26,20 @@
 
 #include <guillaume/ecs/entity_filler.hpp>
 
-namespace guillaume::ecs::tests {
+namespace guillaume::ecs::tests
+{
 
-class TestEntityFiller : public ::testing::Test {
-  protected:
-    TestEntityFiller(void) = default;
-    ~TestEntityFiller(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestEntityFiller: public ::testing::Test
+	{
+		protected:
+		TestEntityFiller(void)			 = default;
+		~TestEntityFiller(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::ecs::tests
+}	 // namespace guillaume::ecs::tests

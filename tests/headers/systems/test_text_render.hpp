@@ -26,14 +26,20 @@
 
 #include <guillaume/systems/text_render.hpp>
 
-namespace guillaume::systems::tests {
+namespace guillaume::systems::tests
+{
 
-class TestTextRender : public ::testing::Test {
-  protected:
-    TestTextRender(void) = default;
-    ~TestTextRender(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestTextRender: public ::testing::Test
+	{
+		protected:
+		TestTextRender(void)		   = default;
+		~TestTextRender(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::systems::tests
+}	 // namespace guillaume::systems::tests

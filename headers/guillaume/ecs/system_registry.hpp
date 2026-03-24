@@ -36,106 +36,120 @@
 
 #include "guillaume/ecs/system.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Exception thrown when a requested system is not found in the registry.
- * @tparam SystemType The type of the missing system.
- */
-template <InheritFromSystem SystemType>
-class SystemNotFoundException : public std::exception {
-  private:
-    std::type_index _systemIndex{
-        typeid(SystemType)}; ///< Type index of the missing system
-    std::string _systemName{
-        _systemIndex.name()};     ///< Name of the missing system type
-    mutable std::string _message; ///< Cached exception message
+	/**
+	 * @brief Exception thrown when a requested system is not found in the
+	 * registry.
+	 * @tparam SystemType The type of the missing system.
+	 */
+	template<InheritFromSystem SystemType> class SystemNotFoundException:
+		public std::exception
+	{
+		private:
+		std::type_index _systemIndex { typeid(
+			SystemType) };	  ///< Type index of the missing system
+		std::string _systemName {
+			_systemIndex.name()
+		};								 ///< Name of the missing system type
+		mutable std::string _message;	 ///< Cached exception message
 
-  public:
-    /**
-     * @brief Construct a new System Not Found Exception object.
-     */
-    SystemNotFoundException(void) = default;
+		public:
+		/**
+		 * @brief Construct a new System Not Found Exception object.
+		 */
+		SystemNotFoundException(void) = default;
 
-    /**
-     * @brief Get the exception message.
-     * @return The exception message.
-     */
-    const char *what(void) const noexcept override {
-        if (_message.empty()) {
-            _message = "System of type " + _systemName + " not found";
-        }
-        return _message.c_str();
-    }
+		/**
+		 * @brief Get the exception message.
+		 * @return The exception message.
+		 */
+		const char *what(void) const noexcept override
+		{
+			if (_message.empty()) {
+				_message = "System of type " + _systemName + " not found";
+			}
+			return _message.c_str();
+		}
 
-    /**
-     * @brief Get the type index of the missing system.
-     * @return The type index of the missing system.
-     */
-    std::type_index getSystemTypeIndex(void) const { return _systemIndex; }
-};
+		/**
+		 * @brief Get the type index of the missing system.
+		 * @return The type index of the missing system.
+		 */
+		std::type_index getSystemTypeIndex(void) const
+		{
+			return _systemIndex;
+		}
+	};
 
-/**
- * @brief Non-template base class for managing systems within the ECS
- * architecture.
- *
- * This base class provides common functionality that doesn't depend on
- * system types.
- * @see System
- */
-class SystemRegistry
-    : public utility::logging::Loggable<SystemRegistry,
-                                        utility::logging::StandardLogger> {
-  private:
-    std::map<std::type_index, std::unique_ptr<System>>
-        _systems; ///< Map of registered systems
+	/**
+	 * @brief Non-template base class for managing systems within the ECS
+	 * architecture.
+	 *
+	 * This base class provides common functionality that doesn't depend on
+	 * system types.
+	 * @see System
+	 */
+	class SystemRegistry:
+		public utility::logging::Loggable<SystemRegistry,
+										  utility::logging::StandardLogger>
+	{
+		private:
+		std::map<std::type_index, std::unique_ptr<System>>
+			_systems;	 ///< Map of registered systems
 
-  public:
-    /**
-     * @brief Default constructor
-     */
-    SystemRegistry(void) = default;
+		public:
+		/**
+		 * @brief Default constructor
+		 */
+		SystemRegistry(void) = default;
 
-    /**
-     * @brief Default destructor
-     */
-    ~SystemRegistry(void) = default;
+		/**
+		 * @brief Default destructor
+		 */
+		~SystemRegistry(void) = default;
 
-    /**
-     * @brief Register a new system in the registry.
-     * @tparam SystemType The type of the system to register.
-     * @param system Unique pointer to the system instance.
-     * @note If a system of the same type is already registered, it is replaced.
-     */
-    template <InheritFromSystem SystemType>
-    void registerNewSystem(std::unique_ptr<SystemType> system) {
-        _systems[std::type_index(typeid(SystemType))] = std::move(system);
-        getLogger().debug("Registered system of type " +
-                          utility::demangle<SystemType>());
-    }
+		/**
+		 * @brief Register a new system in the registry.
+		 * @tparam SystemType The type of the system to register.
+		 * @param system Unique pointer to the system instance.
+		 * @note If a system of the same type is already registered, it is
+		 * replaced.
+		 */
+		template<InheritFromSystem SystemType>
+		void registerNewSystem(std::unique_ptr<SystemType> system)
+		{
+			_systems[std::type_index(typeid(SystemType))] = std::move(system);
+			getLogger().debug("Registered system of type "
+							  + utility::demangle<SystemType>());
+		}
 
-    /**
-     * @brief Retrieve a system from the registry.
-     * @tparam SystemType The type of the system to retrieve.
-     * @return Reference to the system instance.
-     * @throws SystemNotFoundException<SystemType> If the system is not found.
-     */
-    template <InheritFromSystem SystemType> SystemType &getSystem(void) {
-        auto iterator = _systems.find(std::type_index(typeid(SystemType)));
-        if (iterator == _systems.end()) {
-            throw SystemNotFoundException<SystemType>();
-        }
-        return *static_cast<SystemType *>(iterator->second.get());
-    }
+		/**
+		 * @brief Retrieve a system from the registry.
+		 * @tparam SystemType The type of the system to retrieve.
+		 * @return Reference to the system instance.
+		 * @throws SystemNotFoundException<SystemType> If the system is not
+		 * found.
+		 */
+		template<InheritFromSystem SystemType> SystemType &getSystem(void)
+		{
+			auto iterator = _systems.find(std::type_index(typeid(SystemType)));
+			if (iterator == _systems.end()) {
+				throw SystemNotFoundException<SystemType>();
+			}
+			return *static_cast<SystemType *>(iterator->second.get());
+		}
 
-    /**
-     * @brief Get all registered systems.
-     * @return Map of type indices to system instances.
-     */
-    const std::map<std::type_index, std::unique_ptr<System>> &
-    getSystems(void) const {
-        return _systems;
-    }
-};
+		/**
+		 * @brief Get all registered systems.
+		 * @return Map of type indices to system instances.
+		 */
+		const std::map<std::type_index, std::unique_ptr<System>> &
+			getSystems(void) const
+		{
+			return _systems;
+		}
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

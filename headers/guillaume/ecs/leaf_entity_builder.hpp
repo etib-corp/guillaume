@@ -24,49 +24,60 @@
 
 #include "guillaume/ecs/entity_builder.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Base builder for entities that can be attached to a parent entity.
- */
-template <typename EntityType>
-class LeafEntityBuilder : public EntityBuilder<EntityType> {
-  private:
-    Entity::Identifier _parentIdentifier{
-        Entity::InvalidIdentifier}; ///< Parent entity identifier
+	/**
+	 * @brief Base builder for entities that can be attached to a parent entity.
+	 */
+	template<typename EntityType> class LeafEntityBuilder:
+		public EntityBuilder<EntityType>
+	{
+		private:
+		Entity::Identifier _parentIdentifier {
+			Entity::InvalidIdentifier
+		};	  ///< Parent entity identifier
 
-  public:
-    /**
-     * @brief Constructor for the LeafEntityBuilder class.
-     * @param componentRegistry The component registry used to build entities.
-     * @param entityRegistry The entity registry used to build entities.
-     */
-    LeafEntityBuilder(ecs::ComponentRegistry &componentRegistry,
-                      ecs::EntityRegistry &entityRegistry)
-        : EntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
+		public:
+		/**
+		 * @brief Constructor for the LeafEntityBuilder class.
+		 * @param componentRegistry The component registry used to build
+		 * entities.
+		 * @param entityRegistry The entity registry used to build entities.
+		 */
+		LeafEntityBuilder(ecs::ComponentRegistry &componentRegistry,
+						  ecs::EntityRegistry &entityRegistry)
+			: EntityBuilder<EntityType>(componentRegistry, entityRegistry)
+		{
+		}
 
-    /**
-     * @brief Default destructor for the LeafEntityBuilder class.
-     */
-    virtual ~LeafEntityBuilder(void) = default;
+		/**
+		 * @brief Default destructor for the LeafEntityBuilder class.
+		 */
+		virtual ~LeafEntityBuilder(void) = default;
 
-    /**
-     * @brief Build and register the entity in the entity registry.
-     */
-    virtual void registerEntity(void) = 0;
+		/**
+		 * @brief Build and register the entity in the entity registry.
+		 */
+		virtual void registerEntity(void) = 0;
 
-    /**
-     * @brief Reset the builder to its initial state for creating a new entity.
-     */
-    void reset(void) { _parentIdentifier = Entity::InvalidIdentifier; }
+		/**
+		 * @brief Reset the builder to its initial state for creating a new
+		 * entity.
+		 */
+		void reset(void)
+		{
+			_parentIdentifier = Entity::InvalidIdentifier;
+		}
 
-    /**
-     * @brief Set the parent entity identifier for the entity being built.
-     * @param parentId The identifier of the parent entity.
-     */
-    void withParent(const Entity::Identifier &parentId) {
-        _parentIdentifier = parentId;
-    }
-};
+		/**
+		 * @brief Set the parent entity identifier for the entity being built.
+		 * @param parentId The identifier of the parent entity.
+		 */
+		void withParent(const Entity::Identifier &parentId)
+		{
+			_parentIdentifier = parentId;
+		}
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

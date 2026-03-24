@@ -26,14 +26,20 @@
 
 #include <guillaume/components/text.hpp>
 
-namespace guillaume::components::tests {
+namespace guillaume::components::tests
+{
 
-class TestText : public ::testing::Test {
-  protected:
-    TestText(void) = default;
-    ~TestText(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestText: public ::testing::Test
+	{
+		protected:
+		TestText(void)			 = default;
+		~TestText(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::components::tests
+}	 // namespace guillaume::components::tests

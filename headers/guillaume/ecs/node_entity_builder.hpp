@@ -26,56 +26,64 @@
 
 #include "guillaume/ecs/leaf_entity_builder.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Base builder for entities that can have a parent and child
- * relationships.
- */
-template <typename EntityType>
-class NodeEntityBuilder : public LeafEntityBuilder<EntityType> {
-  private:
-    std::vector<Entity::Identifier>
-        _childIdentifiers; ///< Child entity identifiers for the node being
-                           ///< built
+	/**
+	 * @brief Base builder for entities that can have a parent and child
+	 * relationships.
+	 */
+	template<typename EntityType> class NodeEntityBuilder:
+		public LeafEntityBuilder<EntityType>
+	{
+		private:
+		std::vector<Entity::Identifier>
+			_childIdentifiers;	  ///< Child entity identifiers for the node
+								  ///< being built
 
-  public:
-    /**
-     * @brief Constructor for the NodeEntityBuilder class.
-     * @param componentRegistry The component registry used to build entities.
-     * @param entityRegistry The entity registry used to build entities.
-     */
-    NodeEntityBuilder(ecs::ComponentRegistry &componentRegistry,
-                      ecs::EntityRegistry &entityRegistry)
-        : LeafEntityBuilder<EntityType>(componentRegistry, entityRegistry) {}
+		public:
+		/**
+		 * @brief Constructor for the NodeEntityBuilder class.
+		 * @param componentRegistry The component registry used to build
+		 * entities.
+		 * @param entityRegistry The entity registry used to build entities.
+		 */
+		NodeEntityBuilder(ecs::ComponentRegistry &componentRegistry,
+						  ecs::EntityRegistry &entityRegistry)
+			: LeafEntityBuilder<EntityType>(componentRegistry, entityRegistry)
+		{
+		}
 
-    /**
-     * @brief Default destructor for the NodeEntityBuilder class.
-     */
-    virtual ~NodeEntityBuilder(void) = default;
+		/**
+		 * @brief Default destructor for the NodeEntityBuilder class.
+		 */
+		virtual ~NodeEntityBuilder(void) = default;
 
-    /**
-     * @brief Build and register the entity in the entity registry.
-     */
-    virtual void registerEntity(void) override = 0;
+		/**
+		 * @brief Build and register the entity in the entity registry.
+		 */
+		virtual void registerEntity(void) override = 0;
 
-    /**
-     * @brief Reset the builder to its initial state for creating a new entity.
-     */
-    void reset(void) override {
-        LeafEntityBuilder<EntityType>::reset();
-        _childIdentifiers.clear();
-    }
+		/**
+		 * @brief Reset the builder to its initial state for creating a new
+		 * entity.
+		 */
+		void reset(void) override
+		{
+			LeafEntityBuilder<EntityType>::reset();
+			_childIdentifiers.clear();
+		}
 
-    /**
-     * @brief Add a child entity identifier to the node being built.
-     * @param childId The identifier of the child entity to add.
-     * @return Reference to the builder for chaining.
-     */
-    NodeEntityBuilder &withChild(const Entity::Identifier &childId) {
-        _childIdentifiers.push_back(childId);
-        return *this;
-    }
-};
+		/**
+		 * @brief Add a child entity identifier to the node being built.
+		 * @param childId The identifier of the child entity to add.
+		 * @return Reference to the builder for chaining.
+		 */
+		NodeEntityBuilder &withChild(const Entity::Identifier &childId)
+		{
+			_childIdentifiers.push_back(childId);
+			return *this;
+		}
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

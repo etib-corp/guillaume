@@ -29,57 +29,59 @@
 
 #include "storage.hpp"
 
-namespace guillaume {
+namespace guillaume
+{
 
-/**
- * @brief Session-scoped key-value storage.
- *
- * Values in this storage are shared between SessionStorage instances in the
- * same running process and are cleared when the process ends.
- */
-class SessionStorage : public Storage {
-  private:
-    static std::unordered_map<std::string, std::string>
-        _storage;             ///< Shared in-memory storage map
-    static std::mutex _mutex; ///< Synchronizes access to shared storage
+	/**
+	 * @brief Session-scoped key-value storage.
+	 *
+	 * Values in this storage are shared between SessionStorage instances in the
+	 * same running process and are cleared when the process ends.
+	 */
+	class SessionStorage: public Storage
+	{
+		private:
+		static std::unordered_map<std::string, std::string>
+			_storage;				 ///< Shared in-memory storage map
+		static std::mutex _mutex;	 ///< Synchronizes access to shared storage
 
-  public:
-    using Storage::setItem;
+		public:
+		using Storage::setItem;
 
-    /**
-     * @brief Default constructor.
-     */
-    SessionStorage(void) = default;
+		/**
+		 * @brief Default constructor.
+		 */
+		SessionStorage(void) = default;
 
-    /**
-     * @brief Virtual destructor.
-     */
-    ~SessionStorage(void) override = default;
+		/**
+		 * @brief Virtual destructor.
+		 */
+		~SessionStorage(void) override = default;
 
-    /**
-     * @brief Store a value for a key.
-     * @param key Storage key.
-     * @param value String value to store.
-     */
-    void setItem(const std::string &key, const std::string &value) override;
+		/**
+		 * @brief Store a value for a key.
+		 * @param key Storage key.
+		 * @param value String value to store.
+		 */
+		void setItem(const std::string &key, const std::string &value) override;
 
-    /**
-     * @brief Retrieve a value for a key.
-     * @param key Storage key.
-     * @return Stored value when found, std::nullopt otherwise.
-     */
-    std::optional<std::string> getItem(const std::string &key) override;
+		/**
+		 * @brief Retrieve a value for a key.
+		 * @param key Storage key.
+		 * @return Stored value when found, std::nullopt otherwise.
+		 */
+		std::optional<std::string> getItem(const std::string &key) override;
 
-    /**
-     * @brief Remove a key and its value.
-     * @param key Storage key.
-     */
-    void removeItem(const std::string &key) override;
+		/**
+		 * @brief Remove a key and its value.
+		 * @param key Storage key.
+		 */
+		void removeItem(const std::string &key) override;
 
-    /**
-     * @brief Remove all keys and values.
-     */
-    void clear(void) override;
-};
+		/**
+		 * @brief Remove all keys and values.
+		 */
+		void clear(void) override;
+	};
 
-} // namespace guillaume
+}	 // namespace guillaume

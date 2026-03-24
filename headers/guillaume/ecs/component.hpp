@@ -24,33 +24,35 @@
 
 #include <type_traits>
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Base class for all components in the ECS architecture.
- *
- * Components are data containers that hold specific attributes or properties
- * of an entity. They do not contain any behavior or logic; that is the role
- * of systems.
- */
-class Component {
-  public:
-    /**
-     * @brief Default constructor for the Component class.
-     */
-    Component(void) = default;
+	/**
+	 * @brief Base class for all components in the ECS architecture.
+	 *
+	 * Components are data containers that hold specific attributes or
+	 * properties of an entity. They do not contain any behavior or logic; that
+	 * is the role of systems.
+	 */
+	class Component
+	{
+		public:
+		/**
+		 * @brief Default constructor for the Component class.
+		 */
+		Component(void) = default;
 
-    /**
-     * @brief Virtual destructor for the Component base class.
-     */
-    virtual ~Component(void) = default;
-};
+		/**
+		 * @brief Virtual destructor for the Component base class.
+		 */
+		virtual ~Component(void) = default;
+	};
 
-/**
- * @brief Concept to ensure a type inherits from Component.
- * @tparam Type The type to check.
- */
-template <typename Type>
-concept InheritFromComponent = std::is_base_of_v<Component, Type>;
+	/**
+	 * @brief Concept to ensure a type inherits from Component.
+	 * @tparam Type The type to check.
+	 */
+	template<typename Type>
+	concept InheritFromComponent = std::is_base_of_v<Component, Type>;
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs
