@@ -22,4 +22,6 @@
 
 #include "guillaume/ecs/entity_filler.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs
+{
+}	 // namespace guillaume::ecs

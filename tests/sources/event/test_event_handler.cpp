@@ -22,4 +22,6 @@
 
 #include "event/test_event_handler.hpp"
 
-namespace guillaume::event::tests {} // namespace guillaume::event::tests
+namespace guillaume::event::tests
+{
+}	 // namespace guillaume::event::tests

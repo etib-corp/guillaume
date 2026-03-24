@@ -22,4 +22,6 @@
 
 #include "guillaume/event/event_subscriber.hpp"
 
-namespace guillaume::event {} // namespace guillaume::event
+namespace guillaume::event
+{
+}	 // namespace guillaume::event

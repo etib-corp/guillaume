@@ -22,4 +22,6 @@
 
 #include "ecs/test_entity.hpp"
 
-namespace guillaume::ecs::tests {} // namespace guillaume::ecs::tests
+namespace guillaume::ecs::tests
+{
+}	 // namespace guillaume::ecs::tests

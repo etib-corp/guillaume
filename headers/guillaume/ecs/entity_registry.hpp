@@ -27,52 +27,55 @@
 
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Registry that tracks scene-owned entities and their signatures.
- */
-class EntityRegistry {
-  private:
-    std::vector<std::unique_ptr<Entity>>
-        _entities; ///< Entities registered in the scene
+	/**
+	 * @brief Registry that tracks scene-owned entities and their signatures.
+	 */
+	class EntityRegistry
+	{
+		private:
+		std::vector<std::unique_ptr<Entity>>
+			_entities;	  ///< Entities registered in the scene
 
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    EntityRegistry(void) = default;
+		public:
+		/**
+		 * @brief Default constructor.
+		 */
+		EntityRegistry(void) = default;
 
-    /**
-     * @brief Default destructor.
-     */
-    ~EntityRegistry(void) = default;
+		/**
+		 * @brief Default destructor.
+		 */
+		~EntityRegistry(void) = default;
 
-    /**
-     * @brief Register an entity in the registry.
-     * @param entity The entity to register.
-     */
-    void addEntity(std::unique_ptr<Entity> entity);
+		/**
+		 * @brief Register an entity in the registry.
+		 * @param entity The entity to register.
+		 */
+		void addEntity(std::unique_ptr<Entity> entity);
 
-    /**
-     * @brief Get all registered entities.
-     * @return Const reference to registered entities.
-     */
-    const std::vector<std::unique_ptr<Entity>> &getEntities(void) const {
-        return _entities;
-    }
+		/**
+		 * @brief Get all registered entities.
+		 * @return Const reference to registered entities.
+		 */
+		const std::vector<std::unique_ptr<Entity>> &getEntities(void) const
+		{
+			return _entities;
+		}
 
-    /**
-     * @brief Get all registered entity identifier that match the specified
-     * signature.
-     * @param systemSignature The signature to match against registered
-     * entities.
-     * @return A vector containing matching entity identifiers.
-     * @note This is used for systems to query entities that match their
-     * required component signature.
-     */
-    std::vector<Entity::Identifier>
-    getEntityWithSignature(Entity::Signature systemSignature) const;
-};
+		/**
+		 * @brief Get all registered entity identifier that match the specified
+		 * signature.
+		 * @param systemSignature The signature to match against registered
+		 * entities.
+		 * @return A vector containing matching entity identifiers.
+		 * @note This is used for systems to query entities that match their
+		 * required component signature.
+		 */
+		std::vector<Entity::Identifier>
+			getEntityWithSignature(Entity::Signature systemSignature) const;
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

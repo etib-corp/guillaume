@@ -26,14 +26,20 @@
 
 #include <guillaume/application.hpp>
 
-namespace guillaume::tests {
+namespace guillaume::tests
+{
 
-class TestApplication : public ::testing::Test {
-  protected:
-    TestApplication(void) = default;
-    ~TestApplication(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestApplication: public ::testing::Test
+	{
+		protected:
+		TestApplication(void)			= default;
+		~TestApplication(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::tests
+}	 // namespace guillaume::tests

@@ -26,14 +26,20 @@
 
 #include <guillaume/systems/keyboard_control.hpp>
 
-namespace guillaume::systems::tests {
+namespace guillaume::systems::tests
+{
 
-class TestSystemsKeyboardControl : public ::testing::Test {
-  protected:
-    TestSystemsKeyboardControl(void) = default;
-    ~TestSystemsKeyboardControl(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestSystemsKeyboardControl: public ::testing::Test
+	{
+		protected:
+		TestSystemsKeyboardControl(void)		   = default;
+		~TestSystemsKeyboardControl(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::systems::tests
+}	 // namespace guillaume::systems::tests

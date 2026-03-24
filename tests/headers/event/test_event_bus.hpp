@@ -26,14 +26,20 @@
 
 #include <guillaume/event/event_bus.hpp>
 
-namespace guillaume::event::tests {
+namespace guillaume::event::tests
+{
 
-class TestEventBus : public ::testing::Test {
-  protected:
-    TestEventBus(void) = default;
-    ~TestEventBus(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestEventBus: public ::testing::Test
+	{
+		protected:
+		TestEventBus(void)			 = default;
+		~TestEventBus(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::event::tests
+}	 // namespace guillaume::event::tests

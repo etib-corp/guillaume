@@ -22,4 +22,6 @@
 
 #include "guillaume/components/bound.hpp"
 
-namespace guillaume::components {} // namespace guillaume::components
+namespace guillaume::components
+{
+}	 // namespace guillaume::components

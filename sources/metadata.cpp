@@ -22,4 +22,6 @@
 
 #include "guillaume/metadata.hpp"
 
-namespace guillaume {} // namespace guillaume
+namespace guillaume
+{
+}	 // namespace guillaume

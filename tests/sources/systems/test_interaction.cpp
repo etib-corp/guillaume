@@ -22,4 +22,6 @@
 
 #include "systems/test_interaction.hpp"
 
-namespace guillaume::systems::tests {} // namespace guillaume::systems::tests
+namespace guillaume::systems::tests
+{
+}	 // namespace guillaume::systems::tests

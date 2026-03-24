@@ -26,80 +26,94 @@
 
 #include "guillaume/ecs/component.hpp"
 
-namespace guillaume::components {
+namespace guillaume::components
+{
 
-/**
- * @brief Component representing a transform in space.
- */
-class Transform : public ecs::Component {
-  public:
-    using Position = utility::math::Vector<float, 3>; ///< Position type
-    using Rotation = utility::math::Vector<float, 3>; ///< Rotation type
-    using Scale = utility::math::Vector<float, 3>;    ///< Scale type
+	/**
+	 * @brief Component representing a transform in space.
+	 */
+	class Transform: public ecs::Component
+	{
+		public:
+		using Position = utility::math::Vector<float, 3>;	 ///< Position type
+		using Rotation = utility::math::Vector<float, 3>;	 ///< Rotation type
+		using Scale	   = utility::math::Vector<float, 3>;	 ///< Scale type
 
-  private:
-    Position _position; ///< Position of the entity
-    Rotation _rotation; ///< Rotation of the entity
-    Scale _scale;       ///< Scale of the entity
+		private:
+		Position _position;	   ///< Position of the entity
+		Rotation _rotation;	   ///< Rotation of the entity
+		Scale _scale;		   ///< Scale of the entity
 
-  public:
-    /**
-     * @brief Default constructor for the Transform component.
-     */
-    Transform(void) = default;
+		public:
+		/**
+		 * @brief Default constructor for the Transform component.
+		 */
+		Transform(void) = default;
 
-    /**
-     * @brief Default destructor for the Transform component.
-     */
-    ~Transform(void) = default;
+		/**
+		 * @brief Default destructor for the Transform component.
+		 */
+		~Transform(void) = default;
 
-    /**
-     * @brief Get the position of the entity.
-     * @return The position vector.
-     */
-    Position getPosition(void) const { return _position; }
+		/**
+		 * @brief Get the position of the entity.
+		 * @return The position vector.
+		 */
+		Position getPosition(void) const
+		{
+			return _position;
+		}
 
-    /**
-     * @brief Set the position of the entity.
-     * @param position The new position vector.
-     * @return Reference to this Transform component for chaining.
-     */
-    Transform &setPosition(const Position &position) {
-        _position = position;
-        return *this;
-    }
+		/**
+		 * @brief Set the position of the entity.
+		 * @param position The new position vector.
+		 * @return Reference to this Transform component for chaining.
+		 */
+		Transform &setPosition(const Position &position)
+		{
+			_position = position;
+			return *this;
+		}
 
-    /**
-     * @brief Get the rotation of the entity.
-     * @return The rotation vector.
-     */
-    Rotation getRotation(void) const { return _rotation; }
+		/**
+		 * @brief Get the rotation of the entity.
+		 * @return The rotation vector.
+		 */
+		Rotation getRotation(void) const
+		{
+			return _rotation;
+		}
 
-    /**
-     * @brief Set the rotation of the entity.
-     * @param rotation The new rotation vector.
-     * @return Reference to this Transform component for chaining.
-     */
-    Transform &setRotation(const Rotation &rotation) {
-        _rotation = rotation;
-        return *this;
-    }
+		/**
+		 * @brief Set the rotation of the entity.
+		 * @param rotation The new rotation vector.
+		 * @return Reference to this Transform component for chaining.
+		 */
+		Transform &setRotation(const Rotation &rotation)
+		{
+			_rotation = rotation;
+			return *this;
+		}
 
-    /**
-     * @brief Get the scale of the entity.
-     * @return The scale vector.
-     */
-    Scale getScale(void) const { return _scale; }
+		/**
+		 * @brief Get the scale of the entity.
+		 * @return The scale vector.
+		 */
+		Scale getScale(void) const
+		{
+			return _scale;
+		}
 
-    /**
-     * @brief Set the scale of the entity.
-     * @param scale The new scale vector.
-     * @return Reference to this Transform component for chaining.
-     */
-    Transform &setScale(const Scale &scale) {
-        _scale = scale;
-        return *this;
-    }
-};
+		/**
+		 * @brief Set the scale of the entity.
+		 * @param scale The new scale vector.
+		 * @return Reference to this Transform component for chaining.
+		 */
+		Transform &setScale(const Scale &scale)
+		{
+			_scale = scale;
+			return *this;
+		}
+	};
 
-} // namespace guillaume::components
+}	 // namespace guillaume::components

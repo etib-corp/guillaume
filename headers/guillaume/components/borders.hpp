@@ -26,100 +26,124 @@
 
 #include "guillaume/ecs/component.hpp"
 
-namespace guillaume::components {
+namespace guillaume::components
+{
 
-/**
- * @brief Component representing a borders.
- */
-class Borders : public ecs::Component {
-  public:
-    using BorderRadius =
-        std::float_t; ///< Type representing the border radius of the border
+	/**
+	 * @brief Component representing a borders.
+	 */
+	class Borders: public ecs::Component
+	{
+		public:
+		using BorderRadius = std::float_t;	  ///< Type representing the border
+											  ///< radius of the border
 
-  private:
-    BorderRadius _topLeftRadius;  ///< Borders radius for the top-left corner
-    BorderRadius _topRightRadius; ///< Borders radius for the top-right corner
-    BorderRadius
-        _bottomRightRadius; ///< Borders radius for the bottom-right corner
-    BorderRadius
-        _bottomLeftRadius; ///< Borders radius for the bottom-left corner
+		private:
+		BorderRadius
+			_topLeftRadius;	   ///< Borders radius for the top-left corner
+		BorderRadius
+			_topRightRadius;	///< Borders radius for the top-right corner
+		BorderRadius _bottomRightRadius;	///< Borders radius for the
+											///< bottom-right corner
+		BorderRadius
+			_bottomLeftRadius;	  ///< Borders radius for the bottom-left corner
 
-  public:
-    /**
-     * @brief Constructor for the Borders component.
-     */
-    explicit Borders(void)
-        : _topLeftRadius(0.0f), _topRightRadius(0.0f), _bottomRightRadius(0.0f),
-          _bottomLeftRadius(0.0f) {}
+		public:
+		/**
+		 * @brief Constructor for the Borders component.
+		 */
+		explicit Borders(void)
+			: _topLeftRadius(0.0f)
+			, _topRightRadius(0.0f)
+			, _bottomRightRadius(0.0f)
+			, _bottomLeftRadius(0.0f)
+		{
+		}
 
-    /**
-     * @brief Default destructor for the Borders component.
-     */
-    ~Borders(void) = default;
+		/**
+		 * @brief Default destructor for the Borders component.
+		 */
+		~Borders(void) = default;
 
-    /**
-     * @brief Get the border radius for the top-left corner.
-     * @return The border radius for the top-left corner.
-     */
-    BorderRadius getTopLeftRadius(void) const { return _topLeftRadius; }
+		/**
+		 * @brief Get the border radius for the top-left corner.
+		 * @return The border radius for the top-left corner.
+		 */
+		BorderRadius getTopLeftRadius(void) const
+		{
+			return _topLeftRadius;
+		}
 
-    /**
-     * @brief Set the border radius for the top-left corner.
-     * @param radius The new border radius for the top-left corner.
-     * @return Reference to this Borders component for chaining.
-     */
-    Borders &setTopLeftRadius(BorderRadius radius) {
-        _topLeftRadius = radius;
-        return *this;
-    }
+		/**
+		 * @brief Set the border radius for the top-left corner.
+		 * @param radius The new border radius for the top-left corner.
+		 * @return Reference to this Borders component for chaining.
+		 */
+		Borders &setTopLeftRadius(BorderRadius radius)
+		{
+			_topLeftRadius = radius;
+			return *this;
+		}
 
-    /**
-     * @brief Get the border radius for the top-right corner.
-     * @return The border radius for the top-right corner.
-     */
-    BorderRadius getTopRightRadius(void) const { return _topRightRadius; }
+		/**
+		 * @brief Get the border radius for the top-right corner.
+		 * @return The border radius for the top-right corner.
+		 */
+		BorderRadius getTopRightRadius(void) const
+		{
+			return _topRightRadius;
+		}
 
-    /**
-     * @brief Set the border radius for the top-right corner.
-     * @param radius The new border radius for the top-right corner.
-     * @return Reference to this Borders component for chaining.
-     */
-    Borders &setTopRightRadius(BorderRadius radius) {
-        _topRightRadius = radius;
-        return *this;
-    }
+		/**
+		 * @brief Set the border radius for the top-right corner.
+		 * @param radius The new border radius for the top-right corner.
+		 * @return Reference to this Borders component for chaining.
+		 */
+		Borders &setTopRightRadius(BorderRadius radius)
+		{
+			_topRightRadius = radius;
+			return *this;
+		}
 
-    /**
-     * @brief Get the border radius for the bottom-right corner.
-     * @return The border radius for the bottom-right corner.
-     */
-    BorderRadius getBottomRightRadius(void) const { return _bottomRightRadius; }
+		/**
+		 * @brief Get the border radius for the bottom-right corner.
+		 * @return The border radius for the bottom-right corner.
+		 */
+		BorderRadius getBottomRightRadius(void) const
+		{
+			return _bottomRightRadius;
+		}
 
-    /**
-     * @brief Set the border radius for the bottom-right corner.
-     * @param radius The new border radius for the bottom-right corner.
-     * @return Reference to this Borders component for chaining.
-     */
-    Borders &setBottomRightRadius(BorderRadius radius) {
-        _bottomRightRadius = radius;
-        return *this;
-    }
+		/**
+		 * @brief Set the border radius for the bottom-right corner.
+		 * @param radius The new border radius for the bottom-right corner.
+		 * @return Reference to this Borders component for chaining.
+		 */
+		Borders &setBottomRightRadius(BorderRadius radius)
+		{
+			_bottomRightRadius = radius;
+			return *this;
+		}
 
-    /**
-     * @brief Get the border radius for the bottom-left corner.
-     * @return The border radius for the bottom-left corner.
-     */
-    BorderRadius getBottomLeftRadius(void) const { return _bottomLeftRadius; }
+		/**
+		 * @brief Get the border radius for the bottom-left corner.
+		 * @return The border radius for the bottom-left corner.
+		 */
+		BorderRadius getBottomLeftRadius(void) const
+		{
+			return _bottomLeftRadius;
+		}
 
-    /**
-     * @brief Set the border radius for the bottom-left corner.
-     * @param radius The new border radius for the bottom-left corner.
-     * @return Reference to this Borders component for chaining.
-     */
-    Borders &setBottomLeftRadius(BorderRadius radius) {
-        _bottomLeftRadius = radius;
-        return *this;
-    }
-};
+		/**
+		 * @brief Set the border radius for the bottom-left corner.
+		 * @param radius The new border radius for the bottom-left corner.
+		 * @return Reference to this Borders component for chaining.
+		 */
+		Borders &setBottomLeftRadius(BorderRadius radius)
+		{
+			_bottomLeftRadius = radius;
+			return *this;
+		}
+	};
 
-} // namespace guillaume::components
+}	 // namespace guillaume::components

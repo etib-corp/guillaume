@@ -22,4 +22,6 @@
 
 #include "event/test_event_bus.hpp"
 
-namespace guillaume::event::tests {} // namespace guillaume::event::tests
+namespace guillaume::event::tests
+{
+}	 // namespace guillaume::event::tests

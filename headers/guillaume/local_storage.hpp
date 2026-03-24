@@ -31,77 +31,80 @@
 
 struct sqlite3;
 
-namespace guillaume {
+namespace guillaume
+{
 
-/**
- * @brief Persistent key-value storage backed by an SQLite database.
- *
- * Values stored in this class survive across application restarts as long as
- * the same database file path is used.
- */
-class LocalStorage : public Storage {
-  private:
-    std::filesystem::path _storageFilePath; ///< Backing SQLite database file
-    sqlite3 *_database;                     ///< SQLite connection handle
-    mutable std::mutex _mutex;              ///< Synchronizes SQLite access
+	/**
+	 * @brief Persistent key-value storage backed by an SQLite database.
+	 *
+	 * Values stored in this class survive across application restarts as long
+	 * as the same database file path is used.
+	 */
+	class LocalStorage: public Storage
+	{
+		private:
+		std::filesystem::path
+			_storageFilePath;		  ///< Backing SQLite database file
+		sqlite3 *_database;			  ///< SQLite connection handle
+		mutable std::mutex _mutex;	  ///< Synchronizes SQLite access
 
-    /**
-     * @brief Initialize database schema.
-     */
-    void initializeSchema(void);
+		/**
+		 * @brief Initialize database schema.
+		 */
+		void initializeSchema(void);
 
-    /**
-     * @brief Execute a SQL statement that does not return rows.
-     * @param sql SQL statement to execute.
-     * @return True on success, false otherwise.
-     */
-    bool executeStatement(const std::string &sql) const;
+		/**
+		 * @brief Execute a SQL statement that does not return rows.
+		 * @param sql SQL statement to execute.
+		 * @return True on success, false otherwise.
+		 */
+		bool executeStatement(const std::string &sql) const;
 
-  public:
-    using Storage::setItem;
+		public:
+		using Storage::setItem;
 
-    /**
-     * @brief Construct a new LocalStorage object.
-     * @param storageFilePath Backing SQLite database file path.
-     */
-    explicit LocalStorage(
-        const std::filesystem::path &storageFilePath = defaultStoragePath());
+		/**
+		 * @brief Construct a new LocalStorage object.
+		 * @param storageFilePath Backing SQLite database file path.
+		 */
+		explicit LocalStorage(const std::filesystem::path &storageFilePath =
+								  defaultStoragePath());
 
-    /**
-     * @brief Virtual destructor.
-     */
-    ~LocalStorage(void) override;
+		/**
+		 * @brief Virtual destructor.
+		 */
+		~LocalStorage(void) override;
 
-    /**
-     * @brief Store a value for a key.
-     * @param key Storage key.
-     * @param value String value to store.
-     */
-    void setItem(const std::string &key, const std::string &value) override;
+		/**
+		 * @brief Store a value for a key.
+		 * @param key Storage key.
+		 * @param value String value to store.
+		 */
+		void setItem(const std::string &key, const std::string &value) override;
 
-    /**
-     * @brief Retrieve a value for a key.
-     * @param key Storage key.
-     * @return Stored value when found, std::nullopt otherwise.
-     */
-    std::optional<std::string> getItem(const std::string &key) override;
+		/**
+		 * @brief Retrieve a value for a key.
+		 * @param key Storage key.
+		 * @return Stored value when found, std::nullopt otherwise.
+		 */
+		std::optional<std::string> getItem(const std::string &key) override;
 
-    /**
-     * @brief Remove a key and its value.
-     * @param key Storage key.
-     */
-    void removeItem(const std::string &key) override;
+		/**
+		 * @brief Remove a key and its value.
+		 * @param key Storage key.
+		 */
+		void removeItem(const std::string &key) override;
 
-    /**
-     * @brief Remove all keys and values.
-     */
-    void clear(void) override;
+		/**
+		 * @brief Remove all keys and values.
+		 */
+		void clear(void) override;
 
-    /**
-     * @brief Get the default local storage path.
-     * @return Default storage path.
-     */
-    static std::filesystem::path defaultStoragePath(void);
-};
+		/**
+		 * @brief Get the default local storage path.
+		 * @return Default storage path.
+		 */
+		static std::filesystem::path defaultStoragePath(void);
+	};
 
-} // namespace guillaume
+}	 // namespace guillaume

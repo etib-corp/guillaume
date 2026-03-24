@@ -24,43 +24,51 @@
 
 #include "guillaume/systems/text_render.hpp"
 
-namespace guillaume::systems {
+namespace guillaume::systems
+{
 
-TextRender::TextRender(Renderer &renderer)
-    : ecs::SystemFiller<components::Transform, components::Text>(),
-      _renderer(renderer),
-      _defaultFontPath(
-          "assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf") {}
+	TextRender::TextRender(Renderer &renderer)
+		: ecs::SystemFiller<components::Transform, components::Text>()
+		, _renderer(renderer)
+		, _defaultFontPath(
+			  "assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf")
+	{
+	}
 
-TextRender::~TextRender(void) {}
+	TextRender::~TextRender(void)
+	{
+	}
 
-void TextRender::update(ecs::ComponentRegistry &componentRegistry,
-                        const ecs::Entity::Identifier &entityIdentifier) {
-    getLogger().debug("Updating TextRender system for entity " +
-                      std::to_string(entityIdentifier));
-    if (!componentRegistry.hasComponent<components::Text>(entityIdentifier) ||
-        !componentRegistry.hasComponent<components::Transform>(
-            entityIdentifier)) {
-        getLogger().warning("Entity " + std::to_string(entityIdentifier) +
-                            " does not have Text and Transform components");
-        return;
-    }
+	void TextRender::update(ecs::ComponentRegistry &componentRegistry,
+							const ecs::Entity::Identifier &entityIdentifier)
+	{
+		getLogger().debug("Updating TextRender system for entity "
+						  + std::to_string(entityIdentifier));
+		if (!componentRegistry.hasComponent<components::Text>(entityIdentifier)
+			|| !componentRegistry.hasComponent<components::Transform>(
+				entityIdentifier)) {
+			getLogger().warning(
+				"Entity " + std::to_string(entityIdentifier)
+				+ " does not have Text and Transform components");
+			return;
+		}
 
-    const auto &transformComponent =
-        componentRegistry.getComponent<components::Transform>(entityIdentifier);
-    const auto &textComponent =
-        componentRegistry.getComponent<components::Text>(entityIdentifier);
+		const auto &transformComponent =
+			componentRegistry.getComponent<components::Transform>(
+				entityIdentifier);
+		const auto &textComponent =
+			componentRegistry.getComponent<components::Text>(entityIdentifier);
 
-    utility::graphics::Text text;
-    text.setPosition(transformComponent.getPosition())
-        .setRotation(transformComponent.getRotation())
-        .setScale(transformComponent.getScale())
-        .setColor(textComponent.getColor())
-        .setContent(textComponent.getContent())
-        .setFontSize(textComponent.getFontSize())
-        .setFontPath(_defaultFontPath);
+		utility::graphics::Text text;
+		text.setPosition(transformComponent.getPosition())
+			.setRotation(transformComponent.getRotation())
+			.setScale(transformComponent.getScale())
+			.setColor(textComponent.getColor())
+			.setContent(textComponent.getContent())
+			.setFontSize(textComponent.getFontSize())
+			.setFontPath(_defaultFontPath);
 
-    _renderer.drawText(text);
-}
+		_renderer.drawText(text);
+	}
 
-} // namespace guillaume::systems
+}	 // namespace guillaume::systems

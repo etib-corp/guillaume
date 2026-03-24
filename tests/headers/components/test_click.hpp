@@ -26,14 +26,20 @@
 
 #include <guillaume/components/click.hpp>
 
-namespace guillaume::components::tests {
+namespace guillaume::components::tests
+{
 
-class TestClick : public ::testing::Test {
-  protected:
-    TestClick(void) = default;
-    ~TestClick(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestClick: public ::testing::Test
+	{
+		protected:
+		TestClick(void)			  = default;
+		~TestClick(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::components::tests
+}	 // namespace guillaume::components::tests

@@ -26,40 +26,48 @@ SOFTWARE.
 
 #include "guillaume/ecs/component.hpp"
 
-namespace guillaume::components {
+namespace guillaume::components
+{
 
-/**
- * @brief Component representing a bounding parallelepiped.
- */
-class Bound : public ecs::Component {
-  public:
-    using Size = utility::math::Vector<float, 2>; ///< Size type
+	/**
+	 * @brief Component representing a bounding parallelepiped.
+	 */
+	class Bound: public ecs::Component
+	{
+		public:
+		using Size = utility::math::Vector<float, 2>;	 ///< Size type
 
-  private:
-    Size _size; ///< Size of the bounding parallelepiped
+		private:
+		Size _size;	   ///< Size of the bounding parallelepiped
 
-  public:
-    /**
-     * @brief Default constructor for the Bound component.
-     */
-    Bound(void) = default;
+		public:
+		/**
+		 * @brief Default constructor for the Bound component.
+		 */
+		Bound(void) = default;
 
-    /**
-     * @brief Default destructor for the Bound component.
-     */
-    ~Bound(void) = default;
+		/**
+		 * @brief Default destructor for the Bound component.
+		 */
+		~Bound(void) = default;
 
-    /**
-     * @brief Set the bounding parallelepiped.
-     * @param size The size of the bounding parallelepiped.
-     */
-    void setSize(const Size &size) { _size = size; };
+		/**
+		 * @brief Set the bounding parallelepiped.
+		 * @param size The size of the bounding parallelepiped.
+		 */
+		void setSize(const Size &size)
+		{
+			_size = size;
+		};
 
-    /**
-     * @brief Get the bounding parallelepiped.
-     * @return The bounding parallelepiped.
-     */
-    Size getSize(void) const { return _size; }
-};
+		/**
+		 * @brief Get the bounding parallelepiped.
+		 * @return The bounding parallelepiped.
+		 */
+		Size getSize(void) const
+		{
+			return _size;
+		}
+	};
 
-} // namespace guillaume::components
+}	 // namespace guillaume::components

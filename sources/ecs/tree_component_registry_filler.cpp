@@ -22,4 +22,6 @@
 
 #include "guillaume/ecs/tree_component_registry_filler.hpp"
 
-namespace guillaume::ecs {} // namespace guillaume::ecs
+namespace guillaume::ecs
+{
+}	 // namespace guillaume::ecs

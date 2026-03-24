@@ -33,26 +33,28 @@
 #include <utility/event/mouse_button_event.hpp>
 #include <utility/event/text_input_event.hpp>
 
-namespace simple_application {
+namespace simple_application
+{
 
-class EventHandler : public guillaume::event::EventHandler {
-  private:
-    utility::event::KeyboardEvent::ScanCode
-    convertScanCode(SDL_Scancode sdlScanCode);
+	class EventHandler: public guillaume::event::EventHandler
+	{
+		private:
+		utility::event::KeyboardEvent::ScanCode
+			convertScanCode(SDL_Scancode sdlScanCode);
 
-    utility::event::KeyboardEvent::KeyCode
-    convertKeyCode(SDL_Keycode sdlKeyCode);
+		utility::event::KeyboardEvent::KeyCode
+			convertKeyCode(SDL_Keycode sdlKeyCode);
 
-    utility::event::KeyboardEvent::KeyModifiers
-    convertKeyModifiers(SDL_Keymod modifiers);
+		utility::event::KeyboardEvent::KeyModifiers
+			convertKeyModifiers(SDL_Keymod modifiers);
 
-    utility::event::MouseButtonEvent::MouseButton
-    convertMouseButton(std::uint8_t sdlButton);
+		utility::event::MouseButtonEvent::MouseButton
+			convertMouseButton(std::uint8_t sdlButton);
 
-  public:
-    EventHandler(void);
-    ~EventHandler(void) override;
-    void pollEvents(void) override;
-};
+		public:
+		EventHandler(void);
+		~EventHandler(void) override;
+		void pollEvents(void) override;
+	};
 
-} // namespace simple_application
+}	 // namespace simple_application

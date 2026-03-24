@@ -26,14 +26,20 @@
 
 #include <guillaume/components/bound.hpp>
 
-namespace guillaume::components::tests {
+namespace guillaume::components::tests
+{
 
-class TestBound : public ::testing::Test {
-  protected:
-    TestBound(void) = default;
-    ~TestBound(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestBound: public ::testing::Test
+	{
+		protected:
+		TestBound(void)			  = default;
+		~TestBound(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::components::tests
+}	 // namespace guillaume::components::tests

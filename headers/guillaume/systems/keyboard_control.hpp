@@ -32,36 +32,39 @@
 #include <utility/event/event.hpp>
 #include <utility/event/keyboard_event.hpp>
 
-namespace guillaume::systems {
+namespace guillaume::systems
+{
 
-/**
- * @brief System handling keyboard control keys for text entities.
- * @see components::Text
- */
-class KeyboardControl
-    : public ecs::SystemFiller<components::Text, components::Focus> {
-  private:
-    event::EventSubscriber<utility::event::KeyboardEvent> _keyboardSubscriber;
+	/**
+	 * @brief System handling keyboard control keys for text entities.
+	 * @see components::Text
+	 */
+	class KeyboardControl:
+		public ecs::SystemFiller<components::Text, components::Focus>
+	{
+		private:
+		event::EventSubscriber<utility::event::KeyboardEvent>
+			_keyboardSubscriber;
 
-  public:
-    /**
-     * @brief Default constructor for the KeyboardControl system.
-     * @param eventBus The event bus to subscribe to.
-     */
-    KeyboardControl(event::EventBus &eventBus);
+		public:
+		/**
+		 * @brief Default constructor for the KeyboardControl system.
+		 * @param eventBus The event bus to subscribe to.
+		 */
+		KeyboardControl(event::EventBus &eventBus);
 
-    /**
-     * @brief Default destructor for the KeyboardControl system.
-     */
-    ~KeyboardControl(void) = default;
+		/**
+		 * @brief Default destructor for the KeyboardControl system.
+		 */
+		~KeyboardControl(void) = default;
 
-    /**
-     * @brief Update the KeyboardControl system for the specified entity.
-     * @param componentRegistry The component registry instance.
-     * @param entityIdentifier The identifier of the entity to update.
-     */
-    void update(ecs::ComponentRegistry &componentRegistry,
-                const ecs::Entity::Identifier &entityIdentifier) override;
-};
+		/**
+		 * @brief Update the KeyboardControl system for the specified entity.
+		 * @param componentRegistry The component registry instance.
+		 * @param entityIdentifier The identifier of the entity to update.
+		 */
+		void update(ecs::ComponentRegistry &componentRegistry,
+					const ecs::Entity::Identifier &entityIdentifier) override;
+	};
 
-} // namespace guillaume::systems
+}	 // namespace guillaume::systems

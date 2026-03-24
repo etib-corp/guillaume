@@ -22,4 +22,6 @@
 
 #include "test_application.hpp"
 
-namespace guillaume::tests {} // namespace guillaume::tests
+namespace guillaume::tests
+{
+}	 // namespace guillaume::tests

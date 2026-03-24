@@ -22,5 +22,6 @@
 
 #include "components/test_focus.hpp"
 
-namespace guillaume::components::tests {
-} // namespace guillaume::components::tests
+namespace guillaume::components::tests
+{
+}	 // namespace guillaume::components::tests

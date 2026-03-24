@@ -22,4 +22,6 @@
 
 #include "ecs/test_component.hpp"
 
-namespace guillaume::ecs::tests {} // namespace guillaume::ecs::tests
+namespace guillaume::ecs::tests
+{
+}	 // namespace guillaume::ecs::tests

@@ -22,4 +22,6 @@
 
 #include "guillaume/components/click.hpp"
 
-namespace guillaume::components {} // namespace guillaume::components
+namespace guillaume::components
+{
+}	 // namespace guillaume::components

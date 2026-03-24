@@ -24,47 +24,52 @@
 
 #include <memory>
 
-namespace guillaume::ecs::tests {
+namespace guillaume::ecs::tests
+{
 
-class DummyEntity : public Entity {};
+	class DummyEntity: public Entity
+	{
+	};
 
-TEST_F(TestEntityRegistry, AddEntityStoresIdentifierAndSignature) {
-    EntityRegistry registry;
-    auto entity = std::make_unique<DummyEntity>();
+	TEST_F(TestEntityRegistry, AddEntityStoresIdentifierAndSignature)
+	{
+		EntityRegistry registry;
+		auto entity = std::make_unique<DummyEntity>();
 
-    Entity::Signature signature;
-    signature.set(3);
-    entity->setSignature(signature);
+		Entity::Signature signature;
+		signature.set(3);
+		entity->setSignature(signature);
 
-    const auto identifier = entity->getIdentifier();
+		const auto identifier = entity->getIdentifier();
 
-    registry.addEntity(std::move(entity));
+		registry.addEntity(std::move(entity));
 
-    EXPECT_EQ(entity, nullptr);
+		EXPECT_EQ(entity, nullptr);
 
-    ASSERT_EQ(registry.getEntities().size(), 1U);
-    EXPECT_EQ(registry.getEntities().front()->getIdentifier(), identifier);
-    EXPECT_EQ(registry.getEntities().front()->getSignature(), signature);
+		ASSERT_EQ(registry.getEntities().size(), 1U);
+		EXPECT_EQ(registry.getEntities().front()->getIdentifier(), identifier);
+		EXPECT_EQ(registry.getEntities().front()->getSignature(), signature);
 
-    ASSERT_EQ(registry.getEntities().size(), 1U);
-    EXPECT_EQ(registry.getEntities().front()->getIdentifier(), identifier);
-}
+		ASSERT_EQ(registry.getEntities().size(), 1U);
+		EXPECT_EQ(registry.getEntities().front()->getIdentifier(), identifier);
+	}
 
-TEST_F(TestEntityRegistry, AddEntityTracksAllEntityIdentifiersInOrder) {
-    EntityRegistry registry;
-    auto firstEntity = std::make_unique<DummyEntity>();
-    auto secondEntity = std::make_unique<DummyEntity>();
+	TEST_F(TestEntityRegistry, AddEntityTracksAllEntityIdentifiersInOrder)
+	{
+		EntityRegistry registry;
+		auto firstEntity  = std::make_unique<DummyEntity>();
+		auto secondEntity = std::make_unique<DummyEntity>();
 
-    const auto firstIdentifier = firstEntity->getIdentifier();
-    const auto secondIdentifier = secondEntity->getIdentifier();
+		const auto firstIdentifier	= firstEntity->getIdentifier();
+		const auto secondIdentifier = secondEntity->getIdentifier();
 
-    registry.addEntity(std::move(firstEntity));
-    registry.addEntity(std::move(secondEntity));
+		registry.addEntity(std::move(firstEntity));
+		registry.addEntity(std::move(secondEntity));
 
-    const auto &entities = registry.getEntities();
-    ASSERT_EQ(entities.size(), 2U);
-    EXPECT_EQ(entities[0]->getIdentifier(), firstIdentifier);
-    EXPECT_EQ(entities[1]->getIdentifier(), secondIdentifier);
-}
+		const auto &entities = registry.getEntities();
+		ASSERT_EQ(entities.size(), 2U);
+		EXPECT_EQ(entities[0]->getIdentifier(), firstIdentifier);
+		EXPECT_EQ(entities[1]->getIdentifier(), secondIdentifier);
+	}
 
-} // namespace guillaume::ecs::tests
+}	 // namespace guillaume::ecs::tests

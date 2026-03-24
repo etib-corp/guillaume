@@ -26,65 +26,76 @@
 #include <exception>
 #include <string>
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Maximum number of distinct component types supported by signatures.
- */
-constexpr std::size_t MaxComponentTypes = 64;
+	/**
+	 * @brief Maximum number of distinct component types supported by
+	 * signatures.
+	 */
+	constexpr std::size_t MaxComponentTypes = 64;
 
-/**
- * @brief Exception thrown when the component type limit is exceeded.
- */
-class ComponentTypeLimitExceededException : public std::exception {
-  private:
-    std::string _message;
+	/**
+	 * @brief Exception thrown when the component type limit is exceeded.
+	 */
+	class ComponentTypeLimitExceededException: public std::exception
+	{
+		private:
+		std::string _message;
 
-  public:
-    /**
-     * @brief Construct a new Component Type Limit Exceeded Exception.
-     */
-    ComponentTypeLimitExceededException(void)
-        : _message("Exceeded maximum number of component types") {}
+		public:
+		/**
+		 * @brief Construct a new Component Type Limit Exceeded Exception.
+		 */
+		ComponentTypeLimitExceededException(void)
+			: _message("Exceeded maximum number of component types")
+		{
+		}
 
-    /**
-     * @brief Get the exception message.
-     * @return The exception message.
-     */
-    const char *what(void) const noexcept override { return _message.c_str(); }
-};
+		/**
+		 * @brief Get the exception message.
+		 * @return The exception message.
+		 */
+		const char *what(void) const noexcept override
+		{
+			return _message.c_str();
+		}
+	};
 
-/**
- * @brief Monotonic component type id generator.
- * @see MaxComponentTypes
- * @see ComponentTypeLimitExceededException
- */
-class ComponentTypeId {
-  public:
-    /**
-     * @brief Get a stable id for a component type.
-     * @tparam ComponentType The component type.
-     * @return A stable id within [0, MaxComponentTypes).
-     * @throws ComponentTypeLimitExceededException If the maximum number of
-     * component types has been exceeded.
-     */
-    template <typename ComponentType> static std::size_t get(void) {
-        static const std::size_t id = nextId();
-        return id;
-    }
+	/**
+	 * @brief Monotonic component type id generator.
+	 * @see MaxComponentTypes
+	 * @see ComponentTypeLimitExceededException
+	 */
+	class ComponentTypeId
+	{
+		public:
+		/**
+		 * @brief Get a stable id for a component type.
+		 * @tparam ComponentType The component type.
+		 * @return A stable id within [0, MaxComponentTypes).
+		 * @throws ComponentTypeLimitExceededException If the maximum number of
+		 * component types has been exceeded.
+		 */
+		template<typename ComponentType> static std::size_t get(void)
+		{
+			static const std::size_t id = nextId();
+			return id;
+		}
 
-  private:
-    /**
-     * @brief Generate the next available id.
-     * @return The next id.
-     */
-    static std::size_t nextId(void) {
-        static std::size_t currentId = 0;
-        if (currentId >= MaxComponentTypes) {
-            throw ComponentTypeLimitExceededException();
-        }
-        return currentId++;
-    }
-};
+		private:
+		/**
+		 * @brief Generate the next available id.
+		 * @return The next id.
+		 */
+		static std::size_t nextId(void)
+		{
+			static std::size_t currentId = 0;
+			if (currentId >= MaxComponentTypes) {
+				throw ComponentTypeLimitExceededException();
+			}
+			return currentId++;
+		}
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

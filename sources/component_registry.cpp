@@ -22,4 +22,6 @@
 
 #include "guillaume/component_registry.hpp"
 
-namespace guillaume {} // namespace guillaume
+namespace guillaume
+{
+}	 // namespace guillaume

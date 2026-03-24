@@ -26,14 +26,20 @@
 
 #include <guillaume/ecs/system_filler.hpp>
 
-namespace guillaume::ecs::tests {
+namespace guillaume::ecs::tests
+{
 
-class TestSystemFiller : public ::testing::Test {
-  protected:
-    TestSystemFiller(void) = default;
-    ~TestSystemFiller(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestSystemFiller: public ::testing::Test
+	{
+		protected:
+		TestSystemFiller(void)			 = default;
+		~TestSystemFiller(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace  guillaume::ecs::tests
+}	 // namespace  guillaume::ecs::tests

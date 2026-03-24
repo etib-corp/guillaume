@@ -22,5 +22,6 @@
 
 #include "components/test_text.hpp"
 
-namespace guillaume::components::tests {
-} // namespace guillaume::components::tests
+namespace guillaume::components::tests
+{
+}	 // namespace guillaume::components::tests

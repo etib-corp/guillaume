@@ -24,14 +24,20 @@
 
 #include <gtest/gtest.h>
 
-namespace guillaume::tests {
+namespace guillaume::tests
+{
 
-class Test : public ::testing::Test {
-  protected:
-    Test(void) = default;
-    ~Test(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class Test: public ::testing::Test
+	{
+		protected:
+		Test(void)			 = default;
+		~Test(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::tests
+}	 // namespace guillaume::tests

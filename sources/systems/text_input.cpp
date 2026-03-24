@@ -22,36 +22,40 @@
 
 #include "guillaume/systems/text_input.hpp"
 
-namespace guillaume::systems {
+namespace guillaume::systems
+{
 
-TextInput::TextInput(event::EventBus &eventBus)
-    : _textInputSubscriber(eventBus) {}
+	TextInput::TextInput(event::EventBus &eventBus)
+		: _textInputSubscriber(eventBus)
+	{
+	}
 
-void TextInput::update(ecs::ComponentRegistry &componentRegistry,
-                       const ecs::Entity::Identifier &entityIdentifier) {
-    getLogger().debug("Updating TextInput system for entity " +
-                      std::to_string(entityIdentifier));
-    if (!_textInputSubscriber.hasPendingEvents()) {
-        return;
-    }
+	void TextInput::update(ecs::ComponentRegistry &componentRegistry,
+						   const ecs::Entity::Identifier &entityIdentifier)
+	{
+		getLogger().debug("Updating TextInput system for entity "
+						  + std::to_string(entityIdentifier));
+		if (!_textInputSubscriber.hasPendingEvents()) {
+			return;
+		}
 
-    auto &text =
-        componentRegistry.getComponent<components::Text>(entityIdentifier);
-    std::string content = text.getContent();
+		auto &text =
+			componentRegistry.getComponent<components::Text>(entityIdentifier);
+		std::string content = text.getContent();
 
-    while (_textInputSubscriber.hasPendingEvents()) {
-        const auto textInputEvent = _textInputSubscriber.getNextEvent();
-        if (!textInputEvent) {
-            continue;
-        }
+		while (_textInputSubscriber.hasPendingEvents()) {
+			const auto textInputEvent = _textInputSubscriber.getNextEvent();
+			if (!textInputEvent) {
+				continue;
+			}
 
-        const auto committedText = textInputEvent->getText();
-        if (!committedText.empty()) {
-            content += committedText;
-        }
-    }
+			const auto committedText = textInputEvent->getText();
+			if (!committedText.empty()) {
+				content += committedText;
+			}
+		}
 
-    text.setContent(content);
-}
+		text.setContent(content);
+	}
 
-} // namespace guillaume::systems
+}	 // namespace guillaume::systems

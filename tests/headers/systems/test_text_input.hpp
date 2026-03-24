@@ -26,14 +26,20 @@
 
 #include <guillaume/systems/text_input.hpp>
 
-namespace guillaume::systems::tests {
+namespace guillaume::systems::tests
+{
 
-class TestSystemsTextInput : public ::testing::Test {
-  protected:
-    TestSystemsTextInput(void) = default;
-    ~TestSystemsTextInput(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestSystemsTextInput: public ::testing::Test
+	{
+		protected:
+		TestSystemsTextInput(void)			 = default;
+		~TestSystemsTextInput(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::systems::tests
+}	 // namespace guillaume::systems::tests

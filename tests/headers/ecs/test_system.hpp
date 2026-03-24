@@ -26,14 +26,20 @@
 
 #include <guillaume/ecs/system.hpp>
 
-namespace guillaume::ecs::tests {
+namespace guillaume::ecs::tests
+{
 
-class TestSystem : public ::testing::Test {
-  protected:
-    TestSystem(void) = default;
-    ~TestSystem(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestSystem: public ::testing::Test
+	{
+		protected:
+		TestSystem(void)		   = default;
+		~TestSystem(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::ecs::tests
+}	 // namespace guillaume::ecs::tests

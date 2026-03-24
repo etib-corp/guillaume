@@ -30,67 +30,72 @@
 
 #include <utility/event/event.hpp>
 
-namespace guillaume::event {
+namespace guillaume::event
+{
 
-/**
- * @brief Routes events to subscribed listeners.
- *
- * @code
- * event::EventBus bus;
- * bus.subscribe<utility::event::KeyboardEvent>(
- *     [](std::unique_ptr<utility::event::Event> event) {
- *         // Handle keyboard event.
- *     });
- * @endcode
- *
- * @see EventSubscriber
- * @see EventHandler
- */
-class EventBus {
-  public:
-    using Listener = std::function<void(
-        std::unique_ptr<utility::event::Event>)>; ///< Event listener type
-    using ListenerList = std::vector<Listener>;   ///< List of event listeners
+	/**
+	 * @brief Routes events to subscribed listeners.
+	 *
+	 * @code
+	 * event::EventBus bus;
+	 * bus.subscribe<utility::event::KeyboardEvent>(
+	 *     [](std::unique_ptr<utility::event::Event> event) {
+	 *         // Handle keyboard event.
+	 *     });
+	 * @endcode
+	 *
+	 * @see EventSubscriber
+	 * @see EventHandler
+	 */
+	class EventBus
+	{
+		public:
+		using Listener = std::function<void(
+			std::unique_ptr<utility::event::Event>)>;	 ///< Event listener
+														 ///< type
+		using ListenerList =
+			std::vector<Listener>;	  ///< List of event listeners
 
-  private:
-    std::map<std::type_index, ListenerList>
-        _typedListeners; ///< Per-type listeners
+		private:
+		std::map<std::type_index, ListenerList>
+			_typedListeners;	///< Per-type listeners
 
-    /**
-     * @brief Dispatch an event to a list of listeners.
-     * @param event Event to dispatch.
-     * @param listeners List of listeners to notify.
-     */
-    void dispatchToListeners(std::unique_ptr<utility::event::Event> event,
-                             ListenerList &listeners);
+		/**
+		 * @brief Dispatch an event to a list of listeners.
+		 * @param event Event to dispatch.
+		 * @param listeners List of listeners to notify.
+		 */
+		void dispatchToListeners(std::unique_ptr<utility::event::Event> event,
+								 ListenerList &listeners);
 
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    EventBus(void) = default;
+		public:
+		/**
+		 * @brief Default constructor.
+		 */
+		EventBus(void) = default;
 
-    /**
-     * @brief Default destructor.
-     */
-    ~EventBus(void) = default;
+		/**
+		 * @brief Default destructor.
+		 */
+		~EventBus(void) = default;
 
-    /**
-     * @brief Dispatch an event to listeners and systems.
-     * @param event Event to dispatch (ownership transferred).
-     * @note Listeners take ownership of the event instance.
-     */
-    void publish(std::unique_ptr<utility::event::Event> event);
+		/**
+		 * @brief Dispatch an event to listeners and systems.
+		 * @param event Event to dispatch (ownership transferred).
+		 * @note Listeners take ownership of the event instance.
+		 */
+		void publish(std::unique_ptr<utility::event::Event> event);
 
-    /**
-     * @brief Subscribe a listener to a specific event type.
-     * @tparam EventType The type of event to subscribe to.
-     * @param listener Listener to notify for matching events.
-     */
-    template <utility::event::InheritFromEvent EventType>
-    void subscribe(const Listener &listener) {
-        _typedListeners[typeid(EventType)].push_back(listener);
-    }
-};
+		/**
+		 * @brief Subscribe a listener to a specific event type.
+		 * @tparam EventType The type of event to subscribe to.
+		 * @param listener Listener to notify for matching events.
+		 */
+		template<utility::event::InheritFromEvent EventType>
+		void subscribe(const Listener &listener)
+		{
+			_typedListeners[typeid(EventType)].push_back(listener);
+		}
+	};
 
-} // namespace guillaume::event
+}	 // namespace guillaume::event

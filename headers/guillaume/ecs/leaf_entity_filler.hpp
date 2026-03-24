@@ -27,47 +27,54 @@
 
 #include "guillaume/ecs/components/parent.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief A leaf entity that have a parent but no children.
- * @tparam ComponentTypes The types of components this entity will have.
- */
-template <InheritFromComponent... ComponentTypes>
-class LeafEntityFiller
-    : public EntityFiller<ComponentTypes..., components::Parent> {
-  public:
-    /**
-     * @brief Construct a new LeafEntityFiller object.
-     * @param registry The component registry to register components to.
-     */
-    LeafEntityFiller(ecs::ComponentRegistry &registry)
-        : EntityFiller<ComponentTypes..., components::Parent>(registry) {}
+	/**
+	 * @brief A leaf entity that have a parent but no children.
+	 * @tparam ComponentTypes The types of components this entity will have.
+	 */
+	template<InheritFromComponent... ComponentTypes> class LeafEntityFiller:
+		public EntityFiller<ComponentTypes..., components::Parent>
+	{
+		public:
+		/**
+		 * @brief Construct a new LeafEntityFiller object.
+		 * @param registry The component registry to register components to.
+		 */
+		LeafEntityFiller(ecs::ComponentRegistry &registry)
+			: EntityFiller<ComponentTypes..., components::Parent>(registry)
+		{
+		}
 
-    /**
-     * @brief Default destructor for the LeafEntityFiller class.
-     */
-    virtual ~LeafEntityFiller(void) = default;
+		/**
+		 * @brief Default destructor for the LeafEntityFiller class.
+		 */
+		virtual ~LeafEntityFiller(void) = default;
 
-    /**
-     * @brief Get the parent entity identifier for this leaf entity.
-     * @return The identifier of the parent entity.
-     */
-    Entity::Identifier getParentIdentifier(void) const {
-        return this->getComponentRegistry()
-            .template getComponent<components::Parent>(this->getIdentifier())
-            .getParentIdentifier();
-    };
+		/**
+		 * @brief Get the parent entity identifier for this leaf entity.
+		 * @return The identifier of the parent entity.
+		 */
+		Entity::Identifier getParentIdentifier(void) const
+		{
+			return this->getComponentRegistry()
+				.template getComponent<components::Parent>(
+					this->getIdentifier())
+				.getParentIdentifier();
+		};
 
-    /**
-     * @brief Set the parent entity identifier for this leaf entity.
-     * @param parentIdentifier The identifier of the parent entity.
-     */
-    void setParentIdentifier(const Entity::Identifier &parentIdentifier) {
-        this->getComponentRegistry()
-            .template getComponent<components::Parent>(this->getIdentifier())
-            .setParentIdentifier(parentIdentifier);
-    };
-};
+		/**
+		 * @brief Set the parent entity identifier for this leaf entity.
+		 * @param parentIdentifier The identifier of the parent entity.
+		 */
+		void setParentIdentifier(const Entity::Identifier &parentIdentifier)
+		{
+			this->getComponentRegistry()
+				.template getComponent<components::Parent>(
+					this->getIdentifier())
+				.setParentIdentifier(parentIdentifier);
+		};
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

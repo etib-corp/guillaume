@@ -22,14 +22,16 @@
 
 #include "guillaume/ecs/system.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-void System::routine(ecs::ComponentRegistry &componentRegistry,
-                     ecs::EntityRegistry &entityRegistry) {
-    for (const auto &entityIdentifier :
-         entityRegistry.getEntityWithSignature(getSignature())) {
-        update(componentRegistry, entityIdentifier);
-    }
-}
+	void System::routine(ecs::ComponentRegistry &componentRegistry,
+						 ecs::EntityRegistry &entityRegistry)
+	{
+		for (const auto &entityIdentifier:
+			 entityRegistry.getEntityWithSignature(getSignature())) {
+			update(componentRegistry, entityIdentifier);
+		}
+	}
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

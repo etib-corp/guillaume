@@ -26,14 +26,20 @@
 
 #include <guillaume/components/focus.hpp>
 
-namespace guillaume::components::tests {
+namespace guillaume::components::tests
+{
 
-class TestFocus : public ::testing::Test {
-  protected:
-    TestFocus(void) = default;
-    ~TestFocus(void) override = default;
-    void SetUp(void) override {}
-    void TearDown(void) override {}
-};
+	class TestFocus: public ::testing::Test
+	{
+		protected:
+		TestFocus(void)			  = default;
+		~TestFocus(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-} // namespace guillaume::components::tests
+}	 // namespace guillaume::components::tests

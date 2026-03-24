@@ -28,62 +28,75 @@
 #include "guillaume/ecs/entity.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Base class for building entities with specific components.
- *
- * This class provides an interface for creating entities and managing their
- * components. It is intended to be inherited by specific entity builders that
- * define the components and structure of the entities they create.
- */
-template <typename EntityType> class EntityBuilder {
-  private:
-    ComponentRegistry &_componentRegistry; ///< Reference to the component
-                                           ///< registry for entity creation
-    EntityRegistry &_entityRegistry; ///< Reference to the entity registry for
-                                     ///< entity registration
+	/**
+	 * @brief Base class for building entities with specific components.
+	 *
+	 * This class provides an interface for creating entities and managing their
+	 * components. It is intended to be inherited by specific entity builders
+	 * that define the components and structure of the entities they create.
+	 */
+	template<typename EntityType> class EntityBuilder
+	{
+		private:
+		ComponentRegistry
+			&_componentRegistry;	///< Reference to the component
+									///< registry for entity creation
+		EntityRegistry
+			&_entityRegistry;	 ///< Reference to the entity registry for
+								 ///< entity registration
 
-  protected:
-    /**
-     * @brief Get the component registry reference.
-     * @return Reference to the component registry.
-     */
-    ComponentRegistry &getComponentRegistry(void) { return _componentRegistry; }
+		protected:
+		/**
+		 * @brief Get the component registry reference.
+		 * @return Reference to the component registry.
+		 */
+		ComponentRegistry &getComponentRegistry(void)
+		{
+			return _componentRegistry;
+		}
 
-    /**
-     * @brief Get the entity registry reference.
-     * @return Reference to the entity registry.
-     */
-    EntityRegistry &getEntityRegistry(void) { return _entityRegistry; }
+		/**
+		 * @brief Get the entity registry reference.
+		 * @return Reference to the entity registry.
+		 */
+		EntityRegistry &getEntityRegistry(void)
+		{
+			return _entityRegistry;
+		}
 
-  public:
-    /**
-     * @brief Default constructor for the EntityBuilder class.
-     * @param componentRegistry The component registry to use for entity
-     * construction.
-     * @param entityRegistry The entity registry to use for entity
-     * construction.
-     */
-    EntityBuilder(ecs::ComponentRegistry &componentRegistry,
-                  ecs::EntityRegistry &entityRegistry)
-        : _componentRegistry(componentRegistry),
-          _entityRegistry(entityRegistry) {}
+		public:
+		/**
+		 * @brief Default constructor for the EntityBuilder class.
+		 * @param componentRegistry The component registry to use for entity
+		 * construction.
+		 * @param entityRegistry The entity registry to use for entity
+		 * construction.
+		 */
+		EntityBuilder(ecs::ComponentRegistry &componentRegistry,
+					  ecs::EntityRegistry &entityRegistry)
+			: _componentRegistry(componentRegistry)
+			, _entityRegistry(entityRegistry)
+		{
+		}
 
-    /**
-     * @brief Default destructor for the EntityBuilder class.
-     */
-    virtual ~EntityBuilder(void) = default;
+		/**
+		 * @brief Default destructor for the EntityBuilder class.
+		 */
+		virtual ~EntityBuilder(void) = default;
 
-    /**
-     * @brief Build and register the entity in the entity registry.
-     */
-    virtual void registerEntity(void) = 0;
+		/**
+		 * @brief Build and register the entity in the entity registry.
+		 */
+		virtual void registerEntity(void) = 0;
 
-    /**
-     * @brief Reset the builder to its initial state for creating a new entity.
-     */
-    virtual void reset(void) = 0;
-};
+		/**
+		 * @brief Reset the builder to its initial state for creating a new
+		 * entity.
+		 */
+		virtual void reset(void) = 0;
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

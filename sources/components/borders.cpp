@@ -22,4 +22,6 @@
 
 #include "guillaume/components/borders.hpp"
 
-namespace guillaume::components {} // namespace guillaume::components
+namespace guillaume::components
+{
+}	 // namespace guillaume::components

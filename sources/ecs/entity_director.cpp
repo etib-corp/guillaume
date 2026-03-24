@@ -22,10 +22,15 @@
 
 #include "guillaume/ecs/entity_director.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-EntityDirector::EntityDirector(void) {}
+	EntityDirector::EntityDirector(void)
+	{
+	}
 
-EntityDirector::~EntityDirector(void) {}
+	EntityDirector::~EntityDirector(void)
+	{
+	}
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

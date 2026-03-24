@@ -24,28 +24,32 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 
-namespace guillaume::ecs {
+namespace guillaume::ecs
+{
 
-/**
- * @brief Templated registry helper that registers multiple component
- * types for an entity.
- * @tparam ComponentTypes The component types to register.
- * @see ComponentRegistry
- */
-template <InheritFromComponent... ComponentTypes>
-class ComponentRegistryFiller : public ComponentRegistry {
-  public:
-    /**
-     * @brief Default constructor.
-     */
-    ComponentRegistryFiller(void) : ComponentRegistry() {
-        (registerNewComponentType<ComponentTypes>(), ...);
-    }
+	/**
+	 * @brief Templated registry helper that registers multiple component
+	 * types for an entity.
+	 * @tparam ComponentTypes The component types to register.
+	 * @see ComponentRegistry
+	 */
+	template<InheritFromComponent... ComponentTypes>
+	class ComponentRegistryFiller: public ComponentRegistry
+	{
+		public:
+		/**
+		 * @brief Default constructor.
+		 */
+		ComponentRegistryFiller(void)
+			: ComponentRegistry()
+		{
+			(registerNewComponentType<ComponentTypes>(), ...);
+		}
 
-    /**
-     * @brief Default destructor for the Component Registry Filler class.
-     */
-    virtual ~ComponentRegistryFiller(void) = default;
-};
+		/**
+		 * @brief Default destructor for the Component Registry Filler class.
+		 */
+		virtual ~ComponentRegistryFiller(void) = default;
+	};
 
-} // namespace guillaume::ecs
+}	 // namespace guillaume::ecs

@@ -28,4 +28,6 @@
 #include "guillaume/components/transform.hpp"
 #include "guillaume/ecs/component_registry.hpp"
 
-namespace guillaume::systems::tests {} // namespace guillaume::systems::tests
+namespace guillaume::systems::tests
+{
+}	 // namespace guillaume::systems::tests

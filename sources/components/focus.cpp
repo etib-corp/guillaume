@@ -22,4 +22,6 @@
 
 #include "guillaume/components/focus.hpp"
 
-namespace guillaume::components {} // namespace guillaume::components
+namespace guillaume::components
+{
+}	 // namespace guillaume::components
