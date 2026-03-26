@@ -119,8 +119,7 @@ namespace guillaume
 	class ExtendedColor
 	{
 		public:
-		using Color =
-			utility::graphics::Color<std::uint8_t>;	   ///< Color type (RGBA)
+		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
 
 		private:
 		Color _color;
@@ -241,8 +240,7 @@ namespace guillaume
 	class Scheme
 	{
 		public:
-		using Color =
-			utility::graphics::Color<std::uint8_t>;	   ///< Color type (RGBA)
+		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
 
 		private:
 		std::array<ExtendedColor,

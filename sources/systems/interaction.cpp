@@ -31,6 +31,50 @@ namespace
 {
 
 	using WorldPosition = guillaume::components::Transform::Position;
+	using WorldRotation = guillaume::components::Transform::Rotation;
+
+	static WorldPosition
+		rotatePositionByQuaternion(const WorldPosition &position,
+								   const WorldRotation &rotation)
+	{
+		const auto normalizedRotation = rotation.normalizedQuaternion();
+		const float qx				  = normalizedRotation.getX();
+		const float qy				  = normalizedRotation.getY();
+		const float qz				  = normalizedRotation.getZ();
+		const float qw				  = normalizedRotation.getW();
+		const float positionX		  = position[0];
+		const float positionY		  = position[1];
+		const float positionZ		  = position[2];
+
+		const float crossX = (qy * positionZ) - (qz * positionY);
+		const float crossY = (qz * positionX) - (qx * positionZ);
+		const float crossZ = (qx * positionY) - (qy * positionX);
+
+		const float tX = 2.0f * crossX;
+		const float tY = 2.0f * crossY;
+		const float tZ = 2.0f * crossZ;
+
+		const float crossTX = (qy * tZ) - (qz * tY);
+		const float crossTY = (qz * tX) - (qx * tZ);
+		const float crossTZ = (qx * tY) - (qy * tX);
+
+		return WorldPosition({ positionX + (qw * tX) + crossTX,
+							   positionY + (qw * tY) + crossTY,
+							   positionZ + (qw * tZ) + crossTZ });
+	}
+
+	static float extractYawRadians(const WorldRotation &rotation)
+	{
+		const auto normalizedRotation = rotation.normalizedQuaternion();
+		const float x				  = normalizedRotation.getX();
+		const float y				  = normalizedRotation.getY();
+		const float z				  = normalizedRotation.getZ();
+		const float w				  = normalizedRotation.getW();
+
+		const float sinYaw = 2.0f * ((w * z) + (x * y));
+		const float cosYaw = 1.0f - (2.0f * ((y * y) + (z * z)));
+		return std::atan2(sinYaw, cosYaw);
+	}
 
 	struct WorldTransform {
 		guillaume::components::Transform::Position position;
@@ -75,18 +119,8 @@ namespace
 		scaledLocalPosition[2] =
 			worldTransform.position[2] * parentWorldTransform.scale[2];
 
-		constexpr float degreeToRadian = 0.01745329251994329576923690768489f;
-		const float parentRotationZRadians =
-			parentWorldTransform.rotation[2] * degreeToRadian;
-		const float cosine = std::cos(parentRotationZRadians);
-		const float sine   = std::sin(parentRotationZRadians);
-
-		guillaume::components::Transform::Position rotatedLocalPosition;
-		rotatedLocalPosition[0] =
-			scaledLocalPosition[0] * cosine - scaledLocalPosition[1] * sine;
-		rotatedLocalPosition[1] =
-			scaledLocalPosition[0] * sine + scaledLocalPosition[1] * cosine;
-		rotatedLocalPosition[2] = scaledLocalPosition[2];
+		const auto rotatedLocalPosition = rotatePositionByQuaternion(
+			scaledLocalPosition, parentWorldTransform.rotation);
 
 		worldTransform.position[0] =
 			parentWorldTransform.position[0] + rotatedLocalPosition[0];
@@ -95,9 +129,9 @@ namespace
 		worldTransform.position[2] =
 			parentWorldTransform.position[2] + rotatedLocalPosition[2];
 
-		worldTransform.rotation[0] += parentWorldTransform.rotation[0];
-		worldTransform.rotation[1] += parentWorldTransform.rotation[1];
-		worldTransform.rotation[2] += parentWorldTransform.rotation[2];
+		worldTransform.rotation =
+			parentWorldTransform.rotation * worldTransform.rotation;
+		worldTransform.rotation.normalizeQuaternion();
 
 		worldTransform.scale[0] *= parentWorldTransform.scale[0];
 		worldTransform.scale[1] *= parentWorldTransform.scale[1];
@@ -123,7 +157,8 @@ namespace
 			return std::nullopt;
 		}
 
-		return ray.pointAt(distanceParameter);
+		const auto point = ray.pointAt(distanceParameter);
+		return WorldPosition({ point[0], point[1], point[2] });
 	}
 
 	static WorldPosition computeEntityBoundCenter(
@@ -143,10 +178,9 @@ namespace
 		const guillaume::components::Transform::Scale &entityScale,
 		const guillaume::components::Transform::Rotation &entityRotation)
 	{
-		constexpr float degreeToRadian = 0.01745329251994329576923690768489f;
-		const float rotationRadians	   = -entityRotation[2] * degreeToRadian;
-		const float cosine			   = std::cos(rotationRadians);
-		const float sine			   = std::sin(rotationRadians);
+		const float rotationRadians = -extractYawRadians(entityRotation);
+		const float cosine			= std::cos(rotationRadians);
+		const float sine			= std::sin(rotationRadians);
 
 		const float dx = point[0] - entityCenter[0];
 		const float dy = point[1] - entityCenter[1];
@@ -352,12 +386,14 @@ namespace guillaume::systems
 		const auto worldMousePos = _renderer.getLastMousePosition();
 		const auto worldTransform =
 			calculateWorldTransform(componentRegistry, entityIdentifier);
-		const auto size = bound.getSize();
+		const auto size				  = bound.getSize();
+		const auto worldMousePosition = components::Transform::Position(
+			{ worldMousePos[0], worldMousePos[1], worldMousePos[2] });
 
 		const auto trueCenter = computeEntityBoundCenter(
 			worldTransform.position, size, worldTransform.scale);
 		const bool isInside = isPointInsideEntityBounds(
-			worldMousePos, trueCenter, size, worldTransform.scale,
+			worldMousePosition, trueCenter, size, worldTransform.scale,
 			worldTransform.rotation);
 
 		processHover(componentRegistry, entityIdentifier, isInside);

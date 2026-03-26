@@ -52,7 +52,7 @@ namespace guillaume::ecs
 			SystemType) };	  ///< Type index of the missing system
 		std::string _systemName {
 			_systemIndex.name()
-		};								 ///< Name of the missing system type
+		};	  ///< Name of the missing system type
 		mutable std::string _message;	 ///< Cached exception message
 
 		public:

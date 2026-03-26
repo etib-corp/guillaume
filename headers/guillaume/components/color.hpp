@@ -22,8 +22,9 @@
 
 #pragma once
 
+#include <utility/graphics/color.hpp>
+
 #include "guillaume/ecs/component.hpp"
-#include "utility/graphics/color.hpp"
 
 namespace guillaume::components
 {
@@ -34,7 +35,7 @@ namespace guillaume::components
 	class Color: public ecs::Component
 	{
 		private:
-		utility::graphics::Color<std::uint8_t> _color;	  ///< The color value
+		utility::graphics::Color32Bit _color;	 ///< The color value
 
 		public:
 		/**
@@ -54,7 +55,7 @@ namespace guillaume::components
 		 * @brief Get the color value.
 		 * @return The color value.
 		 */
-		const utility::graphics::Color<std::uint8_t> &getColor() const
+		const utility::graphics::Color32Bit &getColor() const
 		{
 			return _color;
 		}
@@ -64,7 +65,7 @@ namespace guillaume::components
 		 * @param color The new color value to set.
 		 * @return Reference to this Color component for chaining.
 		 */
-		Color &setColor(const utility::graphics::Color<std::uint8_t> &color)
+		Color &setColor(const utility::graphics::Color32Bit &color)
 		{
 			_color = color;
 			return *this;

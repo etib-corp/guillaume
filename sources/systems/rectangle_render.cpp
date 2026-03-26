@@ -28,6 +28,20 @@
 namespace guillaume::systems
 {
 
+	static float
+		extractYawRadians(const components::Transform::Rotation &rotation)
+	{
+		const auto normalizedRotation = rotation.normalizedQuaternion();
+		const float x				  = normalizedRotation.getX();
+		const float y				  = normalizedRotation.getY();
+		const float z				  = normalizedRotation.getZ();
+		const float w				  = normalizedRotation.getW();
+
+		const float sinYaw = 2.0f * ((w * z) + (x * y));
+		const float cosYaw = 1.0f - (2.0f * ((y * y) + (z * z)));
+		return std::atan2(sinYaw, cosYaw);
+	}
+
 	RectangleRender::Vec2 RectangleRender::rotateVec(const Vec2 &vec,
 													 const float angle)
 	{
@@ -108,8 +122,8 @@ namespace guillaume::systems
 		return worldVertices;
 	}
 
-	RectangleRender::Vertex RectangleRender::createVertex(
-		const Vec2 &pos, const utility::graphics::Color<uint8_t> &color)
+	RectangleRender::Vertex
+		RectangleRender::createVertex(const Vec2 &pos, const utility::graphics::Color32Bit &color)
 	{
 		Vertex v;
 		v.setPosition(Position({ pos[0], pos[1], 0.0f }));
@@ -188,7 +202,7 @@ namespace guillaume::systems
 
 		const Vec2 center(
 			{ position[0], position[1] - (bound[1] * scale[1] / 2.0f) });
-		const float theta = rotation[2] * kDegreesToRadians;
+		const float theta = extractYawRadians(rotation);
 
 		const auto roundedVertices = roundedRectVertices(
 			center, theta, scale[0], scale[1], bound[0], bound[1], radius);

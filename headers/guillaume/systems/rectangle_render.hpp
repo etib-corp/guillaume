@@ -47,13 +47,11 @@ namespace guillaume::systems
 	{
 		private:
 		using Vec2	   = utility::math::Vector<float, 2>;
-		using Position = utility::math::Vector<float, 3>;
+		using Position = utility::graphics::Position;
 		using Vertex   = utility::graphics::Vertex<float, uint8_t>;
 
 		static constexpr float kEpsilon = 0.001f;
 		static constexpr float kPi		= 3.14159265358979323846f;
-		static constexpr float kDegreesToRadians =
-			0.01745329251994329576923690768489f;
 
 		Renderer &_renderer;	///< Renderer instance
 
@@ -65,9 +63,7 @@ namespace guillaume::systems
 													 float sy, float sizeX,
 													 float sizeY, float radius,
 													 int arcSegments = 16);
-		static Vertex
-			createVertex(const Vec2 &pos,
-						 const utility::graphics::Color<uint8_t> &color);
+		static Vertex createVertex(const Vec2 &pos, const utility::graphics::Color32Bit &color);
 
 		public:
 		/**

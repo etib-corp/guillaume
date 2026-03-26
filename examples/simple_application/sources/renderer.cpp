@@ -22,6 +22,7 @@
 
 #include "renderer.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
@@ -278,17 +279,32 @@ namespace simple_application
 		auto position			  = text.getPosition();
 		const auto cameraPosition = getCamera().getPosition();
 		position -= cameraPosition;
-		auto rotation = text.getRotation();
-		float width	  = static_cast<float>(converted->w);
-		float height  = static_cast<float>(converted->h);
-		float z		  = position[2];
+		auto rotation				  = text.getRotation();
+		float width					  = static_cast<float>(converted->w);
+		float height				  = static_cast<float>(converted->h);
+		float z						  = position[2];
+		const auto normalizedRotation = rotation.normalizedQuaternion();
+		const float clampedW =
+			std::clamp(normalizedRotation.getW(), -1.0f, 1.0f);
+		const float angleRadians = 2.0f * std::acos(clampedW);
+		const float angleDegrees =
+			angleRadians * (180.0f / 3.14159265358979323846f);
+		const float sineHalfAngle =
+			std::sqrt(std::max(0.0f, 1.0f - (clampedW * clampedW)));
+
+		float axisX = 0.0f;
+		float axisY = 0.0f;
+		float axisZ = 1.0f;
+		if (sineHalfAngle > 1.0e-6f) {
+			axisX = normalizedRotation.getX() / sineHalfAngle;
+			axisY = normalizedRotation.getY() / sineHalfAngle;
+			axisZ = normalizedRotation.getZ() / sineHalfAngle;
+		}
 
 		glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
 		glPushMatrix();
 		glTranslatef(position[0], position[1], z);
-		glRotatef(rotation[0], 1.0f, 0.0f, 0.0f);
-		glRotatef(rotation[1], 0.0f, 1.0f, 0.0f);
-		glRotatef(rotation[2], 0.0f, 0.0f, 1.0f);
+		glRotatef(angleDegrees, axisX, axisY, axisZ);
 
 		float halfWidth	 = width / 2.0f;
 		float halfHeight = height / 2.0f;

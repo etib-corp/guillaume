@@ -56,8 +56,8 @@ namespace guillaume::ecs
 
 		std::string _componentTypeName {
 			utility::demangle<ComponentType>()
-		};								 ///< Name of the missing component
-										 ///< type
+		};	  ///< Name of the missing component
+			  ///< type
 		mutable std::string _message;	 ///< Cached exception message
 
 		public:
