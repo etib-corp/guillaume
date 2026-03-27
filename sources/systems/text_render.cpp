@@ -50,8 +50,8 @@ namespace guillaume::systems
 
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
-		const auto &textComponent = getComponent<components::Text>(
-			entityIdentifier);
+		const auto &textComponent =
+			getComponent<components::Text>(entityIdentifier);
 
 		utility::graphics::Text text;
 		text.setPosition(transformComponent.getPosition())

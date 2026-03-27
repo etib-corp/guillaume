@@ -60,8 +60,7 @@ namespace guillaume::systems
 		 * @brief Update the TextRender system for one entity.
 		 * @param entityIdentifier The target entity identifier.
 		 */
-		void
-			update(const ecs::Entity::Identifier &entityIdentifier) override;
+		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};
 
 }	 // namespace guillaume::systems

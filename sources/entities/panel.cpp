@@ -21,13 +21,14 @@
  */
 
 #include "guillaume/entities/panel.hpp"
+#include "guillaume/entities/button.hpp"
 
 namespace guillaume::entities
 {
 
 	Panel::Panel::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								   ecs::EntityRegistry &entityRegistry)
-		: ecs::NodeEntityBuilder<Panel>(componentRegistry, entityRegistry)
+		: ecs::NodeEntityBuilder(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
@@ -45,7 +46,7 @@ namespace guillaume::entities
 
 	void Panel::Builder::reset(void)
 	{
-		ecs::NodeEntityBuilder<Panel>::reset();
+		ecs::NodeEntityBuilder::reset();
 		_panel.reset();
 		_name.clear();
 	}
@@ -78,6 +79,8 @@ namespace guillaume::entities
 		, _entityRegistry(entityRegistry)
 		, _name(name)
 	{
+		registerEntityFactory<Button::Builder, Button::Director>();
+
 		// Initialize panel position, rotation, and scale
 		registry.getComponent<components::Transform>(getIdentifier())
 			.setPosition({ 0.0f, 0.0f, 0.0f })

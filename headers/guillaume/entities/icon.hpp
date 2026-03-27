@@ -48,7 +48,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Icon` entities.
 		 */
-		class Builder: public ecs::LeafEntityBuilder<Icon>
+		class Builder: public ecs::LeafEntityBuilder
 		{
 			private:
 			std::unique_ptr<Icon>

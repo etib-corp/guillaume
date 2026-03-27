@@ -11,12 +11,14 @@ namespace simple_application::panels
 							   const std::string &name)
 		: guillaume::entities::Panel(registry, entityRegistry, name)
 	{
-		guillaume::entities::Button::Builder buttonBuilder(
-			getComponentRegistry(), getEntityRegistry());
-		guillaume::entities::Button::Director buttonDirector;
-		buttonDirector.makeTextButton(buttonBuilder, "Click Me", [this]() {
-			this->getLogger().info("Button clicked in DefaultPanel!");
-		});
+		getDirectorManager()
+			.getDirector<guillaume::entities::Button::Director>()
+			.makeTextButton(
+				getBuilderManager()
+					.getBuilder<guillaume::entities::Button::Builder>(),
+				"Click Me", [this]() {
+					this->getLogger().info("Button clicked in DefaultPanel!");
+				});
 	}
 
 	DefaultPanel::~DefaultPanel(void)

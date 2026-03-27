@@ -40,8 +40,7 @@ namespace guillaume::systems
 	{
 	}
 
-	void
-		MeasureText::update(const ecs::Entity::Identifier &entityIdentifier)
+	void MeasureText::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
 		getLogger().debug("Updating MeasureText system for entity "
 						  + std::to_string(entityIdentifier));
@@ -53,10 +52,10 @@ namespace guillaume::systems
 
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
-		const auto &textComponent = getComponent<components::Text>(
-			entityIdentifier);
-		auto &boundComponent = getComponent<components::Bound>(
-			entityIdentifier);
+		const auto &textComponent =
+			getComponent<components::Text>(entityIdentifier);
+		auto &boundComponent =
+			getComponent<components::Bound>(entityIdentifier);
 
 		utility::graphics::Text text;
 		text.setPosition(transformComponent.getPosition())

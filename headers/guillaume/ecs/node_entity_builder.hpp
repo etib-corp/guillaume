@@ -33,8 +33,7 @@ namespace guillaume::ecs
 	 * @brief Base builder for entities that can have a parent and child
 	 * relationships.
 	 */
-	template<typename EntityType> class NodeEntityBuilder:
-		public LeafEntityBuilder<EntityType>
+	class NodeEntityBuilder: public LeafEntityBuilder
 	{
 		private:
 		std::vector<Entity::Identifier>
@@ -50,7 +49,7 @@ namespace guillaume::ecs
 		 */
 		NodeEntityBuilder(ecs::ComponentRegistry &componentRegistry,
 						  ecs::EntityRegistry &entityRegistry)
-			: LeafEntityBuilder<EntityType>(componentRegistry, entityRegistry)
+			: LeafEntityBuilder(componentRegistry, entityRegistry)
 		{
 		}
 
@@ -70,7 +69,7 @@ namespace guillaume::ecs
 		 */
 		void reset(void) override
 		{
-			LeafEntityBuilder<EntityType>::reset();
+			LeafEntityBuilder::reset();
 			_childIdentifiers.clear();
 		}
 
