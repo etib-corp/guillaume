@@ -4,17 +4,28 @@ about: Tell us about something that is not working correctly.
 title: 'bug: what a strange bug'
 labels: bug
 assignees: ''
-
 ---
 
-## Context
+## Summary
 
-**Explain how to reproduce the bug**
+Describe the bug in one or two sentences.
 
-## Proofs
+## Reproduction Steps
 
-**Add screenshots, logs, or whatever can justify that is not working.**
+List the exact steps needed to reproduce the issue.
 
-## Ways to fix
+## Expected Behavior
 
-**Show how it can be fixed, or also since which changes this bug arrived (so we can trace)**
+Describe what should happen.
+
+## Actual Behavior
+
+Describe what happens instead.
+
+## Evidence
+
+Add screenshots, logs, stack traces, or any other useful proof.
+
+## Possible Fix (Optional)
+
+Share any idea that could help identify or fix the issue.

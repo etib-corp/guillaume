@@ -4,25 +4,32 @@ about: Suggest and document a potential feature.
 title: 'feat: my game changer feature'
 labels: enhancement
 assignees: clement-antoine-xavier
-
 ---
 
-## Context
+## Summary
 
-**Describe what problems is encountered and why it has to be fixed**
+Describe the feature in one or two sentences.
 
-## Priority level
+## Problem To Solve
 
-**Add enough elements that shows how much this feature is important to be done**
+Explain what current limitation this feature addresses.
 
-## Description
+## Proposed Solution
 
-**Explain what this feature should do**
+Describe how the feature should work.
 
-## PoC (optional)
+## Priority
 
-## Schemas / Designs (optional)
+Explain why this feature should be implemented now.
 
-## Possible conflicts
+## Proof Of Concept (Optional)
 
-**Talk about actual behavior and if it can affects another side of the code (so we can be careful while coding it)**
+Provide a prototype, code snippet, or experiment if available.
+
+## Design References (Optional)
+
+Attach wireframes, diagrams, or related design material.
+
+## Side Effects Or Conflicts
+
+List any existing behavior that could be impacted.

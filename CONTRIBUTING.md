@@ -1,65 +1,67 @@
-# Contribute to Guillaume
+# Contributing
 
-## Introduction
+Thank you for your interest in Guillaume. This guide explains how to contribute
+with consistent quality and collaboration practices.
 
-We aims at making Guillaume a open-source tool in order to make your XR projects in the easiliest way.
+## Project Principles
 
-But in order to do this, we have to have a high code quality and some articulated processes.
+- Keep code quality high.
+- Prefer clear and maintainable implementations.
+- Document non-trivial behavior.
+- Respect contributors and review feedback.
 
-## Code conventions
+## Before You Start
 
-Please read [this document](docs/CODE_CONVENTIONS.md) about our code conventions.
+- Read [Code Conventions](docs/CODE_CONVENTIONS.md).
+- Read [Commit Conventions](docs/COMMIT_CONVENTIONS.md).
+- Sync your branch with the latest `main`.
 
-## Commit conventions
+## Pull Request Workflow
 
-We are mainly based on [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/)'s convention. So please take a look and we have reproduced a [summary here](docs/COMMIT_CONVENTIONS.md).
+1. Fork the repository.
+2. Create a dedicated branch.
+3. Implement your changes.
+4. Add or update tests.
+5. Run the test suite.
+6. Open a pull request.
 
-## Pull Request process
+Ensure your code matches conventions and passes tests before requesting review.
 
-1. Fork the repository
-2. Create a new branch
-3. Make your changes
-4. Write tests for your changes
-5. Run tests
-6. Submit a pull request
+## Issue Guidelines
 
-Please make sure that your code follows the code conventions and that all tests pass before submitting a pull request.
+Use the provided issue templates and include enough context:
 
-## How to make an issue
+- Clear and descriptive title.
+- Detailed description.
+- Reproduction steps when relevant.
+- Logs, screenshots, or traces when useful.
 
-> First of all, use the template issue provided when creating a new issue.
+Please avoid:
 
-When you create an issue, please provide as much information as possible. This includes:
+- Duplicate issues.
+- Off-topic requests.
+- Inappropriate language.
+- Disrespectful behavior.
+- Incomplete reports that ignore templates.
 
-- A clear and descriptive title
-- A detailed description of the problem or feature request
-- Steps to reproduce the issue (if applicable)
-- Any relevant screenshots or logs
+## Documentation Guidelines
 
-Do not:
+Guillaume uses [Doxygen](https://www.doxygen.nl/index.html) for API
+documentation.
 
-- Create duplicate issues
-- Create issues that are not related to the project
-- Use inappropriate language
-- Be disrespectful to other contributors
-- Ignore the issue template
+- Document public classes, functions, and modules.
+- Keep descriptions concise and accurate.
+- Use proper tags such as `@param` and `@return`.
+- Update comments when behavior changes.
 
-## How to document your code
+AI-assisted documentation is acceptable, but review and edit generated text
+before submitting.
 
-We use [Doxygen](https://www.doxygen.nl/index.html) to document our code. Please follow the guidelines below when documenting your code:
+## Code Of Conduct
 
-- Use Doxygen comments to document functions, classes, and modules
-- Provide clear and concise descriptions
-- Use appropriate tags (e.g., \@param, \@return) to describe function parameters and return values
-- Keep the documentation up to date with code changes
+This project follows the Contributor Covenant.
 
-Please, while coding some wizardry, remember to document it well so that others (and yourself) can understand it later.
-
-We are ok with copilot usage for documentation but please make sure to review and edit the generated comments as needed.
-
-## Code of Conduct
-
-This project adheres to the Contributor Covenant Code of Conduct. By participating, you are expected to uphold this code. Please report any unacceptable behavior to :
+For unacceptable behavior, contact:
 
 - Clément: <clement-antoine.xavier@epitech.eu>
 - Léo: <leo.sautron@epitech.eu>

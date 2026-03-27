@@ -1,84 +1,61 @@
-# Commit Message Guidelines (and git usage tips)
+# Commit Conventions
 
-This project follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for commit messages. This helps maintain a clear and consistent history, making it easier to understand the changes made over time.
+Guillaume uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+to keep history readable and useful.
 
-## Commit Message Structure
+## Commit Format
 
-A commit message should be structured as follows:
+```text
+<type>[optional scope]: <description>
+```
 
-```<type>[optional scope]: <description>```
+## Allowed Types
 
-### Type
+- `feat`: New feature.
+- `fix`: Bug fix.
+- `docs`: Documentation changes.
+- `style`: Formatting or style-only changes.
+- `refactor`: Internal code changes without feature or fix.
+- `test`: Added or updated tests.
+- `chore`: Tooling, dependencies, or build maintenance.
+- `optim`: Performance improvements.
 
-The `type` indicates the nature of the change. Common types include:
+## Scope
 
-- `feat`: A new feature
-- `fix`: A bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, missing semicolons, etc.)
-- `refactor`: Code changes that neither fix a bug nor add a feature
-- `test`: Adding or updating tests
-- `chore`: Changes to the build process or auxiliary tools and libraries
-- `optim`: Performance improvements
+The scope is optional and indicates the affected area, for example:
 
-### Scope
+- `core`
+- `examples`
+- `entities`
 
-The `scope` is optional and can be used to specify the area of the codebase affected by the change.
+## Description
 
-It can be something like:
+- Use imperative mood.
+- Keep it concise.
+- Target 50 characters or fewer.
 
-- `vk`: for changes related to the Vulkan renderer
-- `xr`: for changes related to the XR module
-- `core`: for changes related to the core functionality
+## Good Examples
 
-### Description
+- `feat(entities): add new entity types`
+- `fix(examples): prevent example crash on startup`
+- `docs: update installation instructions`
+- `refactor(core): simplify event dispatch`
 
-The `description` is a brief summary of the change. It should be concise and to the point, ideally no more than 50 characters.
+## Avoid
 
-## Examples
+- `update: made some changes`
+- `feat: added new stuff`
+- `refactor: improvements`
 
-- `feat(vk): add support for ray tracing`
-- `fix(xr): resolve memory leak in XR session handling`
-- `docs: update README with new installation instructions`
-- `style: reformat toto.hpp using clang-format`
-- `refactor(core): simplify the event handling logic`
-- `test(vk): add unit tests for Vulkan initialization`
-- `chore: update dependencies to latest versions`
-- `optim(core): improve performance of the rendering loop`
-
-## Additional Guidelines
-
-- Use the imperative mood in the subject line (e.g., "fix" not "fixed" or "fixes").
-- Limit the subject line to 50 characters.
-- Separate the subject from the body with a blank line if you need to add more details.
-- Use the body to explain what and why vs. how if necessary.
-
-Do not commit something like:
-
-- `fix: corrected a bug in the rendering engine` (too vague)
-- `update: made some changes to the XR module` (not following the type conventions)
-- `refactor: code improvements` (lacks detail)
-- `feat: added new stuff` (not descriptive enough)
-
-Try the most of the time to not duplicate commits.
+These messages are too vague or do not follow the expected type system.
 
 ## Git Usage Tips
 
-- Use `git commit --amend` to modify the most recent commit if you forgot to include something or need to fix the message.
-- Use `git rebase -i HEAD~n` (where n is the number of commits to go back) to edit, squash, or reorder commits in your branch before merging.
-- Use `git log --oneline` to view a concise history of commits.
-- Always pull the latest changes from the main branch before starting new work to minimize merge conflicts.
-- Write clear and descriptive commit messages to help others (and yourself) understand the history of changes.
+- Use `git commit --amend` for quick fixes to the latest commit.
+- Use `git rebase -i HEAD~n` to reorder or squash local commits.
+- Use `git log --oneline` to review your branch history.
+- Pull latest changes before starting work.
+- Prefer `git pull --rebase` for a linear history.
 
-If multiple persons are working on the same branch,
-try to avoid rewriting history
-(e.g., using `git push --force`) unless
-absolutely necessary and agreed upon by the team.
-Also if you pull changes, while having local commits,
-prefer `git pull --rebase` or
-`git fetch; git rebase origin/your-branch`
-to keep a linear history.
-
-Following these guidelines will help maintain a clean and understandable commit history, making collaboration easier for everyone involved in the project.
-
-> Thank you for your contributions !
+If multiple contributors share a branch, avoid history rewriting commands such
+as force-push unless explicitly agreed by the team.
