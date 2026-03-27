@@ -162,12 +162,17 @@ if(BUILD_GUILLAUME_DOCS)
     set(DOXYGEN_DOT_MULTI_TARGETS YES)
 
     # Collect source files for documentation
-    file(GLOB_RECURSE HEADER_FILES "${CMAKE_SOURCE_DIR}/headers/*.hpp" "${CMAKE_SOURCE_DIR}/headers/*.h")
+    file(GLOB_RECURSE HEADER_FILES "${CMAKE_SOURCE_DIR}/headers/*.hpp")
+    file(GLOB_RECURSE DOCS_FILES "${CMAKE_SOURCE_DIR}/docs/*.md")
+    file(GLOB_RECURSE EXAMPLE_DOCS_FILES "${CMAKE_SOURCE_DIR}/examples/*.md")
 
     # Create documentation using modern doxygen_add_docs function
     doxygen_add_docs(
         guillaume_docs
         ${HEADER_FILES}
+        ${DOCS_FILES}
+        ${EXAMPLE_DOCS_FILES}
+        ${CMAKE_SOURCE_DIR}/CONTRIBUTING.md
         ${CMAKE_SOURCE_DIR}/README.md
         ALL
         USE_STAMP_FILE
