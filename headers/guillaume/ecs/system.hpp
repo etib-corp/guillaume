@@ -54,7 +54,9 @@ namespace guillaume::ecs
 	{
 		private:
 		Entity::Signature _signature;	 ///< System signature
-		ecs::ComponentRegistry *_activeComponentRegistry { nullptr };
+		ecs::ComponentRegistry *_activeComponentRegistry {
+			nullptr
+		};	  ///< Active component registry for the current update scope
 
 		protected:
 		/**
@@ -70,7 +72,8 @@ namespace guillaume::ecs
 		}
 
 		/**
-		 * @brief Get the active component registry for the current update scope.
+		 * @brief Get the active component registry for the current update
+		 * scope.
 		 * @return Mutable reference to the active component registry.
 		 */
 		ecs::ComponentRegistry &getComponentRegistry(void)
@@ -83,7 +86,8 @@ namespace guillaume::ecs
 		}
 
 		/**
-		 * @brief Get the active component registry for the current update scope.
+		 * @brief Get the active component registry for the current update
+		 * scope.
 		 * @return Const reference to the active component registry.
 		 */
 		const ecs::ComponentRegistry &getComponentRegistry(void) const
@@ -117,8 +121,7 @@ namespace guillaume::ecs
 		 * @param entityIdentifier The target entity.
 		 * @return Mutable reference to the requested component.
 		 */
-		template<InheritFromComponent ComponentType>
-		ComponentType &
+		template<InheritFromComponent ComponentType> ComponentType &
 			getComponent(const ecs::Entity::Identifier &entityIdentifier)
 		{
 			if (_activeComponentRegistry == nullptr) {
@@ -195,19 +198,20 @@ namespace guillaume::ecs
 					 ecs::EntityRegistry &entityRegistry);
 
 		/**
-		 * @brief Update one entity while explicitly binding a component registry.
+		 * @brief Update one entity while explicitly binding a component
+		 * registry.
 		 * @param componentRegistry The component registry instance.
 		 * @param entityIdentifier The identifier of the entity to update.
 		 */
 		void updateEntity(ecs::ComponentRegistry &componentRegistry,
-						 const ecs::Entity::Identifier &entityIdentifier);
+						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
 		 * @brief Update the system, processing relevant entities.
 		 * @param entityIdentifier The identifier of the entity to update.
 		 */
-		virtual void update(
-			const ecs::Entity::Identifier &entityIdentifier) = 0;
+		virtual void
+			update(const ecs::Entity::Identifier &entityIdentifier) = 0;
 
 		friend class SystemRegistry;
 	};
