@@ -6,7 +6,7 @@ to keep history readable and useful.
 ## Commit Format
 
 ```text
-<type>[optional scope]: <description>
+<type>(optional scope): <description>
 ```
 
 ## Allowed Types
