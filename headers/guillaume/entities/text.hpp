@@ -42,8 +42,7 @@ namespace guillaume::entities
 									 components::Text>
 	{
 		public:
-		using Color =
-			utility::graphics::Color<uint8_t>;	  ///< Color type (RGBA)
+		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
 
 		public:
 		/**
@@ -59,7 +58,7 @@ namespace guillaume::entities
 		{
 			public:
 			using Color =
-				utility::graphics::Color<uint8_t>;	  ///< Color type (RGBA)
+				utility::graphics::Color32Bit;	  ///< Color type (RGBA)
 
 			private:
 			std::unique_ptr<Text>

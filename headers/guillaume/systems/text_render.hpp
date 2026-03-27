@@ -58,11 +58,10 @@ namespace guillaume::systems
 
 		/**
 		 * @brief Update the TextRender system for one entity.
-		 * @param componentRegistry The component registry.
 		 * @param entityIdentifier The target entity identifier.
 		 */
-		void update(ecs::ComponentRegistry &componentRegistry,
-					const ecs::Entity::Identifier &entityIdentifier) override;
+		void
+			update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};
 
 }	 // namespace guillaume::systems

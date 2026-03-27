@@ -60,11 +60,10 @@ namespace guillaume::systems
 
 		/**
 		 * @brief Update the KeyboardControl system for the specified entity.
-		 * @param componentRegistry The component registry instance.
 		 * @param entityIdentifier The identifier of the entity to update.
 		 */
-		void update(ecs::ComponentRegistry &componentRegistry,
-					const ecs::Entity::Identifier &entityIdentifier) override;
+		void
+			update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};
 
 }	 // namespace guillaume::systems

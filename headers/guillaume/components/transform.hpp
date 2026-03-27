@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <utility/graphics/position.hpp>
+#include <utility/graphics/rotation.hpp>
 #include <utility/math/vector.hpp>
 
 #include "guillaume/ecs/component.hpp"
@@ -35,8 +37,8 @@ namespace guillaume::components
 	class Transform: public ecs::Component
 	{
 		public:
-		using Position = utility::math::Vector<float, 3>;	 ///< Position type
-		using Rotation = utility::math::Vector<float, 3>;	 ///< Rotation type
+		using Position = utility::graphics::Position;		 ///< Position type
+		using Rotation = utility::graphics::Rotation;		 ///< Rotation type
 		using Scale	   = utility::math::Vector<float, 3>;	 ///< Scale type
 
 		private:
@@ -77,7 +79,7 @@ namespace guillaume::components
 
 		/**
 		 * @brief Get the rotation of the entity.
-		 * @return The rotation vector.
+		 * @return The rotation quaternion.
 		 */
 		Rotation getRotation(void) const
 		{
@@ -86,7 +88,7 @@ namespace guillaume::components
 
 		/**
 		 * @brief Set the rotation of the entity.
-		 * @param rotation The new rotation vector.
+		 * @param rotation The new rotation quaternion.
 		 * @return Reference to this Transform component for chaining.
 		 */
 		Transform &setRotation(const Rotation &rotation)

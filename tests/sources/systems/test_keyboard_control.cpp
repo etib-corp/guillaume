@@ -67,7 +67,7 @@ namespace
 			event->setModifiers(modifiers);
 			event->setIsDownEvent(isDownEvent);
 			eventBus.publish(std::move(event));
-			keyboardControl.update(componentRegistry, entityIdentifier);
+			keyboardControl.updateEntity(componentRegistry, entityIdentifier);
 		}
 
 		std::string getContent(void) const

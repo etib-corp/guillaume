@@ -32,6 +32,7 @@
 
 #include <utility/graphics/camera.hpp>
 #include <utility/graphics/ray.hpp>
+#include <utility/graphics/rotation.hpp>
 #include <utility/graphics/text.hpp>
 #include <utility/graphics/vertex.hpp>
 
@@ -57,7 +58,7 @@ namespace guillaume
 		using Position =
 			utility::math::Vector<float, 3>;	///< Camera position type
 		using Rotation =
-			utility::math::Vector<float, 3>;	///< Camera rotation type
+			utility::graphics::Rotation;	///< Camera rotation type
 		using ViewportSize =
 			utility::math::Vector<float,
 								  2>;	 ///< Viewport size (width, height)
@@ -73,11 +74,9 @@ namespace guillaume
 		virtual ~Renderer(void) = default;
 
 		private:
-		Camera _camera;	   ///< Camera state
-		Rotation _cameraRotation = {
-			0.0f, 0.0f, 0.0f
-		};					  ///< Camera rotation (Euler angles)
-		Ray _lastMouseRay;	  ///< Last mouse ray in world space
+		Camera _camera;				 ///< Camera state
+		Rotation _cameraRotation;	 ///< Camera rotation quaternion
+		Ray _lastMouseRay;			 ///< Last mouse ray in world space
 		Position _lastMousePosition = {
 			0.0f, 0.0f, 0.0f
 		};	  ///< Last mouse position in world space
@@ -162,13 +161,13 @@ namespace guillaume
 		/**
 		 * @brief Set the full camera model.
 		 * @param camera The new camera instance.
-		 * @note Synchronizes cached Euler rotation and last mouse ray.
+		 * @note Synchronizes cached rotation and last mouse ray.
 		 */
 		void setCamera(const Camera &camera);
 
 		/**
-		 * @brief Get the camera rotation (Euler angles).
-		 * @return The camera rotation vector.
+		 * @brief Get the camera rotation quaternion.
+		 * @return The camera rotation quaternion.
 		 */
 		Rotation getCameraRotation(void) const
 		{
@@ -176,8 +175,8 @@ namespace guillaume
 		}
 
 		/**
-		 * @brief Set the camera rotation (Euler angles).
-		 * @param rotation The new camera rotation vector.
+		 * @brief Set the camera rotation quaternion.
+		 * @param rotation The new camera rotation quaternion.
 		 * @note Synchronizes camera forward/up vectors and last mouse ray.
 		 */
 		void setCameraRotation(const Rotation &rotation);

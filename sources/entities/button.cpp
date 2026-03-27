@@ -214,7 +214,7 @@ namespace guillaume::entities
 		// Initialize button position, rotation, and scale
 		registry.getComponent<components::Transform>(getIdentifier())
 			.setPosition({ 300.0f, 300.0f, 0.0f })
-			.setRotation({ 0.0f, 0.0f, 0.0f })
+			.setRotation(components::Transform::Rotation())
 			.setScale({ 1.0f, 1.0f, 1.0f });
 
 		registry.getComponent<components::Bound>(getIdentifier())

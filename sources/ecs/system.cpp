@@ -28,10 +28,22 @@ namespace guillaume::ecs
 	void System::routine(ecs::ComponentRegistry &componentRegistry,
 						 ecs::EntityRegistry &entityRegistry)
 	{
+		_activeComponentRegistry = &componentRegistry;
+
 		for (const auto &entityIdentifier:
 			 entityRegistry.getEntityWithSignature(getSignature())) {
-			update(componentRegistry, entityIdentifier);
+			update(entityIdentifier);
 		}
+
+		_activeComponentRegistry = nullptr;
+	}
+
+	void System::updateEntity(ecs::ComponentRegistry &componentRegistry,
+						 const ecs::Entity::Identifier &entityIdentifier)
+	{
+		_activeComponentRegistry = &componentRegistry;
+		update(entityIdentifier);
+		_activeComponentRegistry = nullptr;
 	}
 
 }	 // namespace guillaume::ecs

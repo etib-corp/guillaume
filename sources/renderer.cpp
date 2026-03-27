@@ -27,91 +27,99 @@
 
 namespace
 {
-
-	constexpr float degreeToRadian = 0.01745329251994329576923690768489f;
-
-	/**
-	 * @brief Rotate a vector by Euler angles (degrees) in X->Y->Z order.
-	 * @param vector Input vector.
-	 * @param rotation Euler rotation angles in degrees.
-	 * @return Rotated vector.
-	 */
-	utility::math::Vector<float, 3> rotateVectorByEulerDegrees(
-		const utility::math::Vector<float, 3> &vector,
-		const utility::math::Vector<float, 3> &rotation)
+	utility::math::Vector<float, 3>
+		rotateVectorByQuaternion(const utility::math::Vector<float, 3> &vector,
+								 const utility::graphics::Rotation &rotation)
 	{
-		const float rotationX = rotation[0] * degreeToRadian;
-		const float rotationY = rotation[1] * degreeToRadian;
-		const float rotationZ = rotation[2] * degreeToRadian;
+		const auto normalizedRotation = rotation.normalizedQuaternion();
+		const float qx				  = normalizedRotation.getX();
+		const float qy				  = normalizedRotation.getY();
+		const float qz				  = normalizedRotation.getZ();
+		const float qw				  = normalizedRotation.getW();
+		const float vectorX			  = vector[0];
+		const float vectorY			  = vector[1];
+		const float vectorZ			  = vector[2];
 
-		const float cosineX = std::cos(rotationX);
-		const float sineX	= std::sin(rotationX);
-		const float cosineY = std::cos(rotationY);
-		const float sineY	= std::sin(rotationY);
-		const float cosineZ = std::cos(rotationZ);
-		const float sineZ	= std::sin(rotationZ);
+		const float crossX = (qy * vectorZ) - (qz * vectorY);
+		const float crossY = (qz * vectorX) - (qx * vectorZ);
+		const float crossZ = (qx * vectorY) - (qy * vectorX);
 
-		utility::math::Vector<float, 3> result = vector;
+		const float tX = 2.0f * crossX;
+		const float tY = 2.0f * crossY;
+		const float tZ = 2.0f * crossZ;
 
-		const float yAfterX = (result[1] * cosineX) - (result[2] * sineX);
-		const float zAfterX = (result[1] * sineX) + (result[2] * cosineX);
-		result[1]			= yAfterX;
-		result[2]			= zAfterX;
+		const float crossTX = (qy * tZ) - (qz * tY);
+		const float crossTY = (qz * tX) - (qx * tZ);
+		const float crossTZ = (qx * tY) - (qy * tX);
 
-		const float xAfterY = (result[0] * cosineY) + (result[2] * sineY);
-		const float zAfterY = (-result[0] * sineY) + (result[2] * cosineY);
-		result[0]			= xAfterY;
-		result[2]			= zAfterY;
-
-		const float xAfterZ = (result[0] * cosineZ) - (result[1] * sineZ);
-		const float yAfterZ = (result[0] * sineZ) + (result[1] * cosineZ);
-		result[0]			= xAfterZ;
-		result[1]			= yAfterZ;
-
-		return result;
+		return {
+			vectorX + (qw * tX) + crossTX,
+			vectorY + (qw * tY) + crossTY,
+			vectorZ + (qw * tZ) + crossTZ,
+		};
 	}
 
 	/**
-	 * @brief Extract Euler angles (degrees) from camera forward/up basis
-	 * vectors.
+	 * @brief Extract a quaternion from camera forward/up basis vectors.
 	 * @param forward Camera forward direction.
 	 * @param up Camera up direction.
-	 * @return Euler rotation angles in degrees.
+	 * @return Rotation quaternion.
 	 */
-	utility::math::Vector<float, 3>
-		eulerDegreesFromBasis(const utility::math::Vector<float, 3> &forward,
-							  const utility::math::Vector<float, 3> &up)
+	utility::graphics::Rotation
+		quaternionFromBasis(const utility::math::Vector<float, 3> &forward,
+							const utility::math::Vector<float, 3> &up)
 	{
 		const auto normalizedForward = forward.normalized();
 		const auto right			 = normalizedForward.cross(up).normalized();
 		const auto orthonormalUp = right.cross(normalizedForward).normalized();
 
-		const float r00 = right[0];
-		const float r10 = right[1];
-		const float r20 = right[2];
+		const auto back = -normalizedForward;
 
-		const float r21 = orthonormalUp[2];
+		const float m00 = right[0];
+		const float m01 = orthonormalUp[0];
+		const float m02 = back[0];
+		const float m10 = right[1];
+		const float m11 = orthonormalUp[1];
+		const float m12 = back[1];
+		const float m20 = right[2];
+		const float m21 = orthonormalUp[2];
+		const float m22 = back[2];
 
-		const float r22 = -normalizedForward[2];
+		float qx = 0.0f;
+		float qy = 0.0f;
+		float qz = 0.0f;
+		float qw = 1.0f;
 
-		const float clampedValue = std::clamp(-r20, -1.0f, 1.0f);
-		const float rotationY	 = std::asin(clampedValue);
-		const float cosineY		 = std::cos(rotationY);
-
-		float rotationX = 0.0f;
-		float rotationZ = 0.0f;
-
-		if (std::abs(cosineY) > 1.0e-6f) {
-			rotationX = std::atan2(r21, r22);
-			rotationZ = std::atan2(r10, r00);
+		const float trace = m00 + m11 + m22;
+		if (trace > 0.0f) {
+			const float scale = std::sqrt(trace + 1.0f) * 2.0f;
+			qw				  = 0.25f * scale;
+			qx				  = (m21 - m12) / scale;
+			qy				  = (m02 - m20) / scale;
+			qz				  = (m10 - m01) / scale;
+		} else if ((m00 > m11) && (m00 > m22)) {
+			const float scale = std::sqrt(1.0f + m00 - m11 - m22) * 2.0f;
+			qw				  = (m21 - m12) / scale;
+			qx				  = 0.25f * scale;
+			qy				  = (m01 + m10) / scale;
+			qz				  = (m02 + m20) / scale;
+		} else if (m11 > m22) {
+			const float scale = std::sqrt(1.0f + m11 - m00 - m22) * 2.0f;
+			qw				  = (m02 - m20) / scale;
+			qx				  = (m01 + m10) / scale;
+			qy				  = 0.25f * scale;
+			qz				  = (m12 + m21) / scale;
 		} else {
-			rotationX = 0.0f;
-			rotationZ = std::atan2(-orthonormalUp[0], orthonormalUp[1]);
+			const float scale = std::sqrt(1.0f + m22 - m00 - m11) * 2.0f;
+			qw				  = (m10 - m01) / scale;
+			qx				  = (m02 + m20) / scale;
+			qy				  = (m12 + m21) / scale;
+			qz				  = 0.25f * scale;
 		}
 
-		constexpr float radianToDegree = 57.295779513082320876798154814105f;
-		return { rotationX * radianToDegree, rotationY * radianToDegree,
-				 rotationZ * radianToDegree };
+		auto rotation = utility::graphics::Rotation(qx, qy, qz, qw);
+		rotation.normalizeQuaternion();
+		return rotation;
 	}
 
 }	 // namespace
@@ -130,23 +138,23 @@ namespace guillaume
 	{
 		_camera = camera;
 		_cameraRotation =
-			eulerDegreesFromBasis(_camera.getForward(), _camera.getUp());
+			quaternionFromBasis(_camera.getForward(), _camera.getUp());
 		_lastMouseRay = Ray(_camera.getPosition(), _camera.getForward());
 	}
 
 	/**
-	 * @brief Set camera Euler rotation and update the camera orientation basis.
-	 * @param rotation Euler rotation in degrees.
+	 * @brief Set camera quaternion rotation and update orientation basis.
+	 * @param rotation Camera rotation quaternion.
 	 */
 	void Renderer::setCameraRotation(const Rotation &rotation)
 	{
-		_cameraRotation = rotation;
+		_cameraRotation = rotation.normalizedQuaternion();
 
 		const auto forward =
-			rotateVectorByEulerDegrees({ 0.0f, 0.0f, -1.0f }, _cameraRotation)
+			rotateVectorByQuaternion({ 0.0f, 0.0f, -1.0f }, _cameraRotation)
 				.normalized();
 		const auto up =
-			rotateVectorByEulerDegrees({ 0.0f, 1.0f, 0.0f }, _cameraRotation)
+			rotateVectorByQuaternion({ 0.0f, 1.0f, 0.0f }, _cameraRotation)
 				.normalized();
 
 		_camera.setForward(forward);

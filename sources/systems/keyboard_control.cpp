@@ -52,8 +52,8 @@ namespace guillaume::systems
 	}
 
 	void
-		KeyboardControl::update(ecs::ComponentRegistry &componentRegistry,
-								const ecs::Entity::Identifier &entityIdentifier)
+		KeyboardControl::update(
+			const ecs::Entity::Identifier &entityIdentifier)
 	{
 		getLogger().debug("Updating KeyboardControl system for entity "
 						  + std::to_string(entityIdentifier));
@@ -61,8 +61,7 @@ namespace guillaume::systems
 			return;
 		}
 
-		auto &text =
-			componentRegistry.getComponent<components::Text>(entityIdentifier);
+		auto &text = getComponent<components::Text>(entityIdentifier);
 		std::string content = text.getContent();
 
 		while (_keyboardSubscriber.hasPendingEvents()) {
