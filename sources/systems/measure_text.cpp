@@ -40,29 +40,23 @@ namespace guillaume::systems
 	{
 	}
 
-	void MeasureText::update(ecs::ComponentRegistry &componentRegistry,
-							 const ecs::Entity::Identifier &entityIdentifier)
+	void
+		MeasureText::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
 		getLogger().debug("Updating MeasureText system for entity "
 						  + std::to_string(entityIdentifier));
-		if (!componentRegistry.hasComponent<components::Text>(entityIdentifier)
-			|| !componentRegistry.hasComponent<components::Transform>(
-				entityIdentifier)
-			|| !componentRegistry.hasComponent<components::Bound>(
-				entityIdentifier)) {
-			getLogger().warning("Entity " + std::to_string(entityIdentifier)
-								+ " does not have Text, Transform and Bound "
-								  "components");
+		if (!requireComponent<components::Text>(entityIdentifier)
+			|| !requireComponent<components::Transform>(entityIdentifier)
+			|| !requireComponent<components::Bound>(entityIdentifier)) {
 			return;
 		}
 
 		const auto &transformComponent =
-			componentRegistry.getComponent<components::Transform>(
-				entityIdentifier);
-		const auto &textComponent =
-			componentRegistry.getComponent<components::Text>(entityIdentifier);
-		auto &boundComponent =
-			componentRegistry.getComponent<components::Bound>(entityIdentifier);
+			getComponent<components::Transform>(entityIdentifier);
+		const auto &textComponent = getComponent<components::Text>(
+			entityIdentifier);
+		auto &boundComponent = getComponent<components::Bound>(
+			entityIdentifier);
 
 		utility::graphics::Text text;
 		text.setPosition(transformComponent.getPosition())

@@ -56,7 +56,7 @@ namespace
 			auto event = std::make_unique<utility::event::TextInputEvent>();
 			event->setText(textInput);
 			eventBus.publish(std::move(event));
-			textInputSystem.update(componentRegistry, entityIdentifier);
+			textInputSystem.updateEntity(componentRegistry, entityIdentifier);
 		}
 
 		std::string getContent(void) const

@@ -27,9 +27,8 @@
 
 namespace guillaume::systems
 {
-
-	static float
-		extractYawRadians(const components::Transform::Rotation &rotation)
+	float RectangleRender::extractYawRadians(
+		const components::Transform::Rotation &rotation) const
 	{
 		const auto normalizedRotation = rotation.normalizedQuaternion();
 		const float x				  = normalizedRotation.getX();
@@ -42,93 +41,153 @@ namespace guillaume::systems
 		return std::atan2(sinYaw, cosYaw);
 	}
 
-	RectangleRender::Vec2 RectangleRender::rotateVec(const Vec2 &vec,
-													 const float angle)
+	utility::math::Vector<float, 2> RectangleRender::rotateVector(
+		const utility::math::Vector<float, 2> &vector,
+		const float angleRadians) const
 	{
-		float ct = std::cos(angle);
-		float st = std::sin(angle);
-		return Vec2({ vec[0] * ct - vec[1] * st, vec[0] * st + vec[1] * ct });
+		const float cosine = std::cos(angleRadians);
+		const float sine   = std::sin(angleRadians);
+		return utility::math::Vector<float, 2>(
+			{ vector[0] * cosine - vector[1] * sine,
+			  vector[0] * sine + vector[1] * cosine });
 	}
 
-	float RectangleRender::vectorLength(const Vec2 &vec)
+	float RectangleRender::extractAverageRadius(
+		const components::Borders &borders) const
 	{
-		return std::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+		return (borders.getTopLeftRadius() + borders.getTopRightRadius()
+				+ borders.getBottomRightRadius()
+				+ borders.getBottomLeftRadius())
+			/ 4.0f;
 	}
 
-	RectangleRender::Vec2 RectangleRender::normalize(const Vec2 &vec)
+	std::vector<utility::math::Vector<float, 2>>
+		RectangleRender::buildAxisAlignedRectVertices(
+			const float halfWidth, const float halfHeight) const
 	{
-		float len = vectorLength(vec);
-		if (len < kEpsilon) {
-			return Vec2({ 0.0f, 0.0f });
+		return {
+			utility::math::Vector<float, 2>({ -halfWidth, -halfHeight }),
+			utility::math::Vector<float, 2>({ halfWidth, -halfHeight }),
+			utility::math::Vector<float, 2>({ halfWidth, halfHeight }),
+			utility::math::Vector<float, 2>({ -halfWidth, halfHeight }),
+		};
+	}
+
+	void RectangleRender::appendRoundedCornerArc(
+		std::vector<utility::math::Vector<float, 2>> &localVertices,
+		const utility::math::Vector<float, 2> &arcCenter,
+		const float startAngle, const float endAngle, const float radius,
+		const int arcSegments) const
+	{
+		for (int i = 0; i <= arcSegments; ++i) {
+			const float t =
+				static_cast<float>(i) / static_cast<float>(arcSegments);
+			const float angle = startAngle + (endAngle - startAngle) * t;
+			localVertices.push_back(
+				arcCenter
+				+ utility::math::Vector<float, 2>(
+					{ std::cos(angle) * radius, std::sin(angle) * radius }));
 		}
-		return Vec2({ vec[0] / len, vec[1] / len });
 	}
 
-	std::vector<RectangleRender::Vec2> RectangleRender::roundedRectVertices(
-		const Vec2 &center, float theta, float sx, float sy, float sizeX,
-		float sizeY, float radius, int arcSegments)
+	std::vector<utility::math::Vector<float, 2>>
+		RectangleRender::buildLocalRoundedRectVertices(
+			const float halfWidth, const float halfHeight, const float radius,
+			int arcSegments, const float epsilon) const
 	{
+		const float pi = std::acos(-1.0f);
+
 		if (arcSegments <= 0) {
 			arcSegments = 1;
 		}
 
-		const float hw = (sizeX / 2.0f) * std::abs(sx);
-		const float hh = (sizeY / 2.0f) * std::abs(sy);
-		const float r  = std::max(0.0f, (std::min)({ radius, hw, hh }));
+		const float cornerRadius =
+			std::max(0.0f, (std::min)({ radius, halfWidth, halfHeight }));
 
-		std::vector<Vec2> localVertices;
-
-		if (r <= kEpsilon) {
-			localVertices = {
-				Vec2({ -hw, -hh }),
-				Vec2({ hw, -hh }),
-				Vec2({ hw, hh }),
-				Vec2({ -hw, hh }),
-			};
-		} else {
-			localVertices.reserve(
-				static_cast<std::size_t>(4 * (arcSegments + 2)));
-
-			const Vec2 topLeftCenter({ -hw + r, -hh + r });
-			const Vec2 topRightCenter({ hw - r, -hh + r });
-			const Vec2 bottomRightCenter({ hw - r, hh - r });
-			const Vec2 bottomLeftCenter({ -hw + r, hh - r });
-
-			const auto appendArc = [&](const Vec2 &arcCenter, float startAngle,
-									   float endAngle) {
-				for (int i = 0; i <= arcSegments; ++i) {
-					const float t =
-						static_cast<float>(i) / static_cast<float>(arcSegments);
-					const float angle =
-						startAngle + (endAngle - startAngle) * t;
-					localVertices.push_back(
-						arcCenter
-						+ Vec2({ std::cos(angle) * r, std::sin(angle) * r }));
-				}
-			};
-
-			appendArc(topRightCenter, -kPi / 2.0f, 0.0f);
-			appendArc(bottomRightCenter, 0.0f, kPi / 2.0f);
-			appendArc(bottomLeftCenter, kPi / 2.0f, kPi);
-			appendArc(topLeftCenter, kPi, 3.0f * kPi / 2.0f);
+		if (cornerRadius <= epsilon) {
+			return buildAxisAlignedRectVertices(halfWidth, halfHeight);
 		}
 
-		std::vector<Vec2> worldVertices;
+		std::vector<utility::math::Vector<float, 2>> localVertices;
+		localVertices.reserve(static_cast<std::size_t>(4 * (arcSegments + 2)));
+
+		const utility::math::Vector<float, 2> topLeftCenter(
+			{ -halfWidth + cornerRadius, -halfHeight + cornerRadius });
+		const utility::math::Vector<float, 2> topRightCenter(
+			{ halfWidth - cornerRadius, -halfHeight + cornerRadius });
+		const utility::math::Vector<float, 2> bottomRightCenter(
+			{ halfWidth - cornerRadius, halfHeight - cornerRadius });
+		const utility::math::Vector<float, 2> bottomLeftCenter(
+			{ -halfWidth + cornerRadius, halfHeight - cornerRadius });
+
+		appendRoundedCornerArc(localVertices, topRightCenter, -pi / 2.0f, 0.0f,
+							   cornerRadius, arcSegments);
+		appendRoundedCornerArc(localVertices, bottomRightCenter, 0.0f,
+							   pi / 2.0f, cornerRadius, arcSegments);
+		appendRoundedCornerArc(localVertices, bottomLeftCenter, pi / 2.0f, pi,
+							   cornerRadius, arcSegments);
+		appendRoundedCornerArc(localVertices, topLeftCenter, pi,
+							   3.0f * pi / 2.0f, cornerRadius, arcSegments);
+
+		return localVertices;
+	}
+
+	std::vector<utility::math::Vector<float, 2>>
+		RectangleRender::transformToWorldVertices(
+			const std::vector<utility::math::Vector<float, 2>> &localVertices,
+			const utility::math::Vector<float, 2> &center,
+			const float angleRadians) const
+	{
+		std::vector<utility::math::Vector<float, 2>> worldVertices;
 		worldVertices.reserve(localVertices.size());
 		for (const auto &localVertex: localVertices) {
-			worldVertices.push_back(rotateVec(localVertex, theta) + center);
+			worldVertices.push_back(rotateVector(localVertex, angleRadians)
+									+ center);
 		}
-
 		return worldVertices;
 	}
 
-	RectangleRender::Vertex
-		RectangleRender::createVertex(const Vec2 &pos, const utility::graphics::Color32Bit &color)
+	std::vector<utility::math::Vector<float, 2>>
+		RectangleRender::buildRoundedRectVertices(
+			const utility::math::Vector<float, 2> &center, float angleRadians,
+			const utility::math::Vector<float, 2> &scale,
+			const utility::math::Vector<float, 2> &size, float radius,
+			int arcSegments, float epsilon)
 	{
-		Vertex v;
-		v.setPosition(Position({ pos[0], pos[1], 0.0f }));
-		v.setColor(color);
-		return v;
+		const float halfWidth	 = (size[0] / 2.0f) * std::abs(scale[0]);
+		const float halfHeight	 = (size[1] / 2.0f) * std::abs(scale[1]);
+		const auto localVertices = buildLocalRoundedRectVertices(
+			halfWidth, halfHeight, radius, arcSegments, epsilon);
+		return transformToWorldVertices(localVertices, center, angleRadians);
+	}
+
+	void RectangleRender::buildTriangleFanVertices(
+		const utility::math::Vector<float, 2> &center,
+		const std::vector<utility::math::Vector<float, 2>> &outline,
+		const utility::graphics::Color32Bit &color)
+	{
+		_vertices.reserve(outline.size() + 2);
+
+		// OpenGL triangle fan expects the first vertex to be the fan anchor.
+		_vertices.push_back(createVertex(center, color));
+		for (const auto &outlineVertex: outline) {
+			_vertices.push_back(createVertex(outlineVertex, color));
+		}
+
+		if (!outline.empty()) {
+			_vertices.push_back(createVertex(outline.front(), color));
+		}
+	}
+
+	utility::graphics::Vertex<float, uint8_t> RectangleRender::createVertex(
+		const utility::math::Vector<float, 2> &position,
+		const utility::graphics::Color32Bit &color) const
+	{
+		utility::graphics::Vertex<float, uint8_t> vertex;
+		vertex.setPosition(
+			utility::graphics::Position({ position[0], position[1], 0.0f }));
+		vertex.setColor(color);
+		return vertex;
 	}
 
 	RectangleRender::RectangleRender(Renderer &renderer)
@@ -143,84 +202,47 @@ namespace guillaume::systems
 	}
 
 	void
-		RectangleRender::update(ecs::ComponentRegistry &componentRegistry,
-								const ecs::Entity::Identifier &entityIdentifier)
+		RectangleRender::update(
+			const ecs::Entity::Identifier &entityIdentifier)
 	{
 		getLogger().debug("Updating RectangleRender system for entity "
 						  + std::to_string(entityIdentifier));
 
-		if (!componentRegistry.hasComponent<components::Bound>(
-				entityIdentifier)) {
-			getLogger().warning("Entity " + std::to_string(entityIdentifier)
-								+ " does not have Bound component");
-			return;
-		}
-
-		if (!componentRegistry.hasComponent<components::Transform>(
-				entityIdentifier)) {
-			getLogger().warning("Entity " + std::to_string(entityIdentifier)
-								+ " does not have Transform component");
-			return;
-		}
-
-		if (!componentRegistry.hasComponent<components::Color>(
-				entityIdentifier)) {
-			getLogger().warning("Entity " + std::to_string(entityIdentifier)
-								+ " does not have Color component");
-			return;
-		}
-
-		if (!componentRegistry.hasComponent<components::Borders>(
-				entityIdentifier)) {
-			getLogger().warning("Entity " + std::to_string(entityIdentifier)
-								+ " does not have Borders component");
+		if (!requireComponent<components::Bound>(entityIdentifier)
+			|| !requireComponent<components::Transform>(entityIdentifier)
+			|| !requireComponent<components::Color>(entityIdentifier)
+			|| !requireComponent<components::Borders>(entityIdentifier)) {
 			return;
 		}
 
 		const auto &transformComponent =
-			componentRegistry.getComponent<components::Transform>(
-				entityIdentifier);
+			getComponent<components::Transform>(entityIdentifier);
 		const auto &boundComponent =
-			componentRegistry.getComponent<components::Bound>(entityIdentifier);
+			getComponent<components::Bound>(entityIdentifier);
 		const auto &colorComponent =
-			componentRegistry.getComponent<components::Color>(entityIdentifier);
+			getComponent<components::Color>(entityIdentifier);
 		const auto &bordersComponent =
-			componentRegistry.getComponent<components::Borders>(
-				entityIdentifier);
+			getComponent<components::Borders>(entityIdentifier);
 
 		const auto position = transformComponent.getPosition();
 		const auto rotation = transformComponent.getRotation();
 		const auto scale	= transformComponent.getScale();
 		const auto bound	= boundComponent.getSize();
 		const auto color	= colorComponent.getColor();
+		const float radius	= extractAverageRadius(bordersComponent);
 
-		const float radius = (bordersComponent.getTopLeftRadius()
-							  + bordersComponent.getTopRightRadius()
-							  + bordersComponent.getBottomRightRadius()
-							  + bordersComponent.getBottomLeftRadius())
-			/ 4.0f;
-
-		const Vec2 center(
+		const utility::math::Vector<float, 2> center(
 			{ position[0], position[1] - (bound[1] * scale[1] / 2.0f) });
-		const float theta = extractYawRadians(rotation);
+		const float angleRadians   = this->extractYawRadians(rotation);
+		const auto roundedVertices = buildRoundedRectVertices(
+			center, angleRadians,
+			utility::math::Vector<float, 2>({ scale[0], scale[1] }),
+			utility::math::Vector<float, 2>({ bound[0], bound[1] }), radius);
 
-		const auto roundedVertices = roundedRectVertices(
-			center, theta, scale[0], scale[1], bound[0], bound[1], radius);
+		_vertices.clear();
+		buildTriangleFanVertices(center, roundedVertices, color);
 
-		std::vector<Vertex> vertices;
-		vertices.reserve(roundedVertices.size() + 2);
-
-		// OpenGL triangle fan expects the first vertex to be the fan anchor.
-		vertices.push_back(createVertex(center, color));
-		for (const auto &roundedVertex: roundedVertices) {
-			vertices.push_back(createVertex(roundedVertex, color));
-		}
-
-		if (!roundedVertices.empty()) {
-			vertices.push_back(createVertex(roundedVertices.front(), color));
-		}
-
-		_renderer.drawVertices(vertices);
+		_renderer.drawVertices(_vertices);
 	}
 
 }	 // namespace guillaume::systems

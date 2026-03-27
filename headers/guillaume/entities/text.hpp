@@ -57,7 +57,8 @@ namespace guillaume::entities
 		class Builder: public ecs::LeafEntityBuilder<Text>
 		{
 			public:
-			using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
+			using Color =
+				utility::graphics::Color32Bit;	  ///< Color type (RGBA)
 
 			private:
 			std::unique_ptr<Text>

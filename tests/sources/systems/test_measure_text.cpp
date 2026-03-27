@@ -95,7 +95,7 @@ TEST_F(MeasureTextFixture, SynchronizesBoundSizeWithMeasuredText)
 		.setFontSize(32);
 	renderer.measurement = { 140.0f, 28.0f };
 
-	measureTextSystem.update(componentRegistry, entityIdentifier);
+	measureTextSystem.updateEntity(componentRegistry, entityIdentifier);
 
 	const auto size =
 		componentRegistry
@@ -112,7 +112,7 @@ TEST_F(MeasureTextFixture, SkipsMeasurementWhenRequiredComponentIsMissing)
 	componentRegistry.removeComponent<guillaume::components::Bound>(
 		entityIdentifier);
 
-	measureTextSystem.update(componentRegistry, entityIdentifier);
+	measureTextSystem.updateEntity(componentRegistry, entityIdentifier);
 
 	EXPECT_EQ(renderer.measureCallCount, 0);
 }

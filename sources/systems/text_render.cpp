@@ -39,25 +39,19 @@ namespace guillaume::systems
 	{
 	}
 
-	void TextRender::update(ecs::ComponentRegistry &componentRegistry,
-							const ecs::Entity::Identifier &entityIdentifier)
+	void TextRender::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
 		getLogger().debug("Updating TextRender system for entity "
 						  + std::to_string(entityIdentifier));
-		if (!componentRegistry.hasComponent<components::Text>(entityIdentifier)
-			|| !componentRegistry.hasComponent<components::Transform>(
-				entityIdentifier)) {
-			getLogger().warning(
-				"Entity " + std::to_string(entityIdentifier)
-				+ " does not have Text and Transform components");
+		if (!requireComponent<components::Text>(entityIdentifier)
+			|| !requireComponent<components::Transform>(entityIdentifier)) {
 			return;
 		}
 
 		const auto &transformComponent =
-			componentRegistry.getComponent<components::Transform>(
-				entityIdentifier);
-		const auto &textComponent =
-			componentRegistry.getComponent<components::Text>(entityIdentifier);
+			getComponent<components::Transform>(entityIdentifier);
+		const auto &textComponent = getComponent<components::Text>(
+			entityIdentifier);
 
 		utility::graphics::Text text;
 		text.setPosition(transformComponent.getPosition())

@@ -364,9 +364,11 @@ namespace guillaume::systems
 		}
 	}
 
-	void Interaction::update(ecs::ComponentRegistry &componentRegistry,
-							 const ecs::Entity::Identifier &entityIdentifier)
+	void
+		Interaction::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
+		auto &componentRegistry = getComponentRegistry();
+
 		getLogger().debug("Updating Interaction system for entity "
 						  + std::to_string(entityIdentifier));
 

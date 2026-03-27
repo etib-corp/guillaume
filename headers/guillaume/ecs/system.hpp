@@ -24,10 +24,12 @@
 
 #include <bitset>
 #include <functional>
+#include <stdexcept>
 #include <vector>
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
+#include <utility/demangle.hpp>
 
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/component_registry.hpp"
@@ -52,6 +54,7 @@ namespace guillaume::ecs
 	{
 		private:
 		Entity::Signature _signature;	 ///< System signature
+		ecs::ComponentRegistry *_activeComponentRegistry { nullptr };
 
 		protected:
 		/**
@@ -64,6 +67,102 @@ namespace guillaume::ecs
 		{
 			_signature.reset();
 			(_signature.set(ComponentTypeId::get<ComponentTypes>()), ...);
+		}
+
+		/**
+		 * @brief Get the active component registry for the current update scope.
+		 * @return Mutable reference to the active component registry.
+		 */
+		ecs::ComponentRegistry &getComponentRegistry(void)
+		{
+			if (_activeComponentRegistry == nullptr) {
+				throw std::runtime_error(
+					"No active component registry bound to system");
+			}
+			return *_activeComponentRegistry;
+		}
+
+		/**
+		 * @brief Get the active component registry for the current update scope.
+		 * @return Const reference to the active component registry.
+		 */
+		const ecs::ComponentRegistry &getComponentRegistry(void) const
+		{
+			if (_activeComponentRegistry == nullptr) {
+				throw std::runtime_error(
+					"No active component registry bound to system");
+			}
+			return *_activeComponentRegistry;
+		}
+
+		/**
+		 * @brief Check whether the current entity has the specified component.
+		 * @tparam ComponentType The component type to query.
+		 * @param entityIdentifier The target entity.
+		 * @return True if the component exists, false otherwise.
+		 */
+		template<InheritFromComponent ComponentType>
+		bool hasComponent(const ecs::Entity::Identifier &entityIdentifier) const
+		{
+			if (_activeComponentRegistry == nullptr) {
+				return false;
+			}
+			return _activeComponentRegistry->hasComponent<ComponentType>(
+				entityIdentifier);
+		}
+
+		/**
+		 * @brief Get a mutable component from the active component registry.
+		 * @tparam ComponentType The component type to retrieve.
+		 * @param entityIdentifier The target entity.
+		 * @return Mutable reference to the requested component.
+		 */
+		template<InheritFromComponent ComponentType>
+		ComponentType &
+			getComponent(const ecs::Entity::Identifier &entityIdentifier)
+		{
+			if (_activeComponentRegistry == nullptr) {
+				throw std::runtime_error(
+					"No active component registry bound to system");
+			}
+			return _activeComponentRegistry->getComponent<ComponentType>(
+				entityIdentifier);
+		}
+
+		/**
+		 * @brief Get a const component from the active component registry.
+		 * @tparam ComponentType The component type to retrieve.
+		 * @param entityIdentifier The target entity.
+		 * @return Const reference to the requested component.
+		 */
+		template<InheritFromComponent ComponentType> const ComponentType &
+			getComponent(const ecs::Entity::Identifier &entityIdentifier) const
+		{
+			if (_activeComponentRegistry == nullptr) {
+				throw std::runtime_error(
+					"No active component registry bound to system");
+			}
+			return _activeComponentRegistry->getComponent<ComponentType>(
+				entityIdentifier);
+		}
+
+		/**
+		 * @brief Ensure a component exists for an entity and log if missing.
+		 * @tparam ComponentType The required component type.
+		 * @param entityIdentifier The target entity.
+		 * @return True if present, false otherwise.
+		 */
+		template<InheritFromComponent ComponentType>
+		bool requireComponent(const ecs::Entity::Identifier &entityIdentifier)
+		{
+			if (hasComponent<ComponentType>(entityIdentifier)) {
+				return true;
+			}
+
+			getLogger().warning(
+				"Entity " + std::to_string(entityIdentifier) + " does not have "
+				+ utility::demangle<ComponentType>() + " component");
+			return false;
 		}
 
 		public:
@@ -96,13 +195,21 @@ namespace guillaume::ecs
 					 ecs::EntityRegistry &entityRegistry);
 
 		/**
-		 * @brief Update the system, processing relevant entities.
+		 * @brief Update one entity while explicitly binding a component registry.
 		 * @param componentRegistry The component registry instance.
 		 * @param entityIdentifier The identifier of the entity to update.
 		 */
-		virtual void
-			update(ecs::ComponentRegistry &componentRegistry,
-				   const ecs::Entity::Identifier &entityIdentifier) = 0;
+		void updateEntity(ecs::ComponentRegistry &componentRegistry,
+						 const ecs::Entity::Identifier &entityIdentifier);
+
+		/**
+		 * @brief Update the system, processing relevant entities.
+		 * @param entityIdentifier The identifier of the entity to update.
+		 */
+		virtual void update(
+			const ecs::Entity::Identifier &entityIdentifier) = 0;
+
+		friend class SystemRegistry;
 	};
 
 	/**
