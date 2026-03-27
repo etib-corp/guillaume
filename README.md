@@ -1,14 +1,25 @@
 # Guillaume
 
-**A C++ UI framework designed for modern desktop and extended reality (XR) applications.**
+Guillaume is a C++ UI framework for desktop and extended reality (XR)
+applications. It focuses on performance, modularity, and maintainable UI
+architecture.
 
-Guillaume is a cutting-edge C++ UI framework that empowers developers to create seamless and immersive user interfaces for both traditional desktop applications and extended reality (XR) environments. With a focus on performance, flexibility, and ease of use, Guillaume provides a robust set of tools and components to streamline the development process.
+## Highlights
 
-## Features
+- Cross-platform support for Windows, macOS, and Linux.
+- Reusable UI components for application interfaces.
+- ECS-based architecture with clear separation of concerns.
+- 3D-ready rendering path for XR workflows.
+- Theme and style customization support.
 
-- **Cross-Platform Support**: Build applications that run smoothly on Windows, macOS, and Linux, as well as various XR platforms.
-- **Rich UI Components**: Access a comprehensive library of pre-built UI components, including buttons, sliders, menus, and more, all optimized for performance and responsiveness.
-- **3D Integration**: Easily integrate 3D models and environments into your UI, enabling immersive experiences in XR applications.
-- **Customizable Themes**: Tailor the look and feel of your application with customizable themes
+## Documentation
 
-To discover more about Guillaume, visit the [official documentation](https://github.com/etib-corp/guillaume/wiki).
+- [Architecture](docs/ARCHITECTURE.md)
+- [Technical Choices](docs/TECHNICAL_CHOICES.md)
+- [Code Conventions](docs/CODE_CONVENTIONS.md)
+- [Commit Conventions](docs/COMMIT_CONVENTIONS.md)
+
+## Contributing
+
+- [Contributing Guide](CONTRIBUTING.md)
+- [Examples](examples/README.md)

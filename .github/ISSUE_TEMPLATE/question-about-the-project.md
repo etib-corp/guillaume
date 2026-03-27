@@ -4,11 +4,16 @@ about: This issue has not for goal to code, but to understand.
 title: 'QnA: why is the architecture so weird ?'
 labels: question
 assignees: ''
-
 ---
 
-## Ask your question
+## Question
 
-## Sources (optional)
+Ask your question as clearly as possible.
 
-**In case you compare our project to other ones**
+## Context
+
+Add the relevant project context so maintainers can answer quickly.
+
+## Sources (Optional)
+
+Share links or references you used for comparison.
