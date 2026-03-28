@@ -82,7 +82,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Button` entities.
 		 */
-		class Builder: public ecs::NodeEntityBuilder<Button>
+		class Builder: public ecs::NodeEntityBuilder
 		{
 			private:
 			std::unique_ptr<Button>

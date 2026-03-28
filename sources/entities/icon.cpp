@@ -27,7 +27,7 @@ namespace guillaume::entities
 
 	Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::LeafEntityBuilder<Icon>(componentRegistry, entityRegistry)
+		: ecs::LeafEntityBuilder(componentRegistry, entityRegistry)
 	{
 	}
 

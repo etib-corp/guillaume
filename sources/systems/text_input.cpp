@@ -38,7 +38,7 @@ namespace guillaume::systems
 			return;
 		}
 
-		auto &text = getComponent<components::Text>(entityIdentifier);
+		auto &text			= getComponent<components::Text>(entityIdentifier);
 		std::string content = text.getContent();
 
 		while (_textInputSubscriber.hasPendingEvents()) {

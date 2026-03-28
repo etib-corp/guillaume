@@ -38,7 +38,7 @@ namespace guillaume::ecs
 	 * components. It is intended to be inherited by specific entity builders
 	 * that define the components and structure of the entities they create.
 	 */
-	template<typename EntityType> class EntityBuilder
+	class EntityBuilder
 	{
 		private:
 		ComponentRegistry
@@ -98,5 +98,12 @@ namespace guillaume::ecs
 		 */
 		virtual void reset(void) = 0;
 	};
+
+	/**
+	 * @brief Concept to ensure a type inherits from EntityBuilder.
+	 * @tparam Type The type to check.
+	 */
+	template<typename Type>
+	concept InheritFromEntityBuilder = std::is_base_of_v<EntityBuilder, Type>;
 
 }	 // namespace guillaume::ecs

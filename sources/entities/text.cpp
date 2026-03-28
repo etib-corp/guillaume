@@ -27,7 +27,7 @@ namespace guillaume::entities
 
 	Text::Text::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::LeafEntityBuilder<Text>(componentRegistry, entityRegistry)
+		: ecs::LeafEntityBuilder(componentRegistry, entityRegistry)
 	{
 	}
 

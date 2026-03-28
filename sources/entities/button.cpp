@@ -29,7 +29,7 @@ namespace guillaume::entities
 
 	Button::Button::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 									 ecs::EntityRegistry &entityRegistry)
-		: ecs::NodeEntityBuilder<Button>(componentRegistry, entityRegistry)
+		: ecs::NodeEntityBuilder(componentRegistry, entityRegistry)
 	{
 		_iconBuilder =
 			std::make_unique<Icon::Builder>(componentRegistry, entityRegistry);
@@ -59,7 +59,7 @@ namespace guillaume::entities
 
 	void Button::Builder::reset(void)
 	{
-		ecs::NodeEntityBuilder<Button>::reset();
+		ecs::NodeEntityBuilder::reset();
 		_button.reset();
 		_toggleState = ToggleState::Default;
 		_colorStyle	 = ColorStyle::Filled;

@@ -20,30 +20,15 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/system.hpp"
+#include "guillaume/ecs/entity_builder_manager.hpp"
 
 namespace guillaume::ecs
 {
-
-	void System::routine(ecs::ComponentRegistry &componentRegistry,
-						 ecs::EntityRegistry &entityRegistry)
+	EntityBuilderManager::EntityBuilderManager(void)
 	{
-		_activeComponentRegistry = &componentRegistry;
-
-		for (const auto &entityIdentifier:
-			 entityRegistry.getEntityWithSignature(getSignature())) {
-			update(entityIdentifier);
-		}
-
-		_activeComponentRegistry = nullptr;
 	}
 
-	void System::updateEntity(ecs::ComponentRegistry &componentRegistry,
-							  const ecs::Entity::Identifier &entityIdentifier)
+	EntityBuilderManager::~EntityBuilderManager(void)
 	{
-		_activeComponentRegistry = &componentRegistry;
-		update(entityIdentifier);
-		_activeComponentRegistry = nullptr;
 	}
-
 }	 // namespace guillaume::ecs

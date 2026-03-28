@@ -45,4 +45,11 @@ namespace guillaume::ecs
 		virtual ~EntityDirector(void);
 	};
 
+	/**
+	 * @brief Concept to ensure a type inherits from EntityDirector.
+	 * @tparam Type The type to check.
+	 */
+	template<typename Type>
+	concept InheritFromEntityDirector = std::is_base_of_v<EntityDirector, Type>;
+
 }	 // namespace guillaume::ecs

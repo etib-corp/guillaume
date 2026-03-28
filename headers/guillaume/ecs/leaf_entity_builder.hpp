@@ -30,8 +30,7 @@ namespace guillaume::ecs
 	/**
 	 * @brief Base builder for entities that can be attached to a parent entity.
 	 */
-	template<typename EntityType> class LeafEntityBuilder:
-		public EntityBuilder<EntityType>
+	class LeafEntityBuilder: public EntityBuilder
 	{
 		private:
 		Entity::Identifier _parentIdentifier {
@@ -47,7 +46,7 @@ namespace guillaume::ecs
 		 */
 		LeafEntityBuilder(ecs::ComponentRegistry &componentRegistry,
 						  ecs::EntityRegistry &entityRegistry)
-			: EntityBuilder<EntityType>(componentRegistry, entityRegistry)
+			: EntityBuilder(componentRegistry, entityRegistry)
 		{
 		}
 

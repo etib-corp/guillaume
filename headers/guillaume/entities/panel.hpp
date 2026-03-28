@@ -23,7 +23,9 @@
 #pragma once
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_builder_manager.hpp"
 #include "guillaume/ecs/entity_director.hpp"
+#include "guillaume/ecs/entity_director_manager.hpp"
 #include "guillaume/ecs/node_entity_builder.hpp"
 #include "guillaume/ecs/node_entity_filler.hpp"
 
@@ -45,7 +47,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder class for constructing and registering Panel entities.
 		 */
-		class Builder: public ecs::NodeEntityBuilder<Panel>
+		class Builder: public ecs::NodeEntityBuilder
 		{
 			private:
 			std::unique_ptr<Panel>
@@ -119,7 +121,46 @@ namespace guillaume::entities
 		ecs::EntityRegistry
 			&_entityRegistry;	 ///< Reference to the entity registry for
 								 ///< registering child entities
+		ecs::EntityBuilderManager
+			_builderManager;	///< Manager for entity
+								///< builders used by the panel
+		ecs::EntityDirectorManager
+			_directorManager;	 ///< Manager for entity
+								 ///< directors used by the panel
 		std::string _name;		 ///< Name of the panel entity
+
+		protected:
+		/**
+		 * @brief Register a builder/director pair for an entity family.
+		 * @tparam BuilderType Concrete builder type.
+		 * @tparam DirectorType Concrete director type.
+		 * @throws std::runtime_error if either type is already registered.
+		 */
+		template<ecs::InheritFromEntityBuilder BuilderType,
+				 ecs::InheritFromEntityDirector DirectorType>
+		void registerEntityFactory(void)
+		{
+			_builderManager.addBuilder<BuilderType>(_registry, _entityRegistry);
+			_directorManager.addDirector<DirectorType>();
+		}
+
+		/**
+		 * @brief Get the builder manager used by this panel.
+		 * @return Reference to the builder manager.
+		 */
+		ecs::EntityBuilderManager &getBuilderManager(void)
+		{
+			return _builderManager;
+		}
+
+		/**
+		 * @brief Get the director manager used by this panel.
+		 * @return Reference to the director manager.
+		 */
+		ecs::EntityDirectorManager &getDirectorManager(void)
+		{
+			return _directorManager;
+		}
 
 		public:
 		/**

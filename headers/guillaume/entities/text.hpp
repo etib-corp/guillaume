@@ -54,7 +54,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Text` entities.
 		 */
-		class Builder: public ecs::LeafEntityBuilder<Text>
+		class Builder: public ecs::LeafEntityBuilder
 		{
 			public:
 			using Color =
