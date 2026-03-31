@@ -23,6 +23,10 @@
 #include "guillaume/systems/interaction.hpp"
 
 #include "guillaume/ecs/components/parent.hpp"
+#include <utility/graphic/orientation.hpp>
+#include <utility/graphic/position.hpp>
+#include <utility/graphic/ray.hpp>
+#include <utility/graphic/scale.hpp>
 
 #include <cmath>
 #include <optional>
@@ -30,18 +34,21 @@
 namespace
 {
 
-	using WorldPosition	   = guillaume::components::Transform::Position;
-	using WorldOrientation = guillaume::components::Transform::Orientation;
+	using WorldPosition	   = utility::graphic::PositionF;
+	using WorldOrientation = utility::graphic::OrientationF;
+	using WorldScale	   = utility::graphic::ScaleF;
+	using Ray			   = utility::graphic::Ray<std::float_t>;
+	using Size			   = utility::math::Vector<float, 2>;
 
 	static WorldPosition
 		rotatePositionByQuaternion(const WorldPosition &position,
 								   const WorldOrientation &orientation)
 	{
 		const auto normalizedOrientation = orientation.normalizedQuaternion();
-		const float qx					 = normalizedOrientation.getX();
-		const float qy					 = normalizedOrientation.getY();
-		const float qz					 = normalizedOrientation.getZ();
-		const float qw					 = normalizedOrientation.getW();
+		const float qx					 = normalizedOrientation.x;
+		const float qy					 = normalizedOrientation.y;
+		const float qz					 = normalizedOrientation.z;
+		const float qw					 = normalizedOrientation.w;
 		const float positionX			 = position[0];
 		const float positionY			 = position[1];
 		const float positionZ			 = position[2];
@@ -58,18 +65,18 @@ namespace
 		const float crossTY = (qz * tX) - (qx * tZ);
 		const float crossTZ = (qx * tY) - (qy * tX);
 
-		return WorldPosition({ positionX + (qw * tX) + crossTX,
+		return WorldPosition(positionX + (qw * tX) + crossTX,
 							   positionY + (qw * tY) + crossTY,
-							   positionZ + (qw * tZ) + crossTZ });
+							   positionZ + (qw * tZ) + crossTZ);
 	}
 
 	static float extractYawRadians(const WorldOrientation &orientation)
 	{
 		const auto normalizedOrientation = orientation.normalizedQuaternion();
-		const float x					 = normalizedOrientation.getX();
-		const float y					 = normalizedOrientation.getY();
-		const float z					 = normalizedOrientation.getZ();
-		const float w					 = normalizedOrientation.getW();
+		const float x					 = normalizedOrientation.x;
+		const float y					 = normalizedOrientation.y;
+		const float z					 = normalizedOrientation.z;
+		const float w					 = normalizedOrientation.w;
 
 		const float sinYaw = 2.0f * ((w * z) + (x * y));
 		const float cosYaw = 1.0f - (2.0f * ((y * y) + (z * z)));
@@ -77,9 +84,9 @@ namespace
 	}
 
 	struct WorldTransform {
-		guillaume::components::Transform::Position position;
-		guillaume::components::Transform::Orientation orientation;
-		guillaume::components::Transform::Scale scale;
+		WorldPosition position;
+		WorldOrientation orientation;
+		WorldScale scale;
 	};
 
 	static WorldTransform calculateWorldTransform(
@@ -111,7 +118,7 @@ namespace
 		const auto parentWorldTransform =
 			calculateWorldTransform(componentRegistry, parentId);
 
-		guillaume::components::Transform::Position scaledLocalPosition;
+		WorldPosition scaledLocalPosition;
 		scaledLocalPosition[0] =
 			worldTransform.position[0] * parentWorldTransform.scale[0];
 		scaledLocalPosition[1] =
@@ -130,8 +137,8 @@ namespace
 			parentWorldTransform.position[2] + rotatedLocalPosition[2];
 
 		worldTransform.orientation =
-			parentWorldTransform.orientation * worldTransform.orientation;
-		worldTransform.orientation.normalizeQuaternion();
+			utility::graphic::OrientationF(parentWorldTransform.orientation * worldTransform.orientation);
+		worldTransform.orientation = worldTransform.orientation.normalizedOrientation();
 
 		worldTransform.scale[0] *= parentWorldTransform.scale[0];
 		worldTransform.scale[1] *= parentWorldTransform.scale[1];
@@ -141,7 +148,7 @@ namespace
 	}
 
 	static std::optional<WorldPosition>
-		intersectRayWithUiPlane(const guillaume::Renderer::Ray &ray,
+		intersectRayWithUiPlane(const Ray &ray,
 								const float planeZ = 0.0f)
 	{
 		const auto origin	 = ray.getOrigin();
@@ -158,25 +165,25 @@ namespace
 		}
 
 		const auto point = ray.pointAt(distanceParameter);
-		return WorldPosition({ point[0], point[1], point[2] });
+		return WorldPosition(point[0], point[1], point[2]);
 	}
 
 	static WorldPosition computeEntityBoundCenter(
-		const guillaume::components::Transform::Position &worldPosition,
-		const guillaume::components::Bound::Size &boundSize,
-		const guillaume::components::Transform::Scale &worldScale)
+		const WorldPosition &worldPosition,
+		const Size &boundSize,
+		const WorldScale &worldScale)
 	{
-		guillaume::components::Transform::Position center = worldPosition;
+		WorldPosition center = worldPosition;
 		center[1] = worldPosition[1] - (boundSize[1] * worldScale[1] / 2.0f);
 		return center;
 	}
 
 	static bool isPointInsideEntityBounds(
-		const guillaume::components::Transform::Position &point,
-		const guillaume::components::Transform::Position &entityCenter,
-		const guillaume::components::Bound::Size &boundSize,
-		const guillaume::components::Transform::Scale &entityScale,
-		const guillaume::components::Transform::Orientation &entityOrientation)
+		const WorldPosition &point,
+		const WorldPosition &entityCenter,
+		const Size &boundSize,
+		const WorldScale &entityScale,
+		const WorldOrientation &entityOrientation)
 	{
 		const float orientationRadians = -extractYawRadians(entityOrientation);
 		const float cosine			   = std::cos(orientationRadians);
@@ -232,7 +239,7 @@ namespace guillaume::systems
 		}
 
 		const auto mousePosition = _pendingMotionEvent->getPosition();
-		components::Transform::Position mousePos3D;
+		 WorldPosition mousePos3D;
 		mousePos3D[0] = mousePosition[0];
 		mousePos3D[1] = mousePosition[1];
 		mousePos3D[2] = 0.0f;
@@ -388,7 +395,7 @@ namespace guillaume::systems
 		const auto worldTransform =
 			calculateWorldTransform(componentRegistry, entityIdentifier);
 		const auto size				  = bound.getSize();
-		const auto worldMousePosition = components::Transform::Position(
+		const auto worldMousePosition = WorldPosition(
 			{ worldMousePos[0], worldMousePos[1], worldMousePos[2] });
 
 		const auto trueCenter = computeEntityBoundCenter(
