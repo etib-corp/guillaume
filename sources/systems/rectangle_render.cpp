@@ -28,26 +28,26 @@
 namespace guillaume::systems
 {
 	float RectangleRender::extractYawRadians(
-		const components::Transform::Rotation &rotation) const
+		const utility::graphic::OrientationF &orientation) const
 	{
-		const auto normalizedRotation = rotation.normalizedQuaternion();
-		const float x				  = normalizedRotation.getX();
-		const float y				  = normalizedRotation.getY();
-		const float z				  = normalizedRotation.getZ();
-		const float w				  = normalizedRotation.getW();
+		const auto normalizedOrientation = orientation.normalizedQuaternion();
+		const float x					 = normalizedOrientation.getX();
+		const float y					 = normalizedOrientation.getY();
+		const float z					 = normalizedOrientation.getZ();
+		const float w					 = normalizedOrientation.getW();
 
 		const float sinYaw = 2.0f * ((w * z) + (x * y));
 		const float cosYaw = 1.0f - (2.0f * ((y * y) + (z * z)));
 		return std::atan2(sinYaw, cosYaw);
 	}
 
-	utility::math::Vector<float, 2> RectangleRender::rotateVector(
-		const utility::math::Vector<float, 2> &vector,
-		const float angleRadians) const
+	utility::math::Vector2F
+		RectangleRender::rotateVector(const utility::math::Vector2F &vector,
+									  const float angleRadians) const
 	{
 		const float cosine = std::cos(angleRadians);
 		const float sine   = std::sin(angleRadians);
-		return utility::math::Vector<float, 2>(
+		return utility::math::Vector2F(
 			{ vector[0] * cosine - vector[1] * sine,
 			  vector[0] * sine + vector[1] * cosine });
 	}
@@ -61,23 +61,22 @@ namespace guillaume::systems
 			/ 4.0f;
 	}
 
-	std::vector<utility::math::Vector<float, 2>>
+	std::vector<utility::math::Vector2F>
 		RectangleRender::buildAxisAlignedRectVertices(
 			const float halfWidth, const float halfHeight) const
 	{
 		return {
-			utility::math::Vector<float, 2>({ -halfWidth, -halfHeight }),
-			utility::math::Vector<float, 2>({ halfWidth, -halfHeight }),
-			utility::math::Vector<float, 2>({ halfWidth, halfHeight }),
-			utility::math::Vector<float, 2>({ -halfWidth, halfHeight }),
+			utility::math::Vector2F({ -halfWidth, -halfHeight }),
+			utility::math::Vector2F({ halfWidth, -halfHeight }),
+			utility::math::Vector2F({ halfWidth, halfHeight }),
+			utility::math::Vector2F({ -halfWidth, halfHeight }),
 		};
 	}
 
 	void RectangleRender::appendRoundedCornerArc(
-		std::vector<utility::math::Vector<float, 2>> &localVertices,
-		const utility::math::Vector<float, 2> &arcCenter,
-		const float startAngle, const float endAngle, const float radius,
-		const int arcSegments) const
+		std::vector<utility::math::Vector2F> &localVertices,
+		const utility::math::Vector2F &arcCenter, const float startAngle,
+		const float endAngle, const float radius, const int arcSegments) const
 	{
 		for (int i = 0; i <= arcSegments; ++i) {
 			const float t =
@@ -85,12 +84,12 @@ namespace guillaume::systems
 			const float angle = startAngle + (endAngle - startAngle) * t;
 			localVertices.push_back(
 				arcCenter
-				+ utility::math::Vector<float, 2>(
+				+ utility::math::Vector2F(
 					{ std::cos(angle) * radius, std::sin(angle) * radius }));
 		}
 	}
 
-	std::vector<utility::math::Vector<float, 2>>
+	std::vector<utility::math::Vector2F>
 		RectangleRender::buildLocalRoundedRectVertices(
 			const float halfWidth, const float halfHeight, const float radius,
 			int arcSegments, const float epsilon) const
@@ -108,16 +107,16 @@ namespace guillaume::systems
 			return buildAxisAlignedRectVertices(halfWidth, halfHeight);
 		}
 
-		std::vector<utility::math::Vector<float, 2>> localVertices;
+		std::vector<utility::math::Vector2F> localVertices;
 		localVertices.reserve(static_cast<std::size_t>(4 * (arcSegments + 2)));
 
-		const utility::math::Vector<float, 2> topLeftCenter(
+		const utility::math::Vector2F topLeftCenter(
 			{ -halfWidth + cornerRadius, -halfHeight + cornerRadius });
-		const utility::math::Vector<float, 2> topRightCenter(
+		const utility::math::Vector2F topRightCenter(
 			{ halfWidth - cornerRadius, -halfHeight + cornerRadius });
-		const utility::math::Vector<float, 2> bottomRightCenter(
+		const utility::math::Vector2F bottomRightCenter(
 			{ halfWidth - cornerRadius, halfHeight - cornerRadius });
-		const utility::math::Vector<float, 2> bottomLeftCenter(
+		const utility::math::Vector2F bottomLeftCenter(
 			{ -halfWidth + cornerRadius, halfHeight - cornerRadius });
 
 		appendRoundedCornerArc(localVertices, topRightCenter, -pi / 2.0f, 0.0f,
@@ -132,13 +131,13 @@ namespace guillaume::systems
 		return localVertices;
 	}
 
-	std::vector<utility::math::Vector<float, 2>>
+	std::vector<utility::math::Vector2F>
 		RectangleRender::transformToWorldVertices(
-			const std::vector<utility::math::Vector<float, 2>> &localVertices,
-			const utility::math::Vector<float, 2> &center,
+			const std::vector<utility::math::Vector2F> &localVertices,
+			const utility::math::Vector2F &center,
 			const float angleRadians) const
 	{
-		std::vector<utility::math::Vector<float, 2>> worldVertices;
+		std::vector<utility::math::Vector2F> worldVertices;
 		worldVertices.reserve(localVertices.size());
 		for (const auto &localVertex: localVertices) {
 			worldVertices.push_back(rotateVector(localVertex, angleRadians)
@@ -147,12 +146,12 @@ namespace guillaume::systems
 		return worldVertices;
 	}
 
-	std::vector<utility::math::Vector<float, 2>>
+	std::vector<utility::math::Vector2F>
 		RectangleRender::buildRoundedRectVertices(
-			const utility::math::Vector<float, 2> &center, float angleRadians,
-			const utility::math::Vector<float, 2> &scale,
-			const utility::math::Vector<float, 2> &size, float radius,
-			int arcSegments, float epsilon)
+			const utility::math::Vector2F &center, float angleRadians,
+			const utility::math::Vector2F &scale,
+			const utility::math::Vector2F &size, float radius, int arcSegments,
+			float epsilon)
 	{
 		const float halfWidth	 = (size[0] / 2.0f) * std::abs(scale[0]);
 		const float halfHeight	 = (size[1] / 2.0f) * std::abs(scale[1]);
@@ -162,9 +161,9 @@ namespace guillaume::systems
 	}
 
 	void RectangleRender::buildTriangleFanVertices(
-		const utility::math::Vector<float, 2> &center,
-		const std::vector<utility::math::Vector<float, 2>> &outline,
-		const utility::graphics::Color32Bit &color)
+		const utility::math::Vector2F &center,
+		const std::vector<utility::math::Vector2F> &outline,
+		const utility::graphic::Color32Bit &color)
 	{
 		_vertices.reserve(outline.size() + 2);
 
@@ -179,13 +178,13 @@ namespace guillaume::systems
 		}
 	}
 
-	utility::graphics::Vertex<float, uint8_t> RectangleRender::createVertex(
-		const utility::math::Vector<float, 2> &position,
-		const utility::graphics::Color32Bit &color) const
+	utility::graphic::VertexF RectangleRender::createVertex(
+		const utility::math::Vector2F &position,
+		const utility::graphic::Color32Bit &color) const
 	{
-		utility::graphics::Vertex<float, uint8_t> vertex;
+		utility::graphic::VertexF vertex;
 		vertex.setPosition(
-			utility::graphics::Position({ position[0], position[1], 0.0f }));
+			utility::graphic::Position({ position[0], position[1], 0.0f }));
 		vertex.setColor(color);
 		return vertex;
 	}
@@ -223,20 +222,20 @@ namespace guillaume::systems
 		const auto &bordersComponent =
 			getComponent<components::Borders>(entityIdentifier);
 
-		const auto position = transformComponent.getPosition();
-		const auto rotation = transformComponent.getRotation();
-		const auto scale	= transformComponent.getScale();
-		const auto bound	= boundComponent.getSize();
-		const auto color	= colorComponent.getColor();
-		const float radius	= extractAverageRadius(bordersComponent);
+		const auto position	   = transformComponent.getPosition();
+		const auto orientation = transformComponent.getOrientation();
+		const auto scale	   = transformComponent.getScale();
+		const auto bound	   = boundComponent.getSize();
+		const auto color	   = colorComponent.getColor();
+		const float radius	   = extractAverageRadius(bordersComponent);
 
-		const utility::math::Vector<float, 2> center(
+		const utility::math::Vector2F center(
 			{ position[0], position[1] - (bound[1] * scale[1] / 2.0f) });
-		const float angleRadians   = this->extractYawRadians(rotation);
+		const float angleRadians   = this->extractYawRadians(orientation);
 		const auto roundedVertices = buildRoundedRectVertices(
 			center, angleRadians,
-			utility::math::Vector<float, 2>({ scale[0], scale[1] }),
-			utility::math::Vector<float, 2>({ bound[0], bound[1] }), radius);
+			utility::math::Vector2F({ scale[0], scale[1] }),
+			utility::math::Vector2F({ bound[0], bound[1] }), radius);
 
 		_vertices.clear();
 		buildTriangleFanVertices(center, roundedVertices, color);

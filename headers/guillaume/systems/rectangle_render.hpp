@@ -47,27 +47,27 @@ namespace guillaume::systems
 	{
 		private:
 		Renderer &_renderer;	///< Renderer instance
-		std::vector<utility::graphics::Vertex<float, uint8_t>>
+		std::vector<utility::graphic::VertexF>
 			_vertices;	  ///< Reused draw buffer to avoid per-frame
 						  ///< allocations.
 
 		private:
 		/**
-		 * @brief Extract the yaw angle in radians from a 3D rotation.
-		 * @param rotation The transform rotation.
-		 * @return Rotation around Z as radians.
+		 * @brief Extract the yaw angle in radians from a 3D orientation.
+		 * @param orientation The transform orientation.
+		 * @return Orientation around Z as radians.
 		 */
 		float extractYawRadians(
-			const components::Transform::Rotation &rotation) const;
+			const utility::graphic::OrientationF &orientation) const;
 
 		/**
 		 * @brief Rotate a 2D vector around the origin.
 		 * @param vector The vector to rotate.
-		 * @param angleRadians Rotation angle in radians.
+		 * @param angleRadians Orientation angle in radians.
 		 * @return Rotated vector.
 		 */
-		utility::math::Vector<float, 2>
-			rotateVector(const utility::math::Vector<float, 2> &vector,
+		utility::math::Vector2F
+			rotateVector(const utility::math::Vector2F &vector,
 						 float angleRadians) const;
 
 		/**
@@ -83,7 +83,7 @@ namespace guillaume::systems
 		 * @param halfHeight Half rectangle height.
 		 * @return Rectangle local vertices in clockwise order.
 		 */
-		std::vector<utility::math::Vector<float, 2>>
+		std::vector<utility::math::Vector2F>
 			buildAxisAlignedRectVertices(float halfWidth,
 										 float halfHeight) const;
 
@@ -97,8 +97,8 @@ namespace guillaume::systems
 		 * @param arcSegments Number of interpolation segments.
 		 */
 		void appendRoundedCornerArc(
-			std::vector<utility::math::Vector<float, 2>> &localVertices,
-			const utility::math::Vector<float, 2> &arcCenter, float startAngle,
+			std::vector<utility::math::Vector2F> &localVertices,
+			const utility::math::Vector2F &arcCenter, float startAngle,
 			float endAngle, float radius, int arcSegments) const;
 
 		/**
@@ -110,7 +110,7 @@ namespace guillaume::systems
 		 * @param epsilon Threshold used to consider radius as zero.
 		 * @return Local-space outline vertices.
 		 */
-		std::vector<utility::math::Vector<float, 2>>
+		std::vector<utility::math::Vector2F>
 			buildLocalRoundedRectVertices(float halfWidth, float halfHeight,
 										  float radius, int arcSegments,
 										  float epsilon) const;
@@ -119,19 +119,18 @@ namespace guillaume::systems
 		 * @brief Transform local vertices to world-space using center and yaw.
 		 * @param localVertices Vertices in local space.
 		 * @param center Rectangle world center.
-		 * @param angleRadians World rotation in radians.
+		 * @param angleRadians World orientation in radians.
 		 * @return World-space vertices.
 		 */
-		std::vector<utility::math::Vector<float, 2>> transformToWorldVertices(
-			const std::vector<utility::math::Vector<float, 2>> &localVertices,
-			const utility::math::Vector<float, 2> &center,
-			float angleRadians) const;
+		std::vector<utility::math::Vector2F> transformToWorldVertices(
+			const std::vector<utility::math::Vector2F> &localVertices,
+			const utility::math::Vector2F &center, float angleRadians) const;
 
 		/**
 		 * @brief Build the outline vertices of a rounded rectangle in world
 		 * space.
 		 * @param center Rectangle center.
-		 * @param angleRadians Rectangle rotation in radians.
+		 * @param angleRadians Rectangle orientation in radians.
 		 * @param scale Rectangle scale.
 		 * @param size Rectangle size before scaling.
 		 * @param radius Corner radius before clamping.
@@ -139,10 +138,10 @@ namespace guillaume::systems
 		 * @param epsilon Threshold used to consider radius as zero.
 		 * @return World-space outline vertices.
 		 */
-		std::vector<utility::math::Vector<float, 2>> buildRoundedRectVertices(
-			const utility::math::Vector<float, 2> &center, float angleRadians,
-			const utility::math::Vector<float, 2> &scale,
-			const utility::math::Vector<float, 2> &size, float radius,
+		std::vector<utility::math::Vector2F> buildRoundedRectVertices(
+			const utility::math::Vector2F &center, float angleRadians,
+			const utility::math::Vector2F &scale,
+			const utility::math::Vector2F &size, float radius,
 			int arcSegments = 16, float epsilon = 0.001f);
 
 		/**
@@ -153,9 +152,9 @@ namespace guillaume::systems
 		 * @note This method appends into the internal _vertices buffer.
 		 */
 		void buildTriangleFanVertices(
-			const utility::math::Vector<float, 2> &center,
-			const std::vector<utility::math::Vector<float, 2>> &outline,
-			const utility::graphics::Color32Bit &color);
+			const utility::math::Vector2F &center,
+			const std::vector<utility::math::Vector2F> &outline,
+			const utility::graphic::Color32Bit &color);
 
 		/**
 		 * @brief Create one drawable vertex from a 2D point and color.
@@ -163,9 +162,9 @@ namespace guillaume::systems
 		 * @param color Vertex color.
 		 * @return Render vertex.
 		 */
-		utility::graphics::Vertex<float, uint8_t>
-			createVertex(const utility::math::Vector<float, 2> &position,
-						 const utility::graphics::Color32Bit &color) const;
+		utility::graphic::VertexF
+			createVertex(const utility::math::Vector2F &position,
+						 const utility::graphic::Color32Bit &color) const;
 
 		public:
 		/**

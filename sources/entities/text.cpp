@@ -62,7 +62,8 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Text::Builder &Text::Builder::withColor(const Color &color)
+	Text::Builder &
+		Text::Builder::withColor(const utility::graphic::Color32Bit &color)
 	{
 		_color = color;
 		return *this;
@@ -77,10 +78,9 @@ namespace guillaume::entities
 	{
 	}
 
-	void Text::Director::makeDefaultText(Builder &builder,
-										 const std::string &content,
-										 const std::size_t &fontSize,
-										 const Color &color)
+	void Text::Director::makeDefaultText(
+		Builder &builder, const std::string &content,
+		const std::size_t &fontSize, const utility::graphic::Color32Bit &color)
 	{
 		builder.withContent(content)
 			.withFontSize(fontSize)
@@ -89,7 +89,8 @@ namespace guillaume::entities
 	}
 
 	Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
-			   const std::size_t &fontSize, const Color &color)
+			   const std::size_t &fontSize,
+			   const utility::graphic::Color32Bit &color)
 		: ecs::LeafEntityFiller<components::Transform, components::Bound,
 								components::Text>(registry)
 		, _content(content)
@@ -98,7 +99,7 @@ namespace guillaume::entities
 	{
 		registry.getComponent<components::Transform>(getIdentifier())
 			.setPosition({ 200.0f, 200.0f, 0.0f })
-			.setRotation(components::Transform::Rotation())
+			.setOrientation({ 0.0f, 0.0f, 0.0f, 1.0f })
 			.setScale({ 1.0f, 1.0f, 1.0f });
 
 		registry.getComponent<components::Bound>(getIdentifier())

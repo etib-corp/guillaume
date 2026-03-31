@@ -28,7 +28,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <utility/graphics/color.hpp>
+#include <utility/graphic/color.hpp>
 
 namespace guillaume
 {
@@ -118,11 +118,8 @@ namespace guillaume
 	 */
 	class ExtendedColor
 	{
-		public:
-		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
-
 		private:
-		Color _color;
+		Color32Bit _color;
 		std::string _name;
 		std::string _description;
 		bool _harmonized;
@@ -164,7 +161,7 @@ namespace guillaume
 		 * @brief Get the RGBA color value.
 		 * @return Immutable color reference.
 		 */
-		const Color &getColor(void) const
+		const Color32Bit &getColor(void) const
 		{
 			return _color;
 		}
@@ -200,7 +197,7 @@ namespace guillaume
 		 * @brief Set the RGBA color value.
 		 * @param color New RGBA color.
 		 */
-		void setColor(const Color &color)
+		void setColor(const Color32Bit &color)
 		{
 			_color = color;
 		}
@@ -239,9 +236,6 @@ namespace guillaume
 	 */
 	class Scheme
 	{
-		public:
-		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
-
 		private:
 		std::array<ExtendedColor,
 				   static_cast<std::size_t>(SchemeColorRole::Count)>

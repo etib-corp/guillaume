@@ -24,7 +24,7 @@
 
 #include <string>
 
-#include <utility/graphics/color.hpp>
+#include <utility/graphic/color.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
@@ -40,9 +40,9 @@ namespace guillaume::components
 	class Text: public ecs::Component
 	{
 		private:
-		std::string _content;						  ///< Text content
-		std::size_t _fontSize				 = 24;	  ///< Font size of the text
-		utility::graphics::Color32Bit _color = {
+		std::string _content;						 ///< Text content
+		std::size_t _fontSize				= 24;	 ///< Font size of the text
+		utility::graphic::Color32Bit _color = {
 			255, 255, 255, 255
 		};	  ///< Color of the text (RGBA)
 
@@ -101,7 +101,7 @@ namespace guillaume::components
 		 * @brief Get the color of the text.
 		 * @return The text color.
 		 */
-		utility::graphics::Color32Bit getColor(void) const
+		utility::graphic::Color32Bit getColor(void) const
 		{
 			return _color;
 		}
@@ -111,7 +111,7 @@ namespace guillaume::components
 		 * @param color The new text color.
 		 * @return The Text component for chaining.
 		 */
-		Text &setColor(utility::graphics::Color32Bit color)
+		Text &setColor(utility::graphic::Color32Bit color)
 		{
 			_color = color;
 			return *this;

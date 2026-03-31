@@ -114,14 +114,13 @@ namespace simple_application
 		 * (typically a triangle list) to form the mesh.
 		 */
 		void drawVertices(
-			const std::vector<utility::graphics::Vertex<float, uint8_t>>
-				&vertices) override;
+			const std::vector<utility::graphic::VertexF> &vertices) override;
 
 		/**
 		 * @brief Measure the size of the given text using the specified font.
 		 * @param text The text to draw.
 		 */
-		void drawText(const utility::graphics::Text &text) override;
+		void drawText(const utility::graphic::Text &text) override;
 
 		/**
 		 * @brief Measures the pixel dimensions of a given text string when
@@ -131,7 +130,7 @@ namespace simple_application
 		 * text in pixels in the form of utility::math::Vector<std::float_t, 2>.
 		 */
 		utility::math::Vector<std::float_t, 2>
-			measureText(const utility::graphics::Text &text) override;
+			measureText(const utility::graphic::Text &text) override;
 
 		/**
 		 * @brief Get the renderer viewport size in pixels.

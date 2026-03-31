@@ -20,7 +20,7 @@
  SOFTWARE.
  */
 
-#include <utility/graphics/text.hpp>
+#include <utility/graphic/text.hpp>
 
 #include "guillaume/systems/measure_text.hpp"
 
@@ -57,9 +57,9 @@ namespace guillaume::systems
 		auto &boundComponent =
 			getComponent<components::Bound>(entityIdentifier);
 
-		utility::graphics::Text text;
+		utility::graphic::Text text;
 		text.setPosition(transformComponent.getPosition())
-			.setRotation(transformComponent.getRotation())
+			.setOrientation(transformComponent.getOrientation())
 			.setScale(transformComponent.getScale())
 			.setColor(textComponent.getColor())
 			.setContent(textComponent.getContent())

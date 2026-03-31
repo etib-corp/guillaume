@@ -30,11 +30,11 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
-#include <utility/graphics/camera.hpp>
-#include <utility/graphics/ray.hpp>
-#include <utility/graphics/rotation.hpp>
-#include <utility/graphics/text.hpp>
-#include <utility/graphics/vertex.hpp>
+#include <utility/graphic/view.hpp>
+#include <utility/graphic/ray.hpp>
+#include <utility/graphic/orientation.hpp>
+#include <utility/graphic/text.hpp>
+#include <utility/graphic/vertex.hpp>
 
 #include <utility/math/vector.hpp>
 
@@ -52,36 +52,32 @@ namespace guillaume
 											 utility::logging::StandardLogger>
 	{
 		public:
-		using Camera =
-			utility::graphics::Camera<float>;			 ///< Camera model type
-		using Ray = utility::graphics::Ray<float, 3>;	 ///< Picking ray type
-		using Position =
-			utility::math::Vector<float, 3>;	///< Camera position type
-		using Rotation =
-			utility::graphics::Rotation;	///< Camera rotation type
-		using ViewportSize =
-			utility::math::Vector<float,
-								  2>;	 ///< Viewport size (width, height)
+		using ViewportSize = utility::math::Vector2F;
 
+		private:
+		utility::graphic::ViewF _view;	  ///< View state
+
+		public:
 		/**
 		 * @brief Default constructor
 		 */
-		Renderer(void);
+		Renderer(void)
+			: Loggable()
+		{
+		}
 
 		/**
 		 * @brief Default destructor
 		 */
 		virtual ~Renderer(void) = default;
 
-		private:
-		Camera _camera;				 ///< Camera state
-		Rotation _cameraRotation;	 ///< Camera rotation quaternion
-		Ray _lastMouseRay;			 ///< Last mouse ray in world space
-		Position _lastMousePosition = {
-			0.0f, 0.0f, 0.0f
-		};	  ///< Last mouse position in world space
-
 		public:
+		/**
+		 * @brief Get the current viewport size in pixels.
+		 * @return The viewport size vector (width, height).
+		 */
+		virtual ViewportSize getViewportSize(void) const = 0;
+
 		/**
 		 * @brief Clear the current rendering target with the drawing color.
 		 */
@@ -101,8 +97,7 @@ namespace guillaume
 		 * (typically a triangle list) to form the mesh.
 		 */
 		virtual void drawVertices(
-			const std::vector<utility::graphics::Vertex<float, uint8_t>>
-				&vertices) = 0;
+			const std::vector<utility::graphic::VertexF> &vertices) = 0;
 
 		/**
 		 * @brief Measures the pixel dimensions of a given text string when
@@ -112,127 +107,31 @@ namespace guillaume
 		 * text in pixels in the form of utility::math::Vector<std::float_t, 2>.
 		 */
 		virtual utility::math::Vector<std::float_t, 2>
-			measureText(const utility::graphics::Text &text) = 0;
-
-		/**
-		 * @brief Get the current viewport size in pixels.
-		 * @return The viewport size vector (width, height).
-		 */
-		virtual ViewportSize getViewportSize(void) const
-		{
-			return { 1.0f, 1.0f };
-		}
+			measureText(const utility::graphic::Text &text) = 0;
 
 		/**
 		 * @brief Measure the size of the given text using the specified font.
 		 * @param text The text to draw.
 		 */
-		virtual void drawText(const utility::graphics::Text &text) = 0;
+		virtual void drawText(const utility::graphic::Text &text) = 0;
 
 		/**
-		 * @brief Get the camera position in 3D space.
-		 * @return The camera position vector.
+		 * @brief Set the full view model.
+		 * @param view The new view instance.
+		 * @note Synchronizes cached orientation and last mouse ray.
 		 */
-		Position getCameraPosition(void) const
+		void setView(const utility::graphic::ViewF &view)
 		{
-			return _camera.getPosition();
+			_view = view;
 		}
 
 		/**
-		 * @brief Get the full camera model.
-		 * @return The camera instance.
+		 * @brief Get the full view model.
+		 * @return The view instance.
 		 */
-		Camera getCamera(void) const
+		utility::graphic::ViewF getView(void) const
 		{
-			return _camera;
-		}
-
-		/**
-		 * @brief Set the camera position in 3D space.
-		 * @param position The new camera position vector.
-		 * @note This also refreshes the cached last mouse ray origin.
-		 */
-		void setCameraPosition(const Position &position)
-		{
-			_camera.setPosition(position);
-			_lastMouseRay = Ray(_camera.getPosition(), _camera.getForward());
-		}
-
-		/**
-		 * @brief Set the full camera model.
-		 * @param camera The new camera instance.
-		 * @note Synchronizes cached rotation and last mouse ray.
-		 */
-		void setCamera(const Camera &camera);
-
-		/**
-		 * @brief Get the camera rotation quaternion.
-		 * @return The camera rotation quaternion.
-		 */
-		Rotation getCameraRotation(void) const
-		{
-			return _cameraRotation;
-		}
-
-		/**
-		 * @brief Set the camera rotation quaternion.
-		 * @param rotation The new camera rotation quaternion.
-		 * @note Synchronizes camera forward/up vectors and last mouse ray.
-		 */
-		void setCameraRotation(const Rotation &rotation);
-
-		/**
-		 * @brief Build an orthographic world-space view ray from a screen
-		 * position.
-		 * @param screenPosition The screen position (x, y in pixels).
-		 * @return A world-space ray parallel to camera forward.
-		 */
-		Ray getViewRayFromScreenPosition(const Position &screenPosition) const
-		{
-			const auto cameraPosition = _camera.getPosition();
-			const auto right		  = _camera.right();
-			const auto up			  = _camera.getUp();
-
-			const auto rayOrigin = cameraPosition + (right * screenPosition[0])
-				+ (up * screenPosition[1]);
-
-			return Ray(rayOrigin, _camera.getForward());
-		}
-
-		/**
-		 * @brief Get the last mouse ray in world space.
-		 * @return The last mouse ray.
-		 */
-		Ray getLastMouseRay(void) const
-		{
-			return _lastMouseRay;
-		}
-
-		/**
-		 * @brief Set the last mouse ray in world space.
-		 * @param ray The new mouse ray.
-		 */
-		void setLastMouseRay(const Ray &ray)
-		{
-			_lastMouseRay = ray;
-		}
-
-		/**
-		 * @brief Get the last mouse position in world space.
-		 * @return The last mouse position vector.
-		 */
-		Position getLastMousePosition(void) const
-		{
-			return _lastMousePosition;
-		}
-
-		/**
-		 * @brief Set the last mouse position in world space.
-		 * @param position The new mouse position vector.
-		 */
-		void setLastMousePosition(const Position &position)
-		{
-			_lastMousePosition = position;
+			return _view;
 		}
 	};
 

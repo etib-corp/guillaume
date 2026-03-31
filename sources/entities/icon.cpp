@@ -84,8 +84,8 @@ namespace guillaume::entities
 		, _style(style)
 	{
 		registry.getComponent<components::Transform>(getIdentifier())
-			.setPosition({ 0.0f, 0.0f, 0.0f })
-			.setRotation(components::Transform::Rotation())
+			.setPosition(({ 0.0f, 0.0f, 0.0f }))
+			.setOrientation({ 0.0f, 0.0f, 0.0f, 1.0f })
 			.setScale({ 1.0f, 1.0f, 1.0f });
 
 		registry.getComponent<components::Icon>(getIdentifier());

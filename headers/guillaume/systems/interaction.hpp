@@ -34,6 +34,7 @@
 
 #include <memory>
 #include <unordered_set>
+
 #include <utility/event/event.hpp>
 #include <utility/event/mouse_button_event.hpp>
 #include <utility/event/mouse_motion_event.hpp>
@@ -78,7 +79,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Default constructor for the Interaction system.
 		 * @param eventBus The event bus to subscribe to.
-		 * @param renderer The renderer instance for camera and viewport
+		 * @param renderer The renderer instance for view and viewport
 		 * information.
 		 */
 		Interaction(event::EventBus &eventBus, Renderer &renderer);

@@ -22,8 +22,10 @@
 
 #pragma once
 
-#include <utility/graphics/position.hpp>
-#include <utility/graphics/rotation.hpp>
+#include <utility/graphic/position.hpp>
+#include <utility/graphic/orientation.hpp>
+#include <utility/graphic/scale.hpp>
+
 #include <utility/math/vector.hpp>
 
 #include "guillaume/ecs/component.hpp"
@@ -36,15 +38,11 @@ namespace guillaume::components
 	 */
 	class Transform: public ecs::Component
 	{
-		public:
-		using Position = utility::graphics::Position;		 ///< Position type
-		using Rotation = utility::graphics::Rotation;		 ///< Rotation type
-		using Scale	   = utility::math::Vector<float, 3>;	 ///< Scale type
-
 		private:
-		Position _position;	   ///< Position of the entity
-		Rotation _rotation;	   ///< Rotation of the entity
-		Scale _scale;		   ///< Scale of the entity
+		utility::graphic::PositionF _position;	  ///< Position of the entity
+		utility::graphic::OrientationF
+			_orientation;					///< Orientation of the entity
+		utility::graphic::ScaleF _scale;	///< Scale of the entity
 
 		public:
 		/**
@@ -58,52 +56,44 @@ namespace guillaume::components
 		~Transform(void) = default;
 
 		/**
-		 * @brief Get the position of the entity.
-		 * @return The position vector.
-		 */
-		Position getPosition(void) const
-		{
-			return _position;
-		}
-
-		/**
 		 * @brief Set the position of the entity.
 		 * @param position The new position vector.
 		 * @return Reference to this Transform component for chaining.
 		 */
-		Transform &setPosition(const Position &position)
+		Transform &setPosition(const utility::graphic::PositionF &position)
 		{
 			_position = position;
 			return *this;
 		}
 
 		/**
-		 * @brief Get the rotation of the entity.
-		 * @return The rotation quaternion.
+		 * @brief Get the position of the entity.
+		 * @return The position vector.
 		 */
-		Rotation getRotation(void) const
+		utility::graphic::PositionF getPosition(void) const
 		{
-			return _rotation;
+			return _position;
 		}
 
 		/**
-		 * @brief Set the rotation of the entity.
-		 * @param rotation The new rotation quaternion.
+		 * @brief Set the orientation of the entity.
+		 * @param orientation The new orientation quaternion.
 		 * @return Reference to this Transform component for chaining.
 		 */
-		Transform &setRotation(const Rotation &rotation)
+		Transform &
+			setOrientation(const utility::graphic::OrientationF &orientation)
 		{
-			_rotation = rotation;
+			_orientation = orientation;
 			return *this;
 		}
 
 		/**
-		 * @brief Get the scale of the entity.
-		 * @return The scale vector.
+		 * @brief Get the orientation of the entity.
+		 * @return The orientation quaternion.
 		 */
-		Scale getScale(void) const
+		utility::graphic::OrientationF getOrientation(void) const
 		{
-			return _scale;
+			return _orientation;
 		}
 
 		/**
@@ -111,10 +101,19 @@ namespace guillaume::components
 		 * @param scale The new scale vector.
 		 * @return Reference to this Transform component for chaining.
 		 */
-		Transform &setScale(const Scale &scale)
+		Transform &setScale(const utility::graphic::ScaleF &scale)
 		{
 			_scale = scale;
 			return *this;
+		}
+
+		/**
+		 * @brief Get the scale of the entity.
+		 * @return The scale vector.
+		 */
+		utility::graphic::ScaleF getScale(void) const
+		{
+			return _scale;
 		}
 	};
 
