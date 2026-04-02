@@ -54,13 +54,12 @@ namespace guillaume::systems
 			getComponent<components::Text>(entityIdentifier);
 
 		utility::graphic::Text text;
-		text.setPose(transformComponent.getPose())
-			.setColor(textComponent.getColor())
+		text.setColor(textComponent.getColor())
 			.setContent(textComponent.getContent())
 			.setFontSize(textComponent.getFontSize())
 			.setFontPath(_defaultFontPath);
 
-		_renderer.drawText(text);
+		_renderer.drawText(text, transformComponent.getPose());
 	}
 
 }	 // namespace guillaume::systems
