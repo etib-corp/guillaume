@@ -119,10 +119,10 @@ namespace guillaume
 	class ExtendedColor
 	{
 		private:
-		utility::graphic::Color32Bit _color;
-		std::string _name;
-		std::string _description;
-		bool _harmonized;
+		utility::graphic::Color32Bit _color; ///< RGBA color value
+		std::string _name; ///< Human-readable name for the color
+		std::string _description; ///< Optional description of the color's purpose or usage
+		bool _harmonized; ///< True if the color was harmonized from a source color, false if it is an original color in the palette
 
 		public:
 		/**
