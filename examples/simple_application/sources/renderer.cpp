@@ -235,7 +235,7 @@ namespace simple_application
 		return { static_cast<float>(width), static_cast<float>(height) };
 	}
 
-	void Renderer::drawText(const utility::graphic::Text &text)
+	void Renderer::drawText(const utility::graphic::Text &text, const utility::graphic::PoseF &pose)
 	{
 		getLogger().debug("Drawing text: " + text.getContent());
 
@@ -279,10 +279,10 @@ namespace simple_application
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0,
 					 GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
 
-		auto position			= text.getPose().getPosition();
+		auto position			= pose.getPosition();
 		const auto viewPosition = getView().getPose().getPosition();
 		position -= viewPosition;
-		auto orientation				 = text.getPose().getOrientation();
+		auto orientation				 = pose.getOrientation();
 		float width						 = static_cast<float>(converted->w);
 		float height					 = static_cast<float>(converted->h);
 		float z							 = position[2];

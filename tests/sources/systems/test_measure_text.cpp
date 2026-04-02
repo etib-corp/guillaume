@@ -63,9 +63,10 @@ namespace
 			lastContent = text.getContent();
 			return measurement;
 		}
-		void drawText(const utility::graphic::Text &text) override
+		void drawText(const utility::graphic::Text &text, const utility::graphic::PoseF &pose) override
 		{
 			(void)text;
+			(void)pose;
 		}
 	};
 

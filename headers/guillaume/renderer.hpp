@@ -114,8 +114,9 @@ namespace guillaume
 		/**
 		 * @brief Measure the size of the given text using the specified font.
 		 * @param text The text to draw.
+		 * @param pose The pose at which to draw the text.
 		 */
-		virtual void drawText(const utility::graphic::Text &text) = 0;
+		virtual void drawText(const utility::graphic::Text &text, const utility::graphic::PoseF &pose) = 0;
 
 		/**
 		 * @brief Set the full view model.

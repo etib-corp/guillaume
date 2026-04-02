@@ -50,16 +50,13 @@ namespace guillaume::systems
 			return;
 		}
 
-		const auto &transformComponent =
-			getComponent<components::Transform>(entityIdentifier);
 		const auto &textComponent =
 			getComponent<components::Text>(entityIdentifier);
 		auto &boundComponent =
 			getComponent<components::Bound>(entityIdentifier);
 
 		utility::graphic::Text text;
-		text.setPose(transformComponent.getPose())
-			.setColor(textComponent.getColor())
+		text.setColor(textComponent.getColor())
 			.setContent(textComponent.getContent())
 			.setFontSize(textComponent.getFontSize())
 			.setFontPath(_defaultFontPath);
