@@ -13,7 +13,7 @@ This design makes the framework easier to extend and maintain.
 
 ## Components
 
-- `Transform`: Position, rotation, and scale.
+- `Transform`: Position, orientation, and scale.
 - `Bounds`: Width and height.
 - `Color`: Fill or display color.
 - `Border`: Border color and thickness.

@@ -49,7 +49,7 @@ namespace guillaume::entities
 		}
 		if (!_label.empty()) {
 			_textDirector.makeDefaultText(*_textBuilder, _label, 24,
-										  Text::Color { 255, 255, 255, 255 });
+										  { 255, 255, 255, 255 });
 		}
 		_button = std::make_unique<Button>(
 			this->getComponentRegistry(), _toggleState, _colorStyle, _shape,
@@ -211,11 +211,11 @@ namespace guillaume::entities
 		, _label(std::move(label))
 		, _onClick(std::move(onClick))
 	{
-		// Initialize button position, rotation, and scale
+		// Initialize button pose
 		registry.getComponent<components::Transform>(getIdentifier())
-			.setPosition({ 300.0f, 300.0f, 0.0f })
-			.setRotation(components::Transform::Rotation())
-			.setScale({ 1.0f, 1.0f, 1.0f });
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(200.0f, 200.0f, 0.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		registry.getComponent<components::Bound>(getIdentifier())
 			.setSize({ 136, 136 });

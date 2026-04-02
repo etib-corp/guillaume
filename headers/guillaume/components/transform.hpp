@@ -22,9 +22,7 @@
 
 #pragma once
 
-#include <utility/graphics/position.hpp>
-#include <utility/graphics/rotation.hpp>
-#include <utility/math/vector.hpp>
+#include <utility/graphic/pose.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
@@ -36,15 +34,8 @@ namespace guillaume::components
 	 */
 	class Transform: public ecs::Component
 	{
-		public:
-		using Position = utility::graphics::Position;		 ///< Position type
-		using Rotation = utility::graphics::Rotation;		 ///< Rotation type
-		using Scale	   = utility::math::Vector<float, 3>;	 ///< Scale type
-
 		private:
-		Position _position;	   ///< Position of the entity
-		Rotation _rotation;	   ///< Rotation of the entity
-		Scale _scale;		   ///< Scale of the entity
+		utility::graphic::PoseF _pose;	  ///< Pose of the entity
 
 		public:
 		/**
@@ -58,63 +49,23 @@ namespace guillaume::components
 		~Transform(void) = default;
 
 		/**
-		 * @brief Get the position of the entity.
-		 * @return The position vector.
-		 */
-		Position getPosition(void) const
-		{
-			return _position;
-		}
-
-		/**
-		 * @brief Set the position of the entity.
-		 * @param position The new position vector.
+		 * @brief Set the pose of the entity.
+		 * @param pose The new pose.
 		 * @return Reference to this Transform component for chaining.
 		 */
-		Transform &setPosition(const Position &position)
+		Transform &setPose(const utility::graphic::PoseF &pose)
 		{
-			_position = position;
+			_pose = pose;
 			return *this;
 		}
 
 		/**
-		 * @brief Get the rotation of the entity.
-		 * @return The rotation quaternion.
+		 * @brief Get the pose of the entity.
+		 * @return The pose.
 		 */
-		Rotation getRotation(void) const
+		utility::graphic::PoseF getPose(void) const
 		{
-			return _rotation;
-		}
-
-		/**
-		 * @brief Set the rotation of the entity.
-		 * @param rotation The new rotation quaternion.
-		 * @return Reference to this Transform component for chaining.
-		 */
-		Transform &setRotation(const Rotation &rotation)
-		{
-			_rotation = rotation;
-			return *this;
-		}
-
-		/**
-		 * @brief Get the scale of the entity.
-		 * @return The scale vector.
-		 */
-		Scale getScale(void) const
-		{
-			return _scale;
-		}
-
-		/**
-		 * @brief Set the scale of the entity.
-		 * @param scale The new scale vector.
-		 * @return Reference to this Transform component for chaining.
-		 */
-		Transform &setScale(const Scale &scale)
-		{
-			_scale = scale;
-			return *this;
+			return _pose;
 		}
 	};
 

@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include <utility/graphics/text.hpp>
+#include <utility/graphic/text.hpp>
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
@@ -41,6 +41,10 @@ namespace
 		std::size_t measureCallCount					   = 0;
 		std::string lastContent;
 
+		ViewportSize getViewportSize(void) const override
+		{
+			return { 800.0f, 600.0f };
+		}
 		void clear(void) override
 		{
 		}
@@ -48,19 +52,18 @@ namespace
 		{
 		}
 		void drawVertices(
-			const std::vector<utility::graphics::Vertex<float, uint8_t>>
-				&vertices) override
+			const std::vector<utility::graphic::VertexF> &vertices) override
 		{
 			(void)vertices;
 		}
 		utility::math::Vector<std::float_t, 2>
-			measureText(const utility::graphics::Text &text) override
+			measureText(const utility::graphic::Text &text) override
 		{
 			++measureCallCount;
 			lastContent = text.getContent();
 			return measurement;
 		}
-		void drawText(const utility::graphics::Text &text) override
+		void drawText(const utility::graphic::Text &text) override
 		{
 			(void)text;
 		}

@@ -34,11 +34,9 @@ namespace guillaume::components
 	 */
 	class Bound: public ecs::Component
 	{
-		public:
-		using Size = utility::math::Vector<float, 2>;	 ///< Size type
-
 		private:
-		Size _size;	   ///< Size of the bounding parallelepiped
+		utility::math::Vector2F
+			_size;	  ///< Size of the bounding parallelepiped
 
 		public:
 		/**
@@ -55,7 +53,7 @@ namespace guillaume::components
 		 * @brief Set the bounding parallelepiped.
 		 * @param size The size of the bounding parallelepiped.
 		 */
-		void setSize(const Size &size)
+		void setSize(const utility::math::Vector2F &size)
 		{
 			_size = size;
 		};
@@ -64,7 +62,7 @@ namespace guillaume::components
 		 * @brief Get the bounding parallelepiped.
 		 * @return The bounding parallelepiped.
 		 */
-		Size getSize(void) const
+		utility::math::Vector2F getSize(void) const
 		{
 			return _size;
 		}

@@ -81,11 +81,11 @@ namespace guillaume::entities
 	{
 		registerEntityFactory<Button::Builder, Button::Director>();
 
-		// Initialize panel position, rotation, and scale
+		// Initialize panel pose
 		registry.getComponent<components::Transform>(getIdentifier())
-			.setPosition({ 0.0f, 0.0f, 0.0f })
-			.setRotation(components::Transform::Rotation())
-			.setScale({ 1.0f, 1.0f, 1.0f });
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		registry.getComponent<components::Bound>(getIdentifier())
 			.setSize({ 400.0f, 300.0f });

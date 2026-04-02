@@ -28,7 +28,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <utility/graphics/color.hpp>
+#include <utility/graphic/color.hpp>
 
 namespace guillaume
 {
@@ -118,14 +118,11 @@ namespace guillaume
 	 */
 	class ExtendedColor
 	{
-		public:
-		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
-
 		private:
-		Color _color;
-		std::string _name;
-		std::string _description;
-		bool _harmonized;
+		utility::graphic::Color32Bit _color; ///< RGBA color value
+		std::string _name; ///< Human-readable name for the color
+		std::string _description; ///< Optional description of the color's purpose or usage
+		bool _harmonized; ///< True if the color was harmonized from a source color, false if it is an original color in the palette
 
 		public:
 		/**
@@ -146,8 +143,9 @@ namespace guillaume
 		 * @param description Optional description.
 		 * @param harmonized True if harmonized from a source color.
 		 */
-		ExtendedColor(const Color &color, const std::string &name,
-					  const std::string &description, bool harmonized)
+		ExtendedColor(const utility::graphic::Color32Bit &color,
+					  const std::string &name, const std::string &description,
+					  bool harmonized)
 			: _color(color)
 			, _name(name)
 			, _description(description)
@@ -164,7 +162,7 @@ namespace guillaume
 		 * @brief Get the RGBA color value.
 		 * @return Immutable color reference.
 		 */
-		const Color &getColor(void) const
+		const utility::graphic::Color32Bit &getColor(void) const
 		{
 			return _color;
 		}
@@ -200,7 +198,7 @@ namespace guillaume
 		 * @brief Set the RGBA color value.
 		 * @param color New RGBA color.
 		 */
-		void setColor(const Color &color)
+		void setColor(const utility::graphic::Color32Bit &color)
 		{
 			_color = color;
 		}
@@ -239,9 +237,6 @@ namespace guillaume
 	 */
 	class Scheme
 	{
-		public:
-		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
-
 		private:
 		std::array<ExtendedColor,
 				   static_cast<std::size_t>(SchemeColorRole::Count)>
@@ -313,7 +308,8 @@ namespace guillaume
 		 * @param description Optional color description.
 		 * @param harmonized True if harmonized from source color.
 		 */
-		void setColor(SchemeColorRole role, const Color &color,
+		void setColor(SchemeColorRole role,
+					  const utility::graphic::Color32Bit &color,
 					  const std::string &name		 = "",
 					  const std::string &description = "",
 					  bool harmonized				 = false)
@@ -451,7 +447,7 @@ namespace guillaume
 		 * @param description Optional color description.
 		 * @param harmonized True if harmonized from source color.
 		 */
-		void setTone(Tone tone, const ExtendedColor::Color &color,
+		void setTone(Tone tone, const utility::graphic::Color32Bit &color,
 					 const std::string &name		= "",
 					 const std::string &description = "",
 					 bool harmonized				= false)

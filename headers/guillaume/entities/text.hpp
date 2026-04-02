@@ -42,9 +42,6 @@ namespace guillaume::entities
 									 components::Text>
 	{
 		public:
-		using Color = utility::graphics::Color32Bit;	///< Color type (RGBA)
-
-		public:
 		/**
 		 * @brief Text type, which can be Normal, Condensed, Monospace, Serif,
 		 * or Slab.
@@ -57,9 +54,6 @@ namespace guillaume::entities
 		class Builder: public ecs::LeafEntityBuilder
 		{
 			public:
-			using Color =
-				utility::graphics::Color32Bit;	  ///< Color type (RGBA)
-
 			private:
 			std::unique_ptr<Text>
 				_text;	  ///< Unique pointer to the Text entity being built
@@ -67,7 +61,8 @@ namespace guillaume::entities
 				_content;	 ///< Text content to be set in the Text component
 			std::size_t
 				_fontSize;	  ///< Font size to be set in the Text component
-			Color _color;	  ///< Color to be set in the Text component (RGBA)
+			utility::graphic::Color32Bit
+				_color;	   ///< Color to be set in the Text component (RGBA)
 
 			public:
 			/**
@@ -114,7 +109,7 @@ namespace guillaume::entities
 			 * @param color The color to set (RGBA).
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withColor(const Color &color);
+			Builder &withColor(const utility::graphic::Color32Bit &color);
 		};
 
 		/**
@@ -144,16 +139,14 @@ namespace guillaume::entities
 			 */
 			void makeDefaultText(Builder &builder, const std::string &content,
 								 const std::size_t &fontSize,
-								 const Color &color);
+								 const utility::graphic::Color32Bit &color);
 		};
 
 		private:
 		std::string
 			_content;	 ///< Text content to be set in the Text component
-		std::size_t _fontSize =
-			24;	   ///< Font size to be set in the Text component
-		Color _color = { 255, 255, 255,
-						 255 };	   ///< Color to be set in the Text component
+		std::size_t _fontSize;
+		utility::graphic::Color32Bit _color;
 
 		public:
 		/**
@@ -166,7 +159,8 @@ namespace guillaume::entities
 		 * @param color The color to initialize the Text component with (RGBA).F
 		 */
 		Text(ecs::ComponentRegistry &registry, const std::string &content,
-			 const std::size_t &fontSize, const Color &color);
+			 const std::size_t &fontSize,
+			 const utility::graphic::Color32Bit &color);
 
 		/**
 		 * @brief Default destructor for the Text component.
