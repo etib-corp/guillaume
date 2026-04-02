@@ -84,9 +84,9 @@ namespace guillaume::entities
 		, _style(style)
 	{
 		registry.getComponent<components::Transform>(getIdentifier())
-			.setPosition(utility::graphic::PositionF(0.0f, 0.0f, 0.0f))
-			.setOrientation(utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f))
-			.setScale(utility::graphic::ScaleF(1.0f, 1.0f, 1.0f));
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		registry.getComponent<components::Icon>(getIdentifier());
 	}

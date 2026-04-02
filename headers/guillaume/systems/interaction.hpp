@@ -65,6 +65,10 @@ namespace guillaume::systems
 
 		std::unique_ptr<utility::event::MouseMotionEvent> _pendingMotionEvent;
 		std::unordered_set<ecs::Entity::Identifier> _evaluatedMotionEntities;
+		utility::event::MouseMotionEvent::MousePosition _lastMousePosition {
+			0.0f, 0.0f
+		};
+		bool _hasMousePosition { false };
 
 		void updateMouseMotionState(
 			const ecs::Entity::Identifier &entityIdentifier);

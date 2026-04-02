@@ -119,7 +119,7 @@ namespace guillaume
 	class ExtendedColor
 	{
 		private:
-		Color32Bit _color;
+		utility::graphic::Color32Bit _color;
 		std::string _name;
 		std::string _description;
 		bool _harmonized;
@@ -143,8 +143,9 @@ namespace guillaume
 		 * @param description Optional description.
 		 * @param harmonized True if harmonized from a source color.
 		 */
-		ExtendedColor(const Color &color, const std::string &name,
-					  const std::string &description, bool harmonized)
+		ExtendedColor(const utility::graphic::Color32Bit &color,
+					  const std::string &name, const std::string &description,
+					  bool harmonized)
 			: _color(color)
 			, _name(name)
 			, _description(description)
@@ -161,7 +162,7 @@ namespace guillaume
 		 * @brief Get the RGBA color value.
 		 * @return Immutable color reference.
 		 */
-		const Color32Bit &getColor(void) const
+		const utility::graphic::Color32Bit &getColor(void) const
 		{
 			return _color;
 		}
@@ -197,7 +198,7 @@ namespace guillaume
 		 * @brief Set the RGBA color value.
 		 * @param color New RGBA color.
 		 */
-		void setColor(const Color32Bit &color)
+		void setColor(const utility::graphic::Color32Bit &color)
 		{
 			_color = color;
 		}
@@ -307,7 +308,8 @@ namespace guillaume
 		 * @param description Optional color description.
 		 * @param harmonized True if harmonized from source color.
 		 */
-		void setColor(SchemeColorRole role, const Color &color,
+		void setColor(SchemeColorRole role,
+					  const utility::graphic::Color32Bit &color,
 					  const std::string &name		 = "",
 					  const std::string &description = "",
 					  bool harmonized				 = false)
@@ -445,7 +447,7 @@ namespace guillaume
 		 * @param description Optional color description.
 		 * @param harmonized True if harmonized from source color.
 		 */
-		void setTone(Tone tone, const ExtendedColor::Color &color,
+		void setTone(Tone tone, const utility::graphic::Color32Bit &color,
 					 const std::string &name		= "",
 					 const std::string &description = "",
 					 bool harmonized				= false)

@@ -22,11 +22,7 @@
 
 #pragma once
 
-#include <utility/graphic/position.hpp>
-#include <utility/graphic/orientation.hpp>
-#include <utility/graphic/scale.hpp>
-
-#include <utility/math/vector.hpp>
+#include <utility/graphic/pose.hpp>
 
 #include "guillaume/ecs/component.hpp"
 
@@ -39,10 +35,7 @@ namespace guillaume::components
 	class Transform: public ecs::Component
 	{
 		private:
-		utility::graphic::PositionF _position;	  ///< Position of the entity
-		utility::graphic::OrientationF
-			_orientation;					///< Orientation of the entity
-		utility::graphic::ScaleF _scale;	///< Scale of the entity
+		utility::graphic::PoseF _pose;	  ///< Pose of the entity
 
 		public:
 		/**
@@ -56,64 +49,23 @@ namespace guillaume::components
 		~Transform(void) = default;
 
 		/**
-		 * @brief Set the position of the entity.
-		 * @param position The new position vector.
+		 * @brief Set the pose of the entity.
+		 * @param pose The new pose.
 		 * @return Reference to this Transform component for chaining.
 		 */
-		Transform &setPosition(const utility::graphic::PositionF &position)
+		Transform &setPose(const utility::graphic::PoseF &pose)
 		{
-			_position = position;
+			_pose = pose;
 			return *this;
 		}
 
 		/**
-		 * @brief Get the position of the entity.
-		 * @return The position vector.
+		 * @brief Get the pose of the entity.
+		 * @return The pose.
 		 */
-		utility::graphic::PositionF getPosition(void) const
+		utility::graphic::PoseF getPose(void) const
 		{
-			return _position;
-		}
-
-		/**
-		 * @brief Set the orientation of the entity.
-		 * @param orientation The new orientation quaternion.
-		 * @return Reference to this Transform component for chaining.
-		 */
-		Transform &
-			setOrientation(const utility::graphic::OrientationF &orientation)
-		{
-			_orientation = orientation;
-			return *this;
-		}
-
-		/**
-		 * @brief Get the orientation of the entity.
-		 * @return The orientation quaternion.
-		 */
-		utility::graphic::OrientationF getOrientation(void) const
-		{
-			return _orientation;
-		}
-
-		/**
-		 * @brief Set the scale of the entity.
-		 * @param scale The new scale vector.
-		 * @return Reference to this Transform component for chaining.
-		 */
-		Transform &setScale(const utility::graphic::ScaleF &scale)
-		{
-			_scale = scale;
-			return *this;
-		}
-
-		/**
-		 * @brief Get the scale of the entity.
-		 * @return The scale vector.
-		 */
-		utility::graphic::ScaleF getScale(void) const
-		{
-			return _scale;
+			return _pose;
 		}
 	};
 

@@ -98,9 +98,9 @@ namespace guillaume::entities
 		, _color(color)
 	{
 		registry.getComponent<components::Transform>(getIdentifier())
-			.setPosition(utility::graphic::PositionF(200.0f, 200.0f, 0.0f))
-			.setOrientation(utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f))
-			.setScale(utility::graphic::ScaleF(1.0f, 1.0f, 1.0f));
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(200.0f, 200.0f, 0.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		registry.getComponent<components::Bound>(getIdentifier())
 			.setSize({ 200.0f, 50.0f });

@@ -54,9 +54,7 @@ namespace guillaume::systems
 			getComponent<components::Text>(entityIdentifier);
 
 		utility::graphic::Text text;
-		text.setPosition(transformComponent.getPosition())
-			.setOrientation(transformComponent.getOrientation())
-			.setScale(transformComponent.getScale())
+		text.setPose(transformComponent.getPose())
 			.setColor(textComponent.getColor())
 			.setContent(textComponent.getContent())
 			.setFontSize(textComponent.getFontSize())

@@ -27,29 +27,35 @@
 
 namespace guillaume::systems
 {
-	float RectangleRender::extractYawRadians(
+	utility::graphic::PositionF RectangleRender::rotatePositionByQuaternion(
+		const utility::graphic::PositionF &position,
 		const utility::graphic::OrientationF &orientation) const
 	{
-		const auto normalizedOrientation = orientation.normalizedQuaternion();
-		const float x					 = normalizedOrientation.getX();
-		const float y					 = normalizedOrientation.getY();
-		const float z					 = normalizedOrientation.getZ();
-		const float w					 = normalizedOrientation.getW();
+		const auto normalizedOrientation = orientation.normalized();
+		const float qx					 = normalizedOrientation.x;
+		const float qy					 = normalizedOrientation.y;
+		const float qz					 = normalizedOrientation.z;
+		const float qw					 = normalizedOrientation.w;
 
-		const float sinYaw = 2.0f * ((w * z) + (x * y));
-		const float cosYaw = 1.0f - (2.0f * ((y * y) + (z * z)));
-		return std::atan2(sinYaw, cosYaw);
-	}
+		const float positionX = position[0];
+		const float positionY = position[1];
+		const float positionZ = position[2];
 
-	utility::math::Vector2F
-		RectangleRender::rotateVector(const utility::math::Vector2F &vector,
-									  const float angleRadians) const
-	{
-		const float cosine = std::cos(angleRadians);
-		const float sine   = std::sin(angleRadians);
-		return utility::math::Vector2F(
-			{ vector[0] * cosine - vector[1] * sine,
-			  vector[0] * sine + vector[1] * cosine });
+		const float crossX = (qy * positionZ) - (qz * positionY);
+		const float crossY = (qz * positionX) - (qx * positionZ);
+		const float crossZ = (qx * positionY) - (qy * positionX);
+
+		const float tX = 2.0f * crossX;
+		const float tY = 2.0f * crossY;
+		const float tZ = 2.0f * crossZ;
+
+		const float crossTX = (qy * tZ) - (qz * tY);
+		const float crossTY = (qz * tX) - (qx * tZ);
+		const float crossTZ = (qx * tY) - (qy * tX);
+
+		return utility::graphic::PositionF(positionX + (qw * tX) + crossTX,
+										   positionY + (qw * tY) + crossTY,
+										   positionZ + (qw * tZ) + crossTZ);
 	}
 
 	float RectangleRender::extractAverageRadius(
@@ -131,24 +137,30 @@ namespace guillaume::systems
 		return localVertices;
 	}
 
-	std::vector<utility::math::Vector2F>
+	std::vector<utility::graphic::PositionF>
 		RectangleRender::transformToWorldVertices(
 			const std::vector<utility::math::Vector2F> &localVertices,
-			const utility::math::Vector2F &center,
-			const float angleRadians) const
+			const utility::graphic::PositionF &center,
+			const utility::graphic::OrientationF &orientation) const
 	{
-		std::vector<utility::math::Vector2F> worldVertices;
+		std::vector<utility::graphic::PositionF> worldVertices;
 		worldVertices.reserve(localVertices.size());
 		for (const auto &localVertex: localVertices) {
-			worldVertices.push_back(rotateVector(localVertex, angleRadians)
-									+ center);
+			const utility::graphic::PositionF localPosition(
+				localVertex[0], localVertex[1], 0.0f);
+			const auto rotatedPosition =
+				rotatePositionByQuaternion(localPosition, orientation);
+			worldVertices.push_back(utility::graphic::PositionF(
+				center[0] + rotatedPosition[0], center[1] + rotatedPosition[1],
+				center[2] + rotatedPosition[2]));
 		}
 		return worldVertices;
 	}
 
-	std::vector<utility::math::Vector2F>
+	std::vector<utility::graphic::PositionF>
 		RectangleRender::buildRoundedRectVertices(
-			const utility::math::Vector2F &center, float angleRadians,
+			const utility::graphic::PositionF &center,
+			const utility::graphic::OrientationF &orientation,
 			const utility::math::Vector2F &scale,
 			const utility::math::Vector2F &size, float radius, int arcSegments,
 			float epsilon)
@@ -157,12 +169,12 @@ namespace guillaume::systems
 		const float halfHeight	 = (size[1] / 2.0f) * std::abs(scale[1]);
 		const auto localVertices = buildLocalRoundedRectVertices(
 			halfWidth, halfHeight, radius, arcSegments, epsilon);
-		return transformToWorldVertices(localVertices, center, angleRadians);
+		return transformToWorldVertices(localVertices, center, orientation);
 	}
 
 	void RectangleRender::buildTriangleFanVertices(
-		const utility::math::Vector2F &center,
-		const std::vector<utility::math::Vector2F> &outline,
+		const utility::graphic::PositionF &center,
+		const std::vector<utility::graphic::PositionF> &outline,
 		const utility::graphic::Color32Bit &color)
 	{
 		_vertices.reserve(outline.size() + 2);
@@ -179,12 +191,11 @@ namespace guillaume::systems
 	}
 
 	utility::graphic::VertexF RectangleRender::createVertex(
-		const utility::math::Vector2F &position,
+		const utility::graphic::PositionF &position,
 		const utility::graphic::Color32Bit &color) const
 	{
 		utility::graphic::VertexF vertex;
-		vertex.setPosition(
-			utility::graphic::Position({ position[0], position[1], 0.0f }));
+		vertex.setPosition(position);
 		vertex.setColor(color);
 		return vertex;
 	}
@@ -222,19 +233,17 @@ namespace guillaume::systems
 		const auto &bordersComponent =
 			getComponent<components::Borders>(entityIdentifier);
 
-		const auto position	   = transformComponent.getPosition();
-		const auto orientation = transformComponent.getOrientation();
-		const auto scale	   = transformComponent.getScale();
+		const auto pose		   = transformComponent.getPose();
+		const auto position	   = pose.getPosition();
+		const auto orientation = pose.getOrientation();
 		const auto bound	   = boundComponent.getSize();
 		const auto color	   = colorComponent.getColor();
 		const float radius	   = extractAverageRadius(bordersComponent);
 
-		const utility::math::Vector2F center(
-			{ position[0], position[1] - (bound[1] * scale[1] / 2.0f) });
-		const float angleRadians   = this->extractYawRadians(orientation);
+		const utility::graphic::PositionF center(
+			position[0], position[1] - (bound[1] / 2.0f), position[2]);
 		const auto roundedVertices = buildRoundedRectVertices(
-			center, angleRadians,
-			utility::math::Vector2F({ scale[0], scale[1] }),
+			center, orientation, utility::math::Vector2F({ 1.0f, 1.0f }),
 			utility::math::Vector2F({ bound[0], bound[1] }), radius);
 
 		_vertices.clear();

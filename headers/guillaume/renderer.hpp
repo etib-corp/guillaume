@@ -52,7 +52,9 @@ namespace guillaume
 											 utility::logging::StandardLogger>
 	{
 		public:
-		using ViewportSize = utility::math::Vector2F;
+		using ViewportSize =
+			utility::math::Vector2F;	///< 2D vector representing viewport
+										///< width and height in pixels.
 
 		private:
 		utility::graphic::ViewF _view;	  ///< View state

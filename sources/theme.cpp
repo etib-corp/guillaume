@@ -22,9 +22,6 @@
 
 #include "guillaume/theme.hpp"
 
-#include <cstdint>
-#include <utility/graphic/color.hpp>
-
 namespace guillaume
 {
 

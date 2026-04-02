@@ -53,22 +53,14 @@ namespace guillaume::systems
 
 		private:
 		/**
-		 * @brief Extract the yaw angle in radians from a 3D orientation.
-		 * @param orientation The transform orientation.
-		 * @return Orientation around Z as radians.
+		 * @brief Rotate a 3D point by a quaternion.
+		 * @param position Point to rotate.
+		 * @param orientation Orientation used as rotation.
+		 * @return Rotated point.
 		 */
-		float extractYawRadians(
+		utility::graphic::PositionF rotatePositionByQuaternion(
+			const utility::graphic::PositionF &position,
 			const utility::graphic::OrientationF &orientation) const;
-
-		/**
-		 * @brief Rotate a 2D vector around the origin.
-		 * @param vector The vector to rotate.
-		 * @param angleRadians Orientation angle in radians.
-		 * @return Rotated vector.
-		 */
-		utility::math::Vector2F
-			rotateVector(const utility::math::Vector2F &vector,
-						 float angleRadians) const;
 
 		/**
 		 * @brief Compute one corner radius value from Borders component values.
@@ -116,21 +108,23 @@ namespace guillaume::systems
 										  float epsilon) const;
 
 		/**
-		 * @brief Transform local vertices to world-space using center and yaw.
+		 * @brief Transform local vertices to world-space using center and
+		 * orientation.
 		 * @param localVertices Vertices in local space.
 		 * @param center Rectangle world center.
-		 * @param angleRadians World orientation in radians.
+		 * @param orientation Rectangle world orientation.
 		 * @return World-space vertices.
 		 */
-		std::vector<utility::math::Vector2F> transformToWorldVertices(
+		std::vector<utility::graphic::PositionF> transformToWorldVertices(
 			const std::vector<utility::math::Vector2F> &localVertices,
-			const utility::math::Vector2F &center, float angleRadians) const;
+			const utility::graphic::PositionF &center,
+			const utility::graphic::OrientationF &orientation) const;
 
 		/**
 		 * @brief Build the outline vertices of a rounded rectangle in world
 		 * space.
 		 * @param center Rectangle center.
-		 * @param angleRadians Rectangle orientation in radians.
+		 * @param orientation Rectangle orientation.
 		 * @param scale Rectangle scale.
 		 * @param size Rectangle size before scaling.
 		 * @param radius Corner radius before clamping.
@@ -138,8 +132,9 @@ namespace guillaume::systems
 		 * @param epsilon Threshold used to consider radius as zero.
 		 * @return World-space outline vertices.
 		 */
-		std::vector<utility::math::Vector2F> buildRoundedRectVertices(
-			const utility::math::Vector2F &center, float angleRadians,
+		std::vector<utility::graphic::PositionF> buildRoundedRectVertices(
+			const utility::graphic::PositionF &center,
+			const utility::graphic::OrientationF &orientation,
 			const utility::math::Vector2F &scale,
 			const utility::math::Vector2F &size, float radius,
 			int arcSegments = 16, float epsilon = 0.001f);
@@ -152,8 +147,8 @@ namespace guillaume::systems
 		 * @note This method appends into the internal _vertices buffer.
 		 */
 		void buildTriangleFanVertices(
-			const utility::math::Vector2F &center,
-			const std::vector<utility::math::Vector2F> &outline,
+			const utility::graphic::PositionF &center,
+			const std::vector<utility::graphic::PositionF> &outline,
 			const utility::graphic::Color32Bit &color);
 
 		/**
@@ -163,7 +158,7 @@ namespace guillaume::systems
 		 * @return Render vertex.
 		 */
 		utility::graphic::VertexF
-			createVertex(const utility::math::Vector2F &position,
+			createVertex(const utility::graphic::PositionF &position,
 						 const utility::graphic::Color32Bit &color) const;
 
 		public:

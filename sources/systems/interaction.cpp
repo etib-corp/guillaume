@@ -22,13 +22,12 @@
 
 #include "guillaume/systems/interaction.hpp"
 
-#include "guillaume/ecs/components/parent.hpp"
 #include <utility/graphic/orientation.hpp>
 #include <utility/graphic/position.hpp>
 #include <utility/graphic/ray.hpp>
-#include <utility/graphic/scale.hpp>
 
 #include <cmath>
+#include <array>
 #include <optional>
 
 namespace
@@ -36,15 +35,13 @@ namespace
 
 	using WorldPosition	   = utility::graphic::PositionF;
 	using WorldOrientation = utility::graphic::OrientationF;
-	using WorldScale	   = utility::graphic::ScaleF;
-	using Ray			   = utility::graphic::Ray<std::float_t>;
-	using Size			   = utility::math::Vector<float, 2>;
+	using Size			   = utility::math::Vector2F;
 
 	static WorldPosition
 		rotatePositionByQuaternion(const WorldPosition &position,
 								   const WorldOrientation &orientation)
 	{
-		const auto normalizedOrientation = orientation.normalizedQuaternion();
+		const auto normalizedOrientation = orientation.normalized();
 		const float qx					 = normalizedOrientation.x;
 		const float qy					 = normalizedOrientation.y;
 		const float qz					 = normalizedOrientation.z;
@@ -66,139 +63,71 @@ namespace
 		const float crossTZ = (qx * tY) - (qy * tX);
 
 		return WorldPosition(positionX + (qw * tX) + crossTX,
-							   positionY + (qw * tY) + crossTY,
-							   positionZ + (qw * tZ) + crossTZ);
+							 positionY + (qw * tY) + crossTY,
+							 positionZ + (qw * tZ) + crossTZ);
 	}
 
-	static float extractYawRadians(const WorldOrientation &orientation)
-	{
-		const auto normalizedOrientation = orientation.normalizedQuaternion();
-		const float x					 = normalizedOrientation.x;
-		const float y					 = normalizedOrientation.y;
-		const float z					 = normalizedOrientation.z;
-		const float w					 = normalizedOrientation.w;
-
-		const float sinYaw = 2.0f * ((w * z) + (x * y));
-		const float cosYaw = 1.0f - (2.0f * ((y * y) + (z * z)));
-		return std::atan2(sinYaw, cosYaw);
-	}
-
-	struct WorldTransform {
-		WorldPosition position;
-		WorldOrientation orientation;
-		WorldScale scale;
-	};
-
-	static WorldTransform calculateWorldTransform(
-		guillaume::ecs::ComponentRegistry &componentRegistry,
-		const guillaume::ecs::Entity::Identifier &entityId)
-	{
-		const auto &transform =
-			componentRegistry.getComponent<guillaume::components::Transform>(
-				entityId);
-
-		WorldTransform worldTransform { transform.getPosition(),
-										transform.getOrientation(),
-										transform.getScale() };
-
-		if (!componentRegistry.hasComponent<guillaume::ecs::components::Parent>(
-				entityId)) {
-			return worldTransform;
-		}
-
-		const auto &parent =
-			componentRegistry.getComponent<guillaume::ecs::components::Parent>(
-				entityId);
-		const auto parentId = parent.getParentIdentifier();
-
-		if (parentId == guillaume::ecs::Entity::InvalidIdentifier) {
-			return worldTransform;
-		}
-
-		const auto parentWorldTransform =
-			calculateWorldTransform(componentRegistry, parentId);
-
-		WorldPosition scaledLocalPosition;
-		scaledLocalPosition[0] =
-			worldTransform.position[0] * parentWorldTransform.scale[0];
-		scaledLocalPosition[1] =
-			worldTransform.position[1] * parentWorldTransform.scale[1];
-		scaledLocalPosition[2] =
-			worldTransform.position[2] * parentWorldTransform.scale[2];
-
-		const auto rotatedLocalPosition = rotatePositionByQuaternion(
-			scaledLocalPosition, parentWorldTransform.orientation);
-
-		worldTransform.position[0] =
-			parentWorldTransform.position[0] + rotatedLocalPosition[0];
-		worldTransform.position[1] =
-			parentWorldTransform.position[1] + rotatedLocalPosition[1];
-		worldTransform.position[2] =
-			parentWorldTransform.position[2] + rotatedLocalPosition[2];
-
-		worldTransform.orientation =
-			utility::graphic::OrientationF(parentWorldTransform.orientation * worldTransform.orientation);
-		worldTransform.orientation = worldTransform.orientation.normalizedOrientation();
-
-		worldTransform.scale[0] *= parentWorldTransform.scale[0];
-		worldTransform.scale[1] *= parentWorldTransform.scale[1];
-		worldTransform.scale[2] *= parentWorldTransform.scale[2];
-
-		return worldTransform;
-	}
-
-	static std::optional<WorldPosition>
-		intersectRayWithUiPlane(const Ray &ray,
-								const float planeZ = 0.0f)
-	{
-		const auto origin	 = ray.getOrigin();
-		const auto direction = ray.getDirection();
-
-		constexpr float epsilon = 1.0e-6f;
-		if (std::abs(direction[2]) <= epsilon) {
-			return std::nullopt;
-		}
-
-		const float distanceParameter = (planeZ - origin[2]) / direction[2];
-		if (distanceParameter < 0.0f) {
-			return std::nullopt;
-		}
-
-		const auto point = ray.pointAt(distanceParameter);
-		return WorldPosition(point[0], point[1], point[2]);
-	}
-
-	static WorldPosition computeEntityBoundCenter(
-		const WorldPosition &worldPosition,
-		const Size &boundSize,
-		const WorldScale &worldScale)
+	static WorldPosition
+		computeEntityBoundCenter(const WorldPosition &worldPosition,
+								 const Size &boundSize)
 	{
 		WorldPosition center = worldPosition;
-		center[1] = worldPosition[1] - (boundSize[1] * worldScale[1] / 2.0f);
+		center[1]			 = worldPosition[1] - (boundSize[1] / 2.0f);
 		return center;
 	}
 
 	static bool isPointInsideEntityBounds(
-		const WorldPosition &point,
-		const WorldPosition &entityCenter,
-		const Size &boundSize,
-		const WorldScale &entityScale,
-		const WorldOrientation &entityOrientation)
+		const WorldPosition &point, const WorldPosition &entityCenter,
+		const Size &boundSize, const WorldOrientation &entityOrientation)
 	{
-		const float orientationRadians = -extractYawRadians(entityOrientation);
-		const float cosine			   = std::cos(orientationRadians);
-		const float sine			   = std::sin(orientationRadians);
+		const float halfWidth  = boundSize[0] / 2.0f;
+		const float halfHeight = boundSize[1] / 2.0f;
 
-		const float dx = point[0] - entityCenter[0];
-		const float dy = point[1] - entityCenter[1];
+		const std::array<WorldPosition, 4> localCorners {
+			WorldPosition(-halfWidth, -halfHeight, 0.0f),
+			WorldPosition(halfWidth, -halfHeight, 0.0f),
+			WorldPosition(halfWidth, halfHeight, 0.0f),
+			WorldPosition(-halfWidth, halfHeight, 0.0f),
+		};
 
-		const float localX = dx * cosine - dy * sine;
-		const float localY = dx * sine + dy * cosine;
+		std::array<utility::math::Vector2F, 4> projectedCorners;
+		for (std::size_t i = 0; i < localCorners.size(); ++i) {
+			const auto rotatedCorner =
+				rotatePositionByQuaternion(localCorners[i], entityOrientation);
+			projectedCorners[i] = utility::math::Vector2F({
+				entityCenter[0] + rotatedCorner[0],
+				entityCenter[1] + rotatedCorner[1],
+			});
+		}
 
-		const float halfWidth  = (boundSize[0] * entityScale[0]) / 2.0f;
-		const float halfHeight = (boundSize[1] * entityScale[1]) / 2.0f;
+		const utility::math::Vector2F projectedPoint({ point[0], point[1] });
 
-		return std::abs(localX) <= halfWidth && std::abs(localY) <= halfHeight;
+		float referenceSign = 0.0f;
+		for (std::size_t i = 0; i < projectedCorners.size(); ++i) {
+			const auto &a = projectedCorners[i];
+			const auto &b = projectedCorners[(i + 1) % projectedCorners.size()];
+
+			const float edgeX  = b[0] - a[0];
+			const float edgeY  = b[1] - a[1];
+			const float pointX = projectedPoint[0] - a[0];
+			const float pointY = projectedPoint[1] - a[1];
+			const float cross  = (edgeX * pointY) - (edgeY * pointX);
+
+			if (std::abs(cross) <= 1.0e-5f) {
+				continue;
+			}
+
+			if (referenceSign == 0.0f) {
+				referenceSign = cross;
+				continue;
+			}
+
+			if ((cross > 0.0f) != (referenceSign > 0.0f)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }	 // namespace
@@ -207,7 +136,8 @@ namespace guillaume::systems
 {
 
 	Interaction::Interaction(event::EventBus &eventBus, Renderer &renderer)
-		: _mouseButtonSubscriber(eventBus)
+		: ecs::SystemFiller<components::Transform, components::Bound>()
+		, _mouseButtonSubscriber(eventBus)
 		, _mouseMotionSubscriber(eventBus)
 		, _renderer(renderer)
 	{
@@ -238,21 +168,8 @@ namespace guillaume::systems
 			return;
 		}
 
-		const auto mousePosition = _pendingMotionEvent->getPosition();
-		 WorldPosition mousePos3D;
-		mousePos3D[0] = mousePosition[0];
-		mousePos3D[1] = mousePosition[1];
-		mousePos3D[2] = 0.0f;
-
-		const auto mouseRay =
-			_renderer.getViewRayFromScreenPosition(mousePos3D);
-		_renderer.setLastMouseRay(mouseRay);
-
-		const auto worldMousePos = intersectRayWithUiPlane(mouseRay);
-		if (worldMousePos) {
-			_renderer.setLastMousePosition(*worldMousePos);
-		}
-
+		_lastMousePosition = _pendingMotionEvent->getPosition();
+		_hasMousePosition  = true;
 		_evaluatedMotionEntities.insert(entityIdentifier);
 	}
 
@@ -338,35 +255,40 @@ namespace guillaume::systems
 			 buttonIndex < static_cast<std::size_t>(
 				 utility::event::MouseButtonEvent::MouseButton::Last);
 			 ++buttonIndex) {
-			if (changedButtons.test(buttonIndex)) {
-				const auto button =
-					static_cast<utility::event::MouseButtonEvent::MouseButton>(
-						buttonIndex);
-				const bool isPressed = currentButtonStates.test(buttonIndex);
-				if (isPressed && isInside) {
-					click.setPressedInside(button, true);
-					click.setClicked(button, true);
-					const auto &onClickHandler =
-						click.getOnClickHandlers().at(button);
-					if (onClickHandler) {
-						onClickHandler(_pendingClickEvent->getPosition());
-					}
-					break;
+			if (!changedButtons.test(buttonIndex)) {
+				continue;
+			}
+
+			const auto button =
+				static_cast<utility::event::MouseButtonEvent::MouseButton>(
+					buttonIndex);
+			const bool isPressed = currentButtonStates.test(buttonIndex);
+
+			if (isPressed && isInside) {
+				click.setPressedInside(button, true);
+				click.setClicked(button, true);
+				const auto &onClickHandler =
+					click.getOnClickHandlers().at(button);
+				if (onClickHandler) {
+					onClickHandler(_pendingClickEvent->getPosition());
 				}
-				if (!isPressed && click.isPressedInside(button) && isInside) {
-					click.setPressedInside(button, false);
-					click.setClicked(button, false);
-					const auto &onReleaseHandler =
-						click.getOnReleaseHandlers().at(button);
-					if (onReleaseHandler) {
-						onReleaseHandler(_pendingClickEvent->getPosition());
-					}
-					break;
+				break;
+			}
+
+			if (!isPressed && click.isPressedInside(button) && isInside) {
+				click.setPressedInside(button, false);
+				click.setClicked(button, false);
+				const auto &onReleaseHandler =
+					click.getOnReleaseHandlers().at(button);
+				if (onReleaseHandler) {
+					onReleaseHandler(_pendingClickEvent->getPosition());
 				}
-				if (!isPressed) {
-					click.setClicked(button, false);
-					click.setPressedInside(button, false);
-				}
+				break;
+			}
+
+			if (!isPressed) {
+				click.setClicked(button, false);
+				click.setPressedInside(button, false);
 			}
 		}
 	}
@@ -389,20 +311,50 @@ namespace guillaume::systems
 
 		updateMouseMotionState(entityIdentifier);
 
+		if (!_pendingClickEvent) {
+			while (_mouseButtonSubscriber.hasPendingEvents()) {
+				auto nextEvent = _mouseButtonSubscriber.getNextEvent();
+				if (!nextEvent) {
+					continue;
+				}
+				_pendingClickEvent = std::move(nextEvent);
+				_evaluatedClickEntities.clear();
+				break;
+			}
+		}
+
 		const auto &bound =
 			componentRegistry.getComponent<components::Bound>(entityIdentifier);
-		const auto worldMousePos = _renderer.getLastMousePosition();
-		const auto worldTransform =
-			calculateWorldTransform(componentRegistry, entityIdentifier);
-		const auto size				  = bound.getSize();
-		const auto worldMousePosition = WorldPosition(
-			{ worldMousePos[0], worldMousePos[1], worldMousePos[2] });
 
-		const auto trueCenter = computeEntityBoundCenter(
-			worldTransform.position, size, worldTransform.scale);
+		std::optional<utility::event::MouseMotionEvent::MousePosition>
+			pointerScreenPosition = std::nullopt;
+		if (_pendingClickEvent) {
+			pointerScreenPosition = _pendingClickEvent->getPosition();
+		} else if (_hasMousePosition) {
+			pointerScreenPosition = _lastMousePosition;
+		}
+
+		if (!pointerScreenPosition.has_value()) {
+			processHover(componentRegistry, entityIdentifier, false);
+			processClick(componentRegistry, entityIdentifier, false);
+			return;
+		}
+
+		const auto viewPosition = _renderer.getView().getPose().getPosition();
+		const WorldPosition worldMousePosition(
+			pointerScreenPosition->x + viewPosition[0],
+			pointerScreenPosition->y + viewPosition[1], 0.0f);
+
+		const auto &transform =
+			componentRegistry.getComponent<components::Transform>(
+				entityIdentifier);
+		const auto pose = transform.getPose();
+		const auto size = bound.getSize();
+
+		const auto trueCenter =
+			computeEntityBoundCenter(pose.getPosition(), size);
 		const bool isInside = isPointInsideEntityBounds(
-			worldMousePosition, trueCenter, size, worldTransform.scale,
-			worldTransform.orientation);
+			worldMousePosition, trueCenter, size, pose.getOrientation());
 
 		processHover(componentRegistry, entityIdentifier, isInside);
 		processClick(componentRegistry, entityIdentifier, isInside);

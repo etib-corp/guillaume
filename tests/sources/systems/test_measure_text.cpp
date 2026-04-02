@@ -41,6 +41,10 @@ namespace
 		std::size_t measureCallCount					   = 0;
 		std::string lastContent;
 
+		ViewportSize getViewportSize(void) const override
+		{
+			return { 800.0f, 600.0f };
+		}
 		void clear(void) override
 		{
 		}

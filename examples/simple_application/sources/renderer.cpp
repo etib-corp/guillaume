@@ -177,19 +177,22 @@ namespace simple_application
 	void Renderer::drawVertices(
 		const std::vector<utility::graphic::VertexF> &vertices)
 	{
-		const auto viewPosition = getView().getPosition();
+		const auto viewPosition = getView().getPose().getPosition();
 
+		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBegin(GL_TRIANGLE_FAN);
 		for (const auto &vertex: vertices) {
-			glColor4ub(vertex.getColor().red(), vertex.getColor().green(),
-					   vertex.getColor().blue(), vertex.getColor().alpha());
+			glColor4ub(vertex.getColor().getRed(), vertex.getColor().getGreen(),
+					   vertex.getColor().getBlue(),
+					   vertex.getColor().getAlpha());
 			auto position = vertex.getPosition();
 			position -= viewPosition;
 			glVertex3f(position[0], position[1], position[2]);
 		}
 		glEnd();
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	utility::math::Vector<std::float_t, 2>
@@ -244,8 +247,8 @@ namespace simple_application
 		}
 
 		auto color		   = text.getColor();
-		SDL_Color sdlColor = { color.red(), color.green(), color.blue(),
-							   color.alpha() };
+		SDL_Color sdlColor = { color.getRed(), color.getGreen(),
+							   color.getBlue(), color.getAlpha() };
 
 		SDL_Surface *surface = TTF_RenderText_Blended(
 			ttfFont, text.getContent().c_str(), 0, sdlColor);
@@ -276,16 +279,15 @@ namespace simple_application
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0,
 					 GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
 
-		auto position			= text.getPosition();
-		const auto viewPosition = getView().getPosition();
+		auto position			= text.getPose().getPosition();
+		const auto viewPosition = getView().getPose().getPosition();
 		position -= viewPosition;
-		auto orientation				 = text.getOrientation();
+		auto orientation				 = text.getPose().getOrientation();
 		float width						 = static_cast<float>(converted->w);
 		float height					 = static_cast<float>(converted->h);
 		float z							 = position[2];
-		const auto normalizedOrientation = orientation.normalizedQuaternion();
-		const float clampedW =
-			std::clamp(normalizedOrientation.getW(), -1.0f, 1.0f);
+		const auto normalizedOrientation = orientation.normalized();
+		const float clampedW = std::clamp(normalizedOrientation.w, -1.0f, 1.0f);
 		const float angleRadians = 2.0f * std::acos(clampedW);
 		const float angleDegrees =
 			angleRadians * (180.0f / 3.14159265358979323846f);
@@ -296,12 +298,13 @@ namespace simple_application
 		float axisY = 0.0f;
 		float axisZ = 1.0f;
 		if (sineHalfAngle > 1.0e-6f) {
-			axisX = normalizedOrientation.getX() / sineHalfAngle;
-			axisY = normalizedOrientation.getY() / sineHalfAngle;
-			axisZ = normalizedOrientation.getZ() / sineHalfAngle;
+			axisX = normalizedOrientation.x / sineHalfAngle;
+			axisY = normalizedOrientation.y / sineHalfAngle;
+			axisZ = normalizedOrientation.z / sineHalfAngle;
 		}
 
-		glColor4ub(color.red(), color.green(), color.blue(), color.alpha());
+		glColor4ub(color.getRed(), color.getGreen(), color.getBlue(),
+				   color.getAlpha());
 		glPushMatrix();
 		glTranslatef(position[0], position[1], z);
 		glRotatef(angleDegrees, axisX, axisY, axisZ);
