@@ -21,7 +21,6 @@
  */
 
 #include "guillaume/entities/panel.hpp"
-#include "guillaume/entities/button.hpp"
 
 namespace guillaume::entities
 {
@@ -37,16 +36,19 @@ namespace guillaume::entities
 	{
 	}
 
-	void Panel::Builder::registerEntity(void)
+	ecs::Entity::Identifier Panel::Builder::registerEntity(void)
 	{
-		_panel = std::make_unique<Panel>(this->getComponentRegistry(),
-										 this->getEntityRegistry(), _name);
+		ecs::Entity::Identifier identifier = ecs::Entity::InvalidIdentifier;
+
+		_panel = std::make_unique<Panel>(this->getComponentRegistry(), _name);
+		identifier = _panel->getIdentifier();
 		this->getEntityRegistry().addEntity(std::move(_panel));
+		return identifier;
 	}
 
 	void Panel::Builder::reset(void)
 	{
-		ecs::NodeEntityBuilder::reset();
+		NodeEntityBuilder::reset();
 		_panel.reset();
 		_name.clear();
 	}
@@ -66,32 +68,29 @@ namespace guillaume::entities
 	{
 	}
 
-	void Panel::Director::makePanel(Builder &builder, const std::string &name)
+	ecs::Entity::Identifier
+		Panel::Director::makeDefaultPanel(Builder &builder,
+										  const std::string &name)
 	{
-		builder.withName(name).registerEntity();
+		return builder.withName(name).registerEntity();
 	}
 
-	Panel::Panel(ecs::ComponentRegistry &registry,
-				 ecs::EntityRegistry &entityRegistry, const std::string &name)
-		: ecs::NodeEntityFiller<components::Transform, components::Bound>(
+	Panel::Panel(ecs::ComponentRegistry &registry, const std::string &name)
+		: ecs::NodeEntityFiller<components::Transform, components::Bound,
+								components::Color, components::Borders>(
 			  registry)
-		, _registry(registry)
-		, _entityRegistry(entityRegistry)
-		, _name(name)
 	{
-		registerEntityFactory<Button::Builder, Button::Director>();
-
-		// Initialize panel pose
-		registry.getComponent<components::Transform>(getIdentifier())
-			.setPose(utility::graphic::PoseF(
-				utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
-
-		registry.getComponent<components::Bound>(getIdentifier())
-			.setSize({ 400.0f, 300.0f });
+		setName(name);
 	}
 
-	Panel::~Panel(void)
+	Panel::~Panel()
 	{
 	}
+
+	Panel &Panel::setName(const std::string &name)
+	{
+		_name = name;
+		return *this;
+	}
+
 }	 // namespace guillaume::entities

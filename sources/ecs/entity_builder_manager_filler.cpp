@@ -20,34 +20,8 @@
  SOFTWARE.
  */
 
-#include "guillaume/scene.hpp"
+#include "guillaume/ecs/entity_builder_manager_filler.hpp"
 
-#include "guillaume/entities/panel.hpp"
-#include "guillaume/entities/text.hpp"
-#include "guillaume/entities/button.hpp"
-#include "guillaume/entities/icon.hpp"
-
-namespace guillaume
+namespace guillaume::ecs
 {
-	Scene::Scene(LocalStorage &localStorage, SessionStorage &sessionStorage)
-		: _localStorage(localStorage)
-		, _sessionStorage(sessionStorage)
-		, _componentRegistry()
-		, _entityRegistry()
-		, _entityBuilderManager(
-			  std::make_unique<ecs::EntityBuilderManagerFiller<
-				  entities::Panel::Builder, entities::Text::Builder,
-				  entities::Button::Builder, entities::Icon::Builder>>(
-				  _componentRegistry, _entityRegistry))
-		, _entityDirectorManager(
-			  std::make_unique<ecs::EntityDirectorManagerFiller<
-				  entities::Panel::Director, entities::Text::Director,
-				  entities::Button::Director, entities::Icon::Director>>())
-	{
-	}
-
-	Scene::~Scene(void)
-	{
-	}
-
-}	 // namespace guillaume
+}	 // namespace guillaume::ecs

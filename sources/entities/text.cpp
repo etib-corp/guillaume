@@ -29,21 +29,28 @@ namespace guillaume::entities
 								 ecs::EntityRegistry &entityRegistry)
 		: ecs::LeafEntityBuilder(componentRegistry, entityRegistry)
 	{
+		reset();
 	}
 
 	Text::Builder::~Builder(void)
 	{
 	}
 
-	void Text::Builder::registerEntity(void)
+	ecs::Entity::Identifier Text::Builder::registerEntity(void)
 	{
-		_text = std::make_unique<Text>(getComponentRegistry(), _content,
+		ecs::Entity::Identifier identifier = ecs::Entity::InvalidIdentifier;
+
+		_text = std::make_unique<Text>(this->getComponentRegistry(), _content,
 									   _fontSize, _color);
-		getEntityRegistry().addEntity(std::move(_text));
+
+		identifier = _text->getIdentifier();
+		this->getEntityRegistry().addEntity(std::move(_text));
+		return identifier;
 	}
 
 	void Text::Builder::reset(void)
 	{
+		LeafEntityBuilder::reset();
 		_text.reset();
 		_content.clear();
 		_fontSize = 24;
@@ -78,11 +85,11 @@ namespace guillaume::entities
 	{
 	}
 
-	void Text::Director::makeDefaultText(
+	ecs::Entity::Identifier Text::Director::makeDefaultText(
 		Builder &builder, const std::string &content,
 		const std::size_t &fontSize, const utility::graphic::Color32Bit &color)
 	{
-		builder.withContent(content)
+		return builder.withContent(content)
 			.withFontSize(fontSize)
 			.withColor(color)
 			.registerEntity();
@@ -93,26 +100,31 @@ namespace guillaume::entities
 			   const utility::graphic::Color32Bit &color)
 		: ecs::LeafEntityFiller<components::Transform, components::Bound,
 								components::Text>(registry)
-		, _content(content)
-		, _fontSize(fontSize)
-		, _color(color)
 	{
-		registry.getComponent<components::Transform>(getIdentifier())
-			.setPose(utility::graphic::PoseF(
-				utility::graphic::PositionF(200.0f, 200.0f, 0.0f),
-				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
-
-		registry.getComponent<components::Bound>(getIdentifier())
-			.setSize({ 200.0f, 50.0f });
-
-		registry.getComponent<components::Text>(getIdentifier())
-			.setContent(_content)
-			.setFontSize(_fontSize)
-			.setColor(_color);
+		setContent(content);
+		setFontSize(fontSize);
+		setColor(color);
 	}
 
 	Text::~Text()
 	{
 	}
 
+	Text &Text::setContent(const std::string &content)
+	{
+		_content = content;
+		return *this;
+	}
+
+	Text &Text::setFontSize(std::size_t fontSize)
+	{
+		_fontSize = fontSize;
+		return *this;
+	}
+
+	Text &Text::setColor(utility::graphic::Color32Bit color)
+	{
+		_color = color;
+		return *this;
+	}
 }	 // namespace guillaume::entities

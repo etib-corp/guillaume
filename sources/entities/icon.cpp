@@ -29,29 +29,43 @@ namespace guillaume::entities
 								 ecs::EntityRegistry &entityRegistry)
 		: ecs::LeafEntityBuilder(componentRegistry, entityRegistry)
 	{
+		reset();
 	}
 
 	Icon::Builder::~Builder(void)
 	{
 	}
 
-	void Icon::Builder::registerEntity(void)
+	ecs::Entity::Identifier Icon::Builder::registerEntity(void)
 	{
-		_icon =
-			std::make_unique<Icon>(getComponentRegistry(), _iconName, _style);
-		getEntityRegistry().addEntity(std::move(_icon));
+		ecs::Entity::Identifier identifier = ecs::Entity::InvalidIdentifier;
+
+		_icon = std::make_unique<Icon>(this->getComponentRegistry(), _iconName,
+									   _color, _style);
+		identifier = _icon->getIdentifier();
+		this->getEntityRegistry().addEntity(std::move(_icon));
+		return identifier;
 	}
 
 	void Icon::Builder::reset(void)
 	{
+		LeafEntityBuilder::reset();
 		_icon.reset();
 		_iconName.clear();
+		_color = { 255, 255, 255, 255 };
 		_style = Style::Outlined;
 	}
 
 	Icon::Builder &Icon::Builder::withIconName(const std::string &iconName)
 	{
 		_iconName = iconName;
+		return *this;
+	}
+
+	Icon::Builder &
+		Icon::Builder::withColor(const utility::graphic::Color32Bit &color)
+	{
+		_color = color;
 		return *this;
 	}
 
@@ -70,17 +84,19 @@ namespace guillaume::entities
 	{
 	}
 
-	void Icon::Director::makeDefaultIcon(Builder &builder,
-										 const std::string &iconName)
+	ecs::Entity::Identifier
+		Icon::Director::makeDefaultIcon(Builder &builder,
+										const std::string &iconName)
 	{
-		builder.withIconName(iconName).registerEntity();
+		return builder.withIconName(iconName).registerEntity();
 	}
 
 	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
-			   const Style &style)
+			   const utility::graphic::Color32Bit &color, const Style &style)
 		: ecs::LeafEntityFiller<components::Transform, components::Icon>(
 			  registry)
 		, _iconName(iconName)
+		, _color(color)
 		, _style(style)
 	{
 		registry.getComponent<components::Transform>(getIdentifier())
@@ -93,6 +109,24 @@ namespace guillaume::entities
 
 	Icon::~Icon()
 	{
+	}
+
+	Icon &Icon::setIconName(const std::string &iconName)
+	{
+		_iconName = iconName;
+		return *this;
+	}
+
+	Icon &Icon::setColor(const utility::graphic::Color32Bit &color)
+	{
+		_color = color;
+		return *this;
+	}
+
+	Icon &Icon::setStyle(const Style &style)
+	{
+		_style = style;
+		return *this;
 	}
 
 }	 // namespace guillaume::entities
