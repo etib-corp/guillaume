@@ -83,7 +83,8 @@ namespace
 			return { 0.0f, 0.0f };
 		}
 
-		void drawText(const utility::graphic::Text &, const utility::graphic::PoseF &) override
+		void drawText(const utility::graphic::Text &,
+					  const utility::graphic::PoseF &) override
 		{
 		}
 	};

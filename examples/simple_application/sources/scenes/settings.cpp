@@ -3,41 +3,14 @@
 namespace simple_application::scenes
 {
 
-	Settings::Settings(void)
-		: guillaume::SceneFiller<panels::DefaultPanel>()
+	Settings::Settings(guillaume::LocalStorage &localStorage,
+					   guillaume::SessionStorage &sessionStorage)
+		: guillaume::Scene(localStorage, sessionStorage)
 	{
-		getLogger().info("Settings scene created with DefaultPanel");
+		getLogger().info("Settings scene created");
 	}
 
 	Settings::~Settings(void)
-	{
-	}
-
-	void Settings::onCreate(void)
-	{
-	}
-
-	void Settings::onStart(void)
-	{
-	}
-
-	void Settings::onPause(void)
-	{
-	}
-
-	void Settings::onResume(void)
-	{
-	}
-
-	void Settings::onStop(void)
-	{
-	}
-
-	void Settings::onRestart(void)
-	{
-	}
-
-	void Settings::onDestroy(void)
 	{
 	}
 

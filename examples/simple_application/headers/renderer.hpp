@@ -121,7 +121,8 @@ namespace simple_application
 		 * @param text The text to draw.
 		 * @param pose The pose at which to draw the text.
 		 */
-		void drawText(const utility::graphic::Text &text, const utility::graphic::PoseF &pose) override;
+		void drawText(const utility::graphic::Text &text,
+					  const utility::graphic::PoseF &pose) override;
 
 		/**
 		 * @brief Measures the pixel dimensions of a given text string when

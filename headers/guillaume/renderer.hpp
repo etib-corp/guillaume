@@ -116,7 +116,8 @@ namespace guillaume
 		 * @param text The text to draw.
 		 * @param pose The pose at which to draw the text.
 		 */
-		virtual void drawText(const utility::graphic::Text &text, const utility::graphic::PoseF &pose) = 0;
+		virtual void drawText(const utility::graphic::Text &text,
+							  const utility::graphic::PoseF &pose) = 0;
 
 		/**
 		 * @brief Set the full view model.

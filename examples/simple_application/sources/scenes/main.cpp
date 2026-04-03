@@ -3,41 +3,21 @@
 namespace simple_application::scenes
 {
 
-	Main::Main(void)
-		: guillaume::SceneFiller<panels::DefaultPanel>()
+	Main::Main(guillaume::LocalStorage &localStorage,
+			   guillaume::SessionStorage &sessionStorage)
+		: guillaume::Scene(localStorage, sessionStorage)
 	{
-		getLogger().info("Main scene created with DefaultPanel");
+		getLogger().info("Main scene created");
+		auto &panelBuilder =
+			getBuilderManager()
+				.getBuilder<guillaume::entities::Panel::Builder>();
+		auto &panelDirector =
+			getDirectorManager()
+				.getDirector<guillaume::entities::Panel::Director>();
+		panelDirector.makeDefaultPanel(panelBuilder, "Main Panel");
 	}
 
 	Main::~Main(void)
-	{
-	}
-
-	void Main::onCreate(void)
-	{
-	}
-
-	void Main::onStart(void)
-	{
-	}
-
-	void Main::onPause(void)
-	{
-	}
-
-	void Main::onResume(void)
-	{
-	}
-
-	void Main::onStop(void)
-	{
-	}
-
-	void Main::onRestart(void)
-	{
-	}
-
-	void Main::onDestroy(void)
 	{
 	}
 

@@ -57,8 +57,9 @@ namespace guillaume::ecs
 
 		/**
 		 * @brief Build and register the entity in the entity registry.
+		 * @return The entity identifier of the newly created entity.
 		 */
-		virtual void registerEntity(void) = 0;
+		virtual ecs::Entity::Identifier registerEntity(void) = 0;
 
 		/**
 		 * @brief Reset the builder to its initial state for creating a new

@@ -20,34 +20,34 @@
  SOFTWARE.
  */
 
-#include "guillaume/scene.hpp"
+#pragma once
 
-#include "guillaume/entities/panel.hpp"
-#include "guillaume/entities/text.hpp"
-#include "guillaume/entities/button.hpp"
-#include "guillaume/entities/icon.hpp"
+#include "guillaume/ecs/entity_director_manager.hpp"
 
-namespace guillaume
+namespace guillaume::ecs
 {
-	Scene::Scene(LocalStorage &localStorage, SessionStorage &sessionStorage)
-		: _localStorage(localStorage)
-		, _sessionStorage(sessionStorage)
-		, _componentRegistry()
-		, _entityRegistry()
-		, _entityBuilderManager(
-			  std::make_unique<ecs::EntityBuilderManagerFiller<
-				  entities::Panel::Builder, entities::Text::Builder,
-				  entities::Button::Builder, entities::Icon::Builder>>(
-				  _componentRegistry, _entityRegistry))
-		, _entityDirectorManager(
-			  std::make_unique<ecs::EntityDirectorManagerFiller<
-				  entities::Panel::Director, entities::Text::Director,
-				  entities::Button::Director, entities::Icon::Director>>())
-	{
-	}
 
-	Scene::~Scene(void)
+	/**
+	 * @brief Manager class for handling multiple entity directors.
+	 */
+	template<InheritFromEntityDirector... DirectorTypes>
+	class EntityDirectorManagerFiller: public EntityDirectorManager
 	{
-	}
+		public:
+		/**
+		 * @brief Default constructor.
+		 */
+		EntityDirectorManagerFiller(void)
+			: EntityDirectorManager()
+		{
+			(addDirector<DirectorTypes>(), ...);
+		}
 
-}	 // namespace guillaume
+		/**
+		 * @brief Default destructor for the Entity Director Manager Filler
+		 * class.
+		 */
+		virtual ~EntityDirectorManagerFiller(void) = default;
+	};
+
+}	 // namespace guillaume::ecs

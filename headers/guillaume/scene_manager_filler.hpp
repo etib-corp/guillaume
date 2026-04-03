@@ -20,34 +20,35 @@
  SOFTWARE.
  */
 
-#include "guillaume/scene.hpp"
+#pragma once
 
-#include "guillaume/entities/panel.hpp"
-#include "guillaume/entities/text.hpp"
-#include "guillaume/entities/button.hpp"
-#include "guillaume/entities/icon.hpp"
+#include "guillaume/scene_manager.hpp"
 
 namespace guillaume
 {
-	Scene::Scene(LocalStorage &localStorage, SessionStorage &sessionStorage)
-		: _localStorage(localStorage)
-		, _sessionStorage(sessionStorage)
-		, _componentRegistry()
-		, _entityRegistry()
-		, _entityBuilderManager(
-			  std::make_unique<ecs::EntityBuilderManagerFiller<
-				  entities::Panel::Builder, entities::Text::Builder,
-				  entities::Button::Builder, entities::Icon::Builder>>(
-				  _componentRegistry, _entityRegistry))
-		, _entityDirectorManager(
-			  std::make_unique<ecs::EntityDirectorManagerFiller<
-				  entities::Panel::Director, entities::Text::Director,
-				  entities::Button::Director, entities::Icon::Director>>())
-	{
-	}
 
-	Scene::~Scene(void)
+	/**
+	 * @brief Filler for the SceneManager class, responsible for filling the
+	 * scene manager with scenes.
+	 */
+	template<InheritFromScene... SceneTypes> class SceneManagerFiller:
+		public SceneManager
 	{
-	}
+		public:
+		/**
+		 * @brief Default constructor for the SceneManagerFiller class.
+		 */
+		SceneManagerFiller(void)
+		{
+			(addScene<SceneTypes>(), ...);
+		}
+
+		/**
+		 * @brief Default destructor for the SceneManagerFiller class.
+		 */
+		~SceneManagerFiller(void)
+		{
+		}
+	};
 
 }	 // namespace guillaume

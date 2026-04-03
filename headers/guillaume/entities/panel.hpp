@@ -22,44 +22,46 @@
 
 #pragma once
 
+#include <utility/graphic/color.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
-#include "guillaume/ecs/entity_builder_manager.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/entity_director_manager.hpp"
 #include "guillaume/ecs/node_entity_builder.hpp"
 #include "guillaume/ecs/node_entity_filler.hpp"
 
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/transform.hpp"
+#include "guillaume/components/bound.hpp"
+#include "guillaume/components/color.hpp"
+#include "guillaume/components/borders.hpp"
 
 namespace guillaume::entities
 {
 
 	/**
-	 * @brief Panel entity class representing a UI panel with transform and
-	 * bound components.
+	 * @brief Panel component
 	 */
 	class Panel:
-		public ecs::NodeEntityFiller<components::Transform, components::Bound>,
-		public utility::logging::Loggable<Panel,
-										  utility::logging::StandardLogger>
+		public ecs::NodeEntityFiller<components::Transform, components::Bound,
+									 components::Color, components::Borders>
 	{
+		public:
 		/**
-		 * @brief Builder class for constructing and registering Panel entities.
+		 * @brief Builder used to configure and create `Panel` entities.
 		 */
 		class Builder: public ecs::NodeEntityBuilder
 		{
 			private:
 			std::unique_ptr<Panel>
 				_panel;	   ///< Unique pointer to the Panel entity being built
-			std::string _name;	  ///< Name of the panel entity
+			std::string _name;	  ///< Name of the panel to be used
 
 			public:
 			/**
 			 * @brief Construct a new Panel Builder object.
-			 * @param componentRegistry The component registry used to build
-			 * entities.
-			 * @param entityRegistry The entity registry used to build entities.
+			 * @param componentRegistry The component registry to register
+			 * components to.
+			 * @param entityRegistry The entity registry to register entities
+			 * to.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
@@ -71,8 +73,9 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Build and register the panel entity.
+			 * @return The entity identifier of the newly created panel entity.
 			 */
-			void registerEntity(void) override;
+			ecs::Entity::Identifier registerEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -81,16 +84,16 @@ namespace guillaume::entities
 			void reset(void) override;
 
 			/**
-			 * @brief Set the name for the panel entity.
-			 * @param name The name to set for the panel.
+			 * @brief Set the name of the panel to be used for the Panel entity.
+			 * @param name The name of the panel to set.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withName(const std::string &name);
 		};
 
 		/**
-		 * @brief Director class for orchestrating the construction of Panel
-		 * entities using the Builder.
+		 * @brief Director that orchestrates `Panel::Builder` to create
+		 * preconfigured panel entities.
 		 */
 		class Director: public ecs::EntityDirector
 		{
@@ -106,102 +109,47 @@ namespace guillaume::entities
 			~Director(void);
 
 			/**
-			 * @brief Create a panel entity using the builder.
+			 * @brief Create a default panel entity using the builder.
 			 * @param builder The builder instance used to configure and create
-			 * the panel.
-			 * @param name The name of the panel entity.
+			 * the default panel.
+			 * @param name The name to assign to the default panel.
+			 * @return The entity identifier of the newly created panel entity.
 			 */
-			void makePanel(Builder &builder, const std::string &name);
+			ecs::Entity::Identifier makeDefaultPanel(Builder &builder,
+													 const std::string &name);
 		};
 
 		private:
-		ecs::ComponentRegistry
-			&_registry;	   ///< Reference to the component registry for
-						   ///< initializing components
-		ecs::EntityRegistry
-			&_entityRegistry;	 ///< Reference to the entity registry for
-								 ///< registering child entities
-		ecs::EntityBuilderManager
-			_builderManager;	///< Manager for entity
-								///< builders used by the panel
-		ecs::EntityDirectorManager
-			_directorManager;	 ///< Manager for entity
-								 ///< directors used by the panel
-		std::string _name;		 ///< Name of the panel entity
-
-		protected:
-		/**
-		 * @brief Register a builder/director pair for an entity family.
-		 * @tparam BuilderType Concrete builder type.
-		 * @tparam DirectorType Concrete director type.
-		 * @throws std::runtime_error if either type is already registered.
-		 */
-		template<ecs::InheritFromEntityBuilder BuilderType,
-				 ecs::InheritFromEntityDirector DirectorType>
-		void registerEntityFactory(void)
-		{
-			_builderManager.addBuilder<BuilderType>(_registry, _entityRegistry);
-			_directorManager.addDirector<DirectorType>();
-		}
-
-		/**
-		 * @brief Get the builder manager used by this panel.
-		 * @return Reference to the builder manager.
-		 */
-		ecs::EntityBuilderManager &getBuilderManager(void)
-		{
-			return _builderManager;
-		}
-
-		/**
-		 * @brief Get the director manager used by this panel.
-		 * @return Reference to the director manager.
-		 */
-		ecs::EntityDirectorManager &getDirectorManager(void)
-		{
-			return _directorManager;
-		}
+		std::string _name;	  ///< Name of the panel to be used for this
+							  ///< Panel entity
 
 		public:
 		/**
-		 * @brief Default constructor for the Panel entity.
+		 * @brief Default constructor for the Panel component.
 		 * @param registry Reference to the component registry for initializing
 		 * components.
-		 * @param entityRegistry Reference to the entity registry for
-		 * registering child entities.
-		 * @param name The name of the panel entity.
+		 * @param name The name of the panel to be used for this Panel
 		 */
-		Panel(ecs::ComponentRegistry &registry,
-			  ecs::EntityRegistry &entityRegistry, const std::string &name);
+		Panel(ecs::ComponentRegistry &registry, const std::string &name);
 
 		/**
-		 * @brief Default destructor for the Panel entity.
+		 * @brief Default destructor for the Panel component.
 		 */
 		~Panel(void);
 
 		/**
-		 * @brief Get the component registry for this panel.
-		 * @return Reference to the component registry.
+		 * @brief Set the name of the panel for this Panel entity.
+		 * @param name The new name of the panel to set.
+		 * @return Reference to this Panel for chaining.
 		 */
-		ecs::ComponentRegistry &getComponentRegistry(void)
-		{
-			return _registry;
-		}
-
-		/**
-		 * @brief Get the entity registry for this panel.
-		 * @return Reference to the entity registry.
-		 */
-		ecs::EntityRegistry &getEntityRegistry(void)
-		{
-			return _entityRegistry;
-		}
+		Panel &setName(const std::string &name);
 	};
 
 	/**
-	 * @brief Concept to ensure a type inherits from Panel.
+	 * @brief Concept to ensure a type inherits from Panel
 	 * @tparam Type The type to check.
 	 */
 	template<typename Type>
 	concept InheritFromPanel = std::is_base_of_v<Panel, Type>;
+
 }	 // namespace guillaume::entities

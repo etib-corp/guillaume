@@ -20,34 +20,37 @@
  SOFTWARE.
  */
 
-#include "guillaume/scene.hpp"
+#pragma once
 
-#include "guillaume/entities/panel.hpp"
-#include "guillaume/entities/text.hpp"
-#include "guillaume/entities/button.hpp"
-#include "guillaume/entities/icon.hpp"
+#include "guillaume/ecs/entity_builder_manager.hpp"
 
-namespace guillaume
+namespace guillaume::ecs
 {
-	Scene::Scene(LocalStorage &localStorage, SessionStorage &sessionStorage)
-		: _localStorage(localStorage)
-		, _sessionStorage(sessionStorage)
-		, _componentRegistry()
-		, _entityRegistry()
-		, _entityBuilderManager(
-			  std::make_unique<ecs::EntityBuilderManagerFiller<
-				  entities::Panel::Builder, entities::Text::Builder,
-				  entities::Button::Builder, entities::Icon::Builder>>(
-				  _componentRegistry, _entityRegistry))
-		, _entityDirectorManager(
-			  std::make_unique<ecs::EntityDirectorManagerFiller<
-				  entities::Panel::Director, entities::Text::Director,
-				  entities::Button::Director, entities::Icon::Director>>())
-	{
-	}
 
-	Scene::~Scene(void)
+	/**
+	 * @brief Manager class for handling multiple entity builders.
+	 */
+	template<InheritFromEntityBuilder... BuilderTypes>
+	class EntityBuilderManagerFiller: public EntityBuilderManager
 	{
-	}
+		public:
+		/**
+		 * @brief Default constructor.
+		 * @param componentRegistry The component registry to pass to builders.
+		 * @param entityRegistry The entity registry to pass to builders.
+		 */
+		EntityBuilderManagerFiller(ComponentRegistry &componentRegistry,
+								   EntityRegistry &entityRegistry)
+			: EntityBuilderManager()
+		{
+			(addBuilder<BuilderTypes>(componentRegistry, entityRegistry), ...);
+		}
 
-}	 // namespace guillaume
+		/**
+		 * @brief Default destructor for the Entity Builder Manager Filler
+		 * class.
+		 */
+		virtual ~EntityBuilderManagerFiller(void) = default;
+	};
+
+}	 // namespace guillaume::ecs

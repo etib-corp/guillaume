@@ -27,44 +27,16 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
-#include "ecs/component_registry.hpp"
-#include "ecs/entity_registry.hpp"
-#include "entities/panel.hpp"
+#include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_registry.hpp"
+#include "guillaume/ecs/entity_builder_manager_filler.hpp"
+#include "guillaume/ecs/entity_director_manager_filler.hpp"
+
+#include "guillaume/local_storage.hpp"
+#include "guillaume/session_storage.hpp"
 
 namespace guillaume
 {
-
-	class LocalStorage;
-	class SessionStorage;
-
-	/**
-	 * @brief Application context exposed to scenes.
-	 */
-	class SceneApplication
-	{
-		public:
-		virtual ~SceneApplication(void) = default;
-
-		/**
-		 * @brief Request a scene switch by scene type name key.
-		 * @param sceneTypeName Scene key generated from
-		 * typeid(SceneType).name().
-		 */
-		virtual void requestSceneChange(const std::string &sceneTypeName) = 0;
-
-		/**
-		 * @brief Get local storage from the owning application.
-		 * @return Reference to local storage.
-		 */
-		virtual LocalStorage &getLocalStorage(void) = 0;
-
-		/**
-		 * @brief Get session storage from the owning application.
-		 * @return Reference to session storage.
-		 */
-		virtual SessionStorage &getSessionStorage(void) = 0;
-	};
-
 	/**
 	 * @brief Represents a scene in the application, which can contain entities
 	 * and systems. Scenes can be switched to change the active content.
@@ -74,73 +46,51 @@ namespace guillaume
 										  utility::logging::StandardLogger>
 	{
 		private:
+		LocalStorage &
+			_localStorage;	  ///< Reference to the local storage for this scene
+		SessionStorage &_sessionStorage;	///< Reference to the session
+											///< storage for this scene
 		ecs::ComponentRegistry
 			_componentRegistry;	   ///< Component registry for the scene
 		ecs::EntityRegistry
 			_entityRegistry;	///< Entity registry for the scene
-		SceneApplication
-			*_application;	  ///< Application context attached to scene
+		std::unique_ptr<ecs::EntityBuilderManager>
+			_entityBuilderManager;	  ///< Manager for entity builders
+		std::unique_ptr<ecs::EntityDirectorManager>
+			_entityDirectorManager;	   ///< Manager for entity directors
 
 		protected:
 		/**
-		 * @brief Get the attached application context.
-		 * @return Reference to application context.
+		 * @brief Get the entity builder manager for this scene.
+		 * @return Reference to the entity builder manager.
 		 */
-		SceneApplication &getApplication(void)
+		ecs::EntityBuilderManager &getBuilderManager(void)
 		{
-			if (_application == nullptr) {
-				throw std::runtime_error(
-					"Scene is not attached to an application");
-			}
-			return *_application;
+			return *_entityBuilderManager;
 		}
 
 		/**
-		 * @brief Get local storage from the attached application.
-		 * @return Reference to local storage.
+		 * @brief Get the entity director manager for this scene.
+		 * @return Reference to the entity director manager.
 		 */
-		LocalStorage &getLocalStorage(void)
+		ecs::EntityDirectorManager &getDirectorManager(void)
 		{
-			return getApplication().getLocalStorage();
-		}
-
-		/**
-		 * @brief Get session storage from the attached application.
-		 * @return Reference to session storage.
-		 */
-		SessionStorage &getSessionStorage(void)
-		{
-			return getApplication().getSessionStorage();
+			return *_entityDirectorManager;
 		}
 
 		public:
 		/**
 		 * @brief Default constructor for Scene.
+		 * @param localStorage Reference to the local storage for this scene.
+		 * @param sessionStorage Reference to the session storage for this
+		 * scene.
 		 */
-		Scene(void);
+		Scene(LocalStorage &localStorage, SessionStorage &sessionStorage);
 
 		/**
 		 * @brief Default destructor for Scene.
 		 */
 		virtual ~Scene(void);
-
-		/**
-		 * @brief Attach the application context to this scene.
-		 * @param application Application context.
-		 */
-		void setApplication(SceneApplication &application)
-		{
-			_application = &application;
-		}
-
-		/**
-		 * @brief Add a panel entity to the scene's entity registry.
-		 * @param panel Unique pointer to the panel entity to add.
-		 */
-		void addPanel(std::unique_ptr<entities::Panel> panel)
-		{
-			getEntityRegistry().addEntity(std::move(panel));
-		}
 
 		/**
 		 * @brief Get the component registry for this scene.
@@ -159,52 +109,6 @@ namespace guillaume
 		{
 			return _entityRegistry;
 		}
-
-		/**
-		 * @brief Callback invoked when the scene is created. Override to
-		 * perform initialization logic.
-		 */
-		virtual void onCreate(void);
-
-		/**
-		 * @brief Callback invoked when the scene starts. Override to perform
-		 * logic that should run when the scene becomes visible.
-		 */
-		virtual void onStart(void);
-
-		/**
-		 * @brief Callback invoked when the scene is paused. Override to perform
-		 * logic that should run when the scene loses focus but is still
-		 * partially visible. This may occur when another scene is overlaid on
-		 * top of this one.
-		 */
-		virtual void onPause(void);
-
-		/**
-		 * @brief Callback invoked when the scene resumes from a paused state.
-		 * Override to perform logic that should run when the scene regains
-		 * focus after being paused.
-		 */
-		virtual void onResume(void);
-
-		/**
-		 * @brief Callback invoked when the scene stops. Override to perform
-		 * cleanup logic that should run when the scene is no longer visible.
-		 */
-		virtual void onStop(void);
-
-		/**
-		 * @brief Callback invoked when the scene is restarted. Override to
-		 * perform logic that should run when the scene is restarted after being
-		 * stopped.
-		 */
-		virtual void onRestart(void);
-
-		/**
-		 * @brief Callback invoked when the scene is destroyed. Override to
-		 * perform final cleanup logic before the scene is removed from memory.
-		 */
-		virtual void onDestroy(void);
 	};
 
 	/**
@@ -213,46 +117,5 @@ namespace guillaume
 	 */
 	template<typename Type>
 	concept InheritFromScene = std::is_base_of_v<Scene, Type>;
-
-	/**
-	 * @brief Scene filler that automatically creates and registers panels of
-	 * specified types.
-	 * @tparam PanelTypes Variadic template parameter pack of panel types to
-	 * create and register.
-	 */
-	template<guillaume::entities::InheritFromPanel... PanelTypes>
-	class SceneFiller: public Scene
-	{
-		protected:
-		/**
-		 * @brief Construct a new Scene Filler object.
-		 * Automatically creates and registers panels of the specified types in
-		 * the scene.
-		 */
-		SceneFiller()
-			: Scene()
-		{
-			(registerPanel<PanelTypes>(), ...);
-		}
-
-		/**
-		 * @brief Create and register a panel of the specified type in the
-		 * scene.
-		 * @tparam PanelType The type of panel to create and register.
-		 */
-		template<entities::InheritFromPanel PanelType> void registerPanel(void)
-		{
-			auto panel = std::make_unique<PanelType>(
-				getComponentRegistry(), getEntityRegistry(),
-				utility::demangle<PanelType>());
-			addPanel(std::move(panel));
-		}
-
-		public:
-		/**
-		 * @brief Default destructor for Scene Filler.
-		 */
-		virtual ~SceneFiller(void) = default;
-	};
 
 }	 // namespace guillaume
