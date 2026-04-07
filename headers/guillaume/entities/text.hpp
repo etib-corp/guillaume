@@ -24,8 +24,8 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/leaf_entity_builder.hpp"
-#include "guillaume/ecs/leaf_entity_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
@@ -38,8 +38,8 @@ namespace guillaume::entities
 	 * @brief Text component
 	 */
 	class Text:
-		public ecs::LeafEntityFiller<components::Transform, components::Bound,
-									 components::Text>
+		public ecs::EntityFiller<components::Transform, components::Bound,
+								 components::Text>
 	{
 		public:
 		/**
@@ -51,7 +51,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Text` entities.
 		 */
-		class Builder: public ecs::LeafEntityBuilder
+		class Builder: public ecs::EntityBuilder
 		{
 			public:
 			private:

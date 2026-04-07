@@ -52,8 +52,6 @@
 #include "guillaume/systems/text_input.hpp"
 #include "guillaume/systems/text_render.hpp"
 
-
-
 namespace guillaume
 {
 

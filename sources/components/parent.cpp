@@ -20,41 +20,8 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "guillaume/components/parent.hpp"
 
-#include "guillaume/ecs/component_registry_filler.hpp"
-
-#include "guillaume/ecs/components/children.hpp"
-#include "guillaume/ecs/components/parent.hpp"
-
-namespace guillaume::ecs
+namespace guillaume::ecs::components
 {
-
-	/**
-	 * @brief Templated registry helper that registers multiple component
-	 * types for an entity.
-	 * @tparam ComponentTypes The component types to register.
-	 * @see ComponentRegistry
-	 */
-	template<InheritFromComponent... ComponentTypes>
-	class TreeComponentRegistryFiller:
-		public ComponentRegistryFiller<ComponentTypes..., components::Children,
-									   components::Parent>
-	{
-		public:
-		/**
-		 * @brief Default constructor.
-		 */
-		TreeComponentRegistryFiller(void)
-			: ComponentRegistryFiller<ComponentTypes..., components::Children,
-									  components::Parent>()
-		{
-		}
-
-		/**
-		 * @brief Default destructor for the Component Registry Filler class.
-		 */
-		virtual ~TreeComponentRegistryFiller(void) = default;
-	};
-
-}	 // namespace guillaume::ecs
+}	 // namespace guillaume::ecs::components

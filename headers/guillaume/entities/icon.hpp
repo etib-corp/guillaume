@@ -26,8 +26,8 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/leaf_entity_builder.hpp"
-#include "guillaume/ecs/leaf_entity_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/icon.hpp"
 #include "guillaume/components/transform.hpp"
@@ -39,7 +39,7 @@ namespace guillaume::entities
 	 * @brief Icon component
 	 */
 	class Icon:
-		public ecs::LeafEntityFiller<components::Transform, components::Icon>
+		public ecs::EntityFiller<components::Transform, components::Icon>
 	{
 		public:
 		/**
@@ -50,7 +50,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Icon` entities.
 		 */
-		class Builder: public ecs::LeafEntityBuilder
+		class Builder: public ecs::EntityBuilder
 		{
 			private:
 			std::unique_ptr<Icon>

@@ -27,7 +27,7 @@ namespace guillaume::entities
 
 	Text::Text::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::LeafEntityBuilder(componentRegistry, entityRegistry)
+		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
@@ -50,7 +50,6 @@ namespace guillaume::entities
 
 	void Text::Builder::reset(void)
 	{
-		LeafEntityBuilder::reset();
 		_text.reset();
 		_content.clear();
 		_fontSize = 24;
@@ -98,8 +97,8 @@ namespace guillaume::entities
 	Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
 			   const std::size_t &fontSize,
 			   const utility::graphic::Color32Bit &color)
-		: ecs::LeafEntityFiller<components::Transform, components::Bound,
-								components::Text>(registry)
+		: ecs::EntityFiller<components::Transform, components::Bound,
+							components::Text>(registry)
 	{
 		setContent(content);
 		setFontSize(fontSize);

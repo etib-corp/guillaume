@@ -29,7 +29,7 @@ namespace guillaume::entities
 
 	Button::Button::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 									 ecs::EntityRegistry &entityRegistry)
-		: ecs::NodeEntityBuilder(componentRegistry, entityRegistry)
+		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
@@ -52,7 +52,6 @@ namespace guillaume::entities
 
 	void Button::Builder::reset(void)
 	{
-		ecs::NodeEntityBuilder::reset();
 		_button.reset();
 		_iconIdendifier	 = ecs::Entity::InvalidIdentifier;
 		_labelIdentifier = ecs::Entity::InvalidIdentifier;
@@ -197,10 +196,9 @@ namespace guillaume::entities
 				   ToggleState toggleState, ColorStyle colorStyle, Shape shape,
 				   Size size, MorphState morphState,
 				   std::function<void(void)> onClick)
-		: ecs::NodeEntityFiller<components::Transform, components::Bound,
-								components::Hover, components::Click,
-								components::Color, components::Borders>(
-			  registry)
+		: ecs::EntityFiller<components::Transform, components::Bound,
+							components::Hover, components::Click,
+							components::Color, components::Borders>(registry)
 		, _iconIdentifier(iconIdentifier)
 		, _labelIdentifier(labelIdentifier)
 		, _toggleState(toggleState)

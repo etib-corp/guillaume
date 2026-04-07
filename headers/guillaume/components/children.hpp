@@ -27,48 +27,57 @@
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::ecs::components
+namespace guillaume::components
 {
 
 	/**
-	 * @brief Component representing a parent-child relationship between
-	 * entities.
+	 * @brief Component representing a relationship between entities.
 	 */
-	class Parent: public ecs::Component
+	class Children: public ecs::Component
 	{
 		private:
-		ecs::Entity::Identifier _parentIdentifier {
-			ecs::Entity::InvalidIdentifier
-		};	  ///< Parent entity identifier
+		std::vector<ecs::Entity::Identifier>
+			childrenIdentifiers;	///< Children entity identifiers
 
 		public:
 		/**
-		 * @brief Default constructor for the Parent component.
+		 * @brief Default constructor for the Children component.
 		 */
-		Parent(void) = default;
+		Children(void) = default;
 
 		/**
-		 * @brief Default destructor for the Parent component.
+		 * @brief Default destructor for the Children component.
 		 */
-		~Parent(void) = default;
+		~Children(void) = default;
 
 		/**
-		 * @brief Set the parent entity identifier.
-		 * @param identifier The new parent entity identifier.
+		 * @brief Add a child entity identifier.
+		 * @param identifier The child entity identifier to add.
 		 */
-		void setParentIdentifier(ecs::Entity::Identifier identifier)
+		void addChildIdentifier(ecs::Entity::Identifier identifier)
 		{
-			_parentIdentifier = identifier;
+			childrenIdentifiers.push_back(identifier);
 		}
 
 		/**
-		 * @brief Get the parent entity identifier.
-		 * @return The parent entity identifier.
+		 * @brief Set the children entity identifiers.
+		 * @param identifiers The new children entity identifiers.
 		 */
-		ecs::Entity::Identifier getParentIdentifier(void) const
+		void setChildIdentifiers(
+			const std::vector<ecs::Entity::Identifier> &identifiers)
 		{
-			return _parentIdentifier;
+			childrenIdentifiers = identifiers;
+		}
+
+		/**
+		 * @brief Get the children entity identifiers.
+		 * @return The children entity identifiers.
+		 */
+		const std::vector<ecs::Entity::Identifier> &
+			getChildrenIdentifiers(void) const
+		{
+			return childrenIdentifiers;
 		}
 	};
 
-}	 // namespace guillaume::ecs::components
+}	 // namespace guillaume::components

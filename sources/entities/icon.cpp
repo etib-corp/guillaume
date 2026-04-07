@@ -27,7 +27,7 @@ namespace guillaume::entities
 
 	Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::LeafEntityBuilder(componentRegistry, entityRegistry)
+		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
@@ -49,7 +49,6 @@ namespace guillaume::entities
 
 	void Icon::Builder::reset(void)
 	{
-		LeafEntityBuilder::reset();
 		_icon.reset();
 		_iconName.clear();
 		_color = { 255, 255, 255, 255 };
@@ -93,8 +92,7 @@ namespace guillaume::entities
 
 	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
 			   const utility::graphic::Color32Bit &color, const Style &style)
-		: ecs::LeafEntityFiller<components::Transform, components::Icon>(
-			  registry)
+		: ecs::EntityFiller<components::Transform, components::Icon>(registry)
 		, _iconName(iconName)
 		, _color(color)
 		, _style(style)

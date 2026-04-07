@@ -2,8 +2,6 @@
 
 #include <guillaume/scene.hpp>
 
-#include "panels/default_panel.hpp"
-
 namespace simple_application::scenes
 {
 

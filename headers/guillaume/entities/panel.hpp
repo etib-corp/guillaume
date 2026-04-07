@@ -26,8 +26,8 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/node_entity_builder.hpp"
-#include "guillaume/ecs/node_entity_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/bound.hpp"
@@ -41,19 +41,24 @@ namespace guillaume::entities
 	 * @brief Panel component
 	 */
 	class Panel:
-		public ecs::NodeEntityFiller<components::Transform, components::Bound,
-									 components::Color, components::Borders>
+		public ecs::EntityFiller<components::Transform, components::Bound,
+								 components::Color, components::Borders>
 	{
 		public:
 		/**
 		 * @brief Builder used to configure and create `Panel` entities.
 		 */
-		class Builder: public ecs::NodeEntityBuilder
+		class Builder: public ecs::EntityBuilder
 		{
 			private:
 			std::unique_ptr<Panel>
 				_panel;	   ///< Unique pointer to the Panel entity being built
-			std::string _name;	  ///< Name of the panel to be used
+			utility::graphic::PoseF _pose;	  ///< Pose of the panel to be used
+											  ///< (position, rotation, scale)
+			utility::graphic::Color32Bit
+				_color;	   ///< Color of the panel to be used (RGBA)
+			std::float_t
+				_borderRadius;	  ///< Border radius to be used for the panel
 
 			public:
 			/**
@@ -84,11 +89,28 @@ namespace guillaume::entities
 			void reset(void) override;
 
 			/**
-			 * @brief Set the name of the panel to be used for the Panel entity.
-			 * @param name The name of the panel to set.
+			 * @brief Set the pose of the panel to be used for the Panel entity.
+			 * @param pose The pose of the panel to set (position, rotation,
+			 * scale).
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withName(const std::string &name);
+			Builder &withPose(const utility::graphic::PoseF &pose);
+
+			/**
+			 * @brief Set the color of the panel to be used for the Panel
+			 * entity.
+			 * @param color The color of the panel to set.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withColor(const utility::graphic::Color32Bit &color);
+
+			/**
+			 * @brief Set the border radius of the panel to be used for the
+			 * Panel entity.
+			 * @param borderRadius The border radius of the panel to set.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withBorderRadius(std::float_t borderRadius);
 		};
 
 		/**
@@ -112,25 +134,50 @@ namespace guillaume::entities
 			 * @brief Create a default panel entity using the builder.
 			 * @param builder The builder instance used to configure and create
 			 * the default panel.
-			 * @param name The name to assign to the default panel.
+			 * @param pose The pose to set for the default panel.
 			 * @return The entity identifier of the newly created panel entity.
 			 */
-			ecs::Entity::Identifier makeDefaultPanel(Builder &builder,
-													 const std::string &name);
+			ecs::Entity::Identifier
+				makeDefaultPanel(Builder &builder,
+								 const utility::graphic::PoseF &pose);
+
+			/**
+			 * @brief Create a color panel entity using the builder.
+			 * @param builder The builder instance used to configure and create
+			 * the color panel.
+			 * @param pose The pose to set for the color panel.
+			 * @param color The color to set for the color panel.
+			 * @return The entity identifier of the newly created color panel
+			 * entity.
+			 */
+			ecs::Entity::Identifier
+				makeColorPanel(Builder &builder,
+							   const utility::graphic::PoseF &pose,
+							   const utility::graphic::Color32Bit &color);
 		};
 
 		private:
-		std::string _name;	  ///< Name of the panel to be used for this
-							  ///< Panel entity
-
+		utility::graphic::PoseF
+			_pose;	  ///< Pose to be used for creating panel entities
+					  ///< (position, rotation, scale)
+		utility::graphic::Color32Bit
+			_color;	   ///< Color to be used for creating panel entities
+					   ///< (RGBA)
 		public:
 		/**
 		 * @brief Default constructor for the Panel component.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param name The name of the panel to be used for this Panel
+		 * @param registry Reference to the component registry for
+		 * initializing components.
+		 * @param pose The pose to initialize the Panel component with
+		 * (position, rotation, scale).
+		 * @param color The color to initialize the Panel component with (RGBA).
+		 * @param borderRadius The border radius to initialize the Panel
+		 * component with.
 		 */
-		Panel(ecs::ComponentRegistry &registry, const std::string &name);
+		Panel(ecs::ComponentRegistry &registry,
+			  const utility::graphic::PoseF &pose,
+			  const utility::graphic::Color32Bit &color,
+			  std::float_t borderRadius);
 
 		/**
 		 * @brief Default destructor for the Panel component.
@@ -138,18 +185,25 @@ namespace guillaume::entities
 		~Panel(void);
 
 		/**
-		 * @brief Set the name of the panel for this Panel entity.
-		 * @param name The new name of the panel to set.
+		 * @brief Set the pose of the panel for this Panel entity.
+		 * @param pose The new pose to set for the panel (position, rotation,
+		 * scale).
 		 * @return Reference to this Panel for chaining.
 		 */
-		Panel &setName(const std::string &name);
+		Panel &setPose(const utility::graphic::PoseF &pose);
+
+		/**
+		 * @brief Set the color of the panel for this Panel entity.
+		 * @param color The new color to set for the panel (RGBA).
+		 * @return Reference to this Panel for chaining.
+		 */
+		Panel &setColor(const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Set the border radius of the panel for this Panel entity.
+		 * @param borderRadius The new border radius to set for the panel.
+		 * @return Reference to this Panel for chaining.
+		 */
+		Panel &setBorderRadius(std::float_t borderRadius);
 	};
-
-	/**
-	 * @brief Concept to ensure a type inherits from Panel
-	 * @tparam Type The type to check.
-	 */
-	template<typename Type>
-	concept InheritFromPanel = std::is_base_of_v<Panel, Type>;
-
-}	 // namespace guillaume::entities
+};	  // namespace guillaume::entities

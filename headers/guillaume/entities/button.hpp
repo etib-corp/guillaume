@@ -28,8 +28,8 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/node_entity_builder.hpp"
-#include "guillaume/ecs/node_entity_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
@@ -49,9 +49,9 @@ namespace guillaume::entities
 	 * components.
 	 */
 	class Button:
-		public ecs::NodeEntityFiller<components::Transform, components::Bound,
-									 components::Hover, components::Click,
-									 components::Color, components::Borders>
+		public ecs::EntityFiller<components::Transform, components::Bound,
+								 components::Hover, components::Click,
+								 components::Color, components::Borders>
 	{
 		public:
 		/**
@@ -84,7 +84,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Button` entities.
 		 */
-		class Builder: public ecs::NodeEntityBuilder
+		class Builder: public ecs::EntityBuilder
 		{
 			private:
 			std::unique_ptr<Button>
