@@ -45,6 +45,7 @@
 #include "guillaume/event/event_bus.hpp"
 #include "guillaume/event/event_handler.hpp"
 
+#include "guillaume/systems/glyph_render.hpp"
 #include "guillaume/systems/interaction.hpp"
 #include "guillaume/systems/keyboard_control.hpp"
 #include "guillaume/systems/measure_text.hpp"
@@ -106,6 +107,8 @@ namespace guillaume
 				std::make_unique<systems::Interaction>(_eventBus, _renderer));
 			registerSystem<systems::TextRender>(
 				std::make_unique<systems::TextRender>(_renderer));
+			registerSystem<systems::GlyphRender>(
+				std::make_unique<systems::GlyphRender>(_renderer));
 			registerSystem<systems::KeyboardControl>(
 				std::make_unique<systems::KeyboardControl>(_eventBus));
 			registerSystem<systems::TextInput>(

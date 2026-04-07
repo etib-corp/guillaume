@@ -20,28 +20,14 @@
  SOFTWARE.
  */
 
-#pragma once
+#include "systems/test_text_render.hpp"
 
-#include "guillaume/ecs/component.hpp"
+#include <optional>
 
-namespace guillaume::components
+#include "guillaume/components/text.hpp"
+#include "guillaume/components/transform.hpp"
+#include "guillaume/ecs/component_registry.hpp"
+
+namespace guillaume::systems::tests
 {
-
-	/**
-	 * @brief Component representing a icon element.
-	 */
-	class Icon: public ecs::Component
-	{
-		public:
-		/**
-		 * @brief Default constructor for the Icon component.
-		 */
-		Icon(void) = default;
-
-		/**
-		 * @brief Default destructor for the Icon component.
-		 */
-		~Icon(void) = default;
-	};
-
-}	 // namespace guillaume::components
+}	 // namespace guillaume::systems::tests

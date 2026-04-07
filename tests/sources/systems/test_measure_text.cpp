@@ -69,6 +69,11 @@ namespace
 			(void)text;
 			(void)pose;
 		}
+		void drawGlyph(const utility::graphic::Glyph &glyph, const utility::graphic::PoseF &pose) override
+		{
+			(void)glyph;
+			(void)pose;
+		}
 	};
 
 	class MeasureTextFixture: public guillaume::systems::tests::TestMeasureText

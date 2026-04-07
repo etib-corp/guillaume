@@ -34,6 +34,7 @@
 #include <utility/graphic/ray.hpp>
 #include <utility/graphic/orientation.hpp>
 #include <utility/graphic/text.hpp>
+#include <utility/graphic/glyph.hpp>
 #include <utility/graphic/vertex.hpp>
 
 #include <utility/math/vector.hpp>
@@ -118,6 +119,13 @@ namespace guillaume
 		 */
 		virtual void drawText(const utility::graphic::Text &text,
 							  const utility::graphic::PoseF &pose) = 0;
+
+		/**
+		 * @brief Draw a glyph at the specified pose.
+		 * @param glyph The glyph to draw.
+		 * @param pose The pose at which to draw the glyph.
+		 */
+		virtual void drawGlyph(const utility::graphic::Glyph &glyph, const utility::graphic::PoseF &pose) = 0;
 
 		/**
 		 * @brief Set the full view model.
