@@ -20,8 +20,37 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/components/parent.hpp"
+#pragma once
 
-namespace guillaume::ecs::components
+#include "guillaume/ecs/entity_builder_manager.hpp"
+
+namespace guillaume::ecs
 {
-}	 // namespace guillaume::ecs::components
+
+	/**
+	 * @brief Manager class for handling multiple entity builders.
+	 */
+	template<InheritFromEntityBuilder... BuilderTypes>
+	class EntityBuilderManagerFiller: public EntityBuilderManager
+	{
+		public:
+		/**
+		 * @brief Default constructor.
+		 * @param componentRegistry The component registry to pass to builders.
+		 * @param entityRegistry The entity registry to pass to builders.
+		 */
+		EntityBuilderManagerFiller(ComponentRegistry &componentRegistry,
+								   EntityRegistry &entityRegistry)
+			: EntityBuilderManager()
+		{
+			(addBuilder<BuilderTypes>(componentRegistry, entityRegistry), ...);
+		}
+
+		/**
+		 * @brief Default destructor for the Entity Builder Manager Filler
+		 * class.
+		 */
+		virtual ~EntityBuilderManagerFiller(void) = default;
+	};
+
+}	 // namespace guillaume::ecs

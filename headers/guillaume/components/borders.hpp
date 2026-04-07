@@ -144,6 +144,19 @@ namespace guillaume::components
 			_bottomLeftRadius = radius;
 			return *this;
 		}
+
+		/**
+		 * @brief Set the same border radius for all corners.
+		 * @param radius The new border radius to set for all corners.
+		 * @return Reference to this Borders component for chaining.
+		 */
+		Borders &setBorderRadius(BorderRadius radius)
+		{
+			return setTopLeftRadius(radius)
+				.setTopRightRadius(radius)
+				.setBottomRightRadius(radius)
+				.setBottomLeftRadius(radius);
+		}
 	};
 
 }	 // namespace guillaume::components

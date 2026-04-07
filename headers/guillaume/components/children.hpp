@@ -27,7 +27,7 @@
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
 
-namespace guillaume::ecs::components
+namespace guillaume::components
 {
 
 	/**
@@ -80,4 +80,4 @@ namespace guillaume::ecs::components
 		}
 	};
 
-}	 // namespace guillaume::ecs::components
+}	 // namespace guillaume::components

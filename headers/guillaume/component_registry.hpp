@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "guillaume/ecs/tree_component_registry_filler.hpp"
+#include "guillaume/ecs/component_registry_filler.hpp"
 
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
@@ -38,10 +38,10 @@ namespace guillaume
 
 	/**
 	 * @brief Component registry class registering all core components.
-	 * @see ecs::TreeComponentRegistryFiller
+	 * @see ecs::ComponentRegistryFiller
 	 */
 	class ComponentRegistry:
-		public ecs::TreeComponentRegistryFiller<
+		public ecs::ComponentRegistryFiller<
 			components::Bound, components::Click, components::Focus,
 			components::Hover, components::Text, components::Transform,
 			components::Color, components::Borders>
@@ -51,7 +51,7 @@ namespace guillaume
 		 * @brief Default constructor.
 		 */
 		ComponentRegistry(void)
-			: ecs::TreeComponentRegistryFiller<
+			: ecs::ComponentRegistryFiller<
 				  components::Bound, components::Click, components::Focus,
 				  components::Hover, components::Text, components::Transform,
 				  components::Color, components::Borders>()

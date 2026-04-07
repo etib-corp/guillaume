@@ -235,7 +235,8 @@ namespace simple_application
 		return { static_cast<float>(width), static_cast<float>(height) };
 	}
 
-	void Renderer::drawText(const utility::graphic::Text &text, const utility::graphic::PoseF &pose)
+	void Renderer::drawText(const utility::graphic::Text &text,
+							const utility::graphic::PoseF &pose)
 	{
 		getLogger().debug("Drawing text: " + text.getContent());
 

@@ -27,31 +27,44 @@ namespace guillaume::entities
 
 	Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::LeafEntityBuilder(componentRegistry, entityRegistry)
+		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
+		reset();
 	}
 
 	Icon::Builder::~Builder(void)
 	{
 	}
 
-	void Icon::Builder::registerEntity(void)
+	ecs::Entity::Identifier Icon::Builder::registerEntity(void)
 	{
-		_icon =
-			std::make_unique<Icon>(getComponentRegistry(), _glyphName, _style);
-		getEntityRegistry().addEntity(std::move(_icon));
+		ecs::Entity::Identifier identifier = ecs::Entity::InvalidIdentifier;
+
+		_icon = std::make_unique<Icon>(this->getComponentRegistry(), _glyphName,
+									   _color, _style);
+		identifier = _icon->getIdentifier();
+		this->getEntityRegistry().addEntity(std::move(_icon));
+		return identifier;
 	}
 
 	void Icon::Builder::reset(void)
 	{
 		_icon.reset();
 		_glyphName.clear();
+		_color = { 255, 255, 255, 255 };
 		_style = Style::Outlined;
 	}
 
-	Icon::Builder &Icon::Builder::withIconName(const std::string &iconName)
+	Icon::Builder &Icon::Builder::withGlyphName(const std::string &glyphName)
 	{
-		_glyphName = iconName;
+		_glyphName = glyphName;
+		return *this;
+	}
+
+	Icon::Builder &
+		Icon::Builder::withColor(const utility::graphic::Color32Bit &color)
+	{
+		_color = color;
 		return *this;
 	}
 
@@ -70,17 +83,18 @@ namespace guillaume::entities
 	{
 	}
 
-	void Icon::Director::makeDefaultIcon(Builder &builder,
-										 const std::string &iconName)
+	ecs::Entity::Identifier
+		Icon::Director::makeDefaultIcon(Builder &builder,
+										const std::string &glyphName)
 	{
-		builder.withIconName(iconName).registerEntity();
+		return builder.withGlyphName(glyphName).registerEntity();
 	}
 
-	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
-			   const Style &style)
-		: ecs::LeafEntityFiller<components::Transform, components::Glyph>(
-			  registry)
-		, _glyphName(iconName)
+	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,
+			   const utility::graphic::Color32Bit &color, const Style &style)
+		: ecs::EntityFiller<components::Transform, components::Glyph>(registry)
+		, _glyphName(glyphName)
+		, _color(color)
 		, _style(style)
 	{
 		registry.getComponent<components::Transform>(getIdentifier())
@@ -89,13 +103,31 @@ namespace guillaume::entities
 				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
 
 		registry.getComponent<components::Glyph>(getIdentifier())
-			.setName(iconName)
+			.setName(glyphName)
 			.setFontSize(96)
 			.setColor({ 255, 255, 255, 255 });
 	}
 
 	Icon::~Icon()
 	{
+	}
+
+	Icon &Icon::setGlyphName(const std::string &glyphName)
+	{
+		_glyphName = glyphName;
+		return *this;
+	}
+
+	Icon &Icon::setColor(const utility::graphic::Color32Bit &color)
+	{
+		_color = color;
+		return *this;
+	}
+
+	Icon &Icon::setStyle(const Style &style)
+	{
+		_style = style;
+		return *this;
 	}
 
 }	 // namespace guillaume::entities

@@ -52,27 +52,35 @@ namespace guillaume::systems
 	{
 		private:
 		event::EventSubscriber<utility::event::MouseButtonEvent>
-			_mouseButtonSubscriber; ///< Subscriber for mouse button events
+			_mouseButtonSubscriber;	   ///< Subscriber for mouse button events
 		event::EventSubscriber<utility::event::MouseMotionEvent>
-			_mouseMotionSubscriber; ///< Subscriber for mouse motion events
-		Renderer &_renderer; ///< Reference to the renderer for view and viewport information
+			_mouseMotionSubscriber;	   ///< Subscriber for mouse motion events
+		Renderer &_renderer;	///< Reference to the renderer for view and
+								///< viewport information
 
 		std::unique_ptr<utility::event::MouseButtonEvent>
-		_pendingClickEvent; ///< Pending mouse button event to process in the next update
+			_pendingClickEvent;	   ///< Pending mouse button event to process in
+								   ///< the next update
 		std::unordered_set<ecs::Entity::Identifier>
-		_evaluatedClickEntities; ///< Set of entities evaluated for click interactions in the current update
+			_evaluatedClickEntities;	///< Set of entities evaluated for click
+										///< interactions in the current update
 		utility::event::MouseButtonEvent::MouseButtonsState _buttonStates {
 			0
 		};	  ///< Last known state of mouse buttons
 
 		std::unique_ptr<utility::event::MouseMotionEvent>
-		_pendingMotionEvent; ///< Pending mouse motion event to process in the next update
+			_pendingMotionEvent;	///< Pending mouse motion event to process
+									///< in the next update
 		std::unordered_set<ecs::Entity::Identifier>
-		_evaluatedMotionEntities; ///< Set of entities evaluated for motion interactions in the current update
+			_evaluatedMotionEntities;	 ///< Set of entities evaluated for
+										 ///< motion interactions in the current
+										 ///< update
 		utility::event::MouseMotionEvent::MousePosition _lastMousePosition {
 			0.0f, 0.0f
-		}; ///< Last known mouse position in screen coordinates
-		bool _hasMousePosition { false }; ///< Flag indicating if a valid mouse position has been received
+		};	  ///< Last known mouse position in screen coordinates
+		bool _hasMousePosition {
+			false
+		};	  ///< Flag indicating if a valid mouse position has been received
 
 		/**
 		 * @brief Update the mouse motion state for the specified entity.

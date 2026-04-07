@@ -24,8 +24,8 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/leaf_entity_builder.hpp"
-#include "guillaume/ecs/leaf_entity_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
@@ -38,8 +38,8 @@ namespace guillaume::entities
 	 * @brief Text component
 	 */
 	class Text:
-		public ecs::LeafEntityFiller<components::Transform, components::Bound,
-									 components::Text>
+		public ecs::EntityFiller<components::Transform, components::Bound,
+								 components::Text>
 	{
 		public:
 		/**
@@ -51,7 +51,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Text` entities.
 		 */
-		class Builder: public ecs::LeafEntityBuilder
+		class Builder: public ecs::EntityBuilder
 		{
 			public:
 			private:
@@ -82,8 +82,9 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Build and register the text entity.
+			 * @return The entity identifier of the newly created text entity.
 			 */
-			void registerEntity(void) override;
+			ecs::Entity::Identifier registerEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -104,6 +105,7 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withFontSize(const std::size_t &fontSize);
+
 			/**
 			 * @brief Set the color for the Text component.
 			 * @param color The color to set (RGBA).
@@ -136,10 +138,12 @@ namespace guillaume::entities
 			 * @param content The text content for the default Text entity.
 			 * @param fontSize The font size for the default Text entity.
 			 * @param color The color for the default Text entity (RGBA).
+			 * @return The entity identifier of the newly created text entity.
 			 */
-			void makeDefaultText(Builder &builder, const std::string &content,
-								 const std::size_t &fontSize,
-								 const utility::graphic::Color32Bit &color);
+			ecs::Entity::Identifier
+				makeDefaultText(Builder &builder, const std::string &content,
+								const std::size_t &fontSize,
+								const utility::graphic::Color32Bit &color);
 		};
 
 		private:
@@ -166,6 +170,27 @@ namespace guillaume::entities
 		 * @brief Default destructor for the Text component.
 		 */
 		~Text(void);
+
+		/**
+		 * @brief Set the text content for this Text component.
+		 * @param content The new text content to set.
+		 * @return Reference to this Text component for chaining.
+		 */
+		Text &setContent(const std::string &content);
+
+		/**
+		 * @brief Set the font size for this Text component.
+		 * @param fontSize The new font size to set.
+		 * @return Reference to this Text component for chaining.
+		 */
+		Text &setFontSize(std::size_t fontSize);
+
+		/**
+		 * @brief Set the color for this Text component.
+		 * @param color The new color to set (RGBA).
+		 * @return Reference to this Text component for chaining.
+		 */
+		Text &setColor(utility::graphic::Color32Bit color);
 	};
 
 }	 // namespace guillaume::entities

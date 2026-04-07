@@ -12,7 +12,7 @@
         "__bit_reference": "cpp",
         "__hash_table": "cpp",
         "__locale": "cpp",
-        "__node_handle": "cpp",
+        "__handle": "cpp",
         "__split_buffer": "cpp",
         "__tree": "cpp",
         "__verbose_abort": "cpp",

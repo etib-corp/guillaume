@@ -22,53 +22,32 @@
 
 #pragma once
 
-#include <vector>
+#include "guillaume/ecs/entity_director_manager.hpp"
 
-#include "guillaume/ecs/component.hpp"
-#include "guillaume/ecs/entity.hpp"
-
-namespace guillaume::ecs::components
+namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Component representing a parent-child relationship between
-	 * entities.
+	 * @brief Manager class for handling multiple entity directors.
 	 */
-	class Parent: public ecs::Component
+	template<InheritFromEntityDirector... DirectorTypes>
+	class EntityDirectorManagerFiller: public EntityDirectorManager
 	{
-		private:
-		ecs::Entity::Identifier _parentIdentifier {
-			ecs::Entity::InvalidIdentifier
-		};	  ///< Parent entity identifier
-
 		public:
 		/**
-		 * @brief Default constructor for the Parent component.
+		 * @brief Default constructor.
 		 */
-		Parent(void) = default;
-
-		/**
-		 * @brief Default destructor for the Parent component.
-		 */
-		~Parent(void) = default;
-
-		/**
-		 * @brief Set the parent entity identifier.
-		 * @param identifier The new parent entity identifier.
-		 */
-		void setParentIdentifier(ecs::Entity::Identifier identifier)
+		EntityDirectorManagerFiller(void)
+			: EntityDirectorManager()
 		{
-			_parentIdentifier = identifier;
+			(addDirector<DirectorTypes>(), ...);
 		}
 
 		/**
-		 * @brief Get the parent entity identifier.
-		 * @return The parent entity identifier.
+		 * @brief Default destructor for the Entity Director Manager Filler
+		 * class.
 		 */
-		ecs::Entity::Identifier getParentIdentifier(void) const
-		{
-			return _parentIdentifier;
-		}
+		virtual ~EntityDirectorManagerFiller(void) = default;
 	};
 
-}	 // namespace guillaume::ecs::components
+}	 // namespace guillaume::ecs

@@ -21,14 +21,13 @@
  */
 
 #include "guillaume/entities/panel.hpp"
-#include "guillaume/entities/button.hpp"
 
 namespace guillaume::entities
 {
 
 	Panel::Panel::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								   ecs::EntityRegistry &entityRegistry)
-		: ecs::NodeEntityBuilder(componentRegistry, entityRegistry)
+		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
@@ -37,23 +36,36 @@ namespace guillaume::entities
 	{
 	}
 
-	void Panel::Builder::registerEntity(void)
+	ecs::Entity::Identifier Panel::Builder::registerEntity(void)
 	{
-		_panel = std::make_unique<Panel>(this->getComponentRegistry(),
-										 this->getEntityRegistry(), _name);
+		ecs::Entity::Identifier identifier = ecs::Entity::InvalidIdentifier;
+
+		_panel = std::make_unique<Panel>(this->getComponentRegistry(), _pose,
+										 _color, _borderRadius);
+		identifier = _panel->getIdentifier();
 		this->getEntityRegistry().addEntity(std::move(_panel));
+		return identifier;
 	}
 
 	void Panel::Builder::reset(void)
 	{
-		ecs::NodeEntityBuilder::reset();
 		_panel.reset();
-		_name.clear();
+		_pose		  = utility::graphic::PoseF();
+		_color		  = { 255, 255, 255, 255 };
+		_borderRadius = 16.0f;
 	}
 
-	Panel::Builder &Panel::Builder::withName(const std::string &name)
+	Panel::Builder &
+		Panel::Builder::withPose(const utility::graphic::PoseF &pose)
 	{
-		_name = name;
+		_pose = pose;
+		return *this;
+	}
+
+	Panel::Builder &
+		Panel::Builder::withColor(const utility::graphic::Color32Bit &color)
+	{
+		_color = color;
 		return *this;
 	}
 
@@ -66,32 +78,64 @@ namespace guillaume::entities
 	{
 	}
 
-	void Panel::Director::makePanel(Builder &builder, const std::string &name)
+	ecs::Entity::Identifier
+		Panel::Director::makeDefaultPanel(Builder &builder,
+										  const utility::graphic::PoseF &pose)
 	{
-		builder.withName(name).registerEntity();
+		return builder.withPose(pose).registerEntity();
+	}
+
+	ecs::Entity::Identifier Panel::Director::makeColorPanel(
+		Builder &builder, const utility::graphic::PoseF &pose,
+		const utility::graphic::Color32Bit &color)
+	{
+		return builder.withPose(pose).withColor(color).registerEntity();
 	}
 
 	Panel::Panel(ecs::ComponentRegistry &registry,
-				 ecs::EntityRegistry &entityRegistry, const std::string &name)
-		: ecs::NodeEntityFiller<components::Transform, components::Bound>(
-			  registry)
-		, _registry(registry)
-		, _entityRegistry(entityRegistry)
-		, _name(name)
+				 const utility::graphic::PoseF &pose,
+				 const utility::graphic::Color32Bit &color,
+				 std::float_t borderRadius)
+		: ecs::EntityFiller<components::Transform, components::Bound,
+							components::Color, components::Borders>(registry)
 	{
-		registerEntityFactory<Button::Builder, Button::Director>();
+		setPose(pose);
+		setColor(color);
+		setBorderRadius(borderRadius);
 
-		// Initialize panel pose
-		registry.getComponent<components::Transform>(getIdentifier())
-			.setPose(utility::graphic::PoseF(
-				utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
-
-		registry.getComponent<components::Bound>(getIdentifier())
-			.setSize({ 400.0f, 300.0f });
+		getComponentRegistry()
+			.getComponent<components::Bound>(getIdentifier())
+			.setSize({ 200.0f, 200.0f });
 	}
 
-	Panel::~Panel(void)
+	Panel::~Panel()
 	{
 	}
+
+	Panel &Panel::setPose(const utility::graphic::PoseF &pose)
+	{
+		_pose = pose;
+		getComponentRegistry()
+			.getComponent<components::Transform>(getIdentifier())
+			.setPose(pose);
+		return *this;
+	}
+
+	Panel &Panel::setColor(const utility::graphic::Color32Bit &color)
+	{
+		_color = color;
+		getComponentRegistry()
+			.getComponent<components::Color>(getIdentifier())
+			.setColor(color);
+		return *this;
+	}
+
+	Panel &Panel::setBorderRadius(std::float_t borderRadius)
+	{
+		getComponentRegistry()
+			.getComponent<components::Borders>(getIdentifier())
+			.setBorderRadius(borderRadius);
+		return *this;
+	}
+
 }	 // namespace guillaume::entities

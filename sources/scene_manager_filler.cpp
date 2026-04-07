@@ -20,8 +20,9 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/tree_component_registry_filler.hpp"
+#include "guillaume/scene_manager_filler.hpp"
 
-namespace guillaume::ecs
+namespace guillaume
 {
-}	 // namespace guillaume::ecs
+
+}	 // namespace guillaume

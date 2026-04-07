@@ -20,7 +20,7 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/leaf_entity_builder.hpp"
+#include "guillaume/ecs/entity_builder_manager_filler.hpp"
 
 namespace guillaume::ecs
 {

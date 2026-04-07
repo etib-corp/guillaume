@@ -20,8 +20,18 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/node_entity_builder.hpp"
+#include "guillaume/scene_manager.hpp"
 
-namespace guillaume::ecs
+namespace guillaume
 {
-}	 // namespace guillaume::ecs
+	SceneManager::SceneManager(void)
+		: _scenes()
+		, _activeSceneType(typeid(void))
+	{
+	}
+
+	SceneManager::~SceneManager(void)
+	{
+	}
+
+}	 // namespace guillaume

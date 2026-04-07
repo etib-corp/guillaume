@@ -22,12 +22,14 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <string>
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/node_entity_builder.hpp"
-#include "guillaume/ecs/node_entity_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
@@ -47,9 +49,9 @@ namespace guillaume::entities
 	 * components.
 	 */
 	class Button:
-		public ecs::NodeEntityFiller<components::Transform, components::Bound,
-									 components::Hover, components::Click,
-									 components::Color, components::Borders>
+		public ecs::EntityFiller<components::Transform, components::Bound,
+								 components::Hover, components::Click,
+								 components::Color, components::Borders>
 	{
 		public:
 		/**
@@ -82,27 +84,17 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Button` entities.
 		 */
-		class Builder: public ecs::NodeEntityBuilder
+		class Builder: public ecs::EntityBuilder
 		{
 			private:
 			std::unique_ptr<Button>
 				_button;	///< Unique pointer to the Button entity being built
-			std::string
-				_iconName;	  ///< Name of the icon to be used for the button
-			std::unique_ptr<Icon::Builder>
-				_iconBuilder;	 ///< Builder for constructing the button's icon
-			Icon::Director
-				_iconDirector;	  ///< Director for orchestrating icon creation
-			std::unique_ptr<ecs::Entity>
-				_icon;			   ///< Optional icon entity for the button
-			std::string _label;	   ///< Text label for the button
-			std::unique_ptr<Text::Builder>
-				_textBuilder;	 ///< Builder for constructing the button's text
-								 ///< label
-			Text::Director _textDirector;	 ///< Director for orchestrating
-											 ///< text label creation
-			std::unique_ptr<ecs::Entity>
-				_textLabel;	   ///< Optional text entity for the button
+			ecs::Entity::Identifier
+				_iconIdendifier;	///< Entity identifier of the prebuilt icon
+									///< to attach to the button
+			ecs::Entity::Identifier
+				_labelIdentifier;	 ///< Entity identifier of the prebuilt
+									 ///< label to attach to the button
 			std::function<void(void)>
 				_onClick;				 ///< Click event handler for the button
 			ToggleState _toggleState;	 ///< Current toggle state
@@ -128,8 +120,9 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Build and register the button entity.
+			 * @return The entity identifier of the newly created button entity.
 			 */
-			void registerEntity(void) override;
+			ecs::Entity::Identifier registerEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -139,17 +132,19 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Set the icon for the button.
-			 * @param iconName The name of the icon to set for the button.
+			 * @param iconIdentifier The entity identifier of the prebuilt icon
+			 * to attach to the button.ƒ
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withIcon(const std::string &iconName);
+			Builder &withIcon(ecs::Entity::Identifier iconIdentifier);
 
 			/**
 			 * @brief Set the label text for the button.
-			 * @param label The label text to set for the button.
+			 * @param labelIdentifier The entity identifier of the prebuilt
+			 * label to attach to the button.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withLabel(const std::string &label);
+			Builder &withLabel(ecs::Entity::Identifier labelIdentifier);
 
 			/**
 			 * @brief Set the click event handler for the button.
@@ -215,47 +210,64 @@ namespace guillaume::entities
 			 * @brief Create a text button entity using the builder.
 			 * @param builder The builder instance used to configure and create
 			 * the text button.
-			 * @param label The label text for the button.
+			 * @param labelIdentifier The entity identifier of the prebuilt
+			 * label to attach to the button.
 			 * @param onClick The click event handler for the text button.
+			 * @return The entity identifier of the newly created text button
+			 * entity.
 			 */
-			void makeTextButton(Builder &builder, const std::string &label,
-								std::function<void(void)> onClick);
+			ecs::Entity::Identifier
+				makeTextButton(Builder &builder,
+							   ecs::Entity::Identifier labelIdentifier,
+							   std::function<void(void)> onClick);
 
 			/**
 			 * @brief Create an icon button entity using the builder.
 			 * @param builder The builder instance used to configure and create
 			 * the icon button.
-			 * @param iconName The name of the icon to use for the button.
+			 * @param iconIdentifier The entity identifier of the prebuilt icon
+			 * to attach
 			 * @param onClick The click event handler for the icon button.
+			 * @return The entity identifier of the newly created icon button
+			 * entity.
 			 */
-			void makeIconButton(Builder &builder, const std::string &iconName,
-								std::function<void(void)> onClick);
+			ecs::Entity::Identifier
+				makeIconButton(Builder &builder,
+							   ecs::Entity::Identifier iconIdentifier,
+							   std::function<void(void)> onClick);
 
 			/**
 			 * @brief Create an icon text button entity using the
 			 * builder.
 			 * @param builder The builder instance used to configure
 			 * and create the icon text button.
-			 * @param iconName The name of the icon to use for the button.
-			 * @param label The label text for the button.
+			 * @param iconIdentifier The entity identifier of the prebuilt icon
+			 * to attach to the button.
+			 * @param labelIdentifier The entity identifier of the prebuilt
+			 * label to attach to the button.
 			 * @param onClick The click event handler for the button.
+			 * @return The entity identifier of the newly created icon text
+			 * button entity.
 			 */
-			void makeIconTextButton(Builder &builder,
-									const std::string &iconName,
-									const std::string &label,
-									std::function<void(void)> onClick);
+			ecs::Entity::Identifier
+				makeIconTextButton(Builder &builder,
+								   ecs::Entity::Identifier iconIdentifier,
+								   ecs::Entity::Identifier labelIdentifier,
+								   std::function<void(void)> onClick);
 		};
 
 		private:
+		ecs::Entity::Identifier _iconIdentifier;	 ///< Entity identifier of
+													 ///< the prebuilt icon to
+													 ///< attach to the button
+		ecs::Entity::Identifier _labelIdentifier;	 ///< Entity identifier of
+													 ///< the prebuilt label to
+													 ///< attach to the button
 		ToggleState _toggleState;	 ///< Current toggle state of the button
 		ColorStyle _colorStyle;		 ///< Color style of the button
 		Shape _shape;				 ///< Shape of the button
 		Size _size;					 ///< Size of the button
 		MorphState _morphState;		 ///< Current morph state of the button
-		std::unique_ptr<ecs::Entity>
-			_icon;	  ///< Optional icon entity for the button
-		std::unique_ptr<ecs::Entity>
-			_label;	   ///< Optional label entity for the button
 		std::function<void(void)>
 			_onClick;	 ///< Click event handler for the button
 
@@ -291,25 +303,93 @@ namespace guillaume::entities
 		 * @brief Default constructor for the Button entity.
 		 * @param registry Reference to the component registry for initializing
 		 * components.
+		 * @param iconIdentifier The entity identifier of the prebuilt icon to
+		 * attach to the button.
+		 * @param labelIdentifier The entity identifier of the prebuilt label
+		 * to attach to the button.
 		 * @param toggleState Initial toggle state for the button.
 		 * @param colorStyle Initial color style for the button.
 		 * @param shape Initial shape for the button.
 		 * @param size Initial size for the button.
 		 * @param morphState Initial morph state for the button.
-		 * @param icon Optional icon for the button.
-		 * @param label Optional label text for the button.
 		 * @param onClick Click event handler for the button.
 		 */
-		Button(ecs::ComponentRegistry &registry, ToggleState toggleState,
+		Button(ecs::ComponentRegistry &registry,
+			   ecs::Entity::Identifier iconIdentifier,
+			   ecs::Entity::Identifier labelIdentifier, ToggleState toggleState,
 			   ColorStyle colorStyle, Shape shape, Size size,
-			   MorphState morphState, std::unique_ptr<ecs::Entity> icon,
-			   std::unique_ptr<ecs::Entity> label,
-			   std::function<void(void)> onClick);
+			   MorphState morphState, std::function<void(void)> onClick);
 
 		/**
 		 * @brief Default destructor for the Button entity.
 		 */
 		~Button(void);
+
+		/**
+		 * @brief Set the icon for the button.
+		 * @param iconIdentifier The entity identifier of the prebuilt icon to
+		 * attach to the button.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setIconIdentifier(ecs::Entity::Identifier iconIdentifier);
+
+		/**
+		 * @brief Set the label for the button.
+		 * @param labelIdentifier The entity identifier of the prebuilt label
+		 * to attach to the button.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setLabelIdentifier(ecs::Entity::Identifier labelIdentifier);
+
+		/**
+		 * @brief Set the toggle state of the button.
+		 * @param toggleState The new toggle state to set.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setToggleState(const ToggleState &toggleState);
+
+		/**
+		 * @brief Set the color style of the button.
+		 * @param colorStyle The new color style to set.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setColorStyle(const ColorStyle &colorStyle);
+
+		/**
+		 * @brief Set the shape of the button.
+		 * @param shape The new shape to set.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setShape(const Shape &shape);
+
+		/**
+		 * @brief Set the size of the button.
+		 * @param size The new size to set.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setSize(const Size &size);
+
+		/**
+		 * @brief Set the morph state of the button.
+		 * @param morphState The new morph state to set.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setMorphState(const MorphState &morphState);
+
+		/**
+		 * @brief Set the click event handler for the button.
+		 * @param onClick The new click event handler to set.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setOnClick(const std::function<void(void)> &onClick);
+
+		/**
+		 * @brief Set the click event handler for the button using an rvalue
+		 * reference.
+		 * @param onClick The new click event handler to set.
+		 * @return Reference to this Button for chaining.
+		 */
+		Button &setOnClick(std::function<void(void)> &&onClick);
 	};
 
 }	 // namespace guillaume::entities

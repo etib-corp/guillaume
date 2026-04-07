@@ -29,12 +29,8 @@ namespace guillaume::entities
 
 	Button::Button::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 									 ecs::EntityRegistry &entityRegistry)
-		: ecs::NodeEntityBuilder(componentRegistry, entityRegistry)
+		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
-		_iconBuilder =
-			std::make_unique<Icon::Builder>(componentRegistry, entityRegistry);
-		_textBuilder =
-			std::make_unique<Text::Builder>(componentRegistry, entityRegistry);
 		reset();
 	}
 
@@ -42,46 +38,42 @@ namespace guillaume::entities
 	{
 	}
 
-	void Button::Builder::registerEntity(void)
+	ecs::Entity::Identifier Button::Builder::registerEntity(void)
 	{
-		if (!_iconName.empty()) {
-			_iconDirector.makeDefaultIcon(*_iconBuilder, _iconName);
-		}
-		if (!_label.empty()) {
-			_textDirector.makeDefaultText(*_textBuilder, _label, 24,
-										  { 255, 255, 255, 255 });
-		}
+		ecs::Entity::Identifier _identifier = ecs::Entity::InvalidIdentifier;
+
 		_button = std::make_unique<Button>(
-			this->getComponentRegistry(), _toggleState, _colorStyle, _shape,
-			_size, _morphState, nullptr, nullptr, _onClick);
+			this->getComponentRegistry(), _iconIdendifier, _labelIdentifier,
+			_toggleState, _colorStyle, _shape, _size, _morphState, _onClick);
+
 		this->getEntityRegistry().addEntity(std::move(_button));
+		return _identifier;
 	}
 
 	void Button::Builder::reset(void)
 	{
-		ecs::NodeEntityBuilder::reset();
 		_button.reset();
-		_toggleState = ToggleState::Default;
-		_colorStyle	 = ColorStyle::Filled;
-		_shape		 = Shape::Round;
-		_size		 = Size::Small;
-		_morphState	 = MorphState::Default;
-		_icon.reset();
-		_textLabel.reset();
-		_iconName.clear();
-		_label.clear();
-		_onClick = {};
+		_iconIdendifier	 = ecs::Entity::InvalidIdentifier;
+		_labelIdentifier = ecs::Entity::InvalidIdentifier;
+		_toggleState	 = ToggleState::Default;
+		_colorStyle		 = ColorStyle::Filled;
+		_shape			 = Shape::Round;
+		_size			 = Size::Small;
+		_morphState		 = MorphState::Default;
+		_onClick		 = {};
 	}
 
-	Button::Builder &Button::Builder::withIcon(const std::string &iconName)
+	Button::Builder &
+		Button::Builder::withIcon(ecs::Entity::Identifier iconIdentifier)
 	{
-		_iconName = iconName;
+		_iconIdendifier = iconIdentifier;
 		return *this;
 	}
 
-	Button::Builder &Button::Builder::withLabel(const std::string &label)
+	Button::Builder &
+		Button::Builder::withLabel(ecs::Entity::Identifier labelIdentifier)
 	{
-		_label = label;
+		_labelIdentifier = labelIdentifier;
 		return *this;
 	}
 
@@ -134,27 +126,32 @@ namespace guillaume::entities
 	{
 	}
 
-	void Button::Director::makeTextButton(Builder &builder,
-										  const std::string &label,
-										  std::function<void(void)> onClick)
+	ecs::Entity::Identifier Button::Director::makeTextButton(
+		Builder &builder, ecs::Entity::Identifier labelIdentifier,
+		std::function<void(void)> onClick)
 	{
-		builder.withLabel(label).withOnClick(onClick).registerEntity();
+		return builder.withLabel(labelIdentifier)
+			.withOnClick(onClick)
+			.registerEntity();
 	}
 
-	void Button::Director::makeIconButton(Builder &builder,
-										  const std::string &iconName,
-										  std::function<void(void)> onClick)
+	ecs::Entity::Identifier
+		Button::Director::makeIconButton(Builder &builder,
+										 ecs::Entity::Identifier iconIdentifier,
+										 std::function<void(void)> onClick)
 	{
-		builder.withIcon(iconName).withOnClick(onClick).registerEntity();
+		return builder.withIcon(iconIdentifier)
+			.withOnClick(onClick)
+			.registerEntity();
 	}
 
-	void Button::Director::makeIconTextButton(Builder &builder,
-											  const std::string &iconName,
-											  const std::string &label,
-											  std::function<void(void)> onClick)
+	ecs::Entity::Identifier Button::Director::makeIconTextButton(
+		Builder &builder, ecs::Entity::Identifier iconIdentifier,
+		ecs::Entity::Identifier labelIdentifier,
+		std::function<void(void)> onClick)
 	{
-		builder.withIcon(iconName)
-			.withLabel(label)
+		return builder.withIcon(iconIdentifier)
+			.withLabel(labelIdentifier)
 			.withOnClick(onClick)
 			.registerEntity();
 	}
@@ -193,22 +190,22 @@ namespace guillaume::entities
 			.setBottomLeftRadius(28.0f);
 	}
 
-	Button::Button(ecs::ComponentRegistry &registry, ToggleState toggleState,
-				   ColorStyle colorStyle, Shape shape, Size size,
-				   MorphState morphState, std::unique_ptr<ecs::Entity> icon,
-				   std::unique_ptr<ecs::Entity> label,
+	Button::Button(ecs::ComponentRegistry &registry,
+				   ecs::Entity::Identifier iconIdentifier,
+				   ecs::Entity::Identifier labelIdentifier,
+				   ToggleState toggleState, ColorStyle colorStyle, Shape shape,
+				   Size size, MorphState morphState,
 				   std::function<void(void)> onClick)
-		: ecs::NodeEntityFiller<components::Transform, components::Bound,
-								components::Hover, components::Click,
-								components::Color, components::Borders>(
-			  registry)
+		: ecs::EntityFiller<components::Transform, components::Bound,
+							components::Hover, components::Click,
+							components::Color, components::Borders>(registry)
+		, _iconIdentifier(iconIdentifier)
+		, _labelIdentifier(labelIdentifier)
 		, _toggleState(toggleState)
 		, _colorStyle(colorStyle)
 		, _shape(shape)
 		, _size(size)
 		, _morphState(morphState)
-		, _icon(std::move(icon))
-		, _label(std::move(label))
 		, _onClick(std::move(onClick))
 	{
 		// Initialize button pose
@@ -256,6 +253,61 @@ namespace guillaume::entities
 
 	Button::~Button()
 	{
+	}
+
+	Button &Button::setIconIdentifier(ecs::Entity::Identifier iconIdentifier)
+	{
+		_iconIdentifier = iconIdentifier;
+		return *this;
+	}
+
+	Button &Button::setLabelIdentifier(ecs::Entity::Identifier labelIdentifier)
+	{
+		_labelIdentifier = labelIdentifier;
+		return *this;
+	}
+
+	Button &Button::setToggleState(const ToggleState &toggleState)
+	{
+		_toggleState = toggleState;
+		return *this;
+	}
+
+	Button &Button::setColorStyle(const ColorStyle &colorStyle)
+	{
+		_colorStyle = colorStyle;
+		return *this;
+	}
+
+	Button &Button::setShape(const Shape &shape)
+	{
+		_shape = shape;
+		return *this;
+	}
+
+	Button &Button::setSize(const Size &size)
+	{
+		_size = size;
+
+		return *this;
+	}
+
+	Button &Button::setMorphState(const MorphState &morphState)
+	{
+		_morphState = morphState;
+		return *this;
+	}
+
+	Button &Button::setOnClick(const std::function<void(void)> &onClick)
+	{
+		_onClick = onClick;
+		return *this;
+	}
+
+	Button &Button::setOnClick(std::function<void(void)> &&onClick)
+	{
+		_onClick = std::move(onClick);
+		return *this;
 	}
 
 }	 // namespace guillaume::entities

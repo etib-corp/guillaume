@@ -22,39 +22,33 @@
 
 #pragma once
 
-#include "guillaume/ecs/component_registry_filler.hpp"
+#include "guillaume/scene_manager.hpp"
 
-#include "guillaume/ecs/components/children.hpp"
-#include "guillaume/ecs/components/parent.hpp"
-
-namespace guillaume::ecs
+namespace guillaume
 {
 
 	/**
-	 * @brief Templated registry helper that registers multiple component
-	 * types for an entity.
-	 * @tparam ComponentTypes The component types to register.
-	 * @see ComponentRegistry
+	 * @brief Filler for the SceneManager class, responsible for filling the
+	 * scene manager with scenes.
 	 */
-	template<InheritFromComponent... ComponentTypes>
-	class TreeComponentRegistryFiller:
-		public ComponentRegistryFiller<ComponentTypes..., components::Children,
-									   components::Parent>
+	template<InheritFromScene... SceneTypes> class SceneManagerFiller:
+		public SceneManager
 	{
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Default constructor for the SceneManagerFiller class.
 		 */
-		TreeComponentRegistryFiller(void)
-			: ComponentRegistryFiller<ComponentTypes..., components::Children,
-									  components::Parent>()
+		SceneManagerFiller(void)
 		{
+			(addScene<SceneTypes>(), ...);
 		}
 
 		/**
-		 * @brief Default destructor for the Component Registry Filler class.
+		 * @brief Default destructor for the SceneManagerFiller class.
 		 */
-		virtual ~TreeComponentRegistryFiller(void) = default;
+		~SceneManagerFiller(void)
+		{
+		}
 	};
 
-}	 // namespace guillaume::ecs
+}	 // namespace guillaume

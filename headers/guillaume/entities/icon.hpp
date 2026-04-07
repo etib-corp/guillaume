@@ -22,10 +22,12 @@
 
 #pragma once
 
+#include <utility/graphic/color.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
-#include "guillaume/ecs/leaf_entity_builder.hpp"
-#include "guillaume/ecs/leaf_entity_filler.hpp"
+#include "guillaume/ecs/entity_builder.hpp"
+#include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/glyph.hpp"
 #include "guillaume/components/transform.hpp"
@@ -37,7 +39,7 @@ namespace guillaume::entities
 	 * @brief Icon component
 	 */
 	class Icon:
-		public ecs::LeafEntityFiller<components::Transform, components::Glyph>
+		public ecs::EntityFiller<components::Transform, components::Glyph>
 	{
 		public:
 		/**
@@ -48,13 +50,15 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Icon` entities.
 		 */
-		class Builder: public ecs::LeafEntityBuilder
+		class Builder: public ecs::EntityBuilder
 		{
 			private:
 			std::unique_ptr<Icon>
 				_icon;	  ///< Unique pointer to the Icon entity being built
-			std::string _glyphName;	  ///< Name of the glyph to be used
-			Style _style;			  ///< Style of the icon to be used
+			std::string _glyphName;	   ///< Name of the glyph to be used
+			utility::graphic::Color32Bit
+				_color;		 ///< Color of the icon to be used (RGBA)
+			Style _style;	 ///< Style of the icon to be used
 
 			public:
 			/**
@@ -74,8 +78,9 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Build and register the icon entity.
+			 * @return The entity identifier of the newly created icon entity.
 			 */
-			void registerEntity(void) override;
+			ecs::Entity::Identifier registerEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -84,16 +89,24 @@ namespace guillaume::entities
 			void reset(void) override;
 
 			/**
-			 * @brief Set the name of the icon to be used for the Icon entity.
-			 * @param iconName The name of the icon to set.
+			 * @brief Set the name of the glyph to be used for the Icon entity.
+			 * @param glyphName The name of the glyph to set (corresponds to
+			 * utility::graphic::Glyph::_name).
 			 * @return Reference to the builder for chaining.
 			 * @see utility::graphic::Glyph::_name
 			 */
-			Builder &withIconName(const std::string &iconName);
+			Builder &withGlyphName(const std::string &glyphName);
 
 			/**
-			 * @brief Set the style of the icon to be used for the Icon entity.
-			 * @param style The style of the icon to set.
+			 * @brief Set the color of the icon to be used for the Icon entity.
+			 * @param color The color of the icon to set.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withColor(const utility::graphic::Color32Bit &color);
+
+			/**
+			 * @brief Set the style of the glyph to be used for the Icon entity.
+			 * @param style The style of the glyph to set.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withStyle(const Style &style);
@@ -117,36 +130,66 @@ namespace guillaume::entities
 			~Director(void);
 
 			/**
-			 * @brief Create a default Icon entity using the builder.
+			 * @brief Create a default icon entity using the builder.
 			 * @param builder The builder instance used to configure and create
-			 * the default icon
+			 * the default icon.
 			 * @param iconName The icon name to assign to the created entity.
+			 * @return The entity identifier of the newly created icon entity.
 			 * @see utility::graphic::Glyph::_name
 			 */
-			void makeDefaultIcon(Builder &builder, const std::string &iconName);
+			ecs::Entity::Identifier
+				makeDefaultIcon(Builder &builder, const std::string &iconName);
 		};
 
 		private:
-		std::string
-			_glyphName;	  ///< Name of the glyph to be used for this Icon entity
-		Style _style;	  ///< Style of the glyph to be used for this Icon entity
+		std::string _glyphName;	   ///< Name of the glyph to be used for this
+								   ///< Icon entity (corresponds to
+								   ///< utility::graphic::Glyph::_name)
+		utility::graphic::Color32Bit
+			_color;		 ///< Color of the icon to be used for this Icon entity
+						 ///< (RGBA)
+		Style _style;	 ///< Style of the glyph to be used for this Icon entity
 
 		public:
 		/**
 		 * @brief Default constructor for the Icon component.
 		 * @param registry Reference to the component registry for initializing
 		 * components.
-		 * @param iconName The name of the icon to be used for this Icon entity.
+		 * @param glyphName The name of the glyph to be used for this Icon entity.
+		 * @param color The color of the icon to be used for this Icon entity
+		 * (RGBA).
 		 * @param style The style of the icon to be used for this Icon entity.
 		 * @see utility::graphic::Glyph::_name
 		 */
-		Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
-			 const Style &style);
+		Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,
+			 const utility::graphic::Color32Bit &color, const Style &style);
 
 		/**
 		 * @brief Default destructor for the Icon component.
 		 */
 		~Icon(void);
+
+		/**
+		 * @brief Set the name of the glyph for this Icon entity.
+		 * @param glyphName The new name of the glyph to set.
+		 * @return Reference to this Icon for chaining.
+		 * @see utility::graphic::Glyph::_name
+		 */
+		Icon &setGlyphName(const std::string &glyphName);
+
+		/**
+		 * @brief Set the color of the icon for this Icon entity.
+		 * @param color The new color of the icon to set (RGBA).
+		 * @return Reference to this Icon for chaining.
+		 */
+		Icon &setColor(const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Set the style of the glyph for this Icon entity.
+		 * @param style The new style of the glyph to set.
+		 * @return Reference to this Icon for chaining.
+		 */
+		Icon &setStyle(const Style &style);
 	};
 
 }	 // namespace guillaume::entities

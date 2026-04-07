@@ -20,8 +20,55 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/components/children.hpp"
+#pragma once
 
-namespace guillaume::ecs::components
+#include <vector>
+
+#include "guillaume/ecs/component.hpp"
+#include "guillaume/ecs/entity.hpp"
+
+namespace guillaume::components
 {
-}	 // namespace guillaume::ecs::components
+
+	/**
+	 * @brief Component representing a parent-child relationship between
+	 * entities.
+	 */
+	class Parent: public ecs::Component
+	{
+		private:
+		ecs::Entity::Identifier _parentIdentifier {
+			ecs::Entity::InvalidIdentifier
+		};	  ///< Parent entity identifier
+
+		public:
+		/**
+		 * @brief Default constructor for the Parent component.
+		 */
+		Parent(void) = default;
+
+		/**
+		 * @brief Default destructor for the Parent component.
+		 */
+		~Parent(void) = default;
+
+		/**
+		 * @brief Set the parent entity identifier.
+		 * @param identifier The new parent entity identifier.
+		 */
+		void setParentIdentifier(ecs::Entity::Identifier identifier)
+		{
+			_parentIdentifier = identifier;
+		}
+
+		/**
+		 * @brief Get the parent entity identifier.
+		 * @return The parent entity identifier.
+		 */
+		ecs::Entity::Identifier getParentIdentifier(void) const
+		{
+			return _parentIdentifier;
+		}
+	};
+
+}	 // namespace guillaume::components

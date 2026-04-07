@@ -20,8 +20,8 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/node_entity_filler.hpp"
+#include "guillaume/components/parent.hpp"
 
-namespace guillaume::ecs
+namespace guillaume::ecs::components
 {
-}	 // namespace guillaume::ecs
+}	 // namespace guillaume::ecs::components
