@@ -88,7 +88,8 @@ namespace
 		{
 		}
 
-		void drawGlyph(const utility::graphic::Glyph &, const utility::graphic::PoseF &) override
+		void drawGlyph(const utility::graphic::Glyph &,
+					   const utility::graphic::PoseF &) override
 		{
 		}
 	};

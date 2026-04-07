@@ -27,6 +27,7 @@
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/event/event_bus.hpp"
 
 namespace
@@ -39,10 +40,20 @@ namespace
 		guillaume::event::EventBus eventBus;
 		guillaume::systems::KeyboardControl keyboardControl { eventBus };
 		guillaume::ecs::ComponentRegistry componentRegistry;
-		guillaume::ecs::Entity::Identifier entityIdentifier { 1 };
+		guillaume::ecs::EntityRegistry entityRegistry;
+		guillaume::ecs::Entity::Identifier entityIdentifier {
+			guillaume::ecs::Entity::InvalidIdentifier
+		};
 
 		void SetUp(void) override
 		{
+			auto entity		 = std::make_unique<guillaume::ecs::Entity>();
+			entityIdentifier = entity->getIdentifier();
+			entity->setSignature(guillaume::ecs::Entity::getSignatureFromTypes<
+								 guillaume::components::Text,
+								 guillaume::components::Focus>());
+			entityRegistry.addEntity(std::move(entity));
+
 			componentRegistry.addComponent<guillaume::components::Text>(
 				entityIdentifier);
 			componentRegistry.addComponent<guillaume::components::Focus>(
@@ -67,7 +78,7 @@ namespace
 			event->setModifiers(modifiers);
 			event->setIsDownEvent(isDownEvent);
 			eventBus.publish(std::move(event));
-			keyboardControl.updateEntity(componentRegistry, entityIdentifier);
+			keyboardControl.routine(componentRegistry, entityRegistry);
 		}
 
 		std::string getContent(void) const

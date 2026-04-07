@@ -288,7 +288,6 @@ namespace guillaume::entities
 	Button &Button::setSize(const Size &size)
 	{
 		_size = size;
-
 		return *this;
 	}
 

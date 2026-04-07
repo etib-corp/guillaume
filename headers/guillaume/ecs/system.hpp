@@ -52,7 +52,25 @@ namespace guillaume::ecs
 		protected utility::logging::Loggable<System,
 											 utility::logging::StandardLogger>
 	{
+		public:
+		/**
+		 * @brief Enumeration of system update phases.
+		 *
+		 * Defines the different phases during which systems can be updated,
+		 * allowing for organized and efficient processing of entities based on
+		 * their components.
+		 */
+		enum class Phase {
+			Event,		///< Main update phase for application logic
+			Measure,	///< Measurement phase for calculating layout and text
+						///< sizes
+			Layout,		///< Layout phase for arranging entities based on
+						///< measurements
+			Render		///< Render phase for drawing entities
+		};
+
 		private:
+		Phase _phase;					 ///< Update phase of the system
 		Entity::Signature _signature;	 ///< System signature
 		ecs::ComponentRegistry *_activeComponentRegistry {
 			nullptr
@@ -171,13 +189,34 @@ namespace guillaume::ecs
 		public:
 		/**
 		 * @brief Default constructor for the System class.
+		 * @param phase The update phase during which this system should be
+		 * updated.
+		 * @note The phase is used by the SystemRegistry to determine when to
+		 * call the system's routine method during the application update loop.
+		 * The constructor does not set the system's signature, so it must be
+		 * configured separately using setSignature() after construction.
 		 */
-		System(void) = default;
+		System(Phase phase)
+			: _phase(phase)
+			, _signature()
+			, _activeComponentRegistry(nullptr)
+
+		{
+		}
 
 		/**
 		 * @brief Default destructor for the System class.
 		 */
 		virtual ~System(void) = default;
+
+		/**
+		 * @brief Get the system's update phase.
+		 * @return The system's update phase.
+		 */
+		Phase getPhase(void) const
+		{
+			return _phase;
+		}
 
 		/**
 		 * @brief Get the system's signature.
@@ -198,22 +237,11 @@ namespace guillaume::ecs
 					 ecs::EntityRegistry &entityRegistry);
 
 		/**
-		 * @brief Update one entity while explicitly binding a component
-		 * registry.
-		 * @param componentRegistry The component registry instance.
-		 * @param entityIdentifier The identifier of the entity to update.
-		 */
-		void updateEntity(ecs::ComponentRegistry &componentRegistry,
-						  const ecs::Entity::Identifier &entityIdentifier);
-
-		/**
 		 * @brief Update the system, processing relevant entities.
 		 * @param entityIdentifier The identifier of the entity to update.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) = 0;
-
-		friend class SystemRegistry;
 	};
 
 	/**

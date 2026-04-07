@@ -32,7 +32,7 @@ namespace guillaume::systems::tests
 	class TestGlyphRender: public ::testing::Test
 	{
 		protected:
-		TestGlyphRender(void)		   = default;
+		TestGlyphRender(void)			= default;
 		~TestGlyphRender(void) override = default;
 		void SetUp(void) override
 		{

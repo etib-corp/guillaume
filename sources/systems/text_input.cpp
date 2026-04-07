@@ -26,7 +26,9 @@ namespace guillaume::systems
 {
 
 	TextInput::TextInput(event::EventBus &eventBus)
-		: _textInputSubscriber(eventBus)
+		: ecs::SystemFiller<components::Text, components::Focus>(
+			  ecs::System::Phase::Event)
+		, _textInputSubscriber(eventBus)
 	{
 	}
 

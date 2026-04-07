@@ -29,12 +29,16 @@ namespace guillaume::systems
 {
 
 	GlyphRender::GlyphRender(Renderer &renderer)
-		: ecs::SystemFiller<components::Transform, components::Glyph>()
+		: ecs::SystemFiller<components::Transform, components::Glyph>(
+			  ecs::System::Phase::Render)
 		, _renderer(renderer)
 		, _defaultFontPath(
-			  "assets/fonts/Material_Symbols_Outlined/MaterialSymbolsOutlined-VariableFont_FILL,GRAD,opsz,wght.ttf")
+			  "assets/fonts/Material_Symbols_Outlined/"
+			  "MaterialSymbolsOutlined-VariableFont_FILL,GRAD,opsz,wght.ttf")
 	{
-		loadGlyphCodes("assets/fonts/Material_Symbols_Outlined/MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].codepoints");
+		loadGlyphCodes(
+			"assets/fonts/Material_Symbols_Outlined/"
+			"MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].codepoints");
 	}
 
 	GlyphRender::~GlyphRender(void)
@@ -58,18 +62,14 @@ namespace guillaume::systems
 		const std::string glyphName = glyphComponent.getName();
 		getLogger().debug("Rendering glyph '" + glyphName + "' for entity "
 						  + std::to_string(entityIdentifier));
-		getLogger().debug("Glyph code found for '" + glyphName + "': "
-						  + std::to_string(glyphComponent.getCode()));
+		getLogger().debug("Glyph code found for '" + glyphName
+						  + "': " + std::to_string(glyphComponent.getCode()));
 
 		utility::graphic::Glyph glyph(
-            glyphName,
-			_glyphCode.count(glyphName) > 0
-				? _glyphCode[glyphName]
-				: '?',
-            _defaultFontPath,
-            glyphComponent.getFontSize(),
-            glyphComponent.getColor()
-        );
+			glyphName,
+			_glyphCode.count(glyphName) > 0 ? _glyphCode[glyphName] : '?',
+			_defaultFontPath, glyphComponent.getFontSize(),
+			glyphComponent.getColor());
 
 		utility::graphic::PoseF pose = transformComponent.getPose();
 		pose.setPosition(pose.getPosition());
@@ -89,12 +89,13 @@ namespace guillaume::systems
 			size_t spacePos = line.find(' ');
 			if (spacePos != std::string::npos) {
 				std::string name = line.substr(0, spacePos);
-				uint32_t code = std::stoul(line.substr(spacePos + 1),&spacePos, 16);
+				uint32_t code =
+					std::stoul(line.substr(spacePos + 1), &spacePos, 16);
 				_glyphCode[name] = code;
 			}
 		}
 		getLogger().info("Loaded " + std::to_string(_glyphCode.size())
-						  + " glyph codes from " + filePath);
+						 + " glyph codes from " + filePath);
 	}
 
 }	 // namespace guillaume::systems

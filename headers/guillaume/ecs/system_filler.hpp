@@ -41,8 +41,11 @@ namespace guillaume::ecs
 		public:
 		/**
 		 * @brief Construct a new System Filler object and set its signature.
+		 * @param phase The update phase during which this system should be
+		 * executed.
 		 */
-		SystemFiller(void)
+		SystemFiller(System::Phase phase)
+			: System(phase)
 		{
 			setSignature<ComponentTypes...>();
 		}

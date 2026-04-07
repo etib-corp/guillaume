@@ -202,7 +202,8 @@ namespace guillaume::systems
 
 	RectangleRender::RectangleRender(Renderer &renderer)
 		: ecs::SystemFiller<components::Transform, components::Bound,
-							components::Color, components::Borders>()
+							components::Color, components::Borders>(
+			  ecs::System::Phase::Render)
 		, _renderer(renderer)
 	{
 	}

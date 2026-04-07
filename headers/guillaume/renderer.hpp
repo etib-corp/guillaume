@@ -125,7 +125,8 @@ namespace guillaume
 		 * @param glyph The glyph to draw.
 		 * @param pose The pose at which to draw the glyph.
 		 */
-		virtual void drawGlyph(const utility::graphic::Glyph &glyph, const utility::graphic::PoseF &pose) = 0;
+		virtual void drawGlyph(const utility::graphic::Glyph &glyph,
+							   const utility::graphic::PoseF &pose) = 0;
 
 		/**
 		 * @brief Set the full view model.

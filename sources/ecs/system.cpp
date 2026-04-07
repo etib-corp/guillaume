@@ -38,12 +38,4 @@ namespace guillaume::ecs
 		_activeComponentRegistry = nullptr;
 	}
 
-	void System::updateEntity(ecs::ComponentRegistry &componentRegistry,
-							  const ecs::Entity::Identifier &entityIdentifier)
-	{
-		_activeComponentRegistry = &componentRegistry;
-		update(entityIdentifier);
-		_activeComponentRegistry = nullptr;
-	}
-
 }	 // namespace guillaume::ecs

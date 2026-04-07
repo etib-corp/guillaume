@@ -47,7 +47,9 @@ namespace guillaume::systems
 {
 
 	KeyboardControl::KeyboardControl(event::EventBus &eventBus)
-		: _keyboardSubscriber(eventBus)
+		: ecs::SystemFiller<components::Text, components::Focus>(
+			  ecs::System::Phase::Event)
+		, _keyboardSubscriber(eventBus)
 	{
 	}
 
