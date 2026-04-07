@@ -40,11 +40,8 @@ namespace guillaume::components
 	class Text: public ecs::Component
 	{
 		private:
-		std::string _content;						 ///< Text content
-		std::size_t _fontSize				= 24;	 ///< Font size of the text
-		utility::graphic::Color32Bit _color = {
-			255, 255, 255, 255
-		};	  ///< Color of the text (RGBA)
+		std::string _content;	  ///< Text content
+		std::size_t _fontSize;	  ///< Font size of the text
 
 		public:
 		/**
@@ -94,26 +91,6 @@ namespace guillaume::components
 		Text &setFontSize(std::size_t fontSize)
 		{
 			_fontSize = (fontSize == 0) ? 24 : fontSize;
-			return *this;
-		}
-
-		/**
-		 * @brief Get the color of the text.
-		 * @return The text color.
-		 */
-		utility::graphic::Color32Bit getColor(void) const
-		{
-			return _color;
-		}
-
-		/**
-		 * @brief Set the color of the text.
-		 * @param color The new text color.
-		 * @return The Text component for chaining.
-		 */
-		Text &setColor(utility::graphic::Color32Bit color)
-		{
-			_color = color;
 			return *this;
 		}
 	};

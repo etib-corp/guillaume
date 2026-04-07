@@ -22,14 +22,16 @@
 
 #include <utility/graphic/glyph.hpp>
 
+#include <utility/graphic/pose.hpp>
+
 #include "guillaume/systems/glyph_render.hpp"
-#include "utility/graphic/pose.hpp"
 
 namespace guillaume::systems
 {
 
 	GlyphRender::GlyphRender(Renderer &renderer)
-		: ecs::SystemFiller<components::Transform, components::Glyph>(
+		: ecs::SystemFiller<components::Transform, components::Bound,
+							components::Glyph, components::Color>(
 			  ecs::System::Phase::Render)
 		, _renderer(renderer)
 		, _defaultFontPath(
@@ -49,32 +51,38 @@ namespace guillaume::systems
 	{
 		getLogger().debug("Updating GlyphRender system for entity "
 						  + std::to_string(entityIdentifier));
-		if (!requireComponent<components::Glyph>(entityIdentifier)
-			|| !requireComponent<components::Transform>(entityIdentifier)) {
+		if (!requireComponent<components::Transform>(entityIdentifier)
+			|| !requireComponent<components::Bound>(entityIdentifier)
+			|| !requireComponent<components::Glyph>(entityIdentifier)
+			|| !requireComponent<components::Color>(entityIdentifier)) {
 			return;
 		}
 
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
+		const auto &boundComponent =
+			getComponent<components::Bound>(entityIdentifier);
 		const auto &glyphComponent =
 			getComponent<components::Glyph>(entityIdentifier);
+		const auto &colorComponent =
+			getComponent<components::Color>(entityIdentifier);
 
 		const std::string glyphName = glyphComponent.getName();
+
 		getLogger().debug("Rendering glyph '" + glyphName + "' for entity "
 						  + std::to_string(entityIdentifier));
 		getLogger().debug("Glyph code found for '" + glyphName
 						  + "': " + std::to_string(glyphComponent.getCode()));
 
-		utility::graphic::Glyph glyph(
-			glyphName,
-			_glyphCode.count(glyphName) > 0 ? _glyphCode[glyphName] : '?',
-			_defaultFontPath, glyphComponent.getFontSize(),
-			glyphComponent.getColor());
+		utility::graphic::Glyph glyph;
+		glyph.setName(glyphName);
+		glyph.setGlyphCode(
+			_glyphCode.count(glyphName) > 0 ? _glyphCode[glyphName] : '?');
+		glyph.setFontPath(_defaultFontPath);
+		glyph.setSize(boundComponent.getSize().y);
+		glyph.setColor(colorComponent.getColor());
 
-		utility::graphic::PoseF pose = transformComponent.getPose();
-		pose.setPosition(pose.getPosition());
-
-		_renderer.drawGlyph(glyph, pose);
+		_renderer.drawGlyph(glyph, transformComponent.getPose());
 	}
 
 	void GlyphRender::loadGlyphCodes(const std::string &filePath)

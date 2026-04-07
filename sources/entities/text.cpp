@@ -98,7 +98,7 @@ namespace guillaume::entities
 			   const std::size_t &fontSize,
 			   const utility::graphic::Color32Bit &color)
 		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Text>(registry)
+							components::Text, components::Color>(registry)
 	{
 		setContent(content);
 		setFontSize(fontSize);

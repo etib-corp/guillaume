@@ -26,6 +26,7 @@
 
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
+#include "guillaume/components/color.hpp"
 
 #include "guillaume/renderer.hpp"
 
@@ -38,7 +39,8 @@ namespace guillaume::systems
 	 * @see components::Transform
 	 */
 	class TextRender:
-		public ecs::SystemFiller<components::Transform, components::Text>
+		public ecs::SystemFiller<components::Transform, components::Text,
+								 components::Color>
 	{
 		private:
 		Renderer &_renderer;			 ///< Renderer instance

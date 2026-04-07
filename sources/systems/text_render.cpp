@@ -28,8 +28,8 @@ namespace guillaume::systems
 {
 
 	TextRender::TextRender(Renderer &renderer)
-		: ecs::SystemFiller<components::Transform, components::Text>(
-			  ecs::System::Phase::Render)
+		: ecs::SystemFiller<components::Transform, components::Text,
+							components::Color>(ecs::System::Phase::Render)
 		, _renderer(renderer)
 		, _defaultFontPath(
 			  "assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf")
@@ -44,8 +44,9 @@ namespace guillaume::systems
 	{
 		getLogger().debug("Updating TextRender system for entity "
 						  + std::to_string(entityIdentifier));
-		if (!requireComponent<components::Text>(entityIdentifier)
-			|| !requireComponent<components::Transform>(entityIdentifier)) {
+		if (!requireComponent<components::Transform>(entityIdentifier)
+			|| !requireComponent<components::Text>(entityIdentifier)
+			|| !requireComponent<components::Color>(entityIdentifier)) {
 			return;
 		}
 
@@ -53,9 +54,11 @@ namespace guillaume::systems
 			getComponent<components::Transform>(entityIdentifier);
 		const auto &textComponent =
 			getComponent<components::Text>(entityIdentifier);
+		const auto &colorComponent =
+			getComponent<components::Color>(entityIdentifier);
 
 		utility::graphic::Text text;
-		text.setColor(textComponent.getColor())
+		text.setColor(colorComponent.getColor())
 			.setContent(textComponent.getContent())
 			.setFontSize(textComponent.getFontSize())
 			.setFontPath(_defaultFontPath);

@@ -30,6 +30,7 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
+#include "guillaume/components/color.hpp"
 
 namespace guillaume::entities
 {
@@ -39,7 +40,7 @@ namespace guillaume::entities
 	 */
 	class Text:
 		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Text>
+								 components::Text, components::Color>
 	{
 		public:
 		/**

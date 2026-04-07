@@ -26,6 +26,8 @@
 
 #include "guillaume/components/glyph.hpp"
 #include "guillaume/components/transform.hpp"
+#include "guillaume/components/color.hpp"
+#include "guillaume/components/bound.hpp"
 
 #include "guillaume/renderer.hpp"
 
@@ -40,7 +42,8 @@ namespace guillaume::systems
 	 * @see components::Transform
 	 */
 	class GlyphRender:
-		public ecs::SystemFiller<components::Transform, components::Glyph>
+		public ecs::SystemFiller<components::Transform, components::Bound,
+								 components::Glyph, components::Color>
 	{
 		private:
 		Renderer &_renderer;			 ///< Renderer instance
