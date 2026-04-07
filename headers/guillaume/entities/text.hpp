@@ -137,14 +137,10 @@ namespace guillaume::entities
 			 * @param builder The builder instance used to configure and create
 			 * the default text
 			 * @param content The text content for the default Text entity.
-			 * @param fontSize The font size for the default Text entity.
-			 * @param color The color for the default Text entity (RGBA).
 			 * @return The entity identifier of the newly created text entity.
 			 */
-			ecs::Entity::Identifier
-				makeDefaultText(Builder &builder, const std::string &content,
-								const std::size_t &fontSize,
-								const utility::graphic::Color32Bit &color);
+			ecs::Entity::Identifier makeDefaultText(Builder &builder,
+													const std::string &content);
 		};
 
 		private:

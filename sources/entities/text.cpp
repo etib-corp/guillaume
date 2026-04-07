@@ -84,14 +84,11 @@ namespace guillaume::entities
 	{
 	}
 
-	ecs::Entity::Identifier Text::Director::makeDefaultText(
-		Builder &builder, const std::string &content,
-		const std::size_t &fontSize, const utility::graphic::Color32Bit &color)
+	ecs::Entity::Identifier
+		Text::Director::makeDefaultText(Builder &builder,
+										const std::string &content)
 	{
-		return builder.withContent(content)
-			.withFontSize(fontSize)
-			.withColor(color)
-			.registerEntity();
+		return builder.withContent(content).registerEntity();
 	}
 
 	Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
@@ -112,18 +109,27 @@ namespace guillaume::entities
 	Text &Text::setContent(const std::string &content)
 	{
 		_content = content;
+		getComponentRegistry()
+			.getComponent<components::Text>(getIdentifier())
+			.setContent(content);
 		return *this;
 	}
 
 	Text &Text::setFontSize(std::size_t fontSize)
 	{
 		_fontSize = fontSize;
+		getComponentRegistry()
+			.getComponent<components::Text>(getIdentifier())
+			.setFontSize(fontSize);
 		return *this;
 	}
 
 	Text &Text::setColor(utility::graphic::Color32Bit color)
 	{
 		_color = color;
+		getComponentRegistry()
+			.getComponent<components::Color>(getIdentifier())
+			.setColor(color);
 		return *this;
 	}
 }	 // namespace guillaume::entities

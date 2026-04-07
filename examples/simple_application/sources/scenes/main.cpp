@@ -2,6 +2,7 @@
 
 #include <guillaume/entities/panel.hpp>
 #include <guillaume/entities/icon.hpp>
+#include <guillaume/entities/text.hpp>
 
 namespace simple_application::scenes
 {
@@ -24,6 +25,14 @@ namespace simple_application::scenes
 		auto &iconDirector =
 			getDirectorManager()
 				.getDirector<guillaume::entities::Icon::Director>();
+
+		auto &textBuilder =
+			getBuilderManager()
+				.getBuilder<guillaume::entities::Text::Builder>();
+		auto &textDirector =
+			getDirectorManager()
+				.getDirector<guillaume::entities::Text::Director>();
+
 		panelDirector.makeColorPanel(
 			panelBuilder,
 			utility::graphic::PoseF(
@@ -32,6 +41,8 @@ namespace simple_application::scenes
 			utility::graphic::Color32Bit(255, 0, 0, 255));
 
 		iconDirector.makeDefaultIcon(iconBuilder, "arrow_split", 200.0f);
+
+		textDirector.makeDefaultText(textBuilder, "Hello, Guillaume!");
 	}
 
 	Main::~Main(void)
