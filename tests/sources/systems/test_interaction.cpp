@@ -86,6 +86,10 @@ namespace
 		void drawText(const utility::graphic::Text &, const utility::graphic::PoseF &) override
 		{
 		}
+
+		void drawGlyph(const utility::graphic::Glyph &, const utility::graphic::PoseF &) override
+		{
+		}
 	};
 
 	class InteractionEntity final:

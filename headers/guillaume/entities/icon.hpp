@@ -27,7 +27,7 @@
 #include "guillaume/ecs/leaf_entity_builder.hpp"
 #include "guillaume/ecs/leaf_entity_filler.hpp"
 
-#include "guillaume/components/icon.hpp"
+#include "guillaume/components/glyph.hpp"
 #include "guillaume/components/transform.hpp"
 
 namespace guillaume::entities
@@ -37,7 +37,7 @@ namespace guillaume::entities
 	 * @brief Icon component
 	 */
 	class Icon:
-		public ecs::LeafEntityFiller<components::Transform, components::Icon>
+		public ecs::LeafEntityFiller<components::Transform, components::Glyph>
 	{
 		public:
 		/**
@@ -53,8 +53,8 @@ namespace guillaume::entities
 			private:
 			std::unique_ptr<Icon>
 				_icon;	  ///< Unique pointer to the Icon entity being built
-			std::string _iconName;	  ///< Name of the icon to be used
-			Style _style;			  ///< Style of the icon
+			std::string _glyphName;	  ///< Name of the glyph to be used
+			Style _style;			  ///< Style of the icon to be used
 
 			public:
 			/**
@@ -87,6 +87,7 @@ namespace guillaume::entities
 			 * @brief Set the name of the icon to be used for the Icon entity.
 			 * @param iconName The name of the icon to set.
 			 * @return Reference to the builder for chaining.
+			 * @see utility::graphic::Glyph::_name
 			 */
 			Builder &withIconName(const std::string &iconName);
 
@@ -120,14 +121,15 @@ namespace guillaume::entities
 			 * @param builder The builder instance used to configure and create
 			 * the default icon
 			 * @param iconName The icon name to assign to the created entity.
+			 * @see utility::graphic::Glyph::_name
 			 */
 			void makeDefaultIcon(Builder &builder, const std::string &iconName);
 		};
 
 		private:
 		std::string
-			_iconName;	  ///< Name of the icon to be used for this Icon entity
-		Style _style;	  ///< Style of the icon to be used for this Icon entity
+			_glyphName;	  ///< Name of the glyph to be used for this Icon entity
+		Style _style;	  ///< Style of the glyph to be used for this Icon entity
 
 		public:
 		/**
@@ -136,6 +138,7 @@ namespace guillaume::entities
 		 * components.
 		 * @param iconName The name of the icon to be used for this Icon entity.
 		 * @param style The style of the icon to be used for this Icon entity.
+		 * @see utility::graphic::Glyph::_name
 		 */
 		Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
 			 const Style &style);

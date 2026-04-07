@@ -38,20 +38,20 @@ namespace guillaume::entities
 	void Icon::Builder::registerEntity(void)
 	{
 		_icon =
-			std::make_unique<Icon>(getComponentRegistry(), _iconName, _style);
+			std::make_unique<Icon>(getComponentRegistry(), _glyphName, _style);
 		getEntityRegistry().addEntity(std::move(_icon));
 	}
 
 	void Icon::Builder::reset(void)
 	{
 		_icon.reset();
-		_iconName.clear();
+		_glyphName.clear();
 		_style = Style::Outlined;
 	}
 
 	Icon::Builder &Icon::Builder::withIconName(const std::string &iconName)
 	{
-		_iconName = iconName;
+		_glyphName = iconName;
 		return *this;
 	}
 
@@ -78,17 +78,20 @@ namespace guillaume::entities
 
 	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &iconName,
 			   const Style &style)
-		: ecs::LeafEntityFiller<components::Transform, components::Icon>(
+		: ecs::LeafEntityFiller<components::Transform, components::Glyph>(
 			  registry)
-		, _iconName(iconName)
+		, _glyphName(iconName)
 		, _style(style)
 	{
 		registry.getComponent<components::Transform>(getIdentifier())
 			.setPose(utility::graphic::PoseF(
-				utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+				utility::graphic::PositionF(400.0f, 400.0f, 0.0f),
 				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
 
-		registry.getComponent<components::Icon>(getIdentifier());
+		registry.getComponent<components::Glyph>(getIdentifier())
+			.setName(iconName)
+			.setFontSize(96)
+			.setColor({ 255, 255, 255, 255 });
 	}
 
 	Icon::~Icon()
