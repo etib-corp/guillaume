@@ -18,7 +18,7 @@ namespace simple_application::panels
 
 		getDirectorManager()
 			.getDirector<guillaume::entities::Button::Director>()
-			.makeTextButton(buttonBuilder, "Click Me", [this]() {
+			.makeIconButton(buttonBuilder, "thumb_up", [this]() {
 				this->getLogger().info("Button clicked in DefaultPanel!");
 			});
 	}
