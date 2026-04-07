@@ -82,7 +82,7 @@ namespace guillaume::ecs
 		/**
 		 * @brief Default destructor for the EntityBuilderManager class.
 		 */
-		~EntityBuilderManager(void);
+		virtual ~EntityBuilderManager(void);
 
 		/**
 		 * @brief Get a reference to the builder for a specific entity type.

@@ -335,29 +335,32 @@ namespace simple_application
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	void Renderer::drawGlyph(const utility::graphic::Glyph &glyph, const utility::graphic::PoseF &pose)
+	void Renderer::drawGlyph(const utility::graphic::Glyph &glyph,
+							 const utility::graphic::PoseF &pose)
 	{
 		Uint32 character = glyph.getGlyphCode();
 		if (character == 0) {
 			character = '?';
-			getLogger().warning("Glyph code is empty, using default character '?'");
+			getLogger().warning(
+				"Glyph code is empty, using default character '?'");
 		} else {
-			getLogger().debug("Drawing glyph (code): " + std::to_string(character));
+			getLogger().debug("Drawing glyph (code): "
+							  + std::to_string(character));
 		}
 
-		TTF_Font *ttfFont =
-			getOrLoadFont(glyph.getFontPath(), static_cast<std::size_t>(glyph.getSize()));
+		TTF_Font *ttfFont = getOrLoadFont(
+			glyph.getFontPath(), static_cast<std::size_t>(glyph.getSize()));
 		if (!ttfFont) {
 			getLogger().error("Failed to load font for rendering");
 			return;
 		}
 
 		utility::graphic::Color32Bit color = glyph.getColor();
-		SDL_Color sdlColor = { color.getRed(), color.getGreen(),
-							   color.getBlue(), color.getAlpha() };
+		SDL_Color sdlColor				   = { color.getRed(), color.getGreen(),
+											   color.getBlue(), color.getAlpha() };
 
-		SDL_Surface *surface = TTF_RenderGlyph_Blended(
-			ttfFont, character, sdlColor);
+		SDL_Surface *surface =
+			TTF_RenderGlyph_Blended(ttfFont, character, sdlColor);
 		if (!surface) {
 			getLogger().error("Failed to render text to surface: "
 							  + std::string(SDL_GetError()));
@@ -439,8 +442,6 @@ namespace simple_application
 
 		glEnable(GL_DEPTH_TEST);
 	}
-
-
 
 	TTF_Font *Renderer::getOrLoadFont(const std::string &fontPath,
 									  std::size_t fontSize)

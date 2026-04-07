@@ -129,7 +129,8 @@ namespace simple_application
 		 * @param glyph The glyph to draw.
 		 * @param pose The pose at which to draw the glyph.
 		 */
-		void drawGlyph(const utility::graphic::Glyph &glyph, const utility::graphic::PoseF &pose) override;
+		void drawGlyph(const utility::graphic::Glyph &glyph,
+					   const utility::graphic::PoseF &pose) override;
 
 		/**
 		 * @brief Measures the pixel dimensions of a given text string when

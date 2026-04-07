@@ -91,29 +91,24 @@ namespace guillaume
 		event::EventBus _eventBus;	  ///< Event bus dispatching to systems
 		ecs::SystemRegistry _systemRegistry;	///< Shared system registry
 
-		template<ecs::InheritFromSystem SystemType>
-		void registerSystem(std::unique_ptr<SystemType> system)
-		{
-			_systemRegistry.registerNewSystem<SystemType>(std::move(system));
-			this->getLogger().debug("Registered system: "
-									+ utility::demangle<SystemType>());
-		}
-
+		/**
+		 * @brief Register core systems used by the application.
+		 */
 		void registerCoreSystems(void)
 		{
-			registerSystem<systems::MeasureText>(
+			_systemRegistry.registerNewSystem(
 				std::make_unique<systems::MeasureText>(_renderer));
-			registerSystem<systems::Interaction>(
+			_systemRegistry.registerNewSystem(
 				std::make_unique<systems::Interaction>(_eventBus, _renderer));
-			registerSystem<systems::TextRender>(
+			_systemRegistry.registerNewSystem(
 				std::make_unique<systems::TextRender>(_renderer));
-			registerSystem<systems::GlyphRender>(
+			_systemRegistry.registerNewSystem(
 				std::make_unique<systems::GlyphRender>(_renderer));
-			registerSystem<systems::KeyboardControl>(
+			_systemRegistry.registerNewSystem(
 				std::make_unique<systems::KeyboardControl>(_eventBus));
-			registerSystem<systems::TextInput>(
+			_systemRegistry.registerNewSystem(
 				std::make_unique<systems::TextInput>(_eventBus));
-			registerSystem<systems::RectangleRender>(
+			_systemRegistry.registerNewSystem(
 				std::make_unique<systems::RectangleRender>(_renderer));
 		}
 
@@ -149,10 +144,20 @@ namespace guillaume
 		 */
 		void routine(void)
 		{
-			for (const auto &[systemType, system]:
-				 _systemRegistry.getSystems()) {
-				system->routine(_sceneManager->getActiveComponentRegistry(),
-								_sceneManager->getActiveEntityRegistry());
+			for (const auto phase:
+				 { ecs::System::Phase::Event, ecs::System::Phase::Measure,
+				   ecs::System::Phase::Layout, ecs::System::Phase::Render }) {
+				this->getLogger().debug(
+					"Running systems for phase: "
+					+ std::to_string(static_cast<int>(phase)));
+				for (const auto &system:
+					 _systemRegistry.getSystemsByPhase(phase)) {
+					system->routine(_sceneManager->getActiveComponentRegistry(),
+									_sceneManager->getActiveEntityRegistry());
+				}
+				this->getLogger().debug(
+					"Finished systems for phase: "
+					+ std::to_string(static_cast<int>(phase)));
 			}
 		}
 

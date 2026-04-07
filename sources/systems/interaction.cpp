@@ -136,7 +136,8 @@ namespace guillaume::systems
 {
 
 	Interaction::Interaction(event::EventBus &eventBus, Renderer &renderer)
-		: ecs::SystemFiller<components::Transform, components::Bound>()
+		: ecs::SystemFiller<components::Transform, components::Bound>(
+			  ecs::System::Phase::Event)
 		, _mouseButtonSubscriber(eventBus)
 		, _mouseMotionSubscriber(eventBus)
 		, _renderer(renderer)

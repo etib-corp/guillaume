@@ -73,7 +73,7 @@ namespace guillaume::ecs
 		/**
 		 * @brief Default destructor for the EntityDirectorManager class.
 		 */
-		~EntityDirectorManager(void);
+		virtual ~EntityDirectorManager(void);
 
 		/**
 		 * @brief Get a reference to the director for a specific entity type.

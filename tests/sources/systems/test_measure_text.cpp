@@ -28,6 +28,7 @@
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_registry.hpp"
 
 #include "systems/test_measure_text.hpp"
 
@@ -69,7 +70,8 @@ namespace
 			(void)text;
 			(void)pose;
 		}
-		void drawGlyph(const utility::graphic::Glyph &glyph, const utility::graphic::PoseF &pose) override
+		void drawGlyph(const utility::graphic::Glyph &glyph,
+					   const utility::graphic::PoseF &pose) override
 		{
 			(void)glyph;
 			(void)pose;
@@ -82,10 +84,21 @@ namespace
 		RendererStub renderer;
 		guillaume::systems::MeasureText measureTextSystem { renderer };
 		guillaume::ecs::ComponentRegistry componentRegistry;
-		guillaume::ecs::Entity::Identifier entityIdentifier { 1 };
+		guillaume::ecs::EntityRegistry entityRegistry;
+		guillaume::ecs::Entity::Identifier entityIdentifier {
+			guillaume::ecs::Entity::InvalidIdentifier
+		};
 
 		void SetUp(void) override
 		{
+			auto entity		 = std::make_unique<guillaume::ecs::Entity>();
+			entityIdentifier = entity->getIdentifier();
+			entity->setSignature(guillaume::ecs::Entity::getSignatureFromTypes<
+								 guillaume::components::Transform,
+								 guillaume::components::Text,
+								 guillaume::components::Bound>());
+			entityRegistry.addEntity(std::move(entity));
+
 			componentRegistry.addComponent<guillaume::components::Transform>(
 				entityIdentifier);
 			componentRegistry.addComponent<guillaume::components::Text>(
@@ -105,7 +118,7 @@ TEST_F(MeasureTextFixture, SynchronizesBoundSizeWithMeasuredText)
 		.setFontSize(32);
 	renderer.measurement = { 140.0f, 28.0f };
 
-	measureTextSystem.updateEntity(componentRegistry, entityIdentifier);
+	measureTextSystem.routine(componentRegistry, entityRegistry);
 
 	const auto size =
 		componentRegistry
@@ -122,7 +135,7 @@ TEST_F(MeasureTextFixture, SkipsMeasurementWhenRequiredComponentIsMissing)
 	componentRegistry.removeComponent<guillaume::components::Bound>(
 		entityIdentifier);
 
-	measureTextSystem.updateEntity(componentRegistry, entityIdentifier);
+	measureTextSystem.routine(componentRegistry, entityRegistry);
 
 	EXPECT_EQ(renderer.measureCallCount, 0);
 }

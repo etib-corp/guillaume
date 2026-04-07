@@ -155,7 +155,8 @@ namespace guillaume::entities
 		 * @brief Default constructor for the Icon component.
 		 * @param registry Reference to the component registry for initializing
 		 * components.
-		 * @param glyphName The name of the glyph to be used for this Icon entity.
+		 * @param glyphName The name of the glyph to be used for this Icon
+		 * entity.
 		 * @param color The color of the icon to be used for this Icon entity
 		 * (RGBA).
 		 * @param style The style of the icon to be used for this Icon entity.

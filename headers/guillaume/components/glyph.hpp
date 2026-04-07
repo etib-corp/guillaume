@@ -37,9 +37,9 @@ namespace guillaume::components
 	class Glyph: public ecs::Component
 	{
 		private:
-		uint32_t _code;			///< Glyph code (e.g., Unicode code point)
-        std::string _name;		///< Glyph name (for font lookup)
-		std::size_t _fontSize = 24;	 ///< Font size of the glyph
+		uint32_t _code;		  ///< Glyph code (e.g., Unicode code point)
+		std::string _name;	  ///< Glyph name (for font lookup)
+		std::size_t _fontSize				= 24;	 ///< Font size of the glyph
 		utility::graphic::Color32Bit _color = {
 			255, 255, 255, 255
 		};	  ///< Color of the glyph (RGBA)
@@ -70,30 +70,30 @@ namespace guillaume::components
 		 * @return The Glyph component for chaining.
 		 */
 		Glyph &setCode(uint32_t code)
-        {
-            _code = code;
-            return *this;
-        }
+		{
+			_code = code;
+			return *this;
+		}
 
-        /**
-         * @brief Get the glyph name.
-         * @return The glyph name.
-         */
-        const std::string &getName(void) const
-        {
-            return _name;
-        }
+		/**
+		 * @brief Get the glyph name.
+		 * @return The glyph name.
+		 */
+		const std::string &getName(void) const
+		{
+			return _name;
+		}
 
-        /**
-         * @brief Set the glyph name.
-         * @param name The new glyph name.
-         * @return The Glyph component for chaining.
-         */
-        Glyph &setName(const std::string &name)
-        {
-            _name = name;
-            return *this;
-        }
+		/**
+		 * @brief Set the glyph name.
+		 * @param name The new glyph name.
+		 * @return The Glyph component for chaining.
+		 */
+		Glyph &setName(const std::string &name)
+		{
+			_name = name;
+			return *this;
+		}
 
 		/**
 		 * @brief Get the font size of the glyph.

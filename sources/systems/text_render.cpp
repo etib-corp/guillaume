@@ -28,7 +28,8 @@ namespace guillaume::systems
 {
 
 	TextRender::TextRender(Renderer &renderer)
-		: ecs::SystemFiller<components::Transform, components::Text>()
+		: ecs::SystemFiller<components::Transform, components::Text>(
+			  ecs::System::Phase::Render)
 		, _renderer(renderer)
 		, _defaultFontPath(
 			  "assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf")

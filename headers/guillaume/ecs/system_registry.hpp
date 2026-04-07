@@ -95,8 +95,9 @@ namespace guillaume::ecs
 		public utility::logging::Loggable<SystemRegistry,
 										  utility::logging::StandardLogger>
 	{
+		public:
 		private:
-		std::map<std::type_index, std::unique_ptr<System>>
+		std::map<ecs::System::Phase, std::vector<std::unique_ptr<System>>>
 			_systems;	 ///< Map of registered systems
 
 		public:
@@ -112,43 +113,33 @@ namespace guillaume::ecs
 
 		/**
 		 * @brief Register a new system in the registry.
-		 * @tparam SystemType The type of the system to register.
 		 * @param system Unique pointer to the system instance.
 		 * @note If a system of the same type is already registered, it is
 		 * replaced.
 		 */
-		template<InheritFromSystem SystemType>
-		void registerNewSystem(std::unique_ptr<SystemType> system)
+		void registerNewSystem(std::unique_ptr<System> system)
 		{
-			_systems[std::type_index(typeid(SystemType))] = std::move(system);
-			getLogger().debug("Registered system of type "
-							  + utility::demangle<SystemType>());
+			_systems[system->getPhase()].push_back(std::move(system));
 		}
 
 		/**
-		 * @brief Retrieve a system from the registry.
-		 * @tparam SystemType The type of the system to retrieve.
-		 * @return Reference to the system instance.
-		 * @throws SystemNotFoundException<SystemType> If the system is not
-		 * found.
+		 * @brief Get all systems registered for a specific update phase.
+		 * @param phase The update phase to query.
+		 * @return Vector of pointers to systems registered for the specified
+		 * phase. Returns an empty vector if no systems are registered for the
+		 * phase.
+		 * @throws std::runtime_error if no systems are registered for the
+		 * specified phase.
 		 */
-		template<InheritFromSystem SystemType> SystemType &getSystem(void)
+		const std::vector<std::unique_ptr<System>> &
+			getSystemsByPhase(System::Phase phase) const
 		{
-			auto iterator = _systems.find(std::type_index(typeid(SystemType)));
-			if (iterator == _systems.end()) {
-				throw SystemNotFoundException<SystemType>();
+			auto it = _systems.find(phase);
+			if (it != _systems.end()) {
+				return it->second;
 			}
-			return *static_cast<SystemType *>(iterator->second.get());
-		}
-
-		/**
-		 * @brief Get all registered systems.
-		 * @return Map of type indices to system instances.
-		 */
-		const std::map<std::type_index, std::unique_ptr<System>> &
-			getSystems(void) const
-		{
-			return _systems;
+			static const std::vector<std::unique_ptr<System>> empty;
+			return empty;
 		}
 	};
 

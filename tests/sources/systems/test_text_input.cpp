@@ -27,6 +27,7 @@
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/event/event_bus.hpp"
 
 #include <utility/event/text_input_event.hpp>
@@ -41,10 +42,20 @@ namespace
 		guillaume::event::EventBus eventBus;
 		guillaume::systems::TextInput textInputSystem { eventBus };
 		guillaume::ecs::ComponentRegistry componentRegistry;
-		guillaume::ecs::Entity::Identifier entityIdentifier { 1 };
+		guillaume::ecs::EntityRegistry entityRegistry;
+		guillaume::ecs::Entity::Identifier entityIdentifier {
+			guillaume::ecs::Entity::InvalidIdentifier
+		};
 
 		void SetUp(void) override
 		{
+			auto entity		 = std::make_unique<guillaume::ecs::Entity>();
+			entityIdentifier = entity->getIdentifier();
+			entity->setSignature(guillaume::ecs::Entity::getSignatureFromTypes<
+								 guillaume::components::Text,
+								 guillaume::components::Focus>());
+			entityRegistry.addEntity(std::move(entity));
+
 			componentRegistry.addComponent<guillaume::components::Text>(
 				entityIdentifier);
 			componentRegistry.addComponent<guillaume::components::Focus>(
@@ -56,7 +67,7 @@ namespace
 			auto event = std::make_unique<utility::event::TextInputEvent>();
 			event->setText(textInput);
 			eventBus.publish(std::move(event));
-			textInputSystem.updateEntity(componentRegistry, entityIdentifier);
+			textInputSystem.routine(componentRegistry, entityRegistry);
 		}
 
 		std::string getContent(void) const
