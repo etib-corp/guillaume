@@ -26,10 +26,8 @@
 
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
-#include "guillaume/components/click.hpp"
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/focus.hpp"
-#include "guillaume/components/hover.hpp"
 #include "guillaume/components/interaction.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"

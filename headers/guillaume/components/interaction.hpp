@@ -22,8 +22,13 @@
 
 #pragma once
 
-#include "guillaume/components/click.hpp"
-#include "guillaume/components/hover.hpp"
+#include <functional>
+#include <map>
+
+#include <utility/event/mouse_button_event.hpp>
+#include <utility/event/mouse_motion_event.hpp>
+
+#include "guillaume/ecs/component.hpp"
 
 namespace guillaume::components
 {
@@ -36,14 +41,38 @@ namespace guillaume::components
 	class Interaction: public ecs::Component
 	{
 		public:
-		using ClickHandler = Click::Handler;    ///< Type alias for click event handlers
-		using HoverHandler = Hover::Handler;    ///< Type alias for hover event handlers
+		using ClickHandler = std::function<void(
+			utility::event::MouseMotionEvent::MousePosition)>;	  ///< Click
+																  ///< event
+		///< handler type
+		using HoverHandler =
+			std::function<void(void)>;	  ///< Hover event handler type
 
 		private:
-		Click _click;   ///< Click component to manage click interactions
-		Hover _hover;   ///< Hover component to manage hover interactions
+		std::map<utility::event::MouseButtonEvent::MouseButton, ClickHandler>
+			_onClickHandlers {};	///< Click event handlers
+		std::map<utility::event::MouseButtonEvent::MouseButton, ClickHandler>
+			_onReleaseHandlers {};	  ///< Release event handlers
 
-        utility::math::Vector2F _accessibilityMargin {
+		std::map<utility::event::MouseButtonEvent::MouseButton, bool>
+			_isClicked {};	  ///< Flag indicating if the entity is currently
+							  ///< clicked
+		std::map<utility::event::MouseButtonEvent::MouseButton, bool>
+			_pressedInside {};	  ///< Flag indicating if the button was pressed
+								  ///< inside the entity bounds
+
+		bool _isEntityClicked {
+			false
+		};	  ///< Flag indicating if the entity is
+		///< currently clicked (any button)
+
+		HoverHandler _onHover;		///< Hover enter event handler
+		HoverHandler _onUnhover;	///< Hover leave event handler
+		bool _isHovered {
+			false
+		};	  ///< Flag indicating if the entity is currently hovered
+
+		utility::math::Vector2F _accessibilityMargin {
 			0.0f, 0.0f
 		};	  ///< Margin to increase the interactive area of entities for
 			  ///< better accessibility
@@ -52,7 +81,20 @@ namespace guillaume::components
 		/**
 		 * @brief Default constructor for the Interaction component.
 		 */
-		Interaction(void) = default;
+		Interaction(void)
+		{
+			for (const auto button:
+				 { utility::event::MouseButtonEvent::MouseButton::Left,
+				   utility::event::MouseButtonEvent::MouseButton::Middle,
+				   utility::event::MouseButtonEvent::MouseButton::Right,
+				   utility::event::MouseButtonEvent::MouseButton::X1,
+				   utility::event::MouseButtonEvent::MouseButton::X2 }) {
+				_isClicked[button]		   = false;
+				_pressedInside[button]	   = false;
+				_onClickHandlers[button]   = nullptr;
+				_onReleaseHandlers[button] = nullptr;
+			}
+		}
 
 		/**
 		 * @brief Default destructor for the Interaction component.
@@ -69,7 +111,7 @@ namespace guillaume::components
 			const utility::event::MouseButtonEvent::MouseButton &button,
 			const ClickHandler &handler)
 		{
-			_click.setOnClickHandler(button, handler);
+			_onClickHandlers[button] = handler;
 			return *this;
 		}
 
@@ -83,7 +125,7 @@ namespace guillaume::components
 			const utility::event::MouseButtonEvent::MouseButton &button,
 			const ClickHandler &handler)
 		{
-			_click.setOnReleaseHandler(button, handler);
+			_onReleaseHandlers[button] = handler;
 			return *this;
 		}
 
@@ -95,7 +137,7 @@ namespace guillaume::components
 					   ClickHandler> &
 			getOnClickHandlers() const
 		{
-			return _click.getOnClickHandlers();
+			return _onClickHandlers;
 		}
 
 		/**
@@ -106,7 +148,7 @@ namespace guillaume::components
 					   ClickHandler> &
 			getOnReleaseHandlers() const
 		{
-			return _click.getOnReleaseHandlers();
+			return _onReleaseHandlers;
 		}
 
 		/**
@@ -117,7 +159,7 @@ namespace guillaume::components
 		bool isClicked(
 			const utility::event::MouseButtonEvent::MouseButton &button) const
 		{
-			return _click.isClicked(button);
+			return _isClicked.at(button);
 		}
 
 		/**
@@ -130,7 +172,8 @@ namespace guillaume::components
 			const utility::event::MouseButtonEvent::MouseButton &button,
 			bool clicked)
 		{
-			_click.setClicked(button, clicked);
+			_isEntityClicked   = clicked;
+			_isClicked[button] = clicked;
 			return *this;
 		}
 
@@ -140,7 +183,7 @@ namespace guillaume::components
 		 */
 		bool isEntityClicked() const
 		{
-			return _click.isEntityClicked();
+			return _isEntityClicked;
 		}
 
 		/**
@@ -153,7 +196,7 @@ namespace guillaume::components
 			const utility::event::MouseButtonEvent::MouseButton &button,
 			bool pressedInside)
 		{
-			_click.setPressedInside(button, pressedInside);
+			_pressedInside[button] = pressedInside;
 			return *this;
 		}
 
@@ -165,7 +208,7 @@ namespace guillaume::components
 		bool isPressedInside(
 			const utility::event::MouseButtonEvent::MouseButton &button) const
 		{
-			return _click.isPressedInside(button);
+			return _pressedInside.at(button);
 		}
 
 		/**
@@ -175,7 +218,7 @@ namespace guillaume::components
 		 */
 		Interaction &setOnHoverHandler(const HoverHandler &handler)
 		{
-			_hover.setOnHoverHandler(handler);
+            _onHover = handler;
 			return *this;
 		}
 
@@ -186,7 +229,7 @@ namespace guillaume::components
 		 */
 		Interaction &setOnUnhoverHandler(const HoverHandler &handler)
 		{
-			_hover.setOnUnhoverHandler(handler);
+            _onUnhover = handler;
 			return *this;
 		}
 
@@ -196,7 +239,7 @@ namespace guillaume::components
 		 */
 		HoverHandler getOnHoverHandler(void) const
 		{
-			return _hover.getOnHoverHandler();
+			return _onHover;
 		}
 
 		/**
@@ -205,7 +248,7 @@ namespace guillaume::components
 		 */
 		HoverHandler getOnUnhoverHandler(void) const
 		{
-			return _hover.getOnUnhoverHandler();
+			return _onUnhover;
 		}
 
 		/**
@@ -214,7 +257,7 @@ namespace guillaume::components
 		 */
 		bool isHovered(void) const
 		{
-			return _hover.isHovered();
+			return _isHovered;
 		}
 
 		/**
@@ -224,21 +267,22 @@ namespace guillaume::components
 		 */
 		Interaction &setHovered(bool isHovered)
 		{
-			_hover.setHovered(isHovered);
+			_isHovered = isHovered;
 			return *this;
 		}
 
-        /**
-         * @brief Get the Accessibility Margin object
-         *
-         * @return The margin to increase the interactive area of entities for better
-         */
-        const utility::math::Vector2F &getAccessibilityMargin() const
-        {
-            return _accessibilityMargin;
-        }
+		/**
+		 * @brief Get the Accessibility Margin object
+		 *
+		 * @return The margin to increase the interactive area of entities for
+		 * better
+		 */
+		const utility::math::Vector2F &getAccessibilityMargin() const
+		{
+			return _accessibilityMargin;
+		}
 
-        /**
+		/**
 		 * @brief Set the Accessibility Margin object
 		 *
 		 * @param margin The margin to increase the interactive area of entities
@@ -248,7 +292,6 @@ namespace guillaume::components
 		{
 			_accessibilityMargin = margin;
 		}
-
 	};
 
-}    // namespace guillaume::components
+}	 // namespace guillaume::components
