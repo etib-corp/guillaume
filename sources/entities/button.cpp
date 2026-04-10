@@ -46,6 +46,8 @@ namespace guillaume::entities
 			this->getComponentRegistry(), _iconIdendifier, _labelIdentifier,
 			_toggleState, _colorStyle, _shape, _size, _morphState, _onClick);
 
+		_identifier = _button->getIdentifier();
+
 		this->getEntityRegistry().addEntity(std::move(_button));
 		return _identifier;
 	}
@@ -174,6 +176,13 @@ namespace guillaume::entities
 			.setBottomRightRadius(44.0f)
 			.setBottomLeftRadius(44.0f);
 
+		auto color = getComponentRegistry()
+			.getComponent<components::Color>(getIdentifier())
+			.getColor();
+		getComponentRegistry()
+			.getComponent<components::Color>(getIdentifier())
+			.setColor(color.withAlpha(192));
+
 		if (_onClick) {
 			_onClick();
 		}
@@ -188,6 +197,13 @@ namespace guillaume::entities
 			.setTopRightRadius(28.0f)
 			.setBottomRightRadius(28.0f)
 			.setBottomLeftRadius(28.0f);
+
+		auto color = getComponentRegistry()
+			.getComponent<components::Color>(getIdentifier())
+			.getColor();
+		getComponentRegistry()
+			.getComponent<components::Color>(getIdentifier())
+			.setColor(color.withAlpha(255));
 	}
 
 	Button::Button(ecs::ComponentRegistry &registry,
@@ -197,7 +213,7 @@ namespace guillaume::entities
 				   Size size, MorphState morphState,
 				   std::function<void(void)> onClick)
 		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Hover, components::Click,
+							components::Interaction,
 							components::Color, components::Borders>(registry)
 		, _iconIdentifier(iconIdentifier)
 		, _labelIdentifier(labelIdentifier)
@@ -218,7 +234,7 @@ namespace guillaume::entities
 			.setSize({ 136, 136 });
 
 		// Set up hover event handlers
-		registry.getComponent<components::Hover>(getIdentifier())
+		registry.getComponent<components::Interaction>(getIdentifier())
 			.setOnHoverHandler([this]() {
 				this->hoverHandler();
 			})
@@ -227,7 +243,7 @@ namespace guillaume::entities
 			});
 
 		// Set up click event handlers
-		registry.getComponent<components::Click>(getIdentifier())
+		registry.getComponent<components::Interaction>(getIdentifier())
 			.setOnClickHandler(
 				utility::event::MouseButtonEvent::MouseButton::Left,
 				[this](utility::event::MouseMotionEvent::MousePosition

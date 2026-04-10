@@ -25,8 +25,7 @@
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
-#include "guillaume/components/click.hpp"
-#include "guillaume/components/hover.hpp"
+#include "guillaume/components/interaction.hpp"
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/event/event_subscriber.hpp"
@@ -44,8 +43,7 @@ namespace guillaume::systems
 
 	/**
 	 * @brief System handling pointer interactions (hover and click).
-	 * @see components::Hover
-	 * @see components::Click
+	 * @see components::Interaction
 	 */
 	class Interaction:
 		public ecs::SystemFiller<components::Transform, components::Bound>

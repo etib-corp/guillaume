@@ -178,33 +178,34 @@ namespace guillaume::systems
 		ecs::ComponentRegistry &componentRegistry,
 		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
 	{
-		if (!componentRegistry.hasComponent<components::Hover>(
+		if (!componentRegistry.hasComponent<components::Interaction>(
 				entityIdentifier)) {
 			return;
 		}
 
-		auto &hover =
-			componentRegistry.getComponent<components::Hover>(entityIdentifier);
+		auto &interaction =
+			componentRegistry.getComponent<components::Interaction>(
+				entityIdentifier);
 
 		if (isInside) {
-			if (hover.isHovered()) {
+			if (interaction.isHovered()) {
 				return;
 			}
 
-			hover.setHovered(true);
-			const auto onHover = hover.getOnHoverHandler();
+			interaction.setHovered(true);
+			const auto onHover = interaction.getOnHoverHandler();
 			if (onHover) {
 				onHover();
 			}
 			return;
 		}
 
-		if (!hover.isHovered()) {
+		if (!interaction.isHovered()) {
 			return;
 		}
 
-		hover.setHovered(false);
-		const auto onUnhover = hover.getOnUnhoverHandler();
+		interaction.setHovered(false);
+		const auto onUnhover = interaction.getOnUnhoverHandler();
 		if (onUnhover) {
 			onUnhover();
 		}
@@ -239,13 +240,14 @@ namespace guillaume::systems
 
 		_evaluatedClickEntities.insert(entityIdentifier);
 
-		if (!componentRegistry.hasComponent<components::Click>(
+		if (!componentRegistry.hasComponent<components::Interaction>(
 				entityIdentifier)) {
 			return;
 		}
 
-		auto &click =
-			componentRegistry.getComponent<components::Click>(entityIdentifier);
+		auto &interaction =
+			componentRegistry.getComponent<components::Interaction>(
+				entityIdentifier);
 
 		utility::event::MouseButtonEvent::MouseButtonsState
 			currentButtonStates = _pendingClickEvent->getButtonsState();
@@ -266,21 +268,21 @@ namespace guillaume::systems
 			const bool isPressed = currentButtonStates.test(buttonIndex);
 
 			if (isPressed && isInside) {
-				click.setPressedInside(button, true);
-				click.setClicked(button, true);
+				interaction.setPressedInside(button, true);
+				interaction.setClicked(button, true);
 				const auto &onClickHandler =
-					click.getOnClickHandlers().at(button);
+					interaction.getOnClickHandlers().at(button);
 				if (onClickHandler) {
 					onClickHandler(_pendingClickEvent->getPosition());
 				}
 				break;
 			}
 
-			if (!isPressed && click.isPressedInside(button) && isInside) {
-				click.setPressedInside(button, false);
-				click.setClicked(button, false);
+			if (!isPressed && interaction.isPressedInside(button) && isInside) {
+				interaction.setPressedInside(button, false);
+				interaction.setClicked(button, false);
 				const auto &onReleaseHandler =
-					click.getOnReleaseHandlers().at(button);
+					interaction.getOnReleaseHandlers().at(button);
 				if (onReleaseHandler) {
 					onReleaseHandler(_pendingClickEvent->getPosition());
 				}
@@ -288,8 +290,8 @@ namespace guillaume::systems
 			}
 
 			if (!isPressed) {
-				click.setClicked(button, false);
-				click.setPressedInside(button, false);
+				interaction.setClicked(button, false);
+				interaction.setPressedInside(button, false);
 			}
 		}
 	}
@@ -301,12 +303,11 @@ namespace guillaume::systems
 		getLogger().debug("Updating Interaction system for entity "
 						  + std::to_string(entityIdentifier));
 
-		const bool hasHover =
-			componentRegistry.hasComponent<components::Hover>(entityIdentifier);
-		const bool hasClick =
-			componentRegistry.hasComponent<components::Click>(entityIdentifier);
+		const bool hasInteraction =
+			componentRegistry.hasComponent<components::Interaction>(
+				entityIdentifier);
 
-		if (!hasHover && !hasClick) {
+		if (!hasInteraction) {
 			return;
 		}
 
@@ -350,7 +351,11 @@ namespace guillaume::systems
 			componentRegistry.getComponent<components::Transform>(
 				entityIdentifier);
 		const auto pose = transform.getPose();
-		const auto size = bound.getSize();
+		const auto accessibilityMargin =
+			componentRegistry
+				.getComponent<components::Interaction>(entityIdentifier)
+				.getAccessibilityMargin();
+		const auto size = bound.getSize() + accessibilityMargin;
 
 		const auto trueCenter =
 			computeEntityBoundCenter(pose.getPosition(), size);
