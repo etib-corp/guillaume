@@ -35,8 +35,8 @@ namespace guillaume::components
 	class Borders: public ecs::Component
 	{
 		public:
-		using BorderRadius = std::float_t;	  ///< Type representing the border
-											  ///< radius of the border
+		using BorderRadius = float;	   ///< Type representing the border
+									   ///< radius of the border
 
 		private:
 		BorderRadius

@@ -60,7 +60,9 @@ namespace guillaume::systems
 			.setFontSize(textComponent.getFontSize())
 			.setFontPath(_defaultFontPath);
 
-		boundComponent.setSize(_renderer.measureText(text));
+		auto textSize = _renderer.measureText(text);
+
+		boundComponent.setWidth(textSize[0]).setHeight(textSize[1]);
 	}
 
 }	 // namespace guillaume::systems

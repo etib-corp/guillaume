@@ -55,10 +55,11 @@ namespace guillaume::entities
 				_panel;	   ///< Unique pointer to the Panel entity being built
 			utility::graphic::PoseF _pose;	  ///< Pose of the panel to be used
 											  ///< (position, rotation, scale)
+			std::vector<ecs::Entity::Identifier>
+				_children;	  ///< Child entities to be attached to the panel
 			utility::graphic::Color32Bit
-				_color;	   ///< Color of the panel to be used (RGBA)
-			std::float_t
-				_borderRadius;	  ///< Border radius to be used for the panel
+				_color;				///< Color of the panel to be used (RGBA)
+			float _borderRadius;	///< Border radius to be used for the panel
 
 			public:
 			/**
@@ -97,6 +98,15 @@ namespace guillaume::entities
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
+			 * @brief Set the child entities to be attached to the panel for the
+			 * Panel entity.
+			 * @param children The child entities to attach to the panel.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withChildren(
+				const std::vector<ecs::Entity::Identifier> &children);
+
+			/**
 			 * @brief Set the color of the panel to be used for the Panel
 			 * entity.
 			 * @param color The color of the panel to set.
@@ -110,7 +120,7 @@ namespace guillaume::entities
 			 * @param borderRadius The border radius of the panel to set.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withBorderRadius(std::float_t borderRadius);
+			Builder &withBorderRadius(float borderRadius);
 		};
 
 		/**
@@ -135,11 +145,13 @@ namespace guillaume::entities
 			 * @param builder The builder instance used to configure and create
 			 * the default panel.
 			 * @param pose The pose to set for the default panel.
+			 * @param children The child entities to attach to the default
+			 * panel.
 			 * @return The entity identifier of the newly created panel entity.
 			 */
-			ecs::Entity::Identifier
-				makeDefaultPanel(Builder &builder,
-								 const utility::graphic::PoseF &pose);
+			ecs::Entity::Identifier makeDefaultPanel(
+				Builder &builder, const utility::graphic::PoseF &pose,
+				const std::vector<ecs::Entity::Identifier> &children);
 
 			/**
 			 * @brief Create a color panel entity using the builder.
@@ -147,13 +159,14 @@ namespace guillaume::entities
 			 * the color panel.
 			 * @param pose The pose to set for the color panel.
 			 * @param color The color to set for the color panel.
+			 * @param children The child entities to attach to the color panel.
 			 * @return The entity identifier of the newly created color panel
 			 * entity.
 			 */
-			ecs::Entity::Identifier
-				makeColorPanel(Builder &builder,
-							   const utility::graphic::PoseF &pose,
-							   const utility::graphic::Color32Bit &color);
+			ecs::Entity::Identifier makeColorPanel(
+				Builder &builder, const utility::graphic::PoseF &pose,
+				const utility::graphic::Color32Bit &color,
+				const std::vector<ecs::Entity::Identifier> &children);
 		};
 
 		private:
@@ -163,6 +176,12 @@ namespace guillaume::entities
 		utility::graphic::Color32Bit
 			_color;	   ///< Color to be used for creating panel entities
 					   ///< (RGBA)
+		float _borderRadius;	///< Border radius to be used for creating panel
+								///< entities
+		std::vector<ecs::Entity::Identifier>
+			_children;	  ///< Child entities to be attached to created panel
+						  ///< entities
+
 		public:
 		/**
 		 * @brief Default constructor for the Panel component.
@@ -172,12 +191,13 @@ namespace guillaume::entities
 		 * (position, rotation, scale).
 		 * @param color The color to initialize the Panel component with (RGBA).
 		 * @param borderRadius The border radius to initialize the Panel
-		 * component with.
+		 * @param children The child entities to attach to the panel for this
+		 * Panel component with.
 		 */
 		Panel(ecs::ComponentRegistry &registry,
 			  const utility::graphic::PoseF &pose,
-			  const utility::graphic::Color32Bit &color,
-			  std::float_t borderRadius);
+			  const utility::graphic::Color32Bit &color, float borderRadius,
+			  const std::vector<ecs::Entity::Identifier> &children);
 
 		/**
 		 * @brief Default destructor for the Panel component.
@@ -204,6 +224,15 @@ namespace guillaume::entities
 		 * @param borderRadius The new border radius to set for the panel.
 		 * @return Reference to this Panel for chaining.
 		 */
-		Panel &setBorderRadius(std::float_t borderRadius);
+		Panel &setBorderRadius(float borderRadius);
+
+		/**
+		 * @brief Set the child entities to be attached to the panel for this
+		 * Panel entity.
+		 * @param children The new child entities to attach to the panel.
+		 * @return Reference to this Panel for chaining.
+		 */
+		Panel &
+			setChildren(const std::vector<ecs::Entity::Identifier> &children);
 	};
 };	  // namespace guillaume::entities

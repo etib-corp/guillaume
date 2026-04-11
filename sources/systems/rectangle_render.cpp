@@ -237,15 +237,16 @@ namespace guillaume::systems
 		const auto pose		   = transformComponent.getPose();
 		const auto position	   = pose.getPosition();
 		const auto orientation = pose.getOrientation();
-		const auto bound	   = boundComponent.getSize();
+		const auto width	   = boundComponent.getWidth();
+		const auto height	   = boundComponent.getHeight();
 		const auto color	   = colorComponent.getColor();
 		const float radius	   = extractAverageRadius(bordersComponent);
 
 		const utility::graphic::PositionF center(
-			position[0], position[1] - (bound[1] / 2.0f), position[2]);
+			position[0], position[1] - (height / 2.0f), position[2]);
 		const auto roundedVertices = buildRoundedRectVertices(
 			center, orientation, utility::math::Vector2F({ 1.0f, 1.0f }),
-			utility::math::Vector2F({ bound[0], bound[1] }), radius);
+			utility::math::Vector2F({ (float)width, (float)height }), radius);
 
 		_vertices.clear();
 		buildTriangleFanVertices(center, roundedVertices, color);

@@ -77,7 +77,7 @@ namespace
 		{
 		}
 
-		utility::math::Vector<std::float_t, 2>
+		utility::math::Vector<float, 2>
 			measureText(const utility::graphic::Text &) override
 		{
 			return { 0.0f, 0.0f };
@@ -136,7 +136,7 @@ namespace guillaume::systems::tests
 				20.0f * (3.14159265358979323846f / 180.0f),
 				15.0f * (3.14159265358979323846f / 180.0f),
 				30.0f * (3.14159265358979323846f / 180.0f))));
-		bound.setSize({ 136.0f, 136.0f });
+		bound.setWidth(136).setHeight(136);
 
 		bool entered = false;
 		bool exited	 = false;
@@ -191,7 +191,7 @@ namespace guillaume::systems::tests
 				20.0f * (3.14159265358979323846f / 180.0f),
 				15.0f * (3.14159265358979323846f / 180.0f),
 				30.0f * (3.14159265358979323846f / 180.0f))));
-		bound.setSize({ 136.0f, 136.0f });
+		bound.setWidth(136).setHeight(136);
 
 		bool clickCalled   = false;
 		bool releaseCalled = false;

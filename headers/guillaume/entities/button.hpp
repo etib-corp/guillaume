@@ -55,15 +55,9 @@ namespace guillaume::entities
 	{
 		public:
 		/**
-		 * @brief State of a toggle button, which can be either Default or
-		 * Selected.
-		 */
-		enum class ToggleState { Default, Selected };
-
-		/**
 		 * @brief Color style of the button.
 		 */
-		enum class ColorStyle { Elevated, Filled, Tonal, Outlined, Text };
+		enum class Color { Elevated, Filled, Tonal, Outlined, Text };
 
 		/**
 		 * @brief Shape of the button.
@@ -74,12 +68,6 @@ namespace guillaume::entities
 		 * @brief Size of the button.
 		 */
 		enum class Size { ExtraSmall, Small, Medium, Large, ExtraLarge };
-
-		/**
-		 * @brief Morph state of the button, which can be Default, Pressed, or
-		 * Selected.
-		 */
-		enum class MorphState { Default, Pressed, Selected };
 
 		/**
 		 * @brief Builder used to configure and create `Button` entities.
@@ -96,12 +84,12 @@ namespace guillaume::entities
 				_labelIdentifier;	 ///< Entity identifier of the prebuilt
 									 ///< label to attach to the button
 			std::function<void(void)>
-				_onClick;				 ///< Click event handler for the button
-			ToggleState _toggleState;	 ///< Current toggle state
-			ColorStyle _colorStyle;		 ///< Button color style
-			Shape _shape;				 ///< Button shape
-			Size _size;					 ///< Button size
-			MorphState _morphState;		 ///< Current morph state
+				_onClick;		  ///< Click event handler for the button
+			bool _isToggle;		  ///< Whether the button is a toggle button
+			Color _colorStyle;	  ///< Button color style
+			Shape _shape;		  ///< Button shape
+			Size _size;			  ///< Button size
+			bool _isMorph;		  ///< Whether the button is in a morph state
 
 			public:
 			/**
@@ -154,18 +142,18 @@ namespace guillaume::entities
 			Builder &withOnClick(const std::function<void(void)> &onClick);
 
 			/**
-			 * @brief Set the toggle state of the button.
-			 * @param toggleState The new toggle state to set.
+			 * @brief Set if the button is a toggle button.
+			 * @param isToggle Whether the button should be a toggle button.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withToggleState(const ToggleState &toggleState);
+			Builder &withToggle(const bool &isToggle);
 
 			/**
 			 * @brief Set the color style of the button.
 			 * @param colorStyle The new color style to set.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withColorStyle(const ColorStyle &colorStyle);
+			Builder &withColorStyle(const Color &colorStyle);
 
 			/**
 			 * @brief Set the shape of the button.
@@ -183,10 +171,10 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Set the morph state of the button.
-			 * @param morphState The new morph state to set.
+			 * @param isMorph The new morph state to set.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withMorphState(const MorphState &morphState);
+			Builder &withMorph(const bool &isMorph);
 		};
 
 		/**
@@ -263,11 +251,11 @@ namespace guillaume::entities
 		ecs::Entity::Identifier _labelIdentifier;	 ///< Entity identifier of
 													 ///< the prebuilt label to
 													 ///< attach to the button
-		ToggleState _toggleState;	 ///< Current toggle state of the button
-		ColorStyle _colorStyle;		 ///< Color style of the button
-		Shape _shape;				 ///< Shape of the button
-		Size _size;					 ///< Size of the button
-		MorphState _morphState;		 ///< Current morph state of the button
+		bool _isToggle;		  ///< Whether the button is a toggle button
+		Color _colorStyle;	  ///< Color style of the button
+		Shape _shape;		  ///< Shape of the button
+		Size _size;			  ///< Size of the button
+		bool _isMorph;		  ///< Whether the button is in a morph state
 		std::function<void(void)>
 			_onClick;	 ///< Click event handler for the button
 
@@ -298,6 +286,33 @@ namespace guillaume::entities
 		void leftClickReleaseHandler(
 			utility::event::MouseMotionEvent::MousePosition mousePosition);
 
+		/**
+		 * @brief Calculate the pose for the button's text component when no
+		 * icon is present. This method computes the appropriate position and
+		 * orientation for the text based on the button's current properties
+		 * and returns it as a PoseF object.
+		 * @return The calculated PoseF for the text component without an icon.
+		 */
+		utility::graphic::PoseF calculTextPoseWithoutIcon(void);
+
+		/**
+		 * @brief Calculate the pose for the button's text component when an
+		 * icon is present. This method computes the appropriate position and
+		 * orientation for the text based on the button's current properties,
+		 * including the presence of an icon, and returns it as a PoseF object.
+		 * @return The calculated PoseF for the text component with an icon.
+		 */
+		utility::graphic::PoseF calculTextPoseWithIcon(void);
+
+		/**
+		 * @brief Calculate the width of the button based on its size and
+		 * other properties. This method determines the appropriate width for
+		 * the button by considering factors such as the button's size category
+		 * and any additional margins or padding that may be required.
+		 * @return The calculated width of the button.
+		 */
+		std::size_t calculWidth(void);
+
 		public:
 		/**
 		 * @brief Default constructor for the Button entity.
@@ -307,18 +322,18 @@ namespace guillaume::entities
 		 * attach to the button.
 		 * @param labelIdentifier The entity identifier of the prebuilt label
 		 * to attach to the button.
-		 * @param toggleState Initial toggle state for the button.
+		 * @param isToggle Whether the button should be a toggle button.
 		 * @param colorStyle Initial color style for the button.
 		 * @param shape Initial shape for the button.
 		 * @param size Initial size for the button.
-		 * @param morphState Initial morph state for the button.
+		 * @param isMorph Initial morph state for the button.
 		 * @param onClick Click event handler for the button.
 		 */
 		Button(ecs::ComponentRegistry &registry,
 			   ecs::Entity::Identifier iconIdentifier,
-			   ecs::Entity::Identifier labelIdentifier, ToggleState toggleState,
-			   ColorStyle colorStyle, Shape shape, Size size,
-			   MorphState morphState, std::function<void(void)> onClick);
+			   ecs::Entity::Identifier labelIdentifier, bool isToggle,
+			   Color colorStyle, Shape shape, Size size, bool isMorph,
+			   std::function<void(void)> onClick);
 
 		/**
 		 * @brief Default destructor for the Button entity.
@@ -338,22 +353,24 @@ namespace guillaume::entities
 		 * @param labelIdentifier The entity identifier of the prebuilt label
 		 * to attach to the button.
 		 * @return Reference to this Button for chaining.
+		 * @throws std::runtime_error if the provided labelIdentifier does not
+		 * correspond to a valid Text entity in the registry.
 		 */
 		Button &setLabelIdentifier(ecs::Entity::Identifier labelIdentifier);
 
 		/**
-		 * @brief Set the toggle state of the button.
-		 * @param toggleState The new toggle state to set.
+		 * @brief Set if the button is a toggle button.
+		 * @param isToggle Whether the button should be a toggle button.
 		 * @return Reference to this Button for chaining.
 		 */
-		Button &setToggleState(const ToggleState &toggleState);
+		Button &setIsToggle(const bool &isToggle);
 
 		/**
 		 * @brief Set the color style of the button.
 		 * @param colorStyle The new color style to set.
 		 * @return Reference to this Button for chaining.
 		 */
-		Button &setColorStyle(const ColorStyle &colorStyle);
+		Button &setColorStyle(const Color &colorStyle);
 
 		/**
 		 * @brief Set the shape of the button.
@@ -371,10 +388,10 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Set the morph state of the button.
-		 * @param morphState The new morph state to set.
+		 * @param isMorph The new morph state to set.
 		 * @return Reference to this Button for chaining.
 		 */
-		Button &setMorphState(const MorphState &morphState);
+		Button &setMorph(const bool &isMorph);
 
 		/**
 		 * @brief Set the click event handler for the button.
@@ -382,14 +399,6 @@ namespace guillaume::entities
 		 * @return Reference to this Button for chaining.
 		 */
 		Button &setOnClick(const std::function<void(void)> &onClick);
-
-		/**
-		 * @brief Set the click event handler for the button using an rvalue
-		 * reference.
-		 * @param onClick The new click event handler to set.
-		 * @return Reference to this Button for chaining.
-		 */
-		Button &setOnClick(std::function<void(void)> &&onClick);
 	};
 
 }	 // namespace guillaume::entities

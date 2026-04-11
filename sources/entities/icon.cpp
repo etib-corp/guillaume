@@ -101,10 +101,6 @@ namespace guillaume::entities
 			   const Style &style)
 		: ecs::EntityFiller<components::Transform, components::Bound,
 							components::Glyph, components::Color>(registry)
-		, _glyphName(glyphName)
-		, _size(size)
-		, _color(color)
-		, _style(style)
 	{
 		setGlyphName(glyphName);
 		setSize(size);
@@ -130,7 +126,8 @@ namespace guillaume::entities
 		_size = size;
 		getComponentRegistry()
 			.getComponent<components::Bound>(getIdentifier())
-			.setSize({ size, size });
+			.setWidth(size)
+			.setHeight(size);
 		return *this;
 	}
 

@@ -79,7 +79,7 @@ namespace guillaume::systems
 		glyph.setGlyphCode(
 			_glyphCode.count(glyphName) > 0 ? _glyphCode[glyphName] : '?');
 		glyph.setFontPath(_defaultFontPath);
-		glyph.setSize(boundComponent.getSize().y);
+		glyph.setSize(boundComponent.getHeight());
 		glyph.setColor(colorComponent.getColor());
 
 		_renderer.drawGlyph(glyph, transformComponent.getPose());
