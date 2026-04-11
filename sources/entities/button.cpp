@@ -46,9 +46,9 @@ namespace guillaume::entities
 			this->getComponentRegistry(), _iconIdendifier, _labelIdentifier,
 			_isToggle, _colorStyle, _shape, _size, _isMorph, _onClick);
 
-		ecs::Entity::Identifier _identifier = _button->getIdentifier();
+		ecs::Entity::Identifier identifier = _button->getIdentifier();
 		this->getEntityRegistry().addEntity(std::move(_button));
-		return _identifier;
+		return identifier;
 	}
 
 	void Button::Builder::reset(void)
@@ -434,17 +434,14 @@ namespace guillaume::entities
 
 	void Button::applyMaterialState(void)
 	{
-		auto &hover = getComponentRegistry().getComponent<components::Hover>(
-			getIdentifier());
-		auto &click = getComponentRegistry().getComponent<components::Click>(
-			getIdentifier());
+		auto &interaction = getComponentRegistry()
+			.getComponent<components::Interaction>(getIdentifier());
 
 		auto &buttonColor =
-			getComponentRegistry().getComponent<components::Color>(
-				getIdentifier());
+			getComponentRegistry().getComponent<components::Color>(getIdentifier());
 		buttonColor.setColor(getContainerColor(
-			_colorStyle, hover.isHovered(),
-			click.isClicked(
+			_colorStyle, interaction.isHovered(),
+			interaction.isClicked(
 				utility::event::MouseButtonEvent::MouseButton::Left)));
 
 		auto &buttonBorders =
@@ -453,7 +450,7 @@ namespace guillaume::entities
 		const auto restingShape = getRestingShape(_shape, _isToggle, _isMorph);
 		buttonBorders.setBorderRadius(getBorderRadius(
 			_size, restingShape,
-			click.isClicked(
+			interaction.isClicked(
 				utility::event::MouseButtonEvent::MouseButton::Left)));
 
 		if (_iconIdentifier != ecs::Entity::InvalidIdentifier) {
@@ -525,7 +522,7 @@ namespace guillaume::entities
 				   Color colorStyle, Shape shape, Size size, bool isMorph,
 				   std::function<void(void)> onClick)
 		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Hover, components::Click,
+							components::Interaction,
 							components::Color, components::Borders>(registry)
 	{
 		// For testing purposes, we set the pose of the button to a fixed value.
@@ -545,14 +542,10 @@ namespace guillaume::entities
 		setSize(size);
 		setMorph(isMorph);
 		setOnClick(onClick);
-
 		getComponentRegistry()
-			.getComponent<components::Hover>(getIdentifier())
+			.getComponent<components::Interaction>(getIdentifier())
 			.setOnHoverHandler(std::bind(&Button::hoverHandler, this))
-			.setOnUnhoverHandler(std::bind(&Button::unHoverHandler, this));
-
-		getComponentRegistry()
-			.getComponent<components::Click>(getIdentifier())
+			.setOnUnhoverHandler(std::bind(&Button::unHoverHandler, this))
 			.setOnClickHandler(
 				utility::event::MouseButtonEvent::MouseButton::Left,
 				std::bind(&Button::leftClickPressHandler, this,

@@ -33,9 +33,8 @@
 
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
-#include "guillaume/components/click.hpp"
 #include "guillaume/components/color.hpp"
-#include "guillaume/components/hover.hpp"
+#include "guillaume/components/interaction.hpp"
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/entities/icon.hpp"
@@ -50,8 +49,8 @@ namespace guillaume::entities
 	 */
 	class Button:
 		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Hover, components::Click,
-								 components::Color, components::Borders>
+								 components::Interaction, components::Color,
+								 components::Borders>
 	{
 		public:
 		/**

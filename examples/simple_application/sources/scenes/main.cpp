@@ -1,9 +1,9 @@
 #include "scenes/main.hpp"
 
-#include <guillaume/entities/panel.hpp>
-#include <guillaume/entities/icon.hpp>
-#include <guillaume/entities/text.hpp>
 #include <guillaume/entities/button.hpp>
+#include <guillaume/entities/icon.hpp>
+#include <guillaume/entities/panel.hpp>
+#include <guillaume/entities/text.hpp>
 
 namespace simple_application::scenes
 {
@@ -13,33 +13,26 @@ namespace simple_application::scenes
 		: guillaume::Scene(localStorage, sessionStorage)
 	{
 		getLogger().info("Main scene created");
+
 		auto &panelBuilder =
-			getBuilderManager()
-				.getBuilder<guillaume::entities::Panel::Builder>();
+			getBuilderManager().getBuilder<guillaume::entities::Panel::Builder>();
 		auto &panelDirector =
-			getDirectorManager()
-				.getDirector<guillaume::entities::Panel::Director>();
+			getDirectorManager().getDirector<guillaume::entities::Panel::Director>();
 
 		auto &iconBuilder =
-			getBuilderManager()
-				.getBuilder<guillaume::entities::Icon::Builder>();
+			getBuilderManager().getBuilder<guillaume::entities::Icon::Builder>();
 		auto &iconDirector =
-			getDirectorManager()
-				.getDirector<guillaume::entities::Icon::Director>();
+			getDirectorManager().getDirector<guillaume::entities::Icon::Director>();
 
 		auto &textBuilder =
-			getBuilderManager()
-				.getBuilder<guillaume::entities::Text::Builder>();
+			getBuilderManager().getBuilder<guillaume::entities::Text::Builder>();
 		auto &textDirector =
-			getDirectorManager()
-				.getDirector<guillaume::entities::Text::Director>();
+			getDirectorManager().getDirector<guillaume::entities::Text::Director>();
 
 		auto &buttonBuilder =
-			getBuilderManager()
-				.getBuilder<guillaume::entities::Button::Builder>();
+			getBuilderManager().getBuilder<guillaume::entities::Button::Builder>();
 		auto &buttonDirector =
-			getDirectorManager()
-				.getDirector<guillaume::entities::Button::Director>();
+			getDirectorManager().getDirector<guillaume::entities::Button::Director>();
 
 		panelDirector.makeColorPanel(
 			panelBuilder,
@@ -60,4 +53,4 @@ namespace simple_application::scenes
 	{
 	}
 
-}	 // namespace simple_application::scenes
+} 	 // namespace simple_application::scenes

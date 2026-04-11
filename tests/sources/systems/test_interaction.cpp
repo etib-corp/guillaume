@@ -25,8 +25,7 @@
 #include <cmath>
 
 #include <guillaume/components/bound.hpp>
-#include <guillaume/components/click.hpp>
-#include <guillaume/components/hover.hpp>
+#include <guillaume/components/interaction.hpp>
 #include <guillaume/components/transform.hpp>
 #include <guillaume/ecs/component_registry.hpp>
 #include <guillaume/ecs/entity_filler.hpp>
@@ -97,14 +96,13 @@ namespace
 	class InteractionEntity final:
 		public guillaume::ecs::EntityFiller<
 			guillaume::components::Transform, guillaume::components::Bound,
-			guillaume::components::Hover, guillaume::components::Click>
+			guillaume::components::Interaction>
 	{
 		public:
 		explicit InteractionEntity(guillaume::ecs::ComponentRegistry &registry)
 			: guillaume::ecs::EntityFiller<guillaume::components::Transform,
 										   guillaume::components::Bound,
-										   guillaume::components::Hover,
-										   guillaume::components::Click>(
+									   guillaume::components::Interaction>(
 				  registry)
 		{
 		}
@@ -128,7 +126,7 @@ namespace guillaume::systems::tests
 		auto &bound =
 			componentRegistry.getComponent<components::Bound>(identifier);
 		auto &hover =
-			componentRegistry.getComponent<components::Hover>(identifier);
+			componentRegistry.getComponent<components::Interaction>(identifier);
 
 		transform.setPose(utility::graphic::PoseF(
 			utility::graphic::PositionF(300.0f, 300.0f, 0.0f),
@@ -183,7 +181,7 @@ namespace guillaume::systems::tests
 		auto &bound =
 			componentRegistry.getComponent<components::Bound>(identifier);
 		auto &click =
-			componentRegistry.getComponent<components::Click>(identifier);
+			componentRegistry.getComponent<components::Interaction>(identifier);
 
 		transform.setPose(utility::graphic::PoseF(
 			utility::graphic::PositionF(300.0f, 300.0f, 0.0f),
