@@ -287,6 +287,11 @@ namespace guillaume::entities
 			utility::event::MouseMotionEvent::MousePosition mousePosition);
 
 		/**
+		 * @brief Apply the current Material button state to components.
+		 */
+		void applyMaterialState(void);
+
+		/**
 		 * @brief Calculate the pose for the button's text component when no
 		 * icon is present. This method computes the appropriate position and
 		 * orientation for the text based on the button's current properties

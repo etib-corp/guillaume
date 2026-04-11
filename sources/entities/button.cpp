@@ -22,6 +22,8 @@
 
 #include "guillaume/entities/button.hpp"
 
+#include "guillaume/theme.hpp"
+
 #include <utility>
 
 namespace guillaume::entities
@@ -40,12 +42,11 @@ namespace guillaume::entities
 
 	ecs::Entity::Identifier Button::Builder::registerEntity(void)
 	{
-		ecs::Entity::Identifier _identifier = ecs::Entity::InvalidIdentifier;
-
 		_button = std::make_unique<Button>(
 			this->getComponentRegistry(), _iconIdendifier, _labelIdentifier,
 			_isToggle, _colorStyle, _shape, _size, _isMorph, _onClick);
 
+		ecs::Entity::Identifier _identifier = _button->getIdentifier();
 		this->getEntityRegistry().addEntity(std::move(_button));
 		return _identifier;
 	}
@@ -177,24 +178,46 @@ namespace guillaume::entities
 	static float getBorderRadius(Button::Size size, Button::Shape shape,
 								 bool isPressed)
 	{
+		if (isPressed) {
+			switch (size) {
+				case Button::Size::ExtraSmall:
+				case Button::Size::Small:
+					return 8.0f;
+				case Button::Size::Medium:
+					return 12.0f;
+				case Button::Size::Large:
+				case Button::Size::ExtraLarge:
+					return 16.0f;
+			}
+		}
+
 		if (shape == Button::Shape::Round) {
 			return 100.0f;
 		}
-		if (shape == Button::Shape::Square) {
-			switch (size) {
-				case Button::Size::ExtraSmall:
-					return (isPressed) ? 8.0f : 12.0f;
-				case Button::Size::Small:
-					return (isPressed) ? 8.0f : 12.0f;
-				case Button::Size::Medium:
-					return (isPressed) ? 12.0f : 16.0f;
-				case Button::Size::Large:
-					return (isPressed) ? 16.0f : 28.0f;
-				case Button::Size::ExtraLarge:
-					return (isPressed) ? 16.0f : 28.0f;
-			}
+
+		switch (size) {
+			case Button::Size::ExtraSmall:
+			case Button::Size::Small:
+				return 12.0f;
+			case Button::Size::Medium:
+				return 16.0f;
+			case Button::Size::Large:
+			case Button::Size::ExtraLarge:
+				return 28.0f;
 		}
-		return 0.0f;
+
+		return 12.0f;
+	}
+
+	static Button::Shape getRestingShape(Button::Shape baseShape, bool isToggle,
+										 bool isSelected)
+	{
+		if (!isToggle || !isSelected) {
+			return baseShape;
+		}
+
+		return (baseShape == Button::Shape::Round) ? Button::Shape::Square
+												   : Button::Shape::Round;
 	}
 
 	static std::size_t getFontSize(Button::Size size)
@@ -281,25 +304,169 @@ namespace guillaume::entities
 		}
 	}
 
+	static utility::graphic::Color32Bit
+		getContainerColor(Button::Color style, bool isHovered, bool isPressed)
+	{
+		const auto &scheme = guillaume::defaultTheme.getLightScheme();
+
+		auto applyStateAlpha = [](const utility::graphic::Color32Bit &color,
+								 std::uint8_t alpha) {
+			return utility::graphic::Color32Bit(color.getRed(), color.getGreen(),
+											 color.getBlue(), alpha);
+		};
+
+		switch (style) {
+			case Button::Color::Elevated:
+				if (isPressed) {
+					return applyStateAlpha(
+						scheme
+						.getColor(SchemeColorRole::SurfaceContainerHigh)
+							.getColor(), 220U);
+				}
+				if (isHovered) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::SurfaceContainer)
+							.getColor(), 235U);
+				}
+				return scheme.getColor(SchemeColorRole::SurfaceContainerLow)
+					.getColor();
+			case Button::Color::Filled:
+				if (isPressed) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::Primary).getColor(),
+						220U);
+				}
+				if (isHovered) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::Primary).getColor(),
+						235U);
+				}
+				return scheme.getColor(SchemeColorRole::Primary).getColor();
+			case Button::Color::Tonal:
+				if (isPressed) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::SecondaryContainer)
+							.getColor(), 220U);
+				}
+				if (isHovered) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::SecondaryContainer)
+							.getColor(), 235U);
+				}
+				return scheme.getColor(SchemeColorRole::SecondaryContainer)
+					.getColor();
+			case Button::Color::Outlined:
+				if (isPressed) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::OnSurfaceVariant)
+							.getColor(), 64U);
+				}
+				if (isHovered) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::OnSurfaceVariant)
+							.getColor(), 32U);
+				}
+				return utility::graphic::Color32Bit(0, 0, 0, 0);
+			case Button::Color::Text:
+				if (isPressed) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::Primary).getColor(),
+						48U);
+				}
+				if (isHovered) {
+					return applyStateAlpha(
+						scheme.getColor(SchemeColorRole::Primary).getColor(),
+						24U);
+				}
+				return utility::graphic::Color32Bit(0, 0, 0, 0);
+		}
+		return utility::graphic::Color32Bit(255, 241, 237, 255);
+	}
+
+	static utility::graphic::Color32Bit getContentColor(Button::Color style)
+	{
+		const auto &scheme = guillaume::defaultTheme.getLightScheme();
+
+		switch (style) {
+			case Button::Color::Elevated:
+				return scheme.getColor(SchemeColorRole::Primary).getColor();
+			case Button::Color::Filled:
+				return scheme.getColor(SchemeColorRole::OnPrimary).getColor();
+			case Button::Color::Tonal:
+				return scheme.getColor(SchemeColorRole::OnSecondaryContainer)
+					.getColor();
+			case Button::Color::Outlined:
+				return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
+					.getColor();
+			case Button::Color::Text:
+				return scheme.getColor(SchemeColorRole::Primary).getColor();
+		}
+		return scheme.getColor(SchemeColorRole::Primary).getColor();
+	}
+
 	void Button::hoverHandler(void)
 	{
+		applyMaterialState();
 	}
 
 	void Button::unHoverHandler(void)
 	{
+		applyMaterialState();
 	}
 
 	void Button::leftClickPressHandler(
 		utility::event::MouseMotionEvent::MousePosition mousePosition)
 	{
-		if (_onClick) {
-			_onClick();
-		}
+		applyMaterialState();
 	}
 
 	void Button::leftClickReleaseHandler(
 		utility::event::MouseMotionEvent::MousePosition mousePosition)
 	{
+		if (_isToggle) {
+			_isMorph = !_isMorph;
+		}
+		applyMaterialState();
+		if (_onClick) {
+			_onClick();
+		}
+	}
+
+	void Button::applyMaterialState(void)
+	{
+		auto &hover = getComponentRegistry().getComponent<components::Hover>(
+			getIdentifier());
+		auto &click = getComponentRegistry().getComponent<components::Click>(
+			getIdentifier());
+
+		auto &buttonColor =
+			getComponentRegistry().getComponent<components::Color>(
+				getIdentifier());
+		buttonColor.setColor(getContainerColor(
+			_colorStyle, hover.isHovered(),
+			click.isClicked(
+				utility::event::MouseButtonEvent::MouseButton::Left)));
+
+		auto &buttonBorders =
+			getComponentRegistry().getComponent<components::Borders>(
+				getIdentifier());
+		const auto restingShape = getRestingShape(_shape, _isToggle, _isMorph);
+		buttonBorders.setBorderRadius(getBorderRadius(
+			_size, restingShape,
+			click.isClicked(
+				utility::event::MouseButtonEvent::MouseButton::Left)));
+
+		if (_iconIdentifier != ecs::Entity::InvalidIdentifier) {
+			getComponentRegistry()
+				.getComponent<components::Color>(_iconIdentifier)
+				.setColor(getContentColor(_colorStyle));
+		}
+
+		if (_labelIdentifier != ecs::Entity::InvalidIdentifier) {
+			getComponentRegistry()
+				.getComponent<components::Color>(_labelIdentifier)
+				.setColor(getContentColor(_colorStyle));
+		}
 	}
 
 	utility::graphic::PoseF Button::calculTextPoseWithoutIcon(void)
@@ -379,7 +546,7 @@ namespace guillaume::entities
 		setMorph(isMorph);
 		setOnClick(onClick);
 
-		getComponentRegistry()	
+		getComponentRegistry()
 			.getComponent<components::Hover>(getIdentifier())
 			.setOnHoverHandler(std::bind(&Button::hoverHandler, this))
 			.setOnUnhoverHandler(std::bind(&Button::unHoverHandler, this));
@@ -428,6 +595,8 @@ namespace guillaume::entities
 			.getComponent<components::Bound>(getIdentifier())
 			.setWidth(calculWidth());
 
+		applyMaterialState();
+
 		return *this;
 	}
 
@@ -454,24 +623,29 @@ namespace guillaume::entities
 			.getComponent<components::Bound>(getIdentifier())
 			.setWidth(calculWidth());
 
+		applyMaterialState();
+
 		return *this;
 	}
 
 	Button &Button::setIsToggle(const bool &isToggle)
 	{
 		_isToggle = isToggle;
+		applyMaterialState();
 		return *this;
 	}
 
 	Button &Button::setColorStyle(const Color &colorStyle)
 	{
 		_colorStyle = colorStyle;
+		applyMaterialState();
 		return *this;
 	}
 
 	Button &Button::setShape(const Shape &shape)
 	{
 		_shape = shape;
+		applyMaterialState();
 
 		return *this;
 	}
@@ -485,12 +659,15 @@ namespace guillaume::entities
 			.setWidth(calculWidth())
 			.setHeight(getButtonHeight(size));
 
+		applyMaterialState();
+
 		return *this;
 	}
 
 	Button &Button::setMorph(const bool &isMorph)
 	{
 		_isMorph = isMorph;
+		applyMaterialState();
 		return *this;
 	}
 
