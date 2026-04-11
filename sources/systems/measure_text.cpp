@@ -28,8 +28,8 @@ namespace guillaume::systems
 {
 
 	MeasureText::MeasureText(Renderer &renderer)
-		: ecs::SystemFiller<components::Transform, components::Text,
-							components::Bound>(ecs::System::Phase::Measure)
+		: ecs::SystemFiller<components::Text, components::Bound>(
+			  ecs::System::Phase::Measure)
 		, _renderer(renderer)
 		, _defaultFontPath(
 			  "assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf")
@@ -45,7 +45,6 @@ namespace guillaume::systems
 		getLogger().debug("Updating MeasureText system for entity "
 						  + std::to_string(entityIdentifier));
 		if (!requireComponent<components::Text>(entityIdentifier)
-			|| !requireComponent<components::Transform>(entityIdentifier)
 			|| !requireComponent<components::Bound>(entityIdentifier)) {
 			return;
 		}
@@ -56,12 +55,14 @@ namespace guillaume::systems
 			getComponent<components::Bound>(entityIdentifier);
 
 		utility::graphic::Text text;
-		text.setColor(textComponent.getColor())
+		text.setColor(utility::graphic::Color32Bit())
 			.setContent(textComponent.getContent())
 			.setFontSize(textComponent.getFontSize())
 			.setFontPath(_defaultFontPath);
 
-		boundComponent.setSize(_renderer.measureText(text));
+		auto textSize = _renderer.measureText(text);
+
+		boundComponent.setWidth(textSize[0]).setHeight(textSize[1]);
 	}
 
 }	 // namespace guillaume::systems

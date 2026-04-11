@@ -38,8 +38,8 @@ namespace
 	class RendererStub: public guillaume::Renderer
 	{
 		public:
-		utility::math::Vector<std::float_t, 2> measurement = { 0.0f, 0.0f };
-		std::size_t measureCallCount					   = 0;
+		utility::math::Vector<float, 2> measurement = { 0.0f, 0.0f };
+		std::size_t measureCallCount				= 0;
 		std::string lastContent;
 
 		ViewportSize getViewportSize(void) const override
@@ -57,7 +57,7 @@ namespace
 		{
 			(void)vertices;
 		}
-		utility::math::Vector<std::float_t, 2>
+		utility::math::Vector<float, 2>
 			measureText(const utility::graphic::Text &text) override
 		{
 			++measureCallCount;
@@ -120,12 +120,11 @@ TEST_F(MeasureTextFixture, SynchronizesBoundSizeWithMeasuredText)
 
 	measureTextSystem.routine(componentRegistry, entityRegistry);
 
-	const auto size =
-		componentRegistry
-			.getComponent<guillaume::components::Bound>(entityIdentifier)
-			.getSize();
-	EXPECT_FLOAT_EQ(size[0], 140.0f);
-	EXPECT_FLOAT_EQ(size[1], 28.0f);
+	const auto &bound =
+		componentRegistry.getComponent<guillaume::components::Bound>(
+			entityIdentifier);
+	EXPECT_EQ(bound.getWidth(), 140U);
+	EXPECT_EQ(bound.getHeight(), 28U);
 	EXPECT_EQ(renderer.measureCallCount, 1);
 	EXPECT_EQ(renderer.lastContent, "Measure me");
 }

@@ -41,7 +41,7 @@ namespace guillaume::entities
 		ecs::Entity::Identifier identifier = ecs::Entity::InvalidIdentifier;
 
 		_icon = std::make_unique<Icon>(this->getComponentRegistry(), _glyphName,
-									   _color, _style);
+									   _size, _color, _style);
 		identifier = _icon->getIdentifier();
 		this->getEntityRegistry().addEntity(std::move(_icon));
 		return identifier;
@@ -51,6 +51,7 @@ namespace guillaume::entities
 	{
 		_icon.reset();
 		_glyphName.clear();
+		_size  = 24.0f;
 		_color = { 255, 255, 255, 255 };
 		_style = Style::Outlined;
 	}
@@ -58,6 +59,12 @@ namespace guillaume::entities
 	Icon::Builder &Icon::Builder::withGlyphName(const std::string &glyphName)
 	{
 		_glyphName = glyphName;
+		return *this;
+	}
+
+	Icon::Builder &Icon::Builder::withSize(float size)
+	{
+		_size = size;
 		return *this;
 	}
 
@@ -83,29 +90,22 @@ namespace guillaume::entities
 	{
 	}
 
-	ecs::Entity::Identifier
-		Icon::Director::makeDefaultIcon(Builder &builder,
-										const std::string &glyphName)
+	ecs::Entity::Identifier Icon::Director::makeDefaultIcon(
+		Builder &builder, const std::string &glyphName, const float size)
 	{
-		return builder.withGlyphName(glyphName).registerEntity();
+		return builder.withGlyphName(glyphName).withSize(size).registerEntity();
 	}
 
 	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,
-			   const utility::graphic::Color32Bit &color, const Style &style)
-		: ecs::EntityFiller<components::Transform, components::Glyph>(registry)
-		, _glyphName(glyphName)
-		, _color(color)
-		, _style(style)
+			   const float size, const utility::graphic::Color32Bit &color,
+			   const Style &style)
+		: ecs::EntityFiller<components::Transform, components::Bound,
+							components::Glyph, components::Color>(registry)
 	{
-		registry.getComponent<components::Transform>(getIdentifier())
-			.setPose(utility::graphic::PoseF(
-				utility::graphic::PositionF(400.0f, 400.0f, 0.0f),
-				utility::graphic::OrientationF(0.0f, 0.0f, 0.0f, 1.0f)));
-
-		registry.getComponent<components::Glyph>(getIdentifier())
-			.setName(glyphName)
-			.setFontSize(96)
-			.setColor({ 255, 255, 255, 255 });
+		setGlyphName(glyphName);
+		setSize(size);
+		setColor(color);
+		setStyle(style);
 	}
 
 	Icon::~Icon()
@@ -115,12 +115,28 @@ namespace guillaume::entities
 	Icon &Icon::setGlyphName(const std::string &glyphName)
 	{
 		_glyphName = glyphName;
+		getComponentRegistry()
+			.getComponent<components::Glyph>(getIdentifier())
+			.setName(glyphName);
+		return *this;
+	}
+
+	Icon &Icon::setSize(const float size)
+	{
+		_size = size;
+		getComponentRegistry()
+			.getComponent<components::Bound>(getIdentifier())
+			.setWidth(size)
+			.setHeight(size);
 		return *this;
 	}
 
 	Icon &Icon::setColor(const utility::graphic::Color32Bit &color)
 	{
 		_color = color;
+		getComponentRegistry()
+			.getComponent<components::Color>(getIdentifier())
+			.setColor(color);
 		return *this;
 	}
 

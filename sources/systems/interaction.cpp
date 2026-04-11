@@ -69,19 +69,21 @@ namespace
 
 	static WorldPosition
 		computeEntityBoundCenter(const WorldPosition &worldPosition,
-								 const Size &boundSize)
+								 const float width, const float height)
 	{
 		WorldPosition center = worldPosition;
-		center[1]			 = worldPosition[1] - (boundSize[1] / 2.0f);
+		center[1]			 = worldPosition[1] - (height / 2.0f);
 		return center;
 	}
 
-	static bool isPointInsideEntityBounds(
-		const WorldPosition &point, const WorldPosition &entityCenter,
-		const Size &boundSize, const WorldOrientation &entityOrientation)
+	static bool
+		isPointInsideEntityBounds(const WorldPosition &point,
+								  const WorldPosition &entityCenter,
+								  const float width, const float height,
+								  const WorldOrientation &entityOrientation)
 	{
-		const float halfWidth  = boundSize[0] / 2.0f;
-		const float halfHeight = boundSize[1] / 2.0f;
+		const float halfWidth  = width / 2.0f;
+		const float halfHeight = height / 2.0f;
 
 		const std::array<WorldPosition, 4> localCorners {
 			WorldPosition(-halfWidth, -halfHeight, 0.0f),
@@ -351,16 +353,14 @@ namespace guillaume::systems
 			componentRegistry.getComponent<components::Transform>(
 				entityIdentifier);
 		const auto pose = transform.getPose();
-		const auto accessibilityMargin =
-			componentRegistry
-				.getComponent<components::Interaction>(entityIdentifier)
-				.getAccessibilityMargin();
-		const auto size = bound.getSize() + accessibilityMargin;
+		const auto width = bound.getWidth();
+		const auto height = bound.getHeight();
 
 		const auto trueCenter =
-			computeEntityBoundCenter(pose.getPosition(), size);
-		const bool isInside = isPointInsideEntityBounds(
-			worldMousePosition, trueCenter, size, pose.getOrientation());
+			computeEntityBoundCenter(pose.getPosition(), width, height);
+		const bool isInside =
+			isPointInsideEntityBounds(worldMousePosition, trueCenter, width,
+									  height, pose.getOrientation());
 
 		processHover(componentRegistry, entityIdentifier, isInside);
 		processClick(componentRegistry, entityIdentifier, isInside);

@@ -42,8 +42,7 @@ namespace guillaume::systems
 	 * @see components::Transform
 	 */
 	class MeasureText:
-		public ecs::SystemFiller<components::Transform, components::Text,
-								 components::Bound>
+		public ecs::SystemFiller<components::Text, components::Bound>
 	{
 		private:
 		Renderer &_renderer;	///< Renderer instance

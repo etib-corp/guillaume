@@ -30,13 +30,13 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component representing a bounding parallelepiped.
+	 * @brief Component representing a bounding rectangle.
 	 */
 	class Bound: public ecs::Component
 	{
 		private:
-		utility::math::Vector2F
-			_size;	  ///< Size of the bounding parallelepiped
+		std::size_t _width;		///< Width of the bounding rectangle
+		std::size_t _height;	///< Height of the bounding rectangle
 
 		public:
 		/**
@@ -50,21 +50,43 @@ namespace guillaume::components
 		~Bound(void) = default;
 
 		/**
-		 * @brief Set the bounding parallelepiped.
-		 * @param size The size of the bounding parallelepiped.
+		 * @brief Set the width of the bounding rectangle.
+		 * @param width The new width of the bounding rectangle.
+		 * @return Reference to this Bound for chaining.
 		 */
-		void setSize(const utility::math::Vector2F &size)
+		Bound &setWidth(std::size_t width)
 		{
-			_size = size;
-		};
+			_width = width;
+			return *this;
+		}
 
 		/**
-		 * @brief Get the bounding parallelepiped.
-		 * @return The bounding parallelepiped.
+		 * @brief Get the width of the bounding rectangle.
+		 * @return The width of the bounding rectangle.
 		 */
-		utility::math::Vector2F getSize(void) const
+		std::size_t getWidth(void) const
 		{
-			return _size;
+			return _width;
+		}
+
+		/**
+		 * @brief Set the height of the bounding rectangle.
+		 * @param height The new height of the bounding rectangle.
+		 * @return Reference to this Bound for chaining.
+		 */
+		Bound &setHeight(std::size_t height)
+		{
+			_height = height;
+			return *this;
+		}
+
+		/**
+		 * @brief Get the height of the bounding rectangle.
+		 * @return The height of the bounding rectangle.
+		 */
+		std::size_t getHeight(void) const
+		{
+			return _height;
 		}
 	};
 

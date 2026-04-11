@@ -39,10 +39,6 @@ namespace guillaume::components
 		private:
 		uint32_t _code;		  ///< Glyph code (e.g., Unicode code point)
 		std::string _name;	  ///< Glyph name (for font lookup)
-		std::size_t _fontSize				= 24;	 ///< Font size of the glyph
-		utility::graphic::Color32Bit _color = {
-			255, 255, 255, 255
-		};	  ///< Color of the glyph (RGBA)
 
 		public:
 		/**
@@ -92,46 +88,6 @@ namespace guillaume::components
 		Glyph &setName(const std::string &name)
 		{
 			_name = name;
-			return *this;
-		}
-
-		/**
-		 * @brief Get the font size of the glyph.
-		 * @return The font size.
-		 */
-		std::size_t getFontSize(void) const
-		{
-			return _fontSize;
-		}
-
-		/**
-		 * @brief Set the font size of the glyph.
-		 * @param fontSize The new font size.
-		 * @return The Glyph component for chaining.
-		 */
-		Glyph &setFontSize(std::size_t fontSize)
-		{
-			_fontSize = (fontSize == 0) ? 24 : fontSize;
-			return *this;
-		}
-
-		/**
-		 * @brief Get the color of the glyph.
-		 * @return The glyph color.
-		 */
-		utility::graphic::Color32Bit getColor(void) const
-		{
-			return _color;
-		}
-
-		/**
-		 * @brief Set the color of the glyph.
-		 * @param color The new glyph color.
-		 * @return The Glyph component for chaining.
-		 */
-		Glyph &setColor(utility::graphic::Color32Bit color)
-		{
-			_color = color;
 			return *this;
 		}
 	};

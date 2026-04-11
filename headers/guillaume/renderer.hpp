@@ -107,9 +107,9 @@ namespace guillaume
 		 * rendered with a specific font.
 		 * @param text The text to measure.
 		 * @return A 2D vector containing the width and height of the rendered
-		 * text in pixels in the form of utility::math::Vector<std::float_t, 2>.
+		 * text in pixels in the form of utility::math::Vector<float, 2>.
 		 */
-		virtual utility::math::Vector<std::float_t, 2>
+		virtual utility::math::Vector<float, 2>
 			measureText(const utility::graphic::Text &text) = 0;
 
 		/**
