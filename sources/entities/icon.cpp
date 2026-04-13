@@ -91,9 +91,9 @@ namespace guillaume::entities
 	}
 
 	ecs::Entity::Identifier Icon::Director::makeDefaultIcon(
-		Builder &builder, const std::string &glyphName, const float size)
+		Builder &builder, const std::string &glyphName)
 	{
-		return builder.withGlyphName(glyphName).withSize(size).registerEntity();
+		return builder.withGlyphName(glyphName).registerEntity();
 	}
 
 	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,

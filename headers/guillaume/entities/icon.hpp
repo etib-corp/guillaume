@@ -145,13 +145,11 @@ namespace guillaume::entities
 			 * @param builder The builder instance used to configure and create
 			 * the default icon.
 			 * @param iconName The icon name to assign to the created entity.
-			 * @param size The size to assign to the created icon entity.
 			 * @return The entity identifier of the newly created icon entity.
 			 * @see utility::graphic::Glyph::_name
 			 */
-			ecs::Entity::Identifier makeDefaultIcon(Builder &builder,
-													const std::string &iconName,
-													const float size);
+			ecs::Entity::Identifier
+				makeDefaultIcon(Builder &builder, const std::string &iconName);
 		};
 
 		private:
