@@ -30,6 +30,19 @@ namespace guillaume::ecs
 	{
 		_activeComponentRegistry = &componentRegistry;
 
+		bool hasPendingChanges = false;
+		for (const auto &entity: entityRegistry.getEntities()) {
+			if (!componentRegistry.hasChanged(entity->getIdentifier())) {
+				continue;
+			}
+			hasPendingChanges = true;
+			entity->update();
+		}
+
+		if (hasPendingChanges) {
+			componentRegistry.resetChangedFlags();
+		}
+
 		for (const auto &entityIdentifier:
 			 entityRegistry.getEntityWithSignature(getSignature())) {
 			update(entityIdentifier);

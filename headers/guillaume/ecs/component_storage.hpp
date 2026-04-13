@@ -54,6 +54,18 @@ namespace guillaume::ecs
 		 * @return True if a component exists.
 		 */
 		virtual bool has(const Entity::Identifier &entityIdentifier) const = 0;
+
+		/**
+		 * @brief Check whether the stored component for an entity has changed.
+		 * @param entityIdentifier The entity identifier.
+		 * @return True when the component exists and is marked as changed.
+		 */
+		virtual bool hasChanged(const Entity::Identifier &entityIdentifier) const = 0;
+
+		/**
+		 * @brief Clear the changed flags for all components in this storage.
+		 */
+		virtual void resetChangedFlags(void) = 0;
 	};
 
 	/**
@@ -149,6 +161,21 @@ namespace guillaume::ecs
 		bool has(const Entity::Identifier &entityIdentifier) const override
 		{
 			return _components.find(entityIdentifier) != _components.end();
+		}
+
+		bool hasChanged(const Entity::Identifier &entityIdentifier) const override
+		{
+			auto iterator = _components.find(entityIdentifier);
+			return iterator != _components.end()
+				&& iterator->second.hasChanged();
+		}
+
+		void resetChangedFlags(void) override
+		{
+			for (auto &[entityIdentifier, component]: _components) {
+				(void)entityIdentifier;
+				component.setHasChanged(false);
+			}
 		}
 	};
 

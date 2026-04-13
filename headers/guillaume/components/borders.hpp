@@ -81,7 +81,11 @@ namespace guillaume::components
 		 */
 		Borders &setTopLeftRadius(BorderRadius radius)
 		{
+			if (_topLeftRadius == radius) {
+				return *this;
+			}
 			_topLeftRadius = radius;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -101,7 +105,11 @@ namespace guillaume::components
 		 */
 		Borders &setTopRightRadius(BorderRadius radius)
 		{
+			if (_topRightRadius == radius) {
+				return *this;
+			}
 			_topRightRadius = radius;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -121,7 +129,11 @@ namespace guillaume::components
 		 */
 		Borders &setBottomRightRadius(BorderRadius radius)
 		{
+			if (_bottomRightRadius == radius) {
+				return *this;
+			}
 			_bottomRightRadius = radius;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -141,7 +153,11 @@ namespace guillaume::components
 		 */
 		Borders &setBottomLeftRadius(BorderRadius radius)
 		{
+			if (_bottomLeftRadius == radius) {
+				return *this;
+			}
 			_bottomLeftRadius = radius;
+			setHasChanged(true);
 			return *this;
 		}
 

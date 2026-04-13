@@ -145,9 +145,9 @@ namespace guillaume::entities
 
 		private:
 		std::string
-			_content;	 ///< Text content to be set in the Text component
-		std::size_t _fontSize;
-		utility::graphic::Color32Bit _color;
+			_content {};	///< Text content to be set in the Text component
+		std::size_t _fontSize { 24 };
+		utility::graphic::Color32Bit _color {};
 
 		public:
 		/**
@@ -188,6 +188,11 @@ namespace guillaume::entities
 		 * @return Reference to this Text component for chaining.
 		 */
 		Text &setColor(utility::graphic::Color32Bit color);
+
+		/**
+		 * @brief Recompute the text entity's derived state.
+		 */
+		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

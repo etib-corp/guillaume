@@ -35,7 +35,7 @@ namespace guillaume::components
 	class Transform: public ecs::Component
 	{
 		private:
-		utility::graphic::PoseF _pose;	  ///< Pose of the entity
+		utility::graphic::PoseF _pose {};  ///< Pose of the entity
 
 		public:
 		/**
@@ -55,7 +55,11 @@ namespace guillaume::components
 		 */
 		Transform &setPose(const utility::graphic::PoseF &pose)
 		{
+			if (_pose == pose) {
+				return *this;
+			}
 			_pose = pose;
+			setHasChanged(true);
 			return *this;
 		}
 

@@ -96,10 +96,11 @@ namespace guillaume::entities
 			   const utility::graphic::Color32Bit &color)
 		: ecs::EntityFiller<components::Transform, components::Bound,
 							components::Text, components::Color>(registry)
+		, _content(content)
+		, _fontSize(fontSize)
+		, _color(color)
 	{
-		setContent(content);
-		setFontSize(fontSize);
-		setColor(color);
+		update();
 	}
 
 	Text::~Text()
@@ -131,5 +132,12 @@ namespace guillaume::entities
 			.getComponent<components::Color>(getIdentifier())
 			.setColor(color);
 		return *this;
+	}
+
+	void Text::update(void)
+	{
+		setContent(_content);
+		setFontSize(_fontSize);
+		setColor(_color);
 	}
 }	 // namespace guillaume::entities

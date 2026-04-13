@@ -41,7 +41,7 @@ namespace guillaume::entities
 		ecs::Entity::Identifier identifier = ecs::Entity::InvalidIdentifier;
 
 		_panel = std::make_unique<Panel>(this->getComponentRegistry(), _pose,
-										 _color, _borderRadius, _children);
+										 _color, _borderRadius, _entities);
 		identifier = _panel->getIdentifier();
 		this->getEntityRegistry().addEntity(std::move(_panel));
 		return identifier;
@@ -62,10 +62,10 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Panel::Builder &Panel::Builder::withChildren(
-		const std::vector<ecs::Entity::Identifier> &children)
+	Panel::Builder &Panel::Builder::withEntities(
+		const std::vector<ecs::Entity::Identifier> &entities)
 	{
-		_children = children;
+		_entities = entities;
 		return *this;
 	}
 
@@ -87,33 +87,33 @@ namespace guillaume::entities
 
 	ecs::Entity::Identifier Panel::Director::makeDefaultPanel(
 		Builder &builder, const utility::graphic::PoseF &pose,
-		const std::vector<ecs::Entity::Identifier> &children)
+		const std::vector<ecs::Entity::Identifier> &entities)
 	{
-		return builder.withPose(pose).withChildren(children).registerEntity();
+		return builder.withPose(pose).withEntities(entities).registerEntity();
 	}
 
 	ecs::Entity::Identifier Panel::Director::makeColorPanel(
 		Builder &builder, const utility::graphic::PoseF &pose,
 		const utility::graphic::Color32Bit &color,
-		const std::vector<ecs::Entity::Identifier> &children)
+		const std::vector<ecs::Entity::Identifier> &entities)
 	{
 		return builder.withPose(pose)
 			.withColor(color)
-			.withChildren(children)
+			.withEntities(entities)
 			.registerEntity();
 	}
 
 	Panel::Panel(ecs::ComponentRegistry &registry,
 				 const utility::graphic::PoseF &pose,
 				 const utility::graphic::Color32Bit &color, float borderRadius,
-				 const std::vector<ecs::Entity::Identifier> &children)
+				 const std::vector<ecs::Entity::Identifier> &entities)
 		: ecs::EntityFiller<components::Transform, components::Bound,
 							components::Color, components::Borders>(registry)
+		, _pose(pose)
+		, _color(color)
+		, _borderRadius(borderRadius)
+		, _entities(entities)
 	{
-		setPose(pose);
-		setColor(color);
-		setBorderRadius(borderRadius);
-		setChildren(children);
 	}
 
 	Panel::~Panel()
@@ -148,11 +148,19 @@ namespace guillaume::entities
 	}
 
 	Panel &
-		Panel::setChildren(const std::vector<ecs::Entity::Identifier> &children)
+		Panel::setEntities(const std::vector<ecs::Entity::Identifier> &entities)
 	{
-		_children = children;
+		_entities = entities;
 
 		return *this;
+	}
+
+	void Panel::update(void)
+	{
+		setPose(_pose);
+		setColor(_color);
+		setBorderRadius(_borderRadius);
+		setEntities(_entities);
 	}
 
 }	 // namespace guillaume::entities
