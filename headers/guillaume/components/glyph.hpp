@@ -37,8 +37,8 @@ namespace guillaume::components
 	class Glyph: public ecs::Component
 	{
 		private:
-		uint32_t _code { 0 };  ///< Glyph code (e.g., Unicode code point)
-		std::string _name {};  ///< Glyph name (for font lookup)
+		uint32_t _code { 0 };	 ///< Glyph code (e.g., Unicode code point)
+		std::string _name {};	 ///< Glyph name (for font lookup)
 
 		public:
 		/**

@@ -35,8 +35,8 @@ namespace guillaume::components
 	class Bound: public ecs::Component
 	{
 		private:
-		std::size_t _width { 0 };  ///< Width of the bounding rectangle
-		std::size_t _height { 0 };  ///< Height of the bounding rectangle
+		std::size_t _width { 0 };	  ///< Width of the bounding rectangle
+		std::size_t _height { 0 };	  ///< Height of the bounding rectangle
 
 		public:
 		/**

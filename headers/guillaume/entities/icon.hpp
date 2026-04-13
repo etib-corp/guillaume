@@ -155,15 +155,17 @@ namespace guillaume::entities
 		};
 
 		private:
-		std::string _glyphName {};	   ///< Name of the glyph to be used for this
-								   ///< Icon entity (corresponds to
-								   ///< utility::graphic::Glyph::_name)
-		float _size { 24.0f };	///< Size of the icon to be used for this Icon
-						///< entity
+		std::string _glyphName {};	  ///< Name of the glyph to be used for this
+									  ///< Icon entity (corresponds to
+									  ///< utility::graphic::Glyph::_name)
+		float _size { 24.0f };	  ///< Size of the icon to be used for this Icon
+								  ///< entity
 		utility::graphic::Color32Bit
-			_color {};		 ///< Color of the icon to be used for this Icon entity
-						 ///< (RGBA)
-		Style _style { Style::Outlined };	 ///< Style of the glyph to be used for this Icon entity
+			_color {};	  ///< Color of the icon to be used for this Icon entity
+						  ///< (RGBA)
+		Style _style {
+			Style::Outlined
+		};	  ///< Style of the glyph to be used for this Icon entity
 
 		public:
 		/**

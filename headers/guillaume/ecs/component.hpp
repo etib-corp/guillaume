@@ -41,7 +41,8 @@ namespace guillaume::ecs
 
 		public:
 		/**
-		 * @brief Check whether the component changed since the last update pass.
+		 * @brief Check whether the component changed since the last update
+		 * pass.
 		 * @return True when the component is marked as changed.
 		 */
 		bool hasChanged(void) const

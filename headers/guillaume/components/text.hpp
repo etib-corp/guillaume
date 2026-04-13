@@ -40,8 +40,8 @@ namespace guillaume::components
 	class Text: public ecs::Component
 	{
 		private:
-		std::string _content {};  ///< Text content
-		std::size_t _fontSize { 24 };  ///< Font size of the text
+		std::string _content {};		 ///< Text content
+		std::size_t _fontSize { 24 };	 ///< Font size of the text
 
 		public:
 		/**
@@ -94,7 +94,8 @@ namespace guillaume::components
 		 */
 		Text &setFontSize(std::size_t fontSize)
 		{
-			const std::size_t resolvedFontSize = (fontSize == 0) ? 24 : fontSize;
+			const std::size_t resolvedFontSize =
+				(fontSize == 0) ? 24 : fontSize;
 			if (_fontSize == resolvedFontSize) {
 				return *this;
 			}

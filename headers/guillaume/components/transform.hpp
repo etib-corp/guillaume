@@ -35,7 +35,7 @@ namespace guillaume::components
 	class Transform: public ecs::Component
 	{
 		private:
-		utility::graphic::PoseF _pose {};  ///< Pose of the entity
+		utility::graphic::PoseF _pose {};	 ///< Pose of the entity
 
 		public:
 		/**

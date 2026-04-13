@@ -352,8 +352,8 @@ namespace guillaume::systems
 		const auto &transform =
 			componentRegistry.getComponent<components::Transform>(
 				entityIdentifier);
-		const auto pose = transform.getPose();
-		const auto width = bound.getWidth();
+		const auto pose	  = transform.getPose();
+		const auto width  = bound.getWidth();
 		const auto height = bound.getHeight();
 
 		const auto trueCenter =

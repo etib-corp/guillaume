@@ -171,16 +171,16 @@ namespace guillaume::entities
 
 		private:
 		utility::graphic::PoseF
-			_pose {};	  ///< Pose to be used for creating panel entities
-					  ///< (position, rotation, scale)
+			_pose {};	 ///< Pose to be used for creating panel entities
+						 ///< (position, rotation, scale)
 		utility::graphic::Color32Bit
-			_color {};	   ///< Color to be used for creating panel entities
-					   ///< (RGBA)
-		float _borderRadius { 16.0f };	///< Border radius to be used for creating panel
-								///< entities
+			_color {};	  ///< Color to be used for creating panel entities
+						  ///< (RGBA)
+		float _borderRadius { 16.0f };	  ///< Border radius to be used for
+										  ///< creating panel entities
 		std::vector<ecs::Entity::Identifier>
 			_entities {};	 ///< Entities to be attached to created panel
-						  ///< entities
+							 ///< entities
 
 		public:
 		/**
