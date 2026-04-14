@@ -112,6 +112,7 @@ namespace guillaume::components
 			const ClickHandler &handler)
 		{
 			_onClickHandlers[button] = handler;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -126,6 +127,7 @@ namespace guillaume::components
 			const ClickHandler &handler)
 		{
 			_onReleaseHandlers[button] = handler;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -172,8 +174,12 @@ namespace guillaume::components
 			const utility::event::MouseButtonEvent::MouseButton &button,
 			bool clicked)
 		{
+			if (_isEntityClicked == clicked && _isClicked[button] == clicked) {
+				return *this;
+			}
 			_isEntityClicked   = clicked;
 			_isClicked[button] = clicked;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -196,7 +202,11 @@ namespace guillaume::components
 			const utility::event::MouseButtonEvent::MouseButton &button,
 			bool pressedInside)
 		{
+			if (_pressedInside[button] == pressedInside) {
+				return *this;
+			}
 			_pressedInside[button] = pressedInside;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -218,7 +228,8 @@ namespace guillaume::components
 		 */
 		Interaction &setOnHoverHandler(const HoverHandler &handler)
 		{
-            _onHover = handler;
+			_onHover = handler;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -229,7 +240,8 @@ namespace guillaume::components
 		 */
 		Interaction &setOnUnhoverHandler(const HoverHandler &handler)
 		{
-            _onUnhover = handler;
+			_onUnhover = handler;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -267,7 +279,11 @@ namespace guillaume::components
 		 */
 		Interaction &setHovered(bool isHovered)
 		{
+			if (_isHovered == isHovered) {
+				return *this;
+			}
 			_isHovered = isHovered;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -290,7 +306,11 @@ namespace guillaume::components
 		 */
 		void setAccessibilityMargin(const utility::math::Vector2F &margin)
 		{
+			if (_accessibilityMargin == margin) {
+				return;
+			}
 			_accessibilityMargin = margin;
+			setHasChanged(true);
 		}
 	};
 

@@ -91,9 +91,9 @@ namespace guillaume::entities
 	}
 
 	ecs::Entity::Identifier Icon::Director::makeDefaultIcon(
-		Builder &builder, const std::string &glyphName, const float size)
+		Builder &builder, const std::string &glyphName)
 	{
-		return builder.withGlyphName(glyphName).withSize(size).registerEntity();
+		return builder.withGlyphName(glyphName).registerEntity();
 	}
 
 	Icon::Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,
@@ -101,11 +101,12 @@ namespace guillaume::entities
 			   const Style &style)
 		: ecs::EntityFiller<components::Transform, components::Bound,
 							components::Glyph, components::Color>(registry)
+		, _glyphName(glyphName)
+		, _size(size)
+		, _color(color)
+		, _style(style)
 	{
-		setGlyphName(glyphName);
-		setSize(size);
-		setColor(color);
-		setStyle(style);
+		update();
 	}
 
 	Icon::~Icon()
@@ -144,6 +145,14 @@ namespace guillaume::entities
 	{
 		_style = style;
 		return *this;
+	}
+
+	void Icon::update(void)
+	{
+		setGlyphName(_glyphName);
+		setSize(_size);
+		setColor(_color);
+		setStyle(_style);
 	}
 
 }	 // namespace guillaume::entities

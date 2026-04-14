@@ -35,8 +35,8 @@ namespace guillaume::components
 	class Bound: public ecs::Component
 	{
 		private:
-		std::size_t _width;		///< Width of the bounding rectangle
-		std::size_t _height;	///< Height of the bounding rectangle
+		std::size_t _width { 0 };	  ///< Width of the bounding rectangle
+		std::size_t _height { 0 };	  ///< Height of the bounding rectangle
 
 		public:
 		/**
@@ -56,7 +56,11 @@ namespace guillaume::components
 		 */
 		Bound &setWidth(std::size_t width)
 		{
+			if (_width == width) {
+				return *this;
+			}
 			_width = width;
+			setHasChanged(true);
 			return *this;
 		}
 
@@ -76,7 +80,11 @@ namespace guillaume::components
 		 */
 		Bound &setHeight(std::size_t height)
 		{
+			if (_height == height) {
+				return *this;
+			}
 			_height = height;
+			setHasChanged(true);
 			return *this;
 		}
 

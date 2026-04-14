@@ -34,5 +34,5 @@ This design makes the framework easier to extend and maintain.
 
 ## Entity Hierarchy
 
-Entities can own child entities. This enables composition patterns such as a
-button containing both text and icon children.
+Entities can own linked entities. This enables composition patterns such as a
+button containing both text and icon entities.

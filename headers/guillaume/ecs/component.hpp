@@ -36,7 +36,29 @@ namespace guillaume::ecs
 	 */
 	class Component
 	{
+		private:
+		bool _hasChanged { false };
+
 		public:
+		/**
+		 * @brief Check whether the component changed since the last update
+		 * pass.
+		 * @return True when the component is marked as changed.
+		 */
+		bool hasChanged(void) const
+		{
+			return _hasChanged;
+		}
+
+		/**
+		 * @brief Set the changed state for the component.
+		 * @param hasChanged New changed state value.
+		 */
+		void setHasChanged(bool hasChanged)
+		{
+			_hasChanged = hasChanged;
+		}
+
 		/**
 		 * @brief Default constructor for the Component class.
 		 */

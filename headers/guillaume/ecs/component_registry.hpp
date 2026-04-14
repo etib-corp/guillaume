@@ -218,6 +218,33 @@ namespace guillaume::ecs
 		}
 
 		/**
+		 * @brief Check whether any component stored for an entity has changed.
+		 * @param entityIdentifier The entity identifier.
+		 * @return True if at least one stored component is marked as changed.
+		 */
+		bool hasChanged(const Entity::Identifier &entityIdentifier) const
+		{
+			for (const auto &[typeIndex, storage]: _storages) {
+				(void)typeIndex;
+				if (storage->hasChanged(entityIdentifier)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * @brief Clear the changed flags for all stored components.
+		 */
+		void resetChangedFlags(void)
+		{
+			for (auto &[typeIndex, storage]: _storages) {
+				(void)typeIndex;
+				storage->resetChangedFlags();
+			}
+		}
+
+		/**
 		 * @brief Get a component for an entity.
 		 * @tparam ComponentType The type of the component to retrieve.
 		 * @param entityIdentifier The entity identifier to which the

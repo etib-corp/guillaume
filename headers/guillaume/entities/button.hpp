@@ -244,19 +244,23 @@ namespace guillaume::entities
 		};
 
 		private:
-		ecs::Entity::Identifier _iconIdentifier;	 ///< Entity identifier of
-													 ///< the prebuilt icon to
-													 ///< attach to the button
-		ecs::Entity::Identifier _labelIdentifier;	 ///< Entity identifier of
-													 ///< the prebuilt label to
-													 ///< attach to the button
-		bool _isToggle;		  ///< Whether the button is a toggle button
-		Color _colorStyle;	  ///< Color style of the button
-		Shape _shape;		  ///< Shape of the button
-		Size _size;			  ///< Size of the button
-		bool _isMorph;		  ///< Whether the button is in a morph state
+		ecs::Entity::Identifier _iconIdentifier {
+			ecs::Entity::InvalidIdentifier
+		};	  ///< Entity identifier of
+			  ///< the prebuilt icon to
+			  ///< attach to the button
+		ecs::Entity::Identifier _labelIdentifier {
+			ecs::Entity::InvalidIdentifier
+		};	  ///< Entity identifier of
+			  ///< the prebuilt label to
+			  ///< attach to the button
+		bool _isToggle { false };	 ///< Whether the button is a toggle button
+		Color _colorStyle { Color::Filled };	///< Color style of the button
+		Shape _shape { Shape::Round };			///< Shape of the button
+		Size _size { Size::Small };				///< Size of the button
+		bool _isMorph { false };	///< Whether the button is in a morph state
 		std::function<void(void)>
-			_onClick;	 ///< Click event handler for the button
+			_onClick {};	///< Click event handler for the button
 
 		private:
 		/**
@@ -403,6 +407,11 @@ namespace guillaume::entities
 		 * @return Reference to this Button for chaining.
 		 */
 		Button &setOnClick(const std::function<void(void)> &onClick);
+
+		/**
+		 * @brief Recompute the button entity's derived state.
+		 */
+		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

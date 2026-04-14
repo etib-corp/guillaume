@@ -94,15 +94,15 @@ namespace
 	};
 
 	class InteractionEntity final:
-		public guillaume::ecs::EntityFiller<
-			guillaume::components::Transform, guillaume::components::Bound,
-			guillaume::components::Interaction>
+		public guillaume::ecs::EntityFiller<guillaume::components::Transform,
+											guillaume::components::Bound,
+											guillaume::components::Interaction>
 	{
 		public:
 		explicit InteractionEntity(guillaume::ecs::ComponentRegistry &registry)
 			: guillaume::ecs::EntityFiller<guillaume::components::Transform,
 										   guillaume::components::Bound,
-									   guillaume::components::Interaction>(
+										   guillaume::components::Interaction>(
 				  registry)
 		{
 		}

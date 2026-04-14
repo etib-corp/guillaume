@@ -67,7 +67,11 @@ namespace guillaume::components
 		 */
 		Color &setColor(const utility::graphic::Color32Bit &color)
 		{
+			if (_color == color) {
+				return *this;
+			}
 			_color = color;
+			setHasChanged(true);
 			return *this;
 		}
 	};

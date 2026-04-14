@@ -124,6 +124,17 @@ namespace guillaume::ecs
 		{
 			_signature = signature;
 		}
+
+		/**
+		 * @brief Recompute the entity's derived state.
+		 *
+		 * The default implementation is a no-op. Derived entities can override
+		 * this method to synchronize cached state or dependent components when
+		 * their component data changes.
+		 */
+		virtual void update(void)
+		{
+		}
 	};
 
 	/**

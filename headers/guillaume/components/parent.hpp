@@ -58,7 +58,11 @@ namespace guillaume::components
 		 */
 		void setParentIdentifier(ecs::Entity::Identifier identifier)
 		{
+			if (_parentIdentifier == identifier) {
+				return;
+			}
 			_parentIdentifier = identifier;
+			setHasChanged(true);
 		}
 
 		/**

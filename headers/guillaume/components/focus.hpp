@@ -59,6 +59,7 @@ namespace guillaume::components
 		void setOnFocusHandler(const Handler &handler)
 		{
 			_onFocus = handler;
+			setHasChanged(true);
 		}
 
 		/**
