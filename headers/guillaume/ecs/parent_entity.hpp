@@ -44,12 +44,20 @@ namespace guillaume::ecs
 			_children;	  ///< Direct child entities owned by this parent.
 
 		protected:
+		/**
+		 * @brief Access mutable direct child entities owned by this registry.
+		 * @return Mutable reference to the direct child entities storage.
+		 */
 		std::vector<std::unique_ptr<Entity>> &
 			accessDirectEntities(void) override
 		{
 			return _children;
 		}
 
+		/**
+		 * @brief Access direct child entities owned by this registry.
+		 * @return Const reference to the direct child entities storage.
+		 */
 		const std::vector<std::unique_ptr<Entity>> &
 			accessDirectEntities(void) const override
 		{
