@@ -33,21 +33,26 @@ namespace guillaume
 		: _localStorage(localStorage)
 		, _sessionStorage(sessionStorage)
 		, _componentRegistry()
-		, _entityRegistry()
 		, _entityBuilderManager(
 			  std::make_unique<ecs::EntityBuilderManagerFiller<
 				  entities::Panel::Builder, entities::Text::Builder,
 				  entities::Button::Builder, entities::Icon::Builder>>(
-				  _componentRegistry, _entityRegistry))
+				  _componentRegistry, *this))
 		, _entityDirectorManager(
 			  std::make_unique<ecs::EntityDirectorManagerFiller<
 				  entities::Panel::Director, entities::Text::Director,
 				  entities::Button::Director, entities::Icon::Director>>())
 	{
+		getLogger().info("Scene initialized with default entity builders and "
+						 "directors");
 	}
 
 	Scene::~Scene(void)
 	{
+		getLogger().info(
+			"Scene destroyed with "
+			+ std::to_string(getEntitiesBreadthFirst().size())
+			+ " entity/entities in hierarchy");
 	}
 
 }	 // namespace guillaume

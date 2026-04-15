@@ -20,22 +20,41 @@
  SOFTWARE.
  */
 
-#include "guillaume/scene_manager.hpp"
+#pragma once
 
-namespace guillaume
+#include <memory>
+#include <vector>
+
+#include "guillaume/ecs/entity_registry.hpp"
+
+namespace guillaume::ecs
 {
-	SceneManager::SceneManager(void)
-		: _scenes()
-		, _activeSceneType(typeid(void))
-	{
-		getLogger().info("SceneManager initialized");
-	}
 
-	SceneManager::~SceneManager(void)
+	/**
+	 * @brief Base entity type that can own child entities.
+	 *
+	 * This class combines the ECS entity identity/signature with the
+	 * EntityRegistry ownership contract. Parent-capable entities can inherit
+	 * from this class to expose a consistent child management API.
+	 */
+	class ParentEntity: public Entity, public EntityRegistry
 	{
-		getLogger().info("SceneManager destroyed with "
-						 + std::to_string(_scenes.size())
-						 + " registered scene(s)");
-	}
+		private:
+		std::vector<std::unique_ptr<Entity>>
+			_children;	  ///< Direct child entities owned by this parent.
 
-}	 // namespace guillaume
+		protected:
+		std::vector<std::unique_ptr<Entity>> &
+			accessDirectEntities(void) override
+		{
+			return _children;
+		}
+
+		const std::vector<std::unique_ptr<Entity>> &
+			accessDirectEntities(void) const override
+		{
+			return _children;
+		}
+	};
+
+}	 // namespace guillaume::ecs

@@ -48,9 +48,9 @@ namespace guillaume::entities
 	 * components.
 	 */
 	class Button:
-		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Interaction, components::Color,
-								 components::Borders>
+		public ecs::ParentEntityFiller<components::Transform, components::Bound,
+									   components::Interaction,
+									   components::Color, components::Borders>
 	{
 		public:
 		/**
@@ -76,12 +76,10 @@ namespace guillaume::entities
 			private:
 			std::unique_ptr<Button>
 				_button;	///< Unique pointer to the Button entity being built
-			ecs::Entity::Identifier
-				_iconIdendifier;	///< Entity identifier of the prebuilt icon
-									///< to attach to the button
-			ecs::Entity::Identifier
-				_labelIdentifier;	 ///< Entity identifier of the prebuilt
-									 ///< label to attach to the button
+			std::string
+				_iconGlyphName;	   ///< Icon glyph name to attach to the button
+			std::string
+				_labelContent;	  ///< Label content to attach to the button
 			std::function<void(void)>
 				_onClick;		  ///< Click event handler for the button
 			bool _isToggle;		  ///< Whether the button is a toggle button
@@ -119,19 +117,17 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Set the icon for the button.
-			 * @param iconIdentifier The entity identifier of the prebuilt icon
-			 * to attach to the button.ƒ
+			 * @param iconGlyphName The glyph name of the icon to attach.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withIcon(ecs::Entity::Identifier iconIdentifier);
+			Builder &withIcon(const std::string &iconGlyphName);
 
 			/**
 			 * @brief Set the label text for the button.
-			 * @param labelIdentifier The entity identifier of the prebuilt
-			 * label to attach to the button.
+			 * @param labelContent The label content to attach to the button.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withLabel(ecs::Entity::Identifier labelIdentifier);
+			Builder &withLabel(const std::string &labelContent);
 
 			/**
 			 * @brief Set the click event handler for the button.
@@ -197,30 +193,28 @@ namespace guillaume::entities
 			 * @brief Create a text button entity using the builder.
 			 * @param builder The builder instance used to configure and create
 			 * the text button.
-			 * @param labelIdentifier The entity identifier of the prebuilt
-			 * label to attach to the button.
+			 * @param labelContent The label content to attach to the button.
 			 * @param onClick The click event handler for the text button.
 			 * @return The entity identifier of the newly created text button
 			 * entity.
 			 */
 			ecs::Entity::Identifier
 				makeTextButton(Builder &builder,
-							   ecs::Entity::Identifier labelIdentifier,
+							   const std::string &labelContent,
 							   std::function<void(void)> onClick);
 
 			/**
 			 * @brief Create an icon button entity using the builder.
 			 * @param builder The builder instance used to configure and create
 			 * the icon button.
-			 * @param iconIdentifier The entity identifier of the prebuilt icon
-			 * to attach
+			 * @param iconGlyphName The icon glyph name to attach.
 			 * @param onClick The click event handler for the icon button.
 			 * @return The entity identifier of the newly created icon button
 			 * entity.
 			 */
 			ecs::Entity::Identifier
 				makeIconButton(Builder &builder,
-							   ecs::Entity::Identifier iconIdentifier,
+							   const std::string &iconGlyphName,
 							   std::function<void(void)> onClick);
 
 			/**
@@ -228,32 +222,28 @@ namespace guillaume::entities
 			 * builder.
 			 * @param builder The builder instance used to configure
 			 * and create the icon text button.
-			 * @param iconIdentifier The entity identifier of the prebuilt icon
-			 * to attach to the button.
-			 * @param labelIdentifier The entity identifier of the prebuilt
-			 * label to attach to the button.
+			 * @param iconGlyphName The icon glyph name to attach to the button.
+			 * @param labelContent The label content to attach to the button.
 			 * @param onClick The click event handler for the button.
 			 * @return The entity identifier of the newly created icon text
 			 * button entity.
 			 */
 			ecs::Entity::Identifier
 				makeIconTextButton(Builder &builder,
-								   ecs::Entity::Identifier iconIdentifier,
-								   ecs::Entity::Identifier labelIdentifier,
+								   const std::string &iconGlyphName,
+								   const std::string &labelContent,
 								   std::function<void(void)> onClick);
 		};
 
 		private:
+		std::string _iconGlyphName {};	  ///< Icon glyph name to attach.
+		std::string _labelContent {};	  ///< Label content to attach.
 		ecs::Entity::Identifier _iconIdentifier {
 			ecs::Entity::InvalidIdentifier
-		};	  ///< Entity identifier of
-			  ///< the prebuilt icon to
-			  ///< attach to the button
+		};	  ///< Internal child icon entity identifier.
 		ecs::Entity::Identifier _labelIdentifier {
 			ecs::Entity::InvalidIdentifier
-		};	  ///< Entity identifier of
-			  ///< the prebuilt label to
-			  ///< attach to the button
+		};	  ///< Internal child label entity identifier.
 		bool _isToggle { false };	 ///< Whether the button is a toggle button
 		Color _colorStyle { Color::Filled };	///< Color style of the button
 		Shape _shape { Shape::Round };			///< Shape of the button
@@ -295,20 +285,20 @@ namespace guillaume::entities
 		void applyMaterialState(void);
 
 		/**
-		 * @brief Calculate the pose for the button's text component when no
+		 * @brief Calculate the pose for the button's text child when no
 		 * icon is present. This method computes the appropriate position and
 		 * orientation for the text based on the button's current properties
 		 * and returns it as a PoseF object.
-		 * @return The calculated PoseF for the text component without an icon.
+		 * @return The calculated PoseF for the text child without an icon.
 		 */
 		utility::graphic::PoseF calculTextPoseWithoutIcon(void);
 
 		/**
-		 * @brief Calculate the pose for the button's text component when an
+		 * @brief Calculate the pose for the button's text child when an
 		 * icon is present. This method computes the appropriate position and
 		 * orientation for the text based on the button's current properties,
 		 * including the presence of an icon, and returns it as a PoseF object.
-		 * @return The calculated PoseF for the text component with an icon.
+		 * @return The calculated PoseF for the text child with an icon.
 		 */
 		utility::graphic::PoseF calculTextPoseWithIcon(void);
 
@@ -326,10 +316,8 @@ namespace guillaume::entities
 		 * @brief Default constructor for the Button entity.
 		 * @param registry Reference to the component registry for initializing
 		 * components.
-		 * @param iconIdentifier The entity identifier of the prebuilt icon to
-		 * attach to the button.
-		 * @param labelIdentifier The entity identifier of the prebuilt label
-		 * to attach to the button.
+		 * @param iconGlyphName Icon glyph name to attach to the button.
+		 * @param labelContent Label content to attach to the button.
 		 * @param isToggle Whether the button should be a toggle button.
 		 * @param colorStyle Initial color style for the button.
 		 * @param shape Initial shape for the button.
@@ -338,9 +326,9 @@ namespace guillaume::entities
 		 * @param onClick Click event handler for the button.
 		 */
 		Button(ecs::ComponentRegistry &registry,
-			   ecs::Entity::Identifier iconIdentifier,
-			   ecs::Entity::Identifier labelIdentifier, bool isToggle,
-			   Color colorStyle, Shape shape, Size size, bool isMorph,
+			   const std::string &iconGlyphName,
+			   const std::string &labelContent, bool isToggle, Color colorStyle,
+			   Shape shape, Size size, bool isMorph,
 			   std::function<void(void)> onClick);
 
 		/**
@@ -349,22 +337,18 @@ namespace guillaume::entities
 		~Button(void);
 
 		/**
-		 * @brief Set the icon for the button.
-		 * @param iconIdentifier The entity identifier of the prebuilt icon to
-		 * attach to the button.
+		 * @brief Set the icon glyph name for the button.
+		 * @param iconGlyphName The glyph name of the icon to attach.
 		 * @return Reference to this Button for chaining.
 		 */
-		Button &setIconIdentifier(ecs::Entity::Identifier iconIdentifier);
+		Button &setIconGlyphName(const std::string &iconGlyphName);
 
 		/**
-		 * @brief Set the label for the button.
-		 * @param labelIdentifier The entity identifier of the prebuilt label
-		 * to attach to the button.
+		 * @brief Set the label content for the button.
+		 * @param labelContent The label content to attach to the button.
 		 * @return Reference to this Button for chaining.
-		 * @throws std::runtime_error if the provided labelIdentifier does not
-		 * correspond to a valid Text entity in the registry.
 		 */
-		Button &setLabelIdentifier(ecs::Entity::Identifier labelIdentifier);
+		Button &setLabelContent(const std::string &labelContent);
 
 		/**
 		 * @brief Set if the button is a toggle button.

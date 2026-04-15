@@ -20,22 +20,38 @@
  SOFTWARE.
  */
 
-#include "guillaume/scene_manager.hpp"
+#pragma once
 
-namespace guillaume
+#include <memory>
+#include <queue>
+#include <vector>
+
+#include "guillaume/ecs/entity_registry.hpp"
+
+namespace guillaume::ecs
 {
-	SceneManager::SceneManager(void)
-		: _scenes()
-		, _activeSceneType(typeid(void))
-	{
-		getLogger().info("SceneManager initialized");
-	}
 
-	SceneManager::~SceneManager(void)
+	/**
+	 * @brief Concrete entity registry backed by an internal vector.
+	 */
+	class EntityRegistryContainer: public EntityRegistry
 	{
-		getLogger().info("SceneManager destroyed with "
-						 + std::to_string(_scenes.size())
-						 + " registered scene(s)");
-	}
+		private:
+		std::vector<std::unique_ptr<Entity>>
+			_entities;	  ///< Direct entities owned by this registry.
 
-}	 // namespace guillaume
+		protected:
+		std::vector<std::unique_ptr<Entity>> &
+			accessDirectEntities(void) override
+		{
+			return _entities;
+		}
+
+		const std::vector<std::unique_ptr<Entity>> &
+			accessDirectEntities(void) const override
+		{
+			return _entities;
+		}
+	};
+
+}	 // namespace guillaume::ecs

@@ -29,6 +29,7 @@
 #include "guillaume/components/transform.hpp"
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
+#include "guillaume/ecs/entity_registry_container.hpp"
 
 #include "systems/test_measure_text.hpp"
 
@@ -84,7 +85,7 @@ namespace
 		RendererStub renderer;
 		guillaume::systems::MeasureText measureTextSystem { renderer };
 		guillaume::ecs::ComponentRegistry componentRegistry;
-		guillaume::ecs::EntityRegistry entityRegistry;
+		guillaume::ecs::EntityRegistryContainer entityRegistry;
 		guillaume::ecs::Entity::Identifier entityIdentifier {
 			guillaume::ecs::Entity::InvalidIdentifier
 		};

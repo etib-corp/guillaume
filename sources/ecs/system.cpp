@@ -29,9 +29,12 @@ namespace guillaume::ecs
 						 ecs::EntityRegistry &entityRegistry)
 	{
 		_activeComponentRegistry = &componentRegistry;
+		getLogger().debug("System routine started");
 
 		bool hasPendingChanges = false;
-		for (const auto &entity: entityRegistry.getEntities()) {
+		std::size_t visitedEntities = 0;
+		for (auto *entity: entityRegistry.getEntitiesBreadthFirst()) {
+			++visitedEntities;
 			if (!componentRegistry.hasChanged(entity->getIdentifier())) {
 				continue;
 			}
@@ -41,12 +44,21 @@ namespace guillaume::ecs
 
 		if (hasPendingChanges) {
 			componentRegistry.resetChangedFlags();
+			getLogger().debug("System routine applied pending component "
+							  "changes");
 		}
 
+		std::size_t matchingEntities = 0;
 		for (const auto &entityIdentifier:
 			 entityRegistry.getEntityWithSignature(getSignature())) {
+			++matchingEntities;
 			update(entityIdentifier);
 		}
+
+		getLogger().debug("System routine finished. Visited entities: "
+						  + std::to_string(visitedEntities)
+						  + ", matching entities: "
+						  + std::to_string(matchingEntities));
 
 		_activeComponentRegistry = nullptr;
 	}

@@ -41,8 +41,8 @@ namespace guillaume::entities
 	 * @brief Panel component
 	 */
 	class Panel:
-		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Color, components::Borders>
+		public ecs::ParentEntityFiller<components::Transform, components::Bound,
+									   components::Color, components::Borders>
 	{
 		public:
 		/**

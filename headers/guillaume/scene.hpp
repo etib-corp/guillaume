@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <memory>
 #include <stdexcept>
 
 #include <utility/logging/loggable.hpp>
@@ -31,6 +32,7 @@
 #include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/ecs/entity_builder_manager_filler.hpp"
 #include "guillaume/ecs/entity_director_manager_filler.hpp"
+#include "guillaume/ecs/entity_registry_container.hpp"
 
 #include "guillaume/local_storage.hpp"
 #include "guillaume/session_storage.hpp"
@@ -42,6 +44,7 @@ namespace guillaume
 	 * and systems. Scenes can be switched to change the active content.
 	 */
 	class Scene:
+		public ecs::EntityRegistryContainer,
 		public utility::logging::Loggable<Scene,
 										  utility::logging::StandardLogger>
 	{
@@ -52,8 +55,6 @@ namespace guillaume
 											///< storage for this scene
 		ecs::ComponentRegistry
 			_componentRegistry;	   ///< Component registry for the scene
-		ecs::EntityRegistry
-			_entityRegistry;	///< Entity registry for the scene
 		std::unique_ptr<ecs::EntityBuilderManager>
 			_entityBuilderManager;	  ///< Manager for entity builders
 		std::unique_ptr<ecs::EntityDirectorManager>
@@ -107,7 +108,7 @@ namespace guillaume
 		 */
 		ecs::EntityRegistry &getEntityRegistry(void)
 		{
-			return _entityRegistry;
+			return *this;
 		}
 	};
 

@@ -28,6 +28,7 @@
 #include "guillaume/components/text.hpp"
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
+#include "guillaume/ecs/entity_registry_container.hpp"
 #include "guillaume/event/event_bus.hpp"
 
 #include <utility/event/text_input_event.hpp>
@@ -42,7 +43,7 @@ namespace
 		guillaume::event::EventBus eventBus;
 		guillaume::systems::TextInput textInputSystem { eventBus };
 		guillaume::ecs::ComponentRegistry componentRegistry;
-		guillaume::ecs::EntityRegistry entityRegistry;
+		guillaume::ecs::EntityRegistryContainer entityRegistry;
 		guillaume::ecs::Entity::Identifier entityIdentifier {
 			guillaume::ecs::Entity::InvalidIdentifier
 		};

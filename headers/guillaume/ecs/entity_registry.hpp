@@ -23,6 +23,7 @@
 #pragma once
 
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "guillaume/ecs/entity.hpp"
@@ -31,13 +32,28 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Registry that tracks scene-owned entities and their signatures.
+	 * @brief Abstract base class for containers that own ECS entities.
+	 *
+	 * This contract unifies entity ownership for scene-level registries and
+	 * hierarchy-capable entities. Traversal helpers process the hierarchy in
+	 * breadth-first order.
 	 */
 	class EntityRegistry
 	{
-		private:
-		std::vector<std::unique_ptr<Entity>>
-			_entities;	  ///< Entities registered in the scene
+		protected:
+		/**
+		 * @brief Access mutable direct child entities owned by this registry.
+		 * @return Mutable reference to the direct child entities storage.
+		 */
+		virtual std::vector<std::unique_ptr<Entity>> &
+			accessDirectEntities(void) = 0;
+
+		/**
+		 * @brief Access direct child entities owned by this registry.
+		 * @return Const reference to the direct child entities storage.
+		 */
+		virtual const std::vector<std::unique_ptr<Entity>> &
+			accessDirectEntities(void) const = 0;
 
 		public:
 		/**
@@ -46,9 +62,9 @@ namespace guillaume::ecs
 		EntityRegistry(void) = default;
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Virtual destructor.
 		 */
-		~EntityRegistry(void) = default;
+		virtual ~EntityRegistry(void) = default;
 
 		/**
 		 * @brief Register an entity in the registry.
@@ -62,8 +78,20 @@ namespace guillaume::ecs
 		 */
 		const std::vector<std::unique_ptr<Entity>> &getEntities(void) const
 		{
-			return _entities;
+			return accessDirectEntities();
 		}
+
+		/**
+		 * @brief Collect all entities in this registry hierarchy using BFS.
+		 * @return Entity pointers in breadth-first traversal order.
+		 */
+		std::vector<Entity *> getEntitiesBreadthFirst(void);
+
+		/**
+		 * @brief Collect all entities in this registry hierarchy using BFS.
+		 * @return Const entity pointers in breadth-first traversal order.
+		 */
+		std::vector<const Entity *> getEntitiesBreadthFirst(void) const;
 
 		/**
 		 * @brief Get all registered entity identifier that match the specified
@@ -77,5 +105,4 @@ namespace guillaume::ecs
 		std::vector<Entity::Identifier>
 			getEntityWithSignature(Entity::Signature systemSignature) const;
 	};
-
 }	 // namespace guillaume::ecs
