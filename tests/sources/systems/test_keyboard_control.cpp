@@ -28,6 +28,7 @@
 #include "guillaume/components/text.hpp"
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
+#include "guillaume/ecs/entity_registry_container.hpp"
 #include "guillaume/event/event_bus.hpp"
 
 namespace
@@ -40,7 +41,7 @@ namespace
 		guillaume::event::EventBus eventBus;
 		guillaume::systems::KeyboardControl keyboardControl { eventBus };
 		guillaume::ecs::ComponentRegistry componentRegistry;
-		guillaume::ecs::EntityRegistry entityRegistry;
+		guillaume::ecs::EntityRegistryContainer entityRegistry;
 		guillaume::ecs::Entity::Identifier entityIdentifier {
 			guillaume::ecs::Entity::InvalidIdentifier
 		};

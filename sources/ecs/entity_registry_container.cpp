@@ -20,22 +20,8 @@
  SOFTWARE.
  */
 
-#include "guillaume/scene_manager.hpp"
+#include "guillaume/ecs/entity_registry_container.hpp"
 
-namespace guillaume
+namespace guillaume::ecs
 {
-	SceneManager::SceneManager(void)
-		: _scenes()
-		, _activeSceneType(typeid(void))
-	{
-		getLogger().info("SceneManager initialized");
-	}
-
-	SceneManager::~SceneManager(void)
-	{
-		getLogger().info("SceneManager destroyed with "
-						 + std::to_string(_scenes.size())
-						 + " registered scene(s)");
-	}
-
-}	 // namespace guillaume
+}	 // namespace guillaume::ecs

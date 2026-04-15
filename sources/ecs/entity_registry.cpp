@@ -27,18 +27,69 @@ namespace guillaume::ecs
 
 	void EntityRegistry::addEntity(std::unique_ptr<Entity> entity)
 	{
-		_entities.push_back(std::move(entity));
+		accessDirectEntities().push_back(std::move(entity));
+	}
+
+	std::vector<Entity *> EntityRegistry::getEntitiesBreadthFirst(void)
+	{
+		std::vector<Entity *> entities;
+		std::queue<EntityRegistry *> registries;
+
+		registries.push(this);
+		while (!registries.empty()) {
+			EntityRegistry *registry = registries.front();
+			registries.pop();
+
+			for (auto &entity: registry->accessDirectEntities()) {
+				Entity *rawEntity = entity.get();
+				entities.push_back(rawEntity);
+
+				auto *childRegistry = dynamic_cast<EntityRegistry *>(rawEntity);
+				if (childRegistry != nullptr) {
+					registries.push(childRegistry);
+				}
+			}
+		}
+
+		return entities;
+	}
+
+	std::vector<const Entity *>
+		EntityRegistry::getEntitiesBreadthFirst(void) const
+	{
+		std::vector<const Entity *> entities;
+		std::queue<const EntityRegistry *> registries;
+
+		registries.push(this);
+		while (!registries.empty()) {
+			const EntityRegistry *registry = registries.front();
+			registries.pop();
+
+			for (const auto &entity: registry->accessDirectEntities()) {
+				const Entity *rawEntity = entity.get();
+				entities.push_back(rawEntity);
+
+				auto *childRegistry =
+					dynamic_cast<const EntityRegistry *>(rawEntity);
+				if (childRegistry != nullptr) {
+					registries.push(childRegistry);
+				}
+			}
+		}
+
+		return entities;
 	}
 
 	std::vector<Entity::Identifier> EntityRegistry::getEntityWithSignature(
 		Entity::Signature systemSignature) const
 	{
 		std::vector<Entity::Identifier> matchingIdentifiers;
-		for (const auto &entity: _entities) {
+		for (const auto *entity: getEntitiesBreadthFirst()) {
 			if ((entity->getSignature() & systemSignature) == systemSignature) {
 				matchingIdentifiers.push_back(entity->getIdentifier());
 			}
 		}
+
 		return matchingIdentifiers;
 	}
 

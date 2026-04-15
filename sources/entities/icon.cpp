@@ -90,8 +90,9 @@ namespace guillaume::entities
 	{
 	}
 
-	ecs::Entity::Identifier Icon::Director::makeDefaultIcon(
-		Builder &builder, const std::string &glyphName)
+	ecs::Entity::Identifier
+		Icon::Director::makeDefaultIcon(Builder &builder,
+										const std::string &glyphName)
 	{
 		return builder.withGlyphName(glyphName).registerEntity();
 	}

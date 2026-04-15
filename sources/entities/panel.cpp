@@ -107,8 +107,9 @@ namespace guillaume::entities
 				 const utility::graphic::PoseF &pose,
 				 const utility::graphic::Color32Bit &color, float borderRadius,
 				 const std::vector<ecs::Entity::Identifier> &entities)
-		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Color, components::Borders>(registry)
+		: ecs::ParentEntityFiller<components::Transform, components::Bound,
+								  components::Color, components::Borders>(
+			  registry)
 		, _pose(pose)
 		, _color(color)
 		, _borderRadius(borderRadius)

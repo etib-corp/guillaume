@@ -30,6 +30,7 @@
 #include <guillaume/ecs/component_registry.hpp>
 #include <guillaume/ecs/entity_filler.hpp>
 #include <guillaume/ecs/entity_registry.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/event/event_bus.hpp>
 
 namespace
@@ -116,7 +117,7 @@ namespace guillaume::systems::tests
 		event::EventBus eventBus;
 		MockRenderer renderer;
 		ecs::ComponentRegistry componentRegistry;
-		ecs::EntityRegistry entityRegistry;
+		ecs::EntityRegistryContainer entityRegistry;
 		systems::Interaction interaction(eventBus, renderer);
 
 		auto entity = std::make_unique<InteractionEntity>(componentRegistry);
@@ -171,7 +172,7 @@ namespace guillaume::systems::tests
 		event::EventBus eventBus;
 		MockRenderer renderer;
 		ecs::ComponentRegistry componentRegistry;
-		ecs::EntityRegistry entityRegistry;
+		ecs::EntityRegistryContainer entityRegistry;
 		systems::Interaction interaction(eventBus, renderer);
 
 		auto entity = std::make_unique<InteractionEntity>(componentRegistry);

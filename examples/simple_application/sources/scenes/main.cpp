@@ -1,9 +1,7 @@
 #include "scenes/main.hpp"
 
 #include <guillaume/entities/button.hpp>
-#include <guillaume/entities/icon.hpp>
 #include <guillaume/entities/panel.hpp>
-#include <guillaume/entities/text.hpp>
 
 namespace simple_application::scenes
 {
@@ -21,20 +19,6 @@ namespace simple_application::scenes
 			getDirectorManager()
 				.getDirector<guillaume::entities::Panel::Director>();
 
-		auto &iconBuilder =
-			getBuilderManager()
-				.getBuilder<guillaume::entities::Icon::Builder>();
-		auto &iconDirector =
-			getDirectorManager()
-				.getDirector<guillaume::entities::Icon::Director>();
-
-		auto &textBuilder =
-			getBuilderManager()
-				.getBuilder<guillaume::entities::Text::Builder>();
-		auto &textDirector =
-			getDirectorManager()
-				.getDirector<guillaume::entities::Text::Director>();
-
 		auto &buttonBuilder =
 			getBuilderManager()
 				.getBuilder<guillaume::entities::Button::Builder>();
@@ -43,9 +27,7 @@ namespace simple_application::scenes
 				.getDirector<guillaume::entities::Button::Director>();
 
 		buttonDirector.makeIconTextButton(
-			buttonBuilder,
-			iconDirector.makeDefaultIcon(iconBuilder, "settings"),
-			textDirector.makeDefaultText(textBuilder, "Settings"), [this]() {
+			buttonBuilder, "settings", "Settings", [this]() {
 				this->getLogger().info("Button icon text clicked!");
 			});
 	}

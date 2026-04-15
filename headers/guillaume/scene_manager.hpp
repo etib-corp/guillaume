@@ -25,6 +25,9 @@
 #include <map>
 #include <memory>
 
+#include <utility/logging/loggable.hpp>
+#include <utility/logging/standard_logger.hpp>
+
 #include "guillaume/scene.hpp"
 
 #include "guillaume/ecs/component_registry.hpp"
@@ -41,7 +44,9 @@ namespace guillaume
 	 * @brief Scene manager class responsible for managing scenes in the
 	 * application.
 	 */
-	class SceneManager
+	class SceneManager:
+		public utility::logging::Loggable<
+			SceneManager, utility::logging::StandardLogger>
 	{
 		private:
 		std::map<std::type_index, std::unique_ptr<Scene>>
@@ -59,8 +64,16 @@ namespace guillaume
 		 */
 		std::unique_ptr<Scene> &getActiveScene(void)
 		{
+			if (_scenes.empty()) {
+				getLogger().error("Cannot activate scene: no scenes are "
+									  "registered");
+				throw std::runtime_error("No scenes registered in scene manager");
+			}
+
 			if (_activeSceneType == typeid(void)) {
 				_activeSceneType = _scenes.begin()->first;
+				getLogger().info("No active scene set. Defaulting to first "
+									 "registered scene");
 			}
 			return _scenes[_activeSceneType];
 		}
@@ -75,6 +88,8 @@ namespace guillaume
 			std::type_index typeIndex(typeid(SceneType));
 			_scenes[typeIndex] =
 				std::make_unique<SceneType>(_localStorage, _sessionStorage);
+			getLogger().info("Registered scene type: "
+						 + std::string(typeid(SceneType).name()));
 		}
 
 		public:
@@ -98,9 +113,14 @@ namespace guillaume
 		{
 			std::type_index typeIndex(typeid(SceneType));
 			if (_scenes.find(typeIndex) == _scenes.end()) {
+				getLogger().error("Scene switch failed. Scene type is not "
+									  "registered: "
+									  + std::string(typeid(SceneType).name()));
 				throw std::runtime_error("Scene not found in scene manager");
 			}
 			_activeSceneType = typeIndex;
+			getLogger().info("Switched active scene to type: "
+						 + std::string(typeid(SceneType).name()));
 		}
 
 		/**
