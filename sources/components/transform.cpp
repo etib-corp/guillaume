@@ -24,4 +24,18 @@
 
 namespace guillaume::components
 {
+	Transform &Transform::setPose(const utility::graphic::PoseF &pose)
+	{
+		if (_pose == pose) {
+			return *this;
+		}
+		_pose = pose;
+		setHasChanged(true);
+		return *this;
+	}
+
+	utility::graphic::PoseF Transform::getPose(void) const
+	{
+		return _pose;
+	}
 }	 // namespace guillaume::components

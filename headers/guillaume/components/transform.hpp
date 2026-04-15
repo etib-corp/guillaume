@@ -53,24 +53,13 @@ namespace guillaume::components
 		 * @param pose The new pose.
 		 * @return Reference to this Transform component for chaining.
 		 */
-		Transform &setPose(const utility::graphic::PoseF &pose)
-		{
-			if (_pose == pose) {
-				return *this;
-			}
-			_pose = pose;
-			setHasChanged(true);
-			return *this;
-		}
+		Transform &setPose(const utility::graphic::PoseF &pose);
 
 		/**
 		 * @brief Get the pose of the entity.
 		 * @return The pose.
 		 */
-		utility::graphic::PoseF getPose(void) const
-		{
-			return _pose;
-		}
+		utility::graphic::PoseF getPose(void) const;
 	};
 
 }	 // namespace guillaume::components

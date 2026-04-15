@@ -36,4 +36,23 @@ namespace guillaume::ecs
 	{
 	}
 
+	Entity::Identifier Entity::getIdentifier(void) const
+	{
+		return _identifier;
+	}
+
+	Entity::Signature Entity::getSignature(void) const
+	{
+		return _signature;
+	}
+
+	void Entity::setSignature(const Signature &signature)
+	{
+		_signature = signature;
+	}
+
+	void Entity::update(void)
+	{
+	}
+
 }	 // namespace guillaume::ecs

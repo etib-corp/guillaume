@@ -24,4 +24,34 @@
 
 namespace guillaume::components
 {
+	const std::string &Text::getContent(void) const
+	{
+		return _content;
+	}
+
+	Text &Text::setContent(const std::string &content)
+	{
+		if (_content == content) {
+			return *this;
+		}
+		_content = content;
+		setHasChanged(true);
+		return *this;
+	}
+
+	std::size_t Text::getFontSize(void) const
+	{
+		return _fontSize;
+	}
+
+	Text &Text::setFontSize(std::size_t fontSize)
+	{
+		const std::size_t resolvedFontSize = (fontSize == 0) ? 24 : fontSize;
+		if (_fontSize == resolvedFontSize) {
+			return *this;
+		}
+		_fontSize = resolvedFontSize;
+		setHasChanged(true);
+		return *this;
+	}
 }	 // namespace guillaume::components

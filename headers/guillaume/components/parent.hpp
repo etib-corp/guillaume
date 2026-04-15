@@ -56,23 +56,13 @@ namespace guillaume::components
 		 * @brief Set the parent entity identifier.
 		 * @param identifier The new parent entity identifier.
 		 */
-		void setParentIdentifier(ecs::Entity::Identifier identifier)
-		{
-			if (_parentIdentifier == identifier) {
-				return;
-			}
-			_parentIdentifier = identifier;
-			setHasChanged(true);
-		}
+		void setParentIdentifier(ecs::Entity::Identifier identifier);
 
 		/**
 		 * @brief Get the parent entity identifier.
 		 * @return The parent entity identifier.
 		 */
-		ecs::Entity::Identifier getParentIdentifier(void) const
-		{
-			return _parentIdentifier;
-		}
+		ecs::Entity::Identifier getParentIdentifier(void) const;
 	};
 
 }	 // namespace guillaume::components

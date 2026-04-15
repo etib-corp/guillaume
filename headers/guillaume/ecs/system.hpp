@@ -94,28 +94,14 @@ namespace guillaume::ecs
 		 * scope.
 		 * @return Mutable reference to the active component registry.
 		 */
-		ecs::ComponentRegistry &getComponentRegistry(void)
-		{
-			if (_activeComponentRegistry == nullptr) {
-				throw std::runtime_error(
-					"No active component registry bound to system");
-			}
-			return *_activeComponentRegistry;
-		}
+		ecs::ComponentRegistry &getComponentRegistry(void);
 
 		/**
 		 * @brief Get the active component registry for the current update
 		 * scope.
 		 * @return Const reference to the active component registry.
 		 */
-		const ecs::ComponentRegistry &getComponentRegistry(void) const
-		{
-			if (_activeComponentRegistry == nullptr) {
-				throw std::runtime_error(
-					"No active component registry bound to system");
-			}
-			return *_activeComponentRegistry;
-		}
+		const ecs::ComponentRegistry &getComponentRegistry(void) const;
 
 		/**
 		 * @brief Check whether the current entity has the specified component.
@@ -196,13 +182,7 @@ namespace guillaume::ecs
 		 * The constructor does not set the system's signature, so it must be
 		 * configured separately using setSignature() after construction.
 		 */
-		System(Phase phase)
-			: _phase(phase)
-			, _signature()
-			, _activeComponentRegistry(nullptr)
-
-		{
-		}
+		System(Phase phase);
 
 		/**
 		 * @brief Default destructor for the System class.
@@ -213,19 +193,13 @@ namespace guillaume::ecs
 		 * @brief Get the system's update phase.
 		 * @return The system's update phase.
 		 */
-		Phase getPhase(void) const
-		{
-			return _phase;
-		}
+		Phase getPhase(void) const;
 
 		/**
 		 * @brief Get the system's signature.
 		 * @return The system's signature.
 		 */
-		Entity::Signature getSignature(void) const
-		{
-			return _signature;
-		}
+		Entity::Signature getSignature(void) const;
 
 		/**
 		 * @brief Routine to update all managed entities.

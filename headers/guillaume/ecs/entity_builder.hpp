@@ -53,19 +53,13 @@ namespace guillaume::ecs
 		 * @brief Get the component registry reference.
 		 * @return Reference to the component registry.
 		 */
-		ComponentRegistry &getComponentRegistry(void)
-		{
-			return _componentRegistry;
-		}
+		ComponentRegistry &getComponentRegistry(void);
 
 		/**
 		 * @brief Get the entity registry reference.
 		 * @return Reference to the entity registry.
 		 */
-		EntityRegistry &getEntityRegistry(void)
-		{
-			return _entityRegistry;
-		}
+		EntityRegistry &getEntityRegistry(void);
 
 		public:
 		/**
@@ -76,11 +70,7 @@ namespace guillaume::ecs
 		 * construction.
 		 */
 		EntityBuilder(ecs::ComponentRegistry &componentRegistry,
-					  ecs::EntityRegistry &entityRegistry)
-			: _componentRegistry(componentRegistry)
-			, _entityRegistry(entityRegistry)
-		{
-		}
+					  ecs::EntityRegistry &entityRegistry);
 
 		/**
 		 * @brief Default destructor for the EntityBuilder class.

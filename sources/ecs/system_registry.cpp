@@ -24,4 +24,19 @@
 
 namespace guillaume::ecs
 {
+	void SystemRegistry::registerNewSystem(std::unique_ptr<System> system)
+	{
+		_systems[system->getPhase()].push_back(std::move(system));
+	}
+
+	const std::vector<std::unique_ptr<System>> &
+		SystemRegistry::getSystemsByPhase(System::Phase phase) const
+	{
+		auto it = _systems.find(phase);
+		if (it != _systems.end()) {
+			return it->second;
+		}
+		static const std::vector<std::unique_ptr<System>> empty;
+		return empty;
+	}
 }	 // namespace guillaume::ecs

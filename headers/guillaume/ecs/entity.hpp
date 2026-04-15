@@ -102,28 +102,19 @@ namespace guillaume::ecs
 		 * @brief Get the unique identifier of the entity.
 		 * @return The entity's unique identifier.
 		 */
-		Entity::Identifier getIdentifier(void) const
-		{
-			return _identifier;
-		}
+		Entity::Identifier getIdentifier(void) const;
 
 		/**
 		 * @brief Get the entity's signature.
 		 * @return The entity's signature.
 		 */
-		Entity::Signature getSignature(void) const
-		{
-			return _signature;
-		}
+		Entity::Signature getSignature(void) const;
 
 		/**
 		 * @brief Set the entity's signature.
 		 * @param signature The new signature.
 		 */
-		void setSignature(const Signature &signature)
-		{
-			_signature = signature;
-		}
+		void setSignature(const Signature &signature);
 
 		/**
 		 * @brief Recompute the entity's derived state.
@@ -132,9 +123,7 @@ namespace guillaume::ecs
 		 * this method to synchronize cached state or dependent components when
 		 * their component data changes.
 		 */
-		virtual void update(void)
-		{
-		}
+		virtual void update(void);
 	};
 
 	/**

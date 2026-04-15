@@ -24,4 +24,23 @@
 
 namespace guillaume::ecs
 {
+	ComponentTypeLimitExceededException::
+		ComponentTypeLimitExceededException(void)
+		: _message("Exceeded maximum number of component types")
+	{
+	}
+
+	const char *ComponentTypeLimitExceededException::what(void) const noexcept
+	{
+		return _message.c_str();
+	}
+
+	std::size_t ComponentTypeId::nextId(void)
+	{
+		static std::size_t currentId = 0;
+		if (currentId >= MaxComponentTypes) {
+			throw ComponentTypeLimitExceededException();
+		}
+		return currentId++;
+	}
 }	 // namespace guillaume::ecs

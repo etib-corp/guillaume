@@ -38,4 +38,30 @@ namespace guillaume
 						 + " registered scene(s)");
 	}
 
+	std::unique_ptr<Scene> &SceneManager::getActiveScene(void)
+	{
+		if (_scenes.empty()) {
+			getLogger().error("Cannot activate scene: no scenes are "
+							  "registered");
+			throw std::runtime_error("No scenes registered in scene manager");
+		}
+
+		if (_activeSceneType == typeid(void)) {
+			_activeSceneType = _scenes.begin()->first;
+			getLogger().info("No active scene set. Defaulting to first "
+							 "registered scene");
+		}
+		return _scenes[_activeSceneType];
+	}
+
+	ecs::EntityRegistry &SceneManager::getActiveEntityRegistry(void)
+	{
+		return getActiveScene()->getEntityRegistry();
+	}
+
+	ecs::ComponentRegistry &SceneManager::getActiveComponentRegistry(void)
+	{
+		return getActiveScene()->getComponentRegistry();
+	}
+
 }	 // namespace guillaume

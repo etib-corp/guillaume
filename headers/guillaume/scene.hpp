@@ -65,19 +65,13 @@ namespace guillaume
 		 * @brief Get the entity builder manager for this scene.
 		 * @return Reference to the entity builder manager.
 		 */
-		ecs::EntityBuilderManager &getBuilderManager(void)
-		{
-			return *_entityBuilderManager;
-		}
+		ecs::EntityBuilderManager &getBuilderManager(void);
 
 		/**
 		 * @brief Get the entity director manager for this scene.
 		 * @return Reference to the entity director manager.
 		 */
-		ecs::EntityDirectorManager &getDirectorManager(void)
-		{
-			return *_entityDirectorManager;
-		}
+		ecs::EntityDirectorManager &getDirectorManager(void);
 
 		public:
 		/**
@@ -97,19 +91,13 @@ namespace guillaume
 		 * @brief Get the component registry for this scene.
 		 * @return Reference to the component registry.
 		 */
-		ecs::ComponentRegistry &getComponentRegistry(void)
-		{
-			return _componentRegistry;
-		}
+		ecs::ComponentRegistry &getComponentRegistry(void);
 
 		/**
 		 * @brief Get the entity registry for this scene.
 		 * @return Reference to the entity registry.
 		 */
-		ecs::EntityRegistry &getEntityRegistry(void)
-		{
-			return *this;
-		}
+		ecs::EntityRegistry &getEntityRegistry(void);
 	};
 
 	/**

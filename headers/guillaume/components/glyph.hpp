@@ -55,49 +55,27 @@ namespace guillaume::components
 		 * @brief Get the glyph code.
 		 * @return The glyph code.
 		 */
-		uint32_t getCode(void) const
-		{
-			return _code;
-		}
+		uint32_t getCode(void) const;
 
 		/**
 		 * @brief Set the glyph code.
 		 * @param code The new glyph code.
 		 * @return The Glyph component for chaining.
 		 */
-		Glyph &setCode(uint32_t code)
-		{
-			if (_code == code) {
-				return *this;
-			}
-			_code = code;
-			setHasChanged(true);
-			return *this;
-		}
+		Glyph &setCode(uint32_t code);
 
 		/**
 		 * @brief Get the glyph name.
 		 * @return The glyph name.
 		 */
-		const std::string &getName(void) const
-		{
-			return _name;
-		}
+		const std::string &getName(void) const;
 
 		/**
 		 * @brief Set the glyph name.
 		 * @param name The new glyph name.
 		 * @return The Glyph component for chaining.
 		 */
-		Glyph &setName(const std::string &name)
-		{
-			if (_name == name) {
-				return *this;
-			}
-			_name = name;
-			setHasChanged(true);
-			return *this;
-		}
+		Glyph &setName(const std::string &name);
 	};
 
 }	 // namespace guillaume::components

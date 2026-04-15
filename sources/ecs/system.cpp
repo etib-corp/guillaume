@@ -24,6 +24,40 @@
 
 namespace guillaume::ecs
 {
+	System::System(Phase phase)
+		: _phase(phase)
+		, _signature()
+		, _activeComponentRegistry(nullptr)
+	{
+	}
+
+	ecs::ComponentRegistry &System::getComponentRegistry(void)
+	{
+		if (_activeComponentRegistry == nullptr) {
+			throw std::runtime_error(
+				"No active component registry bound to system");
+		}
+		return *_activeComponentRegistry;
+	}
+
+	const ecs::ComponentRegistry &System::getComponentRegistry(void) const
+	{
+		if (_activeComponentRegistry == nullptr) {
+			throw std::runtime_error(
+				"No active component registry bound to system");
+		}
+		return *_activeComponentRegistry;
+	}
+
+	System::Phase System::getPhase(void) const
+	{
+		return _phase;
+	}
+
+	Entity::Signature System::getSignature(void) const
+	{
+		return _signature;
+	}
 
 	void System::routine(ecs::ComponentRegistry &componentRegistry,
 						 ecs::EntityRegistry &entityRegistry)
