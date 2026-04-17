@@ -265,19 +265,13 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Left click event handler for the button.
-		 * @param mousePosition The position of the mouse when the left click
-		 * event occurred.
 		 */
-		void leftClickPressHandler(
-			utility::event::MouseMotionEvent::MousePosition mousePosition);
+		void leftClickPressHandler(void);
 
 		/**
 		 * @brief Left click release event handler for the button.
-		 * @param mousePosition The position of the mouse when the left click
-		 * release event occurred.
 		 */
-		void leftClickReleaseHandler(
-			utility::event::MouseMotionEvent::MousePosition mousePosition);
+		void leftClickReleaseHandler(void);
 
 		/**
 		 * @brief Apply the current Material button state to components.

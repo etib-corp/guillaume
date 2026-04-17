@@ -386,14 +386,12 @@ namespace guillaume::entities
 		applyMaterialState();
 	}
 
-	void Button::leftClickPressHandler(
-		utility::event::MouseMotionEvent::MousePosition)
+	void Button::leftClickPressHandler()
 	{
 		applyMaterialState();
 	}
 
-	void Button::leftClickReleaseHandler(
-		utility::event::MouseMotionEvent::MousePosition)
+	void Button::leftClickReleaseHandler()
 	{
 		if (_isToggle) {
 			_isMorph = !_isMorph;
@@ -414,8 +412,8 @@ namespace guillaume::entities
 			getComponentRegistry().getComponent<components::Color>(
 				getIdentifier());
 		buttonColor.setColor(getContainerColor(
-			_colorStyle, interaction.isHovered(),
-			interaction.isClicked(
+			_colorStyle, interaction.isMouseHovered(),
+			interaction.isMouseButtonClicked(
 				utility::event::MouseButtonEvent::MouseButton::Left)));
 
 		auto &buttonBorders =
@@ -424,7 +422,7 @@ namespace guillaume::entities
 		const auto restingShape = getRestingShape(_shape, _isToggle, _isMorph);
 		buttonBorders.setBorderRadius(getBorderRadius(
 			_size, restingShape,
-			interaction.isClicked(
+			interaction.isMouseButtonClicked(
 				utility::event::MouseButtonEvent::MouseButton::Left)));
 
 		if (_iconIdentifier != ecs::Entity::InvalidIdentifier) {
@@ -724,16 +722,14 @@ namespace guillaume::entities
 
 		getComponentRegistry()
 			.getComponent<components::Interaction>(getIdentifier())
-			.setOnHoverHandler(std::bind(&Button::hoverHandler, this))
-			.setOnUnhoverHandler(std::bind(&Button::unHoverHandler, this))
-			.setOnClickHandler(
+			.setMouseOnHoverHandler(std::bind(&Button::hoverHandler, this))
+			.setMouseOnUnhoverHandler(std::bind(&Button::unHoverHandler, this))
+			.setMouseButtonOnClickHandler(
 				utility::event::MouseButtonEvent::MouseButton::Left,
-				std::bind(&Button::leftClickPressHandler, this,
-						  std::placeholders::_1))
-			.setOnReleaseHandler(
+				std::bind(&Button::leftClickPressHandler, this))
+			.setMouseButtonOnClickReleaseHandler(
 				utility::event::MouseButtonEvent::MouseButton::Left,
-				std::bind(&Button::leftClickReleaseHandler, this,
-						  std::placeholders::_1));
+				std::bind(&Button::leftClickReleaseHandler, this));
 	}
 
 }	 // namespace guillaume::entities

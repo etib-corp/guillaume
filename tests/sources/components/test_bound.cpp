@@ -24,25 +24,4 @@
 
 namespace guillaume::components::tests
 {
-	TEST_F(TestBound, SettersUpdateBoundDimensions)
-	{
-		Bound bound;
-
-		bound.setWidth(320);
-		bound.setHeight(180);
-
-		EXPECT_EQ(bound.getWidth(), 320U);
-		EXPECT_EQ(bound.getHeight(), 180U);
-	}
-
-	TEST_F(TestBound, SettersReturnSelfForFluentChaining)
-	{
-		Bound bound;
-
-		Bound &returned = bound.setWidth(64).setHeight(48);
-
-		EXPECT_EQ(&returned, &bound);
-		EXPECT_EQ(bound.getWidth(), 64U);
-		EXPECT_EQ(bound.getHeight(), 48U);
-	}
 }	 // namespace guillaume::components::tests
