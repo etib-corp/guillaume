@@ -24,4 +24,13 @@
 
 namespace guillaume::ecs
 {
+	bool Component::hasChanged(void) const
+	{
+		return _hasChanged;
+	}
+
+	void Component::setHasChanged(bool hasChanged)
+	{
+		_hasChanged = hasChanged;
+	}
 }	 // namespace guillaume::ecs

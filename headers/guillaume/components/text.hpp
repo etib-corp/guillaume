@@ -58,51 +58,27 @@ namespace guillaume::components
 		 * @brief Get the text content.
 		 * @return The text content.
 		 */
-		const std::string &getContent(void) const
-		{
-			return _content;
-		}
+		const std::string &getContent(void) const;
 
 		/**
 		 * @brief Set the text content.
 		 * @param content The new text content.
 		 * @return The Text component for chaining.
 		 */
-		Text &setContent(const std::string &content)
-		{
-			if (_content == content) {
-				return *this;
-			}
-			_content = content;
-			setHasChanged(true);
-			return *this;
-		}
+		Text &setContent(const std::string &content);
 
 		/**
 		 * @brief Get the font size of the text.
 		 * @return The font size.
 		 */
-		std::size_t getFontSize(void) const
-		{
-			return _fontSize;
-		}
+		std::size_t getFontSize(void) const;
 
 		/**
 		 * @brief Set the font size of the text.
 		 * @param fontSize The new font size.
 		 * @return The Text component for chaining.
 		 */
-		Text &setFontSize(std::size_t fontSize)
-		{
-			const std::size_t resolvedFontSize =
-				(fontSize == 0) ? 24 : fontSize;
-			if (_fontSize == resolvedFontSize) {
-				return *this;
-			}
-			_fontSize = resolvedFontSize;
-			setHasChanged(true);
-			return *this;
-		}
+		Text &setFontSize(std::size_t fontSize);
 	};
 
 }	 // namespace guillaume::components

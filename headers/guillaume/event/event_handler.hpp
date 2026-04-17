@@ -72,29 +72,20 @@ namespace guillaume::event
 		 * @brief Get the current event callback function.
 		 * @return Reference to the event callback function.
 		 */
-		Handler &getEventCallback(void)
-		{
-			return _callback;
-		}
+		Handler &getEventCallback(void);
 
 		/**
 		 * @brief Set the should quit flag.
 		 * @param shouldQuit True if a quit event was received, false otherwise.
 		 */
-		void setShouldQuit(bool shouldQuit)
-		{
-			_shouldQuit = shouldQuit;
-		}
+		void setShouldQuit(bool shouldQuit);
 
 		/**
 		 * @brief Set the got new events flag.
 		 * @param gotNewEvents True if new events were received, false
 		 * otherwise.
 		 */
-		void setGotNewEvents(bool gotNewEvents)
-		{
-			_gotNewEvents = gotNewEvents;
-		}
+		void setGotNewEvents(bool gotNewEvents);
 
 		public:
 		/**
@@ -115,28 +106,19 @@ namespace guillaume::event
 		 *
 		 * @param callback Function to call when an event is received.
 		 */
-		void setEventCallback(const Handler &callback)
-		{
-			_callback = callback;
-		}
+		void setEventCallback(const Handler &callback);
 
 		/**
 		 * @brief Check if a quit event has been received.
 		 * @return True if a quit event was received, false otherwise.
 		 */
-		bool shouldQuit(void) const
-		{
-			return _shouldQuit;
-		}
+		bool shouldQuit(void) const;
 
 		/**
 		 * @brief Check if new events were received in the last poll.
 		 * @return True if new events were received, false otherwise.
 		 */
-		bool gotNewEvents(void) const
-		{
-			return _gotNewEvents;
-		}
+		bool gotNewEvents(void) const;
 
 		/**
 		 * @brief Poll for events and dispatch them.

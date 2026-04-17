@@ -22,6 +22,19 @@
 
 #include "guillaume/components/parent.hpp"
 
-namespace guillaume::ecs::components
+namespace guillaume::components
 {
-}	 // namespace guillaume::ecs::components
+	void Parent::setParentIdentifier(ecs::Entity::Identifier identifier)
+	{
+		if (_parentIdentifier == identifier) {
+			return;
+		}
+		_parentIdentifier = identifier;
+		setHasChanged(true);
+	}
+
+	ecs::Entity::Identifier Parent::getParentIdentifier(void) const
+	{
+		return _parentIdentifier;
+	}
+}	 // namespace guillaume::components

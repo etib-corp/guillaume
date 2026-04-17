@@ -24,4 +24,23 @@
 
 namespace guillaume::components
 {
+	Color::Color(void)
+		: _color()
+	{
+	}
+
+	const utility::graphic::Color32Bit &Color::getColor() const
+	{
+		return _color;
+	}
+
+	Color &Color::setColor(const utility::graphic::Color32Bit &color)
+	{
+		if (_color == color) {
+			return *this;
+		}
+		_color = color;
+		setHasChanged(true);
+		return *this;
+	}
 }	 // namespace guillaume::components

@@ -81,20 +81,7 @@ namespace guillaume::components
 		/**
 		 * @brief Default constructor for the Interaction component.
 		 */
-		Interaction(void)
-		{
-			for (const auto button:
-				 { utility::event::MouseButtonEvent::MouseButton::Left,
-				   utility::event::MouseButtonEvent::MouseButton::Middle,
-				   utility::event::MouseButtonEvent::MouseButton::Right,
-				   utility::event::MouseButtonEvent::MouseButton::X1,
-				   utility::event::MouseButtonEvent::MouseButton::X2 }) {
-				_isClicked[button]		   = false;
-				_pressedInside[button]	   = false;
-				_onClickHandlers[button]   = nullptr;
-				_onReleaseHandlers[button] = nullptr;
-			}
-		}
+		Interaction(void);
 
 		/**
 		 * @brief Default destructor for the Interaction component.
@@ -109,12 +96,7 @@ namespace guillaume::components
 		 */
 		Interaction &setOnClickHandler(
 			const utility::event::MouseButtonEvent::MouseButton &button,
-			const ClickHandler &handler)
-		{
-			_onClickHandlers[button] = handler;
-			setHasChanged(true);
-			return *this;
-		}
+			const ClickHandler &handler);
 
 		/**
 		 * @brief Set the onRelease event handler.
@@ -124,12 +106,7 @@ namespace guillaume::components
 		 */
 		Interaction &setOnReleaseHandler(
 			const utility::event::MouseButtonEvent::MouseButton &button,
-			const ClickHandler &handler)
-		{
-			_onReleaseHandlers[button] = handler;
-			setHasChanged(true);
-			return *this;
-		}
+			const ClickHandler &handler);
 
 		/**
 		 * @brief Get click handlers indexed by mouse button.
@@ -137,10 +114,7 @@ namespace guillaume::components
 		 */
 		const std::map<utility::event::MouseButtonEvent::MouseButton,
 					   ClickHandler> &
-			getOnClickHandlers() const
-		{
-			return _onClickHandlers;
-		}
+			getOnClickHandlers() const;
 
 		/**
 		 * @brief Get release handlers indexed by mouse button.
@@ -148,10 +122,7 @@ namespace guillaume::components
 		 */
 		const std::map<utility::event::MouseButtonEvent::MouseButton,
 					   ClickHandler> &
-			getOnReleaseHandlers() const
-		{
-			return _onReleaseHandlers;
-		}
+			getOnReleaseHandlers() const;
 
 		/**
 		 * @brief Check if the entity is currently clicked for one button.
@@ -159,10 +130,7 @@ namespace guillaume::components
 		 * @return True if clicked for the provided button.
 		 */
 		bool isClicked(
-			const utility::event::MouseButtonEvent::MouseButton &button) const
-		{
-			return _isClicked.at(button);
-		}
+			const utility::event::MouseButtonEvent::MouseButton &button) const;
 
 		/**
 		 * @brief Set clicked state for one mouse button.
@@ -172,25 +140,13 @@ namespace guillaume::components
 		 */
 		Interaction &setClicked(
 			const utility::event::MouseButtonEvent::MouseButton &button,
-			bool clicked)
-		{
-			if (_isEntityClicked == clicked && _isClicked[button] == clicked) {
-				return *this;
-			}
-			_isEntityClicked   = clicked;
-			_isClicked[button] = clicked;
-			setHasChanged(true);
-			return *this;
-		}
+			bool clicked);
 
 		/**
 		 * @brief Check if the entity is clicked for any button.
 		 * @return True if at least one button is in clicked state.
 		 */
-		bool isEntityClicked() const
-		{
-			return _isEntityClicked;
-		}
+		bool isEntityClicked() const;
 
 		/**
 		 * @brief Set whether a button press started inside entity bounds.
@@ -200,15 +156,7 @@ namespace guillaume::components
 		 */
 		Interaction &setPressedInside(
 			const utility::event::MouseButtonEvent::MouseButton &button,
-			bool pressedInside)
-		{
-			if (_pressedInside[button] == pressedInside) {
-				return *this;
-			}
-			_pressedInside[button] = pressedInside;
-			setHasChanged(true);
-			return *this;
-		}
+			bool pressedInside);
 
 		/**
 		 * @brief Check whether a button press started inside entity bounds.
@@ -216,76 +164,46 @@ namespace guillaume::components
 		 * @return True if pressed inside bounds for this button.
 		 */
 		bool isPressedInside(
-			const utility::event::MouseButtonEvent::MouseButton &button) const
-		{
-			return _pressedInside.at(button);
-		}
+			const utility::event::MouseButtonEvent::MouseButton &button) const;
 
 		/**
 		 * @brief Set the onHover event handler.
 		 * @param handler The function to call on hover enter.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setOnHoverHandler(const HoverHandler &handler)
-		{
-			_onHover = handler;
-			setHasChanged(true);
-			return *this;
-		}
+		Interaction &setOnHoverHandler(const HoverHandler &handler);
 
 		/**
 		 * @brief Set the onUnhover event handler.
 		 * @param handler The function to call on hover leave.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setOnUnhoverHandler(const HoverHandler &handler)
-		{
-			_onUnhover = handler;
-			setHasChanged(true);
-			return *this;
-		}
+		Interaction &setOnUnhoverHandler(const HoverHandler &handler);
 
 		/**
 		 * @brief Get the onHover event handler.
 		 * @return The hover enter handler.
 		 */
-		HoverHandler getOnHoverHandler(void) const
-		{
-			return _onHover;
-		}
+		HoverHandler getOnHoverHandler(void) const;
 
 		/**
 		 * @brief Get the onUnhover event handler.
 		 * @return The hover leave handler.
 		 */
-		HoverHandler getOnUnhoverHandler(void) const
-		{
-			return _onUnhover;
-		}
+		HoverHandler getOnUnhoverHandler(void) const;
 
 		/**
 		 * @brief Check if the entity is currently hovered.
 		 * @return True when cursor is inside entity bounds.
 		 */
-		bool isHovered(void) const
-		{
-			return _isHovered;
-		}
+		bool isHovered(void) const;
 
 		/**
 		 * @brief Set current hovered state.
 		 * @param isHovered Current hovered state.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setHovered(bool isHovered)
-		{
-			if (_isHovered == isHovered) {
-				return *this;
-			}
-			_isHovered = isHovered;
-			setHasChanged(true);
-			return *this;
-		}
+		Interaction &setHovered(bool isHovered);
 
 		/**
 		 * @brief Get the Accessibility Margin object
@@ -293,10 +211,7 @@ namespace guillaume::components
 		 * @return The margin to increase the interactive area of entities for
 		 * better
 		 */
-		const utility::math::Vector2F &getAccessibilityMargin() const
-		{
-			return _accessibilityMargin;
-		}
+		const utility::math::Vector2F &getAccessibilityMargin() const;
 
 		/**
 		 * @brief Set the Accessibility Margin object
@@ -304,14 +219,7 @@ namespace guillaume::components
 		 * @param margin The margin to increase the interactive area of entities
 		 * for better accessibility
 		 */
-		void setAccessibilityMargin(const utility::math::Vector2F &margin)
-		{
-			if (_accessibilityMargin == margin) {
-				return;
-			}
-			_accessibilityMargin = margin;
-			setHasChanged(true);
-		}
+		void setAccessibilityMargin(const utility::math::Vector2F &margin);
 	};
 
 }	 // namespace guillaume::components

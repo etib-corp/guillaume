@@ -62,142 +62,91 @@ namespace guillaume
 		Metadata(const std::string &name, const std::string &version,
 				 const std::string &identifier, const std::string &creator,
 				 const std::string &copyright, const std::string &url,
-				 const std::string &type)
-			: _name(name)
-			, _version(version)
-			, _identifier(identifier)
-			, _creator(creator)
-			, _copyright(copyright)
-			, _url(url)
-			, _type(type)
-		{
-		}
+				 const std::string &type);
 
 		/**
 		 * @brief Set the application name.
 		 * @param name The name to set.
 		 */
-		void setName(const std::string &name)
-		{
-			_name = name;
-		}
+		void setName(const std::string &name);
 
 		/**
 		 * @brief Get the application name.
 		 * @return The application name.
 		 */
-		std::string &getName(void)
-		{
-			return _name;
-		}
+		std::string &getName(void);
 
 		/**
 		 * @brief Set the application version.
 		 * @param version The version to set.
 		 */
-		void setVersion(const std::string &version)
-		{
-			_version = version;
-		}
+		void setVersion(const std::string &version);
 
 		/**
 		 * @brief Get the application version.
 		 * @return The application version.
 		 */
-		std::string &getVersion(void)
-		{
-			return _version;
-		}
+		std::string &getVersion(void);
 
 		/**
 		 * @brief Set the application identifier.
 		 * @param identifier The identifier to set.
 		 */
-		void setIdentifier(const std::string &identifier)
-		{
-			_identifier = identifier;
-		};
+		void setIdentifier(const std::string &identifier);
 
 		/**
 		 * @brief Get the application identifier.
 		 * @return The application identifier.
 		 */
-		std::string &getIdentifier(void)
-		{
-			return _identifier;
-		}
+		std::string &getIdentifier(void);
 
 		/**
 		 * @brief Set the application creator.
 		 * @param creator The creator to set.
 		 */
-		void setCreator(const std::string &creator)
-		{
-			_creator = creator;
-		}
+		void setCreator(const std::string &creator);
 
 		/**
 		 * @brief Get the application creator.
 		 * @return The application creator.
 		 */
-		std::string &getCreator(void)
-		{
-			return _creator;
-		}
+		std::string &getCreator(void);
 
 		/**
 		 * @brief Set the application copyright information.
 		 * @param copyright The copyright information to set.
 		 */
-		void setCopyright(const std::string &copyright)
-		{
-			_copyright = copyright;
-		}
+		void setCopyright(const std::string &copyright);
 
 		/**
 		 * @brief Get the application copyright information.
 		 * @return The application copyright information.
 		 */
-		std::string &getCopyright(void)
-		{
-			return _copyright;
-		}
+		std::string &getCopyright(void);
 
 		/**
 		 * @brief Set the application URL.
 		 * @param url The URL to set.
 		 */
-		void setUrl(const std::string &url)
-		{
-			_url = url;
-		}
+		void setUrl(const std::string &url);
 
 		/**
 		 * @brief Get the application URL.
 		 * @return The application URL.
 		 */
-		std::string &getUrl(void)
-		{
-			return _url;
-		}
+		std::string &getUrl(void);
 
 		/**
 		 * @brief Set the application type.
 		 * @param type The type to set.
 		 */
-		void setType(const std::string &type)
-		{
-			_type = type;
-		}
+		void setType(const std::string &type);
 
 		/**
 		 * @brief Get the application type.
 		 * @return The application type.
 		 */
-		std::string &getType(void)
-		{
-			return _type;
-		}
+		std::string &getType(void);
 	};
 
 }	 // namespace guillaume

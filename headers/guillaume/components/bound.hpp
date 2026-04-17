@@ -54,48 +54,26 @@ namespace guillaume::components
 		 * @param width The new width of the bounding rectangle.
 		 * @return Reference to this Bound for chaining.
 		 */
-		Bound &setWidth(std::size_t width)
-		{
-			if (_width == width) {
-				return *this;
-			}
-			_width = width;
-			setHasChanged(true);
-			return *this;
-		}
+		Bound &setWidth(std::size_t width);
 
 		/**
 		 * @brief Get the width of the bounding rectangle.
 		 * @return The width of the bounding rectangle.
 		 */
-		std::size_t getWidth(void) const
-		{
-			return _width;
-		}
+		std::size_t getWidth(void) const;
 
 		/**
 		 * @brief Set the height of the bounding rectangle.
 		 * @param height The new height of the bounding rectangle.
 		 * @return Reference to this Bound for chaining.
 		 */
-		Bound &setHeight(std::size_t height)
-		{
-			if (_height == height) {
-				return *this;
-			}
-			_height = height;
-			setHasChanged(true);
-			return *this;
-		}
+		Bound &setHeight(std::size_t height);
 
 		/**
 		 * @brief Get the height of the bounding rectangle.
 		 * @return The height of the bounding rectangle.
 		 */
-		std::size_t getHeight(void) const
-		{
-			return _height;
-		}
+		std::size_t getHeight(void) const;
 	};
 
 }	 // namespace guillaume::components

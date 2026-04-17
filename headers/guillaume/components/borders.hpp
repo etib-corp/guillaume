@@ -52,13 +52,7 @@ namespace guillaume::components
 		/**
 		 * @brief Constructor for the Borders component.
 		 */
-		explicit Borders(void)
-			: _topLeftRadius(0.0f)
-			, _topRightRadius(0.0f)
-			, _bottomRightRadius(0.0f)
-			, _bottomLeftRadius(0.0f)
-		{
-		}
+		explicit Borders(void);
 
 		/**
 		 * @brief Default destructor for the Borders component.
@@ -69,110 +63,60 @@ namespace guillaume::components
 		 * @brief Get the border radius for the top-left corner.
 		 * @return The border radius for the top-left corner.
 		 */
-		BorderRadius getTopLeftRadius(void) const
-		{
-			return _topLeftRadius;
-		}
+		BorderRadius getTopLeftRadius(void) const;
 
 		/**
 		 * @brief Set the border radius for the top-left corner.
 		 * @param radius The new border radius for the top-left corner.
 		 * @return Reference to this Borders component for chaining.
 		 */
-		Borders &setTopLeftRadius(BorderRadius radius)
-		{
-			if (_topLeftRadius == radius) {
-				return *this;
-			}
-			_topLeftRadius = radius;
-			setHasChanged(true);
-			return *this;
-		}
+		Borders &setTopLeftRadius(BorderRadius radius);
 
 		/**
 		 * @brief Get the border radius for the top-right corner.
 		 * @return The border radius for the top-right corner.
 		 */
-		BorderRadius getTopRightRadius(void) const
-		{
-			return _topRightRadius;
-		}
+		BorderRadius getTopRightRadius(void) const;
 
 		/**
 		 * @brief Set the border radius for the top-right corner.
 		 * @param radius The new border radius for the top-right corner.
 		 * @return Reference to this Borders component for chaining.
 		 */
-		Borders &setTopRightRadius(BorderRadius radius)
-		{
-			if (_topRightRadius == radius) {
-				return *this;
-			}
-			_topRightRadius = radius;
-			setHasChanged(true);
-			return *this;
-		}
+		Borders &setTopRightRadius(BorderRadius radius);
 
 		/**
 		 * @brief Get the border radius for the bottom-right corner.
 		 * @return The border radius for the bottom-right corner.
 		 */
-		BorderRadius getBottomRightRadius(void) const
-		{
-			return _bottomRightRadius;
-		}
+		BorderRadius getBottomRightRadius(void) const;
 
 		/**
 		 * @brief Set the border radius for the bottom-right corner.
 		 * @param radius The new border radius for the bottom-right corner.
 		 * @return Reference to this Borders component for chaining.
 		 */
-		Borders &setBottomRightRadius(BorderRadius radius)
-		{
-			if (_bottomRightRadius == radius) {
-				return *this;
-			}
-			_bottomRightRadius = radius;
-			setHasChanged(true);
-			return *this;
-		}
+		Borders &setBottomRightRadius(BorderRadius radius);
 
 		/**
 		 * @brief Get the border radius for the bottom-left corner.
 		 * @return The border radius for the bottom-left corner.
 		 */
-		BorderRadius getBottomLeftRadius(void) const
-		{
-			return _bottomLeftRadius;
-		}
+		BorderRadius getBottomLeftRadius(void) const;
 
 		/**
 		 * @brief Set the border radius for the bottom-left corner.
 		 * @param radius The new border radius for the bottom-left corner.
 		 * @return Reference to this Borders component for chaining.
 		 */
-		Borders &setBottomLeftRadius(BorderRadius radius)
-		{
-			if (_bottomLeftRadius == radius) {
-				return *this;
-			}
-			_bottomLeftRadius = radius;
-			setHasChanged(true);
-			return *this;
-		}
+		Borders &setBottomLeftRadius(BorderRadius radius);
 
 		/**
 		 * @brief Set the same border radius for all corners.
 		 * @param radius The new border radius to set for all corners.
 		 * @return Reference to this Borders component for chaining.
 		 */
-		Borders &setBorderRadius(BorderRadius radius)
-		{
-			return setTopLeftRadius(radius)
-				.setTopRightRadius(radius)
-				.setBottomRightRadius(radius)
-				.setBottomLeftRadius(radius);
-		}
+		Borders &setBorderRadius(BorderRadius radius);
 	};
 
 }	 // namespace guillaume::components

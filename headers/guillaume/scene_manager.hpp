@@ -24,6 +24,9 @@
 
 #include <map>
 #include <memory>
+#include <stdexcept>
+#include <string>
+#include <typeindex>
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
@@ -62,21 +65,7 @@ namespace guillaume
 		 * @return Pointer to the active scene, or nullptr if no active scene
 		 * is set.
 		 */
-		std::unique_ptr<Scene> &getActiveScene(void)
-		{
-			if (_scenes.empty()) {
-				getLogger().error("Cannot activate scene: no scenes are "
-									  "registered");
-				throw std::runtime_error("No scenes registered in scene manager");
-			}
-
-			if (_activeSceneType == typeid(void)) {
-				_activeSceneType = _scenes.begin()->first;
-				getLogger().info("No active scene set. Defaulting to first "
-									 "registered scene");
-			}
-			return _scenes[_activeSceneType];
-		}
+		std::unique_ptr<Scene> &getActiveScene(void);
 
 		protected:
 		/**
@@ -114,8 +103,8 @@ namespace guillaume
 			std::type_index typeIndex(typeid(SceneType));
 			if (_scenes.find(typeIndex) == _scenes.end()) {
 				getLogger().error("Scene switch failed. Scene type is not "
-									  "registered: "
-									  + std::string(typeid(SceneType).name()));
+								  "registered: "
+								  + std::string(typeid(SceneType).name()));
 				throw std::runtime_error("Scene not found in scene manager");
 			}
 			_activeSceneType = typeIndex;
@@ -127,18 +116,12 @@ namespace guillaume
 		 * @brief Get the active entity registry.
 		 * @return Reference to the active entity registry.
 		 */
-		ecs::EntityRegistry &getActiveEntityRegistry(void)
-		{
-			return getActiveScene()->getEntityRegistry();
-		}
+		ecs::EntityRegistry &getActiveEntityRegistry(void);
 
 		/**
 		 * @brief Get the active component registry.
 		 * @return Reference to the active component registry.
 		 */
-		ecs::ComponentRegistry &getActiveComponentRegistry(void)
-		{
-			return getActiveScene()->getComponentRegistry();
-		}
+		ecs::ComponentRegistry &getActiveComponentRegistry(void);
 	};
-}	 // namespace guillaume
+} // namespace guillaume

@@ -20,46 +20,37 @@
  SOFTWARE.
  */
 
-#pragma once
-
-#include <utility/graphic/color.hpp>
-
-#include "guillaume/ecs/component.hpp"
+#include "guillaume/components/glyph.hpp"
 
 namespace guillaume::components
 {
-
-	/**
-	 * @brief Component representing a color.
-	 */
-	class Color: public ecs::Component
+	uint32_t Glyph::getCode(void) const
 	{
-		private:
-		utility::graphic::Color32Bit _color;	///< The color value
+		return _code;
+	}
 
-		public:
-		/**
-		 * @brief Constructor for the Color component.
-		 */
-		explicit Color(void);
+	Glyph &Glyph::setCode(uint32_t code)
+	{
+		if (_code == code) {
+			return *this;
+		}
+		_code = code;
+		setHasChanged(true);
+		return *this;
+	}
 
-		/**
-		 * @brief Default destructor for the Color component.
-		 */
-		~Color(void) = default;
+	const std::string &Glyph::getName(void) const
+	{
+		return _name;
+	}
 
-		/**
-		 * @brief Get the color value.
-		 * @return The color value.
-		 */
-		const utility::graphic::Color32Bit &getColor() const;
-
-		/**
-		 * @brief Set the color value.
-		 * @param color The new color value to set.
-		 * @return Reference to this Color component for chaining.
-		 */
-		Color &setColor(const utility::graphic::Color32Bit &color);
-	};
-
-}	 // namespace guillaume::components
+	Glyph &Glyph::setName(const std::string &name)
+	{
+		if (_name == name) {
+			return *this;
+		}
+		_name = name;
+		setHasChanged(true);
+		return *this;
+	}
+} // namespace guillaume::components

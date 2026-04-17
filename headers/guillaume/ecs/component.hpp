@@ -45,19 +45,13 @@ namespace guillaume::ecs
 		 * pass.
 		 * @return True when the component is marked as changed.
 		 */
-		bool hasChanged(void) const
-		{
-			return _hasChanged;
-		}
+		bool hasChanged(void) const;
 
 		/**
 		 * @brief Set the changed state for the component.
 		 * @param hasChanged New changed state value.
 		 */
-		void setHasChanged(bool hasChanged)
-		{
-			_hasChanged = hasChanged;
-		}
+		void setHasChanged(bool hasChanged);
 
 		/**
 		 * @brief Default constructor for the Component class.

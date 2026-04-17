@@ -24,4 +24,79 @@
 
 namespace guillaume::components
 {
+	Borders::Borders(void)
+		: _topLeftRadius(0.0f)
+		, _topRightRadius(0.0f)
+		, _bottomRightRadius(0.0f)
+		, _bottomLeftRadius(0.0f)
+	{
+	}
+
+	Borders::BorderRadius Borders::getTopLeftRadius(void) const
+	{
+		return _topLeftRadius;
+	}
+
+	Borders &Borders::setTopLeftRadius(BorderRadius radius)
+	{
+		if (_topLeftRadius == radius) {
+			return *this;
+		}
+		_topLeftRadius = radius;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Borders::BorderRadius Borders::getTopRightRadius(void) const
+	{
+		return _topRightRadius;
+	}
+
+	Borders &Borders::setTopRightRadius(BorderRadius radius)
+	{
+		if (_topRightRadius == radius) {
+			return *this;
+		}
+		_topRightRadius = radius;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Borders::BorderRadius Borders::getBottomRightRadius(void) const
+	{
+		return _bottomRightRadius;
+	}
+
+	Borders &Borders::setBottomRightRadius(BorderRadius radius)
+	{
+		if (_bottomRightRadius == radius) {
+			return *this;
+		}
+		_bottomRightRadius = radius;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Borders::BorderRadius Borders::getBottomLeftRadius(void) const
+	{
+		return _bottomLeftRadius;
+	}
+
+	Borders &Borders::setBottomLeftRadius(BorderRadius radius)
+	{
+		if (_bottomLeftRadius == radius) {
+			return *this;
+		}
+		_bottomLeftRadius = radius;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Borders &Borders::setBorderRadius(BorderRadius radius)
+	{
+		return setTopLeftRadius(radius)
+			.setTopRightRadius(radius)
+			.setBottomRightRadius(radius)
+			.setBottomLeftRadius(radius);
+	}
 }	 // namespace guillaume::components

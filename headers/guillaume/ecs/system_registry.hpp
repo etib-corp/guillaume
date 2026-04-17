@@ -117,10 +117,7 @@ namespace guillaume::ecs
 		 * @note If a system of the same type is already registered, it is
 		 * replaced.
 		 */
-		void registerNewSystem(std::unique_ptr<System> system)
-		{
-			_systems[system->getPhase()].push_back(std::move(system));
-		}
+		void registerNewSystem(std::unique_ptr<System> system);
 
 		/**
 		 * @brief Get all systems registered for a specific update phase.
@@ -132,15 +129,7 @@ namespace guillaume::ecs
 		 * specified phase.
 		 */
 		const std::vector<std::unique_ptr<System>> &
-			getSystemsByPhase(System::Phase phase) const
-		{
-			auto it = _systems.find(phase);
-			if (it != _systems.end()) {
-				return it->second;
-			}
-			static const std::vector<std::unique_ptr<System>> empty;
-			return empty;
-		}
+			getSystemsByPhase(System::Phase phase) const;
 	};
 
 }	 // namespace guillaume::ecs

@@ -24,6 +24,451 @@
 
 namespace guillaume
 {
+	ExtendedColor::ExtendedColor(void)
+		: _color()
+		, _name("")
+		, _description("")
+		, _harmonized(false)
+	{
+	}
+
+	ExtendedColor::ExtendedColor(const utility::graphic::Color32Bit &color,
+							   const std::string &name,
+							   const std::string &description,
+							   bool harmonized)
+		: _color(color)
+		, _name(name)
+		, _description(description)
+		, _harmonized(harmonized)
+	{
+	}
+
+	const utility::graphic::Color32Bit &ExtendedColor::getColor(void) const
+	{
+		return _color;
+	}
+
+	const std::string &ExtendedColor::getName(void) const
+	{
+		return _name;
+	}
+
+	const std::string &ExtendedColor::getDescription(void) const
+	{
+		return _description;
+	}
+
+	bool ExtendedColor::isHarmonized(void) const
+	{
+		return _harmonized;
+	}
+
+	void ExtendedColor::setColor(const utility::graphic::Color32Bit &color)
+	{
+		_color = color;
+	}
+
+	void ExtendedColor::setName(const std::string &name)
+	{
+		_name = name;
+	}
+
+	void ExtendedColor::setDescription(const std::string &description)
+	{
+		_description = description;
+	}
+
+	void ExtendedColor::setHarmonized(bool harmonized)
+	{
+		_harmonized = harmonized;
+	}
+
+	Scheme::Scheme(
+		const std::array<ExtendedColor,
+						 static_cast<std::size_t>(SchemeColorRole::Count)> &colors)
+		: _colors(colors)
+	{
+	}
+
+	const ExtendedColor &Scheme::getColor(SchemeColorRole role) const
+	{
+		return _colors[toIndex(role)];
+	}
+
+	ExtendedColor &Scheme::getColor(SchemeColorRole role)
+	{
+		return _colors[toIndex(role)];
+	}
+
+	void Scheme::setColor(SchemeColorRole role, const ExtendedColor &color)
+	{
+		_colors[toIndex(role)] = color;
+	}
+
+	void Scheme::setColor(SchemeColorRole role,
+					 const utility::graphic::Color32Bit &color,
+					 const std::string &name,
+					 const std::string &description,
+					 bool harmonized)
+	{
+		_colors[toIndex(role)] =
+			ExtendedColor(color, name, description, harmonized);
+	}
+
+	const auto &Scheme::getColors(void) const
+	{
+		return _colors;
+	}
+
+	Palette::Palette(void)
+		: _name("")
+		, _description("")
+		, _tones()
+	{
+	}
+
+	Palette::Palette(const std::string &name, const std::string &description)
+		: _name(name)
+		, _description(description)
+		, _tones()
+	{
+	}
+
+	const std::string &Palette::getName(void) const
+	{
+		return _name;
+	}
+
+	const std::string &Palette::getDescription(void) const
+	{
+		return _description;
+	}
+
+	const std::map<Palette::Tone, ExtendedColor> &Palette::getTones(void) const
+	{
+		return _tones;
+	}
+
+	void Palette::setName(const std::string &name)
+	{
+		_name = name;
+	}
+
+	void Palette::setDescription(const std::string &description)
+	{
+		_description = description;
+	}
+
+	void Palette::setTone(Tone tone, const ExtendedColor &color)
+	{
+		_tones[tone] = color;
+	}
+
+	void Palette::setTone(Tone tone,
+					 const utility::graphic::Color32Bit &color,
+					 const std::string &name,
+					 const std::string &description,
+					 bool harmonized)
+	{
+		_tones[tone] = ExtendedColor(color, name, description, harmonized);
+	}
+
+	bool Palette::hasTone(Tone tone) const
+	{
+		return _tones.find(tone) != _tones.end();
+	}
+
+	const ExtendedColor &Palette::getTone(Tone tone) const
+	{
+		const auto iterator = _tones.find(tone);
+		if (iterator == _tones.end()) {
+			throw std::out_of_range("Requested tone does not exist in palette");
+		}
+		return iterator->second;
+	}
+
+	void Palette::removeTone(Tone tone)
+	{
+		_tones.erase(tone);
+	}
+
+	void Palette::clearTones(void)
+	{
+		_tones.clear();
+	}
+
+	Theme::Theme(void)
+		: _name("")
+		, _description("")
+	{
+	}
+
+	Theme::Theme(const std::string &name, const std::string &description)
+		: _name(name)
+		, _description(description)
+	{
+	}
+
+	const std::string &Theme::getName(void) const
+	{
+		return _name;
+	}
+
+	const std::string &Theme::getDescription(void) const
+	{
+		return _description;
+	}
+
+	void Theme::setName(const std::string &name)
+	{
+		_name = name;
+	}
+
+	void Theme::setDescription(const std::string &description)
+	{
+		_description = description;
+	}
+
+	const Scheme &Theme::getLightScheme(void) const
+	{
+		return _lightScheme;
+	}
+
+	const Scheme &Theme::getLightMediumContrastScheme(void) const
+	{
+		return _lightMediumContrastScheme;
+	}
+
+	const Scheme &Theme::getLightHighContrastScheme(void) const
+	{
+		return _lightHighContrastScheme;
+	}
+
+	const Scheme &Theme::getDarkScheme(void) const
+	{
+		return _darkScheme;
+	}
+
+	const Scheme &Theme::getDarkMediumContrastScheme(void) const
+	{
+		return _darkMediumContrastScheme;
+	}
+
+	const Scheme &Theme::getDarkHighContrastScheme(void) const
+	{
+		return _darkHighContrastScheme;
+	}
+
+	const Palette &Theme::getPrimaryPalette(void) const
+	{
+		return _primaryPalette;
+	}
+
+	const Palette &Theme::getSecondaryPalette(void) const
+	{
+		return _secondaryPalette;
+	}
+
+	const Palette &Theme::getTertiaryPalette(void) const
+	{
+		return _tertiaryPalette;
+	}
+
+	const Palette &Theme::getNeutralPalette(void) const
+	{
+		return _neutralPalette;
+	}
+
+	const Palette &Theme::getNeutralVariantPalette(void) const
+	{
+		return _neutralVariantPalette;
+	}
+
+	Scheme &Theme::getLightScheme(void)
+	{
+		return _lightScheme;
+	}
+
+	Scheme &Theme::getLightMediumContrastScheme(void)
+	{
+		return _lightMediumContrastScheme;
+	}
+
+	Scheme &Theme::getLightHighContrastScheme(void)
+	{
+		return _lightHighContrastScheme;
+	}
+
+	Scheme &Theme::getDarkScheme(void)
+	{
+		return _darkScheme;
+	}
+
+	Scheme &Theme::getDarkMediumContrastScheme(void)
+	{
+		return _darkMediumContrastScheme;
+	}
+
+	Scheme &Theme::getDarkHighContrastScheme(void)
+	{
+		return _darkHighContrastScheme;
+	}
+
+	Palette &Theme::getPrimaryPalette(void)
+	{
+		return _primaryPalette;
+	}
+
+	Palette &Theme::getSecondaryPalette(void)
+	{
+		return _secondaryPalette;
+	}
+
+	Palette &Theme::getTertiaryPalette(void)
+	{
+		return _tertiaryPalette;
+	}
+
+	Palette &Theme::getNeutralPalette(void)
+	{
+		return _neutralPalette;
+	}
+
+	Palette &Theme::getNeutralVariantPalette(void)
+	{
+		return _neutralVariantPalette;
+	}
+
+	void Theme::setLightScheme(const Scheme &scheme)
+	{
+		_lightScheme = scheme;
+	}
+
+	void Theme::setLightMediumContrastScheme(const Scheme &scheme)
+	{
+		_lightMediumContrastScheme = scheme;
+	}
+
+	void Theme::setLightHighContrastScheme(const Scheme &scheme)
+	{
+		_lightHighContrastScheme = scheme;
+	}
+
+	void Theme::setDarkScheme(const Scheme &scheme)
+	{
+		_darkScheme = scheme;
+	}
+
+	void Theme::setDarkMediumContrastScheme(const Scheme &scheme)
+	{
+		_darkMediumContrastScheme = scheme;
+	}
+
+	void Theme::setDarkHighContrastScheme(const Scheme &scheme)
+	{
+		_darkHighContrastScheme = scheme;
+	}
+
+	void Theme::setPrimaryPalette(const Palette &palette)
+	{
+		_primaryPalette = palette;
+	}
+
+	void Theme::setSecondaryPalette(const Palette &palette)
+	{
+		_secondaryPalette = palette;
+	}
+
+	void Theme::setTertiaryPalette(const Palette &palette)
+	{
+		_tertiaryPalette = palette;
+	}
+
+	void Theme::setNeutralPalette(const Palette &palette)
+	{
+		_neutralPalette = palette;
+	}
+
+	void Theme::setNeutralVariantPalette(const Palette &palette)
+	{
+		_neutralVariantPalette = palette;
+	}
+
+	const Scheme &Theme::getScheme(ThemeSchemeRole role) const
+	{
+		switch (role) {
+			case ThemeSchemeRole::Light:
+				return _lightScheme;
+			case ThemeSchemeRole::LightMediumContrast:
+				return _lightMediumContrastScheme;
+			case ThemeSchemeRole::LightHighContrast:
+				return _lightHighContrastScheme;
+			case ThemeSchemeRole::Dark:
+				return _darkScheme;
+			case ThemeSchemeRole::DarkMediumContrast:
+				return _darkMediumContrastScheme;
+			case ThemeSchemeRole::DarkHighContrast:
+				return _darkHighContrastScheme;
+		}
+
+		return _lightScheme;
+	}
+
+	Scheme &Theme::getScheme(ThemeSchemeRole role)
+	{
+		switch (role) {
+			case ThemeSchemeRole::Light:
+				return _lightScheme;
+			case ThemeSchemeRole::LightMediumContrast:
+				return _lightMediumContrastScheme;
+			case ThemeSchemeRole::LightHighContrast:
+				return _lightHighContrastScheme;
+			case ThemeSchemeRole::Dark:
+				return _darkScheme;
+			case ThemeSchemeRole::DarkMediumContrast:
+				return _darkMediumContrastScheme;
+			case ThemeSchemeRole::DarkHighContrast:
+				return _darkHighContrastScheme;
+		}
+
+		return _lightScheme;
+	}
+
+	const Palette &Theme::getPalette(ThemePaletteRole role) const
+	{
+		switch (role) {
+			case ThemePaletteRole::Primary:
+				return _primaryPalette;
+			case ThemePaletteRole::Secondary:
+				return _secondaryPalette;
+			case ThemePaletteRole::Tertiary:
+				return _tertiaryPalette;
+			case ThemePaletteRole::Neutral:
+				return _neutralPalette;
+			case ThemePaletteRole::NeutralVariant:
+				return _neutralVariantPalette;
+		}
+
+		return _primaryPalette;
+	}
+
+	Palette &Theme::getPalette(ThemePaletteRole role)
+	{
+		switch (role) {
+			case ThemePaletteRole::Primary:
+				return _primaryPalette;
+			case ThemePaletteRole::Secondary:
+				return _secondaryPalette;
+			case ThemePaletteRole::Tertiary:
+				return _tertiaryPalette;
+			case ThemePaletteRole::Neutral:
+				return _neutralPalette;
+			case ThemePaletteRole::NeutralVariant:
+				return _neutralVariantPalette;
+		}
+
+		return _primaryPalette;
+	}
 
 	namespace
 	{

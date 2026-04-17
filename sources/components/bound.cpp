@@ -24,4 +24,33 @@
 
 namespace guillaume::components
 {
+	Bound &Bound::setWidth(std::size_t width)
+	{
+		if (_width == width) {
+			return *this;
+		}
+		_width = width;
+		setHasChanged(true);
+		return *this;
+	}
+
+	std::size_t Bound::getWidth(void) const
+	{
+		return _width;
+	}
+
+	Bound &Bound::setHeight(std::size_t height)
+	{
+		if (_height == height) {
+			return *this;
+		}
+		_height = height;
+		setHasChanged(true);
+		return *this;
+	}
+
+	std::size_t Bound::getHeight(void) const
+	{
+		return _height;
+	}
 }	 // namespace guillaume::components

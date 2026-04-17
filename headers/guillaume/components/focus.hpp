@@ -56,20 +56,13 @@ namespace guillaume::components
 		 * @brief Set the onFocus event handler.
 		 * @param handler The function to call on focus events.
 		 */
-		void setOnFocusHandler(const Handler &handler)
-		{
-			_onFocus = handler;
-			setHasChanged(true);
-		}
+		void setOnFocusHandler(const Handler &handler);
 
 		/**
 		 * @brief Get the onFocus event handler.
 		 * @return The onFocus event handler.
 		 */
-		Handler getOnFocusHandler(void) const
-		{
-			return _onFocus;
-		}
+		Handler getOnFocusHandler(void) const;
 	};
 
 }	 // namespace guillaume::components

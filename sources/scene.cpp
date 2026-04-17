@@ -55,4 +55,24 @@ namespace guillaume
 			+ " entity/entities in hierarchy");
 	}
 
+	ecs::EntityBuilderManager &Scene::getBuilderManager(void)
+	{
+		return *_entityBuilderManager;
+	}
+
+	ecs::EntityDirectorManager &Scene::getDirectorManager(void)
+	{
+		return *_entityDirectorManager;
+	}
+
+	ecs::ComponentRegistry &Scene::getComponentRegistry(void)
+	{
+		return _componentRegistry;
+	}
+
+	ecs::EntityRegistry &Scene::getEntityRegistry(void)
+	{
+		return *this;
+	}
+
 }	 // namespace guillaume
