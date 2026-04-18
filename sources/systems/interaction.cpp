@@ -26,344 +26,187 @@
 #include <utility/graphic/position.hpp>
 #include <utility/graphic/ray.hpp>
 
-#include <cmath>
-#include <array>
-#include <optional>
-
-namespace
-{
-
-	using WorldPosition	   = utility::graphic::PositionF;
-	using WorldOrientation = utility::graphic::OrientationF;
-	using Size			   = utility::math::Vector2F;
-
-	static WorldPosition
-		rotatePositionByQuaternion(const WorldPosition &position,
-								   const WorldOrientation &orientation)
-	{
-		const auto normalizedOrientation = orientation.normalized();
-		const float qx					 = normalizedOrientation.x;
-		const float qy					 = normalizedOrientation.y;
-		const float qz					 = normalizedOrientation.z;
-		const float qw					 = normalizedOrientation.w;
-		const float positionX			 = position[0];
-		const float positionY			 = position[1];
-		const float positionZ			 = position[2];
-
-		const float crossX = (qy * positionZ) - (qz * positionY);
-		const float crossY = (qz * positionX) - (qx * positionZ);
-		const float crossZ = (qx * positionY) - (qy * positionX);
-
-		const float tX = 2.0f * crossX;
-		const float tY = 2.0f * crossY;
-		const float tZ = 2.0f * crossZ;
-
-		const float crossTX = (qy * tZ) - (qz * tY);
-		const float crossTY = (qz * tX) - (qx * tZ);
-		const float crossTZ = (qx * tY) - (qy * tX);
-
-		return WorldPosition(positionX + (qw * tX) + crossTX,
-							 positionY + (qw * tY) + crossTY,
-							 positionZ + (qw * tZ) + crossTZ);
-	}
-
-	static WorldPosition
-		computeEntityBoundCenter(const WorldPosition &worldPosition,
-								 const float width, const float height)
-	{
-		WorldPosition center = worldPosition;
-		center[1]			 = worldPosition[1] - (height / 2.0f);
-		return center;
-	}
-
-	static bool
-		isPointInsideEntityBounds(const WorldPosition &point,
-								  const WorldPosition &entityCenter,
-								  const float width, const float height,
-								  const WorldOrientation &entityOrientation)
-	{
-		const float halfWidth  = width / 2.0f;
-		const float halfHeight = height / 2.0f;
-
-		const std::array<WorldPosition, 4> localCorners {
-			WorldPosition(-halfWidth, -halfHeight, 0.0f),
-			WorldPosition(halfWidth, -halfHeight, 0.0f),
-			WorldPosition(halfWidth, halfHeight, 0.0f),
-			WorldPosition(-halfWidth, halfHeight, 0.0f),
-		};
-
-		std::array<utility::math::Vector2F, 4> projectedCorners;
-		for (std::size_t i = 0; i < localCorners.size(); ++i) {
-			const auto rotatedCorner =
-				rotatePositionByQuaternion(localCorners[i], entityOrientation);
-			projectedCorners[i] = utility::math::Vector2F({
-				entityCenter[0] + rotatedCorner[0],
-				entityCenter[1] + rotatedCorner[1],
-			});
-		}
-
-		const utility::math::Vector2F projectedPoint({ point[0], point[1] });
-
-		float referenceSign = 0.0f;
-		for (std::size_t i = 0; i < projectedCorners.size(); ++i) {
-			const auto &a = projectedCorners[i];
-			const auto &b = projectedCorners[(i + 1) % projectedCorners.size()];
-
-			const float edgeX  = b[0] - a[0];
-			const float edgeY  = b[1] - a[1];
-			const float pointX = projectedPoint[0] - a[0];
-			const float pointY = projectedPoint[1] - a[1];
-			const float cross  = (edgeX * pointY) - (edgeY * pointX);
-
-			if (std::abs(cross) <= 1.0e-5f) {
-				continue;
-			}
-
-			if (referenceSign == 0.0f) {
-				referenceSign = cross;
-				continue;
-			}
-
-			if ((cross > 0.0f) != (referenceSign > 0.0f)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-}	 // namespace
-
 namespace guillaume::systems
 {
 
-	Interaction::Interaction(event::EventBus &eventBus, Renderer &renderer)
-		: ecs::SystemFiller<components::Transform, components::Bound>(
-			  ecs::System::Phase::Event)
-		, _mouseButtonSubscriber(eventBus)
-		, _mouseMotionSubscriber(eventBus)
-		, _renderer(renderer)
+	void Interaction::updateLastInputEvents(void)
 	{
+		while (_mouseButtonSubscriber.hasPendingEvents()) {
+			_lastMouseButtonEvent = _mouseButtonSubscriber.getNextEvent();
+		}
+		while (_mouseMotionSubscriber.hasPendingEvents()) {
+			_lastMouseMotionEvent = _mouseMotionSubscriber.getNextEvent();
+		}
+		while (_controllerButtonSubscriber.hasPendingEvents()) {
+			_lastControllerButtonEvent =
+				_controllerButtonSubscriber.getNextEvent();
+		}
+		while (_controllerMotionSubscriber.hasPendingEvents()) {
+			_lastControllerMotionEvent =
+				_controllerMotionSubscriber.getNextEvent();
+		}
+		while (_handPinchSubscriber.hasPendingEvents()) {
+			_lastHandPinchEvent = _handPinchSubscriber.getNextEvent();
+		}
+		while (_handPokeSubscriber.hasPendingEvents()) {
+			_lastHandPokeEvent = _handPokeSubscriber.getNextEvent();
+		}
 	}
 
-	void Interaction::updateMouseMotionState(
-		const ecs::Entity::Identifier &entityIdentifier)
-	{
-		if (_pendingMotionEvent
-			&& _evaluatedMotionEntities.contains(entityIdentifier)) {
-			_pendingMotionEvent.reset();
-			_evaluatedMotionEntities.clear();
-		}
-
-		if (!_pendingMotionEvent) {
-			while (_mouseMotionSubscriber.hasPendingEvents()) {
-				auto nextEvent = _mouseMotionSubscriber.getNextEvent();
-				if (!nextEvent) {
-					continue;
-				}
-				_pendingMotionEvent = std::move(nextEvent);
-				_evaluatedMotionEntities.clear();
-				break;
-			}
-		}
-
-		if (!_pendingMotionEvent) {
-			return;
-		}
-
-		_lastMousePosition = _pendingMotionEvent->getPosition();
-		_hasMousePosition  = true;
-		_evaluatedMotionEntities.insert(entityIdentifier);
-	}
-
-	void Interaction::processHover(
-		ecs::ComponentRegistry &componentRegistry,
+	void Interaction::processMouseHover(
 		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
 	{
-		if (!componentRegistry.hasComponent<components::Interaction>(
-				entityIdentifier)) {
-			return;
-		}
-
 		auto &interaction =
-			componentRegistry.getComponent<components::Interaction>(
+			getComponentRegistry().getComponent<components::Interaction>(
 				entityIdentifier);
 
 		if (isInside) {
-			if (interaction.isHovered()) {
+			if (interaction.isMouseHovered()) {
 				return;
 			}
 
-			interaction.setHovered(true);
-			const auto onHover = interaction.getOnHoverHandler();
+			interaction.setMouseHovered(true);
+			const auto onHover = interaction.getMouseOnHoverHandler();
 			if (onHover) {
 				onHover();
 			}
 			return;
 		}
 
-		if (!interaction.isHovered()) {
+		if (!interaction.isMouseHovered()) {
 			return;
 		}
 
-		interaction.setHovered(false);
-		const auto onUnhover = interaction.getOnUnhoverHandler();
-		if (onUnhover) {
-			onUnhover();
+		interaction.setMouseHovered(false);
+		if (interaction.getMouseOnUnhoverHandler()) {
+			interaction.getMouseOnUnhoverHandler()();
 		}
 	}
 
-	void Interaction::processClick(
-		ecs::ComponentRegistry &componentRegistry,
+	void Interaction::processMouseButtonClick(
 		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
 	{
-		if (_pendingClickEvent
-			&& _evaluatedClickEntities.contains(entityIdentifier)) {
-			_buttonStates = _pendingClickEvent->getButtonsState();
-			_pendingClickEvent.reset();
-			_evaluatedClickEntities.clear();
-		}
-
-		if (!_pendingClickEvent) {
-			while (_mouseButtonSubscriber.hasPendingEvents()) {
-				auto nextEvent = _mouseButtonSubscriber.getNextEvent();
-				if (!nextEvent) {
-					continue;
-				}
-				_pendingClickEvent = std::move(nextEvent);
-				_evaluatedClickEntities.clear();
-				break;
-			}
-		}
-
-		if (!_pendingClickEvent) {
-			return;
-		}
-
-		_evaluatedClickEntities.insert(entityIdentifier);
-
-		if (!componentRegistry.hasComponent<components::Interaction>(
-				entityIdentifier)) {
+		if (_lastMouseButtonEvent == nullptr) {
 			return;
 		}
 
 		auto &interaction =
-			componentRegistry.getComponent<components::Interaction>(
+			getComponentRegistry().getComponent<components::Interaction>(
 				entityIdentifier);
-
-		utility::event::MouseButtonEvent::MouseButtonsState
-			currentButtonStates = _pendingClickEvent->getButtonsState();
-		utility::event::MouseButtonEvent::MouseButtonsState changedButtons =
-			currentButtonStates ^ _buttonStates;
 
 		for (std::size_t buttonIndex = 0;
 			 buttonIndex < static_cast<std::size_t>(
 				 utility::event::MouseButtonEvent::MouseButton::Last);
 			 ++buttonIndex) {
-			if (!changedButtons.test(buttonIndex)) {
+			if (!_lastMouseButtonEvent->getButtonsState().test(buttonIndex)) {
 				continue;
 			}
 
 			const auto button =
 				static_cast<utility::event::MouseButtonEvent::MouseButton>(
 					buttonIndex);
-			const bool isPressed = currentButtonStates.test(buttonIndex);
+			const bool isPressed =
+				_lastMouseButtonEvent->getButtonsState().test(buttonIndex);
 
 			if (isPressed && isInside) {
-				interaction.setPressedInside(button, true);
-				interaction.setClicked(button, true);
+				interaction.setMouseButtonClicked(button, true);
 				const auto &onClickHandler =
-					interaction.getOnClickHandlers().at(button);
+					interaction.getMouseButtonOnClickHandlers().at(button);
 				if (onClickHandler) {
-					onClickHandler(_pendingClickEvent->getPosition());
+					onClickHandler();
 				}
 				break;
 			}
 
-			if (!isPressed && interaction.isPressedInside(button) && isInside) {
-				interaction.setPressedInside(button, false);
-				interaction.setClicked(button, false);
+			if (!isPressed && interaction.isMouseButtonClicked(button)
+				&& isInside) {
+				interaction.setMouseButtonClicked(button, false);
 				const auto &onReleaseHandler =
-					interaction.getOnReleaseHandlers().at(button);
+					interaction.getMouseButtonOnClickReleaseHandlers().at(
+						button);
 				if (onReleaseHandler) {
-					onReleaseHandler(_pendingClickEvent->getPosition());
+					onReleaseHandler();
 				}
 				break;
 			}
 
 			if (!isPressed) {
-				interaction.setClicked(button, false);
-				interaction.setPressedInside(button, false);
+				interaction.setMouseButtonClicked(button, false);
 			}
 		}
 	}
 
+	void Interaction::processControllerHover(
+		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
+	{
+		if (_lastControllerMotionEvent == nullptr) {
+			return;
+		}
+	}
+
+	void Interaction::processControllerButtonClick(
+		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
+	{
+		if (_lastControllerButtonEvent == nullptr) {
+			return;
+		}
+	}
+
+	void Interaction::processHandPinch(
+		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
+	{
+		if (_lastHandPinchEvent == nullptr) {
+			return;
+		}
+	}
+
+	void Interaction::processHandPoke(
+		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
+	{
+		if (_lastHandPokeEvent == nullptr) {
+			return;
+		}
+	}
+
+	Interaction::Interaction(event::EventBus &eventBus, Renderer &renderer)
+		: ecs::SystemFiller<components::Interaction, components::Transform,
+							components::Bound>(ecs::System::Phase::Event)
+		, _mouseButtonSubscriber(eventBus)
+		, _mouseMotionSubscriber(eventBus)
+		, _controllerButtonSubscriber(eventBus)
+		, _controllerMotionSubscriber(eventBus)
+		, _handPinchSubscriber(eventBus)
+		, _handPokeSubscriber(eventBus)
+		, _renderer(renderer)
+	{
+	}
+
 	void Interaction::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
-		auto &componentRegistry = getComponentRegistry();
-
 		getLogger().debug("Updating Interaction system for entity "
 						  + std::to_string(entityIdentifier));
 
-		const bool hasInteraction =
-			componentRegistry.hasComponent<components::Interaction>(
-				entityIdentifier);
-
-		if (!hasInteraction) {
+		if (!requireComponent<components::Interaction>(entityIdentifier)
+			|| !requireComponent<components::Transform>(entityIdentifier)
+			|| !requireComponent<components::Bound>(entityIdentifier)) {
 			return;
 		}
 
-		updateMouseMotionState(entityIdentifier);
+		bool isInside = false;
 
-		if (!_pendingClickEvent) {
-			while (_mouseButtonSubscriber.hasPendingEvents()) {
-				auto nextEvent = _mouseButtonSubscriber.getNextEvent();
-				if (!nextEvent) {
-					continue;
-				}
-				_pendingClickEvent = std::move(nextEvent);
-				_evaluatedClickEntities.clear();
-				break;
-			}
-		}
+		updateLastInputEvents();
 
-		const auto &bound =
-			componentRegistry.getComponent<components::Bound>(entityIdentifier);
+		processMouseHover(entityIdentifier, isInside);
 
-		std::optional<utility::event::MouseMotionEvent::MousePosition>
-			pointerScreenPosition = std::nullopt;
-		if (_pendingClickEvent) {
-			pointerScreenPosition = _pendingClickEvent->getPosition();
-		} else if (_hasMousePosition) {
-			pointerScreenPosition = _lastMousePosition;
-		}
+		processMouseButtonClick(entityIdentifier, isInside);
 
-		if (!pointerScreenPosition.has_value()) {
-			processHover(componentRegistry, entityIdentifier, false);
-			processClick(componentRegistry, entityIdentifier, false);
-			return;
-		}
+		processControllerHover(entityIdentifier, isInside);
 
-		const auto viewPosition = _renderer.getView().getPose().getPosition();
-		const WorldPosition worldMousePosition(
-			pointerScreenPosition->x + viewPosition[0],
-			pointerScreenPosition->y + viewPosition[1], 0.0f);
+		processControllerButtonClick(entityIdentifier, isInside);
 
-		const auto &transform =
-			componentRegistry.getComponent<components::Transform>(
-				entityIdentifier);
-		const auto pose	  = transform.getPose();
-		const auto width  = bound.getWidth();
-		const auto height = bound.getHeight();
+		processHandPinch(entityIdentifier, isInside);
 
-		const auto trueCenter =
-			computeEntityBoundCenter(pose.getPosition(), width, height);
-		const bool isInside =
-			isPointInsideEntityBounds(worldMousePosition, trueCenter, width,
-									  height, pose.getOrientation());
-
-		processHover(componentRegistry, entityIdentifier, isInside);
-		processClick(componentRegistry, entityIdentifier, isInside);
+		processHandPoke(entityIdentifier, isInside);
 	}
 
 }	 // namespace guillaume::systems

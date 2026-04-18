@@ -26,130 +26,263 @@ namespace guillaume::components
 {
 	Interaction::Interaction(void)
 	{
+		_onMouseHover	= nullptr;
+		_onMouseUnhover = nullptr;
+		_isMouseHovered = false;
+
 		for (const auto button:
 			 { utility::event::MouseButtonEvent::MouseButton::Left,
 			   utility::event::MouseButtonEvent::MouseButton::Middle,
 			   utility::event::MouseButtonEvent::MouseButton::Right,
 			   utility::event::MouseButtonEvent::MouseButton::X1,
 			   utility::event::MouseButtonEvent::MouseButton::X2 }) {
-			_isClicked[button] = false;
-			_pressedInside[button] = false;
-			_onClickHandlers[button] = nullptr;
-			_onReleaseHandlers[button] = nullptr;
+			_isMouseButtonClicked[button]			   = false;
+			_onMouseButtonClickHandlers[button]		   = nullptr;
+			_onMouseButtonClickReleaseHandlers[button] = nullptr;
 		}
+
+		for (const auto button:
+			 { utility::event::ControllerButtonEvent::Button::X,
+			   utility::event::ControllerButtonEvent::Button::Y,
+			   utility::event::ControllerButtonEvent::Button::A,
+			   utility::event::ControllerButtonEvent::Button::B,
+			   utility::event::ControllerButtonEvent::Button::Menu,
+			   utility::event::ControllerButtonEvent::Button::System }) {
+			_isControllerButtonClicked[button]				= false;
+			_onControllerButtonClickHandlers[button]		= nullptr;
+			_onControllerButtonClickReleaseHandlers[button] = nullptr;
+		}
+
+		_onHandPinchHandler = nullptr;
+		_isHandPinched		= false;
+		_onHandPokeHandler	= nullptr;
+		_isHandPoked		= false;
 	}
 
-	Interaction &Interaction::setOnClickHandler(
-		const utility::event::MouseButtonEvent::MouseButton &button,
-		const ClickHandler &handler)
+	Interaction &
+		Interaction::setMouseOnHoverHandler(const MouseHoverHandler &handler)
 	{
-		_onClickHandlers[button] = handler;
+		_onMouseHover = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
-	Interaction &Interaction::setOnReleaseHandler(
-		const utility::event::MouseButtonEvent::MouseButton &button,
-		const ClickHandler &handler)
+	Interaction &Interaction::setMouseOnUnhoverHandler(
+		const MouseUnhoverHandler &handler)
 	{
-		_onReleaseHandlers[button] = handler;
+		_onMouseUnhover = handler;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Interaction::MouseHoverHandler
+		Interaction::getMouseOnHoverHandler(void) const
+	{
+		return _onMouseHover;
+	}
+
+	Interaction::MouseUnhoverHandler
+		Interaction::getMouseOnUnhoverHandler(void) const
+	{
+		return _onMouseUnhover;
+	}
+
+	bool Interaction::isMouseHovered(void) const
+	{
+		return _isMouseHovered;
+	}
+
+	Interaction &Interaction::setMouseHovered(bool isHovered)
+	{
+		if (_isMouseHovered == isHovered) {
+			return *this;
+		}
+		_isMouseHovered = isHovered;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Interaction &Interaction::setMouseButtonOnClickHandler(
+		const utility::event::MouseButtonEvent::MouseButton &button,
+		const MouseButtonClickHandler &handler)
+	{
+		_onMouseButtonClickHandlers[button] = handler;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Interaction &Interaction::setMouseButtonOnClickReleaseHandler(
+		const utility::event::MouseButtonEvent::MouseButton &button,
+		const MouseButtonClickReleaseHandler &handler)
+	{
+		_onMouseButtonClickReleaseHandlers[button] = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
 	const std::map<utility::event::MouseButtonEvent::MouseButton,
-				   Interaction::ClickHandler> &
-		Interaction::getOnClickHandlers() const
+				   Interaction::MouseButtonClickHandler> &
+		Interaction::getMouseButtonOnClickHandlers() const
 	{
-		return _onClickHandlers;
+		return _onMouseButtonClickHandlers;
 	}
 
 	const std::map<utility::event::MouseButtonEvent::MouseButton,
-				   Interaction::ClickHandler> &
-		Interaction::getOnReleaseHandlers() const
+				   Interaction::MouseButtonClickReleaseHandler> &
+		Interaction::getMouseButtonOnClickReleaseHandlers() const
 	{
-		return _onReleaseHandlers;
+		return _onMouseButtonClickReleaseHandlers;
 	}
 
-	bool Interaction::isClicked(
+	bool Interaction::isMouseButtonClicked(
 		const utility::event::MouseButtonEvent::MouseButton &button) const
 	{
-		return _isClicked.at(button);
+		return _isMouseButtonClicked.at(button);
 	}
 
-	Interaction &Interaction::setClicked(
+	Interaction &Interaction::setMouseButtonClicked(
 		const utility::event::MouseButtonEvent::MouseButton &button,
 		bool clicked)
 	{
-		if (_isEntityClicked == clicked && _isClicked[button] == clicked) {
+		if (_isMouseButtonClicked[button] == clicked) {
 			return *this;
 		}
-		_isEntityClicked = clicked;
-		_isClicked[button] = clicked;
+		_isMouseButtonClicked[button] = clicked;
 		setHasChanged(true);
 		return *this;
 	}
 
-	bool Interaction::isEntityClicked() const
+	Interaction &Interaction::setControllerButtonOnClickHandler(
+		const utility::event::ControllerButtonEvent::Button &button,
+		const ControllerButtonClickHandler &handler)
 	{
-		return _isEntityClicked;
+		_onControllerButtonClickHandlers[button] = handler;
+		setHasChanged(true);
+		return *this;
 	}
 
-	Interaction &Interaction::setPressedInside(
-		const utility::event::MouseButtonEvent::MouseButton &button,
-		bool pressedInside)
+	Interaction &Interaction::setControllerButtonOnClickReleaseHandler(
+		const utility::event::ControllerButtonEvent::Button &button,
+		const ControllerButtonClickReleaseHandler &handler)
 	{
-		if (_pressedInside[button] == pressedInside) {
+		_onControllerButtonClickReleaseHandlers[button] = handler;
+		setHasChanged(true);
+		return *this;
+	}
+
+	const std::map<utility::event::ControllerButtonEvent::Button,
+				   Interaction::ControllerButtonClickHandler> &
+		Interaction::getControllerButtonOnClickHandlers() const
+	{
+		return _onControllerButtonClickHandlers;
+	}
+
+	const std::map<utility::event::ControllerButtonEvent::Button,
+				   Interaction::ControllerButtonClickReleaseHandler> &
+		Interaction::getControllerButtonOnClickReleaseHandlers() const
+	{
+		return _onControllerButtonClickReleaseHandlers;
+	}
+
+	bool Interaction::isControllerButtonClicked(
+		const utility::event::ControllerButtonEvent::Button &button) const
+	{
+		return _isControllerButtonClicked.at(button);
+	}
+
+	Interaction &Interaction::setControllerButtonClicked(
+		const utility::event::ControllerButtonEvent::Button &button,
+		bool clicked)
+	{
+		if (_isControllerButtonClicked[button] == clicked) {
 			return *this;
 		}
-		_pressedInside[button] = pressedInside;
+		_isControllerButtonClicked[button] = clicked;
 		setHasChanged(true);
 		return *this;
 	}
 
-	bool Interaction::isPressedInside(
-		const utility::event::MouseButtonEvent::MouseButton &button) const
+	Interaction &Interaction::setControllerOnHoverHandler(
+		const ControllerHoverHandler &handler)
 	{
-		return _pressedInside.at(button);
-	}
-
-	Interaction &Interaction::setOnHoverHandler(const HoverHandler &handler)
-	{
-		_onHover = handler;
+		_onControllerHover = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
-	Interaction &Interaction::setOnUnhoverHandler(const HoverHandler &handler)
+	Interaction &Interaction::setControllerOnUnhoverHandler(
+		const ControllerUnhoverHandler &handler)
 	{
-		_onUnhover = handler;
+		_onControllerUnhover = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
-	Interaction::HoverHandler Interaction::getOnHoverHandler(void) const
+	Interaction::ControllerHoverHandler
+		Interaction::getControllerOnHoverHandler(void) const
 	{
-		return _onHover;
+		return _onControllerHover;
 	}
 
-	Interaction::HoverHandler Interaction::getOnUnhoverHandler(void) const
+	Interaction::ControllerUnhoverHandler
+		Interaction::getControllerOnUnhoverHandler(void) const
 	{
-		return _onUnhover;
+		return _onControllerUnhover;
 	}
 
-	bool Interaction::isHovered(void) const
+	bool Interaction::isControllerHovered(void) const
 	{
-		return _isHovered;
+		return _isControllerHovered;
 	}
 
-	Interaction &Interaction::setHovered(bool isHovered)
+	Interaction &Interaction::setControllerHovered(bool isHovered)
 	{
-		if (_isHovered == isHovered) {
+		if (_isControllerHovered == isHovered) {
 			return *this;
 		}
-		_isHovered = isHovered;
+		_isControllerHovered = isHovered;
 		setHasChanged(true);
 		return *this;
+	}
+
+	Interaction &
+		Interaction::setHandPinchHandler(const HandPinchHandler &handler)
+	{
+		_onHandPinchHandler = handler;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Interaction::HandPinchHandler Interaction::getHandPinchHandler(void) const
+	{
+		return _onHandPinchHandler;
+	}
+
+	bool Interaction::isHandPinched(void) const
+	{
+		return _isHandPinched;
+	}
+
+	Interaction &Interaction::setHandPinched(bool isPinched)
+	{
+		if (_isHandPinched == isPinched) {
+			return *this;
+		}
+		_isHandPinched = isPinched;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Interaction &Interaction::setHandPokeHandler(const HandPokeHandler &handler)
+	{
+		_onHandPokeHandler = handler;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Interaction::HandPokeHandler Interaction::getHandPokeHandler(void) const
+	{
+		return _onHandPokeHandler;
 	}
 
 	const utility::math::Vector2F &Interaction::getAccessibilityMargin() const
@@ -166,4 +299,4 @@ namespace guillaume::components
 		_accessibilityMargin = margin;
 		setHasChanged(true);
 	}
-} // namespace guillaume::components
+}	 // namespace guillaume::components
