@@ -26,7 +26,7 @@
 #include <map>
 
 #include <utility/event/mouse_button_event.hpp>
-#include <utility/event/controller_button_event.hpp>
+#include <utility/event/hand_button_event.hpp>
 #include <utility/event/hand_pinch_event.hpp>
 #include <utility/event/hand_poke_event.hpp>
 
@@ -53,18 +53,18 @@ namespace guillaume::components
 		using MouseButtonClickReleaseHandler =
 			std::function<void(void)>;	  ///< Button release event handler type
 
-		using ControllerHoverHandler   = std::function<void(
-			void)>;	   ///< Controller hover event handler type
-		using ControllerUnhoverHandler = std::function<void(
-			void)>;	   ///< Controller unhover event handler type
+		using HandHoverHandler   = std::function<void(
+			void)>;	   ///< Hand hover event handler type
+		using HandUnhoverHandler = std::function<void(
+			void)>;	   ///< Hand unhover event handler type
 
-		using ControllerButtonClickHandler =
-			std::function<void(void)>;	  ///< Controller
+		using HandButtonClickHandler =
+			std::function<void(void)>;	  ///< Hand
 										  ///< button
 										  ///< click
 										  ///< event
-		using ControllerButtonClickReleaseHandler =
-			std::function<void(void)>;	  ///< Controller
+		using HandButtonClickReleaseHandler =
+			std::function<void(void)>;	  ///< Hand
 										  ///< button
 										  ///< release
 										  ///< event
@@ -82,40 +82,40 @@ namespace guillaume::components
 			false
 		};	  ///< Flag indicating if the entity is currently hovered
 
-		std::map<utility::event::MouseButtonEvent::MouseButton,
+		std::map<utility::event::MouseButtonEvent::Button,
 				 MouseButtonClickHandler>
 			_onMouseButtonClickHandlers {};	   ///< Click event handlers
-		std::map<utility::event::MouseButtonEvent::MouseButton,
+		std::map<utility::event::MouseButtonEvent::Button,
 				 MouseButtonClickReleaseHandler>
 			_onMouseButtonClickReleaseHandlers {};	  ///< Release event
 													  ///< handlers
-		std::map<utility::event::MouseButtonEvent::MouseButton, bool>
+		std::map<utility::event::MouseButtonEvent::Button, bool>
 			_isMouseButtonClicked {};	 ///< Flag indicating if the entity is
 										 ///< currently clicked
 
-		ControllerHoverHandler
-			_onControllerHover;	   ///< Controller hover event handler
-		ControllerUnhoverHandler
-			_onControllerUnhover;	 ///< Controller unhover event
+		HandHoverHandler
+			_onHandHover;	   ///< Hand hover event handler
+		HandUnhoverHandler
+			_onHandUnhover;	 ///< Hand unhover event
 									 ///< handler
-		bool _isControllerHovered {
+		bool _isHandHovered {
 			false
 		};	  ///< Flag indicating if the entity is currently hovered by a
-			  ///< controller
+			  ///< hand
 
-		std::map<utility::event::ControllerButtonEvent::Button,
-				 ControllerButtonClickHandler>
-			_onControllerButtonClickHandlers {};	///< Controller button click
+		std::map<utility::event::HandButtonEvent::Button,
+				 HandButtonClickHandler>
+			_onHandButtonClickHandlers {};	///< Hand button click
 													///< event handlers
-		std::map<utility::event::ControllerButtonEvent::Button,
-				 ControllerButtonClickReleaseHandler>
-			_onControllerButtonClickReleaseHandlers {};	   ///< Controller
+		std::map<utility::event::HandButtonEvent::Button,
+				 HandButtonClickReleaseHandler>
+			_onHandButtonClickReleaseHandlers {};	   ///< Hand
 														   ///< button release
 														   ///< event handlers
-		std::map<utility::event::ControllerButtonEvent::Button, bool>
-			_isControllerButtonClicked {};	  ///< Flag indicating if the entity
+		std::map<utility::event::HandButtonEvent::Button, bool>
+			_isHandButtonClicked {};	  ///< Flag indicating if the entity
 											  ///< is currently clicked for a
-											  ///< controller button
+											  ///< hand button
 
 		HandPinchHandler _onHandPinchHandler;	 ///< Hand pinch event handler
 		bool _isHandPinched {
@@ -191,14 +191,14 @@ namespace guillaume::components
 		 * @return Reference to this Interaction component for chaining.
 		 */
 		Interaction &setMouseButtonOnClickHandler(
-			const utility::event::MouseButtonEvent::MouseButton &button,
+			const utility::event::MouseButtonEvent::Button &button,
 			const MouseButtonClickHandler &handler);
 
 		/**
 		 * @brief Get click handlers indexed by mouse button.
 		 * @return A map of mouse buttons to click handlers.
 		 */
-		const std::map<utility::event::MouseButtonEvent::MouseButton,
+		const std::map<utility::event::MouseButtonEvent::Button,
 					   MouseButtonClickHandler> &
 			getMouseButtonOnClickHandlers() const;
 
@@ -209,14 +209,14 @@ namespace guillaume::components
 		 * @return Reference to this Interaction component for chaining.
 		 */
 		Interaction &setMouseButtonOnClickReleaseHandler(
-			const utility::event::MouseButtonEvent::MouseButton &button,
+			const utility::event::MouseButtonEvent::Button &button,
 			const MouseButtonClickReleaseHandler &handler);
 
 		/**
 		 * @brief Get click release handlers indexed by mouse button.
 		 * @return A map of mouse buttons to release handlers.
 		 */
-		const std::map<utility::event::MouseButtonEvent::MouseButton,
+		const std::map<utility::event::MouseButtonEvent::Button,
 					   MouseButtonClickReleaseHandler> &
 			getMouseButtonOnClickReleaseHandlers() const;
 
@@ -226,7 +226,7 @@ namespace guillaume::components
 		 * @return True if clicked for the provided button.
 		 */
 		bool isMouseButtonClicked(
-			const utility::event::MouseButtonEvent::MouseButton &button) const;
+			const utility::event::MouseButtonEvent::Button &button) const;
 
 		/**
 		 * @brief Set clicked state for one mouse button.
@@ -235,106 +235,106 @@ namespace guillaume::components
 		 * @return Reference to this Interaction component for chaining.
 		 */
 		Interaction &setMouseButtonClicked(
-			const utility::event::MouseButtonEvent::MouseButton &button,
+			const utility::event::MouseButtonEvent::Button &button,
 			bool clicked);
 
 		/**
-		 * @brief Set the onClick event handler for one controller button.
-		 * @param button The controller button to associate with the handler.
+		 * @brief Set the onClick event handler for one hand button.
+		 * @param button The hand button to associate with the handler.
 		 * @param handler The function to call on click events.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setControllerButtonOnClickHandler(
-			const utility::event::ControllerButtonEvent::Button &button,
-			const ControllerButtonClickHandler &handler);
+		Interaction &setHandButtonOnClickHandler(
+			const utility::event::HandButtonEvent::Button &button,
+			const HandButtonClickHandler &handler);
 
 		/**
-		 * @brief Get click handlers indexed by controller button.
-		 * @return A map of controller buttons to click handlers.
+		 * @brief Get click handlers indexed by hand button.
+		 * @return A map of hand buttons to click handlers.
 		 */
-		const std::map<utility::event::ControllerButtonEvent::Button,
-					   ControllerButtonClickHandler> &
-			getControllerButtonOnClickHandlers() const;
+		const std::map<utility::event::HandButtonEvent::Button,
+					   HandButtonClickHandler> &
+			getHandButtonOnClickHandlers() const;
 
 		/**
-		 * @brief Set the onRelease event handler for one controller button.
-		 * @param button The controller button to associate with the handler.
+		 * @brief Set the onRelease event handler for one hand button.
+		 * @param button The hand button to associate with the handler.
 		 * @param handler The function to call on release events.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setControllerButtonOnClickReleaseHandler(
-			const utility::event::ControllerButtonEvent::Button &button,
-			const ControllerButtonClickReleaseHandler &handler);
+		Interaction &setHandButtonOnClickReleaseHandler(
+			const utility::event::HandButtonEvent::Button &button,
+			const HandButtonClickReleaseHandler &handler);
 
 		/**
-		 * @brief Get click release handlers indexed by controller button.
-		 * @return A map of controller buttons to release handlers.
+		 * @brief Get click release handlers indexed by hand button.
+		 * @return A map of hand buttons to release handlers.
 		 */
-		const std::map<utility::event::ControllerButtonEvent::Button,
-					   ControllerButtonClickReleaseHandler> &
-			getControllerButtonOnClickReleaseHandlers() const;
+		const std::map<utility::event::HandButtonEvent::Button,
+					   HandButtonClickReleaseHandler> &
+			getHandButtonOnClickReleaseHandlers() const;
 
 		/**
-		 * @brief Check if the entity is currently clicked for one controller
+		 * @brief Check if the entity is currently clicked for one hand
 		 * button.
-		 * @param button The controller button to check.
+		 * @param button The hand button to check.
 		 * @return True if clicked for the provided button.
 		 */
-		bool isControllerButtonClicked(
-			const utility::event::ControllerButtonEvent::Button &button) const;
+		bool isHandButtonClicked(
+			const utility::event::HandButtonEvent::Button &button) const;
 
 		/**
-		 * @brief Set clicked state for one controller button.
-		 * @param button The controller button to update.
+		 * @brief Set clicked state for one hand button.
+		 * @param button The hand button to update.
 		 * @param clicked Clicked state to set.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setControllerButtonClicked(
-			const utility::event::ControllerButtonEvent::Button &button,
+		Interaction &setHandButtonClicked(
+			const utility::event::HandButtonEvent::Button &button,
 			bool clicked);
 
 		/**
-		 * @brief Set the onHover event handler for controllers.
+		 * @brief Set the onHover event handler for hands.
 		 *
-		 * This handler is called when the controller pointer enters the
+		 * This handler is called when the hand pointer enters the
 		 * entity's bounds.
 		 * @param handler The function to call on hover enter.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setControllerOnHoverHandler(const ControllerHoverHandler &handler);
+		Interaction &setHandOnHoverHandler(const HandHoverHandler &handler);
 
 		/**
-		 * @brief Set the controller onUnhover event handler.
+		 * @brief Set the hand onUnhover event handler.
 		 * @param handler The function to call on hover leave.
 		 * @return Reference to this Interaction component for chaining.
 		 */
 		Interaction &
-			setControllerOnUnhoverHandler(const ControllerUnhoverHandler &handler);
+			setHandOnUnhoverHandler(const HandUnhoverHandler &handler);
 
 		/**
-		 * @brief Get the controller onHover event handler.
+		 * @brief Get the hand onHover event handler.
 		 * @return The hover enter handler.
 		 */
-		ControllerHoverHandler getControllerOnHoverHandler(void) const;
+		HandHoverHandler getHandOnHoverHandler(void) const;
 
 		/**
-		 * @brief Get the controller onUnhover event handler.
+		 * @brief Get the hand onUnhover event handler.
 		 * @return The hover leave handler.
 		 */
-		ControllerUnhoverHandler getControllerOnUnhoverHandler(void) const;
+		HandUnhoverHandler getHandOnUnhoverHandler(void) const;
 
 		/**
 		 * @brief Check if the entity is currently hovered.
 		 * @return True when cursor is inside entity bounds.
 		 */
-		bool isControllerHovered(void) const;
+		bool isHandHovered(void) const;
 
 		/**
 		 * @brief Set current hovered state.
 		 * @param isHovered Current hovered state.
 		 * @return Reference to this Interaction component for chaining.
 		 */
-		Interaction &setControllerHovered(bool isHovered);
+		Interaction &setHandHovered(bool isHovered);
 
 		/**
 		 * @brief Set the onHandPinch event handler.

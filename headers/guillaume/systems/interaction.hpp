@@ -31,8 +31,8 @@
 #include "guillaume/event/event_subscriber.hpp"
 #include "guillaume/renderer.hpp"
 
-#include <utility/event/controller_button_event.hpp>
-#include <utility/event/controller_motion_event.hpp>
+#include <utility/event/hand_button_event.hpp>
+#include <utility/event/hand_motion_event.hpp>
 #include <utility/event/event.hpp>
 #include <utility/event/hand_pinch_event.hpp>
 #include <utility/event/hand_poke_event.hpp>
@@ -63,18 +63,18 @@ namespace guillaume::systems
 			_lastMouseMotionEvent;	  ///< Last received mouse motion event for
 									  ///< hover processing
 
-		event::EventSubscriber<utility::event::ControllerButtonEvent>
-			_controllerButtonSubscriber;	///< Subscriber for XR controller
+		event::EventSubscriber<utility::event::HandButtonEvent>
+			_handButtonSubscriber;	///< Subscriber for XR hand
 											///< button events
-		std::unique_ptr<utility::event::ControllerButtonEvent>
-			_lastControllerButtonEvent;	   ///< Last received controller button
+		std::unique_ptr<utility::event::HandButtonEvent>
+			_lastHandButtonEvent;	   ///< Last received hand button
 										   ///< event for click processing
 
-		event::EventSubscriber<utility::event::ControllerMotionEvent>
-			_controllerMotionSubscriber;	///< Subscriber for XR controller
+		event::EventSubscriber<utility::event::HandMotionEvent>
+			_handMotionSubscriber;	///< Subscriber for XR hand
 											///< motion events
-		std::unique_ptr<utility::event::ControllerMotionEvent>
-			_lastControllerMotionEvent;	   ///< Last received controller motion
+		std::unique_ptr<utility::event::HandMotionEvent>
+			_lastHandMotionEvent;	   ///< Last received hand motion
 										   ///< event for hover processing
 
 		event::EventSubscriber<utility::event::HandPinchEvent>
@@ -120,21 +120,21 @@ namespace guillaume::systems
 			const ecs::Entity::Identifier &entityIdentifier, bool isInside);
 
 		/**
-		 * @brief Update the controller hovered state for the specified entity.
+		 * @brief Update the hand hovered state for the specified entity.
 		 * @param entityIdentifier The identifier of the entity to update.
 		 * @param isInside Whether the pointer is currently inside the entity
 		 * bounds.
 		 */
-		void processControllerHover(
+		void processHandHover(
 			const ecs::Entity::Identifier &entityIdentifier, bool isInside);
 
 		/**
-		 * @brief Update the controller clicked state for the specified entity
-		 * based on the latest controller button events and whether the pointer
+		 * @brief Update the hand clicked state for the specified entity
+		 * based on the latest hand button events and whether the pointer
 		 * is inside the entity bounds.
 		 * @param entityIdentifier The identifier of the entity to update.
 		 */
-		void processControllerButtonClick(
+		void processHandButtonClick(
 			const ecs::Entity::Identifier &entityIdentifier, bool isInside);
 
 		/**

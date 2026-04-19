@@ -181,11 +181,11 @@ namespace simple_application
 		return static_cast<utility::event::KeyboardEvent::KeyModifiers>(result);
 	}
 
-	utility::event::MouseButtonEvent::MouseButton
+	utility::event::MouseButtonEvent::Button
 		EventHandler::convertMouseButton(std::uint8_t sdlButton)
 	{
-		// SDL3 mouse button values map directly to the utility MouseButton enum
-		return static_cast<utility::event::MouseButtonEvent::MouseButton>(
+		// SDL3 mouse button values map directly to the utility Button enum
+		return static_cast<utility::event::MouseButtonEvent::Button>(
 			sdlButton);
 	}
 

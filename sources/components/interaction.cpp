@@ -31,26 +31,26 @@ namespace guillaume::components
 		_isMouseHovered = false;
 
 		for (const auto button:
-			 { utility::event::MouseButtonEvent::MouseButton::Left,
-			   utility::event::MouseButtonEvent::MouseButton::Middle,
-			   utility::event::MouseButtonEvent::MouseButton::Right,
-			   utility::event::MouseButtonEvent::MouseButton::X1,
-			   utility::event::MouseButtonEvent::MouseButton::X2 }) {
+			 { utility::event::MouseButtonEvent::Button::Left,
+			   utility::event::MouseButtonEvent::Button::Middle,
+			   utility::event::MouseButtonEvent::Button::Right,
+			   utility::event::MouseButtonEvent::Button::X1,
+			   utility::event::MouseButtonEvent::Button::X2 }) {
 			_isMouseButtonClicked[button]			   = false;
 			_onMouseButtonClickHandlers[button]		   = nullptr;
 			_onMouseButtonClickReleaseHandlers[button] = nullptr;
 		}
 
 		for (const auto button:
-			 { utility::event::ControllerButtonEvent::Button::X,
-			   utility::event::ControllerButtonEvent::Button::Y,
-			   utility::event::ControllerButtonEvent::Button::A,
-			   utility::event::ControllerButtonEvent::Button::B,
-			   utility::event::ControllerButtonEvent::Button::Menu,
-			   utility::event::ControllerButtonEvent::Button::System }) {
-			_isControllerButtonClicked[button]				= false;
-			_onControllerButtonClickHandlers[button]		= nullptr;
-			_onControllerButtonClickReleaseHandlers[button] = nullptr;
+			 { utility::event::HandButtonEvent::Button::X,
+			   utility::event::HandButtonEvent::Button::Y,
+			   utility::event::HandButtonEvent::Button::A,
+			   utility::event::HandButtonEvent::Button::B,
+			   utility::event::HandButtonEvent::Button::Menu,
+			   utility::event::HandButtonEvent::Button::System }) {
+			_isHandButtonClicked[button]				= false;
+			_onHandButtonClickHandlers[button]		= nullptr;
+			_onHandButtonClickReleaseHandlers[button] = nullptr;
 		}
 
 		_onHandPinchHandler = nullptr;
@@ -103,7 +103,7 @@ namespace guillaume::components
 	}
 
 	Interaction &Interaction::setMouseButtonOnClickHandler(
-		const utility::event::MouseButtonEvent::MouseButton &button,
+		const utility::event::MouseButtonEvent::Button &button,
 		const MouseButtonClickHandler &handler)
 	{
 		_onMouseButtonClickHandlers[button] = handler;
@@ -112,7 +112,7 @@ namespace guillaume::components
 	}
 
 	Interaction &Interaction::setMouseButtonOnClickReleaseHandler(
-		const utility::event::MouseButtonEvent::MouseButton &button,
+		const utility::event::MouseButtonEvent::Button &button,
 		const MouseButtonClickReleaseHandler &handler)
 	{
 		_onMouseButtonClickReleaseHandlers[button] = handler;
@@ -120,14 +120,14 @@ namespace guillaume::components
 		return *this;
 	}
 
-	const std::map<utility::event::MouseButtonEvent::MouseButton,
+	const std::map<utility::event::MouseButtonEvent::Button,
 				   Interaction::MouseButtonClickHandler> &
 		Interaction::getMouseButtonOnClickHandlers() const
 	{
 		return _onMouseButtonClickHandlers;
 	}
 
-	const std::map<utility::event::MouseButtonEvent::MouseButton,
+	const std::map<utility::event::MouseButtonEvent::Button,
 				   Interaction::MouseButtonClickReleaseHandler> &
 		Interaction::getMouseButtonOnClickReleaseHandlers() const
 	{
@@ -135,13 +135,13 @@ namespace guillaume::components
 	}
 
 	bool Interaction::isMouseButtonClicked(
-		const utility::event::MouseButtonEvent::MouseButton &button) const
+		const utility::event::MouseButtonEvent::Button &button) const
 	{
 		return _isMouseButtonClicked.at(button);
 	}
 
 	Interaction &Interaction::setMouseButtonClicked(
-		const utility::event::MouseButtonEvent::MouseButton &button,
+		const utility::event::MouseButtonEvent::Button &button,
 		bool clicked)
 	{
 		if (_isMouseButtonClicked[button] == clicked) {
@@ -152,95 +152,95 @@ namespace guillaume::components
 		return *this;
 	}
 
-	Interaction &Interaction::setControllerButtonOnClickHandler(
-		const utility::event::ControllerButtonEvent::Button &button,
-		const ControllerButtonClickHandler &handler)
+	Interaction &Interaction::setHandButtonOnClickHandler(
+		const utility::event::HandButtonEvent::Button &button,
+		const HandButtonClickHandler &handler)
 	{
-		_onControllerButtonClickHandlers[button] = handler;
+		_onHandButtonClickHandlers[button] = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
-	Interaction &Interaction::setControllerButtonOnClickReleaseHandler(
-		const utility::event::ControllerButtonEvent::Button &button,
-		const ControllerButtonClickReleaseHandler &handler)
+	Interaction &Interaction::setHandButtonOnClickReleaseHandler(
+		const utility::event::HandButtonEvent::Button &button,
+		const HandButtonClickReleaseHandler &handler)
 	{
-		_onControllerButtonClickReleaseHandlers[button] = handler;
+		_onHandButtonClickReleaseHandlers[button] = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
-	const std::map<utility::event::ControllerButtonEvent::Button,
-				   Interaction::ControllerButtonClickHandler> &
-		Interaction::getControllerButtonOnClickHandlers() const
+	const std::map<utility::event::HandButtonEvent::Button,
+				   Interaction::HandButtonClickHandler> &
+		Interaction::getHandButtonOnClickHandlers() const
 	{
-		return _onControllerButtonClickHandlers;
+		return _onHandButtonClickHandlers;
 	}
 
-	const std::map<utility::event::ControllerButtonEvent::Button,
-				   Interaction::ControllerButtonClickReleaseHandler> &
-		Interaction::getControllerButtonOnClickReleaseHandlers() const
+	const std::map<utility::event::HandButtonEvent::Button,
+				   Interaction::HandButtonClickReleaseHandler> &
+		Interaction::getHandButtonOnClickReleaseHandlers() const
 	{
-		return _onControllerButtonClickReleaseHandlers;
+		return _onHandButtonClickReleaseHandlers;
 	}
 
-	bool Interaction::isControllerButtonClicked(
-		const utility::event::ControllerButtonEvent::Button &button) const
+	bool Interaction::isHandButtonClicked(
+		const utility::event::HandButtonEvent::Button &button) const
 	{
-		return _isControllerButtonClicked.at(button);
+		return _isHandButtonClicked.at(button);
 	}
 
-	Interaction &Interaction::setControllerButtonClicked(
-		const utility::event::ControllerButtonEvent::Button &button,
+	Interaction &Interaction::setHandButtonClicked(
+		const utility::event::HandButtonEvent::Button &button,
 		bool clicked)
 	{
-		if (_isControllerButtonClicked[button] == clicked) {
+		if (_isHandButtonClicked[button] == clicked) {
 			return *this;
 		}
-		_isControllerButtonClicked[button] = clicked;
+		_isHandButtonClicked[button] = clicked;
 		setHasChanged(true);
 		return *this;
 	}
 
-	Interaction &Interaction::setControllerOnHoverHandler(
-		const ControllerHoverHandler &handler)
+	Interaction &Interaction::setHandOnHoverHandler(
+		const HandHoverHandler &handler)
 	{
-		_onControllerHover = handler;
+		_onHandHover = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
-	Interaction &Interaction::setControllerOnUnhoverHandler(
-		const ControllerUnhoverHandler &handler)
+	Interaction &Interaction::setHandOnUnhoverHandler(
+		const HandUnhoverHandler &handler)
 	{
-		_onControllerUnhover = handler;
+		_onHandUnhover = handler;
 		setHasChanged(true);
 		return *this;
 	}
 
-	Interaction::ControllerHoverHandler
-		Interaction::getControllerOnHoverHandler(void) const
+	Interaction::HandHoverHandler
+		Interaction::getHandOnHoverHandler(void) const
 	{
-		return _onControllerHover;
+		return _onHandHover;
 	}
 
-	Interaction::ControllerUnhoverHandler
-		Interaction::getControllerOnUnhoverHandler(void) const
+	Interaction::HandUnhoverHandler
+		Interaction::getHandOnUnhoverHandler(void) const
 	{
-		return _onControllerUnhover;
+		return _onHandUnhover;
 	}
 
-	bool Interaction::isControllerHovered(void) const
+	bool Interaction::isHandHovered(void) const
 	{
-		return _isControllerHovered;
+		return _isHandHovered;
 	}
 
-	Interaction &Interaction::setControllerHovered(bool isHovered)
+	Interaction &Interaction::setHandHovered(bool isHovered)
 	{
-		if (_isControllerHovered == isHovered) {
+		if (_isHandHovered == isHovered) {
 			return *this;
 		}
-		_isControllerHovered = isHovered;
+		_isHandHovered = isHovered;
 		setHasChanged(true);
 		return *this;
 	}

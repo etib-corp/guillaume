@@ -201,7 +201,7 @@ namespace simple_application
 		getLogger().debug("Measuring text: " + text.getContent());
 
 		TTF_Font *ttfFont =
-			getOrLoadFont(text.getFontPath(), text.getFontSize());
+			getOrLoadFont(text.getFontFamily(), text.getFontSize());
 		if (!ttfFont) {
 			getLogger().error("Failed to load font for measurement");
 			return { 0.0f, 0.0f };
@@ -241,7 +241,7 @@ namespace simple_application
 		getLogger().debug("Drawing text: " + text.getContent());
 
 		TTF_Font *ttfFont =
-			getOrLoadFont(text.getFontPath(), text.getFontSize());
+			getOrLoadFont(text.getFontFamily(), text.getFontSize());
 		if (!ttfFont) {
 			getLogger().error("Failed to load font for rendering");
 			return;
@@ -253,114 +253,6 @@ namespace simple_application
 
 		SDL_Surface *surface = TTF_RenderText_Blended(
 			ttfFont, text.getContent().c_str(), 0, sdlColor);
-		if (!surface) {
-			getLogger().error("Failed to render text to surface: "
-							  + std::string(SDL_GetError()));
-			return;
-		}
-
-		SDL_Surface *converted =
-			SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-		if (!converted) {
-			getLogger().error("Failed to convert surface for OpenGL: "
-							  + std::string(SDL_GetError()));
-			SDL_DestroySurface(surface);
-			return;
-		}
-
-		glDisable(GL_DEPTH_TEST);
-
-		GLuint textureId = 0;
-		glEnable(GL_TEXTURE_2D);
-		glGenTextures(1, &textureId);
-		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, converted->w, converted->h, 0,
-					 GL_RGBA, GL_UNSIGNED_BYTE, converted->pixels);
-
-		auto position			= pose.getPosition();
-		const auto viewPosition = getView().getPose().getPosition();
-		position -= viewPosition;
-		auto orientation				 = pose.getOrientation();
-		float width						 = static_cast<float>(converted->w);
-		float height					 = static_cast<float>(converted->h);
-		float z							 = position[2];
-		const auto normalizedOrientation = orientation.normalized();
-		const float clampedW = std::clamp(normalizedOrientation.w, -1.0f, 1.0f);
-		const float angleRadians = 2.0f * std::acos(clampedW);
-		const float angleDegrees =
-			angleRadians * (180.0f / 3.14159265358979323846f);
-		const float sineHalfAngle =
-			std::sqrt(std::max(0.0f, 1.0f - (clampedW * clampedW)));
-
-		float axisX = 0.0f;
-		float axisY = 0.0f;
-		float axisZ = 1.0f;
-		if (sineHalfAngle > 1.0e-6f) {
-			axisX = normalizedOrientation.x / sineHalfAngle;
-			axisY = normalizedOrientation.y / sineHalfAngle;
-			axisZ = normalizedOrientation.z / sineHalfAngle;
-		}
-
-		glColor4ub(color.getRed(), color.getGreen(), color.getBlue(),
-				   color.getAlpha());
-		glPushMatrix();
-		glTranslatef(position[0], position[1], z);
-		glRotatef(angleDegrees, axisX, axisY, axisZ);
-
-		float halfWidth	 = width / 2.0f;
-		float halfHeight = height / 2.0f;
-
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0f, 0.0f);
-		glVertex3f(-halfWidth, -halfHeight, 0.0f);
-		glTexCoord2f(1.0f, 0.0f);
-		glVertex3f(halfWidth, -halfHeight, 0.0f);
-		glTexCoord2f(1.0f, 1.0f);
-		glVertex3f(halfWidth, halfHeight, 0.0f);
-		glTexCoord2f(0.0f, 1.0f);
-		glVertex3f(-halfWidth, halfHeight, 0.0f);
-		glEnd();
-
-		glPopMatrix();
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glDisable(GL_TEXTURE_2D);
-		glDeleteTextures(1, &textureId);
-		SDL_DestroySurface(converted);
-		SDL_DestroySurface(surface);
-
-		glEnable(GL_DEPTH_TEST);
-	}
-
-	void Renderer::drawGlyph(const utility::graphic::Glyph &glyph,
-							 const utility::graphic::PoseF &pose)
-	{
-		Uint32 character = glyph.getGlyphCode();
-		if (character == 0) {
-			character = '?';
-			getLogger().warning(
-				"Glyph code is empty, using default character '?'");
-		} else {
-			getLogger().debug("Drawing glyph (code): "
-							  + std::to_string(character));
-		}
-
-		TTF_Font *ttfFont = getOrLoadFont(
-			glyph.getFontPath(), static_cast<std::size_t>(glyph.getSize()));
-		if (!ttfFont) {
-			getLogger().error("Failed to load font for rendering");
-			return;
-		}
-
-		utility::graphic::Color32Bit color = glyph.getColor();
-		SDL_Color sdlColor				   = { color.getRed(), color.getGreen(),
-											   color.getBlue(), color.getAlpha() };
-
-		SDL_Surface *surface =
-			TTF_RenderGlyph_Blended(ttfFont, character, sdlColor);
 		if (!surface) {
 			getLogger().error("Failed to render text to surface: "
 							  + std::string(SDL_GetError()));

@@ -37,13 +37,13 @@ namespace guillaume::systems
 		while (_mouseMotionSubscriber.hasPendingEvents()) {
 			_lastMouseMotionEvent = _mouseMotionSubscriber.getNextEvent();
 		}
-		while (_controllerButtonSubscriber.hasPendingEvents()) {
-			_lastControllerButtonEvent =
-				_controllerButtonSubscriber.getNextEvent();
+		while (_handButtonSubscriber.hasPendingEvents()) {
+			_lastHandButtonEvent =
+				_handButtonSubscriber.getNextEvent();
 		}
-		while (_controllerMotionSubscriber.hasPendingEvents()) {
-			_lastControllerMotionEvent =
-				_controllerMotionSubscriber.getNextEvent();
+		while (_handMotionSubscriber.hasPendingEvents()) {
+			_lastHandMotionEvent =
+				_handMotionSubscriber.getNextEvent();
 		}
 		while (_handPinchSubscriber.hasPendingEvents()) {
 			_lastHandPinchEvent = _handPinchSubscriber.getNextEvent();
@@ -96,14 +96,14 @@ namespace guillaume::systems
 
 		for (std::size_t buttonIndex = 0;
 			 buttonIndex < static_cast<std::size_t>(
-				 utility::event::MouseButtonEvent::MouseButton::Last);
+				 utility::event::MouseButtonEvent::Button::Last);
 			 ++buttonIndex) {
 			if (!_lastMouseButtonEvent->getButtonsState().test(buttonIndex)) {
 				continue;
 			}
 
 			const auto button =
-				static_cast<utility::event::MouseButtonEvent::MouseButton>(
+				static_cast<utility::event::MouseButtonEvent::Button>(
 					buttonIndex);
 			const bool isPressed =
 				_lastMouseButtonEvent->getButtonsState().test(buttonIndex);
@@ -136,18 +136,18 @@ namespace guillaume::systems
 		}
 	}
 
-	void Interaction::processControllerHover(
+	void Interaction::processHandHover(
 		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
 	{
-		if (_lastControllerMotionEvent == nullptr) {
+		if (_lastHandMotionEvent == nullptr) {
 			return;
 		}
 	}
 
-	void Interaction::processControllerButtonClick(
+	void Interaction::processHandButtonClick(
 		const ecs::Entity::Identifier &entityIdentifier, bool isInside)
 	{
-		if (_lastControllerButtonEvent == nullptr) {
+		if (_lastHandButtonEvent == nullptr) {
 			return;
 		}
 	}
@@ -173,8 +173,8 @@ namespace guillaume::systems
 							components::Bound>(ecs::System::Phase::Event)
 		, _mouseButtonSubscriber(eventBus)
 		, _mouseMotionSubscriber(eventBus)
-		, _controllerButtonSubscriber(eventBus)
-		, _controllerMotionSubscriber(eventBus)
+		, _handButtonSubscriber(eventBus)
+		, _handMotionSubscriber(eventBus)
 		, _handPinchSubscriber(eventBus)
 		, _handPokeSubscriber(eventBus)
 		, _renderer(renderer)
@@ -200,9 +200,9 @@ namespace guillaume::systems
 
 		processMouseButtonClick(entityIdentifier, isInside);
 
-		processControllerHover(entityIdentifier, isInside);
+		processHandHover(entityIdentifier, isInside);
 
-		processControllerButtonClick(entityIdentifier, isInside);
+		processHandButtonClick(entityIdentifier, isInside);
 
 		processHandPinch(entityIdentifier, isInside);
 

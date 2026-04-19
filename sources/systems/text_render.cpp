@@ -20,7 +20,7 @@
  SOFTWARE.
  */
 
-#include <utility/graphic/text.hpp>
+#include <utility/graphic/text/text.hpp>
 
 #include "guillaume/systems/text_render.hpp"
 
@@ -57,11 +57,11 @@ namespace guillaume::systems
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
 
-		utility::graphic::Text text;
-		text.setColor(colorComponent.getColor())
-			.setContent(textComponent.getContent())
-			.setFontSize(textComponent.getFontSize())
-			.setFontPath(_defaultFontPath);
+		utility::graphic::Text text(
+			_renderer.getRessourceManager(), _renderer.getAssetManager(),
+			textComponent.getContent(), textComponent.getFontSize(),
+			_defaultFontPath);
+		text.setColor(colorComponent.getColor());
 
 		_renderer.drawText(text, transformComponent.getPose());
 	}
