@@ -94,10 +94,9 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Set the name of the glyph to be used for the Icon entity.
-			 * @param glyphName The name of the glyph to set (corresponds to
-			 * utility::graphic::Glyph::_name).
+			 * @param glyphName The glyph identifier to set.
 			 * @return Reference to the builder for chaining.
-			 * @see utility::graphic::Glyph::_name
+			 * @see components::Glyph::getName
 			 */
 			Builder &withGlyphName(const std::string &glyphName);
 
@@ -146,7 +145,7 @@ namespace guillaume::entities
 			 * the default icon.
 			 * @param iconName The icon name to assign to the created entity.
 			 * @return The entity identifier of the newly created icon entity.
-			 * @see utility::graphic::Glyph::_name
+			 * @see components::Glyph::getName
 			 */
 			ecs::Entity::Identifier
 				makeDefaultIcon(Builder &builder, const std::string &iconName);
@@ -154,8 +153,7 @@ namespace guillaume::entities
 
 		private:
 		std::string _glyphName {};	  ///< Name of the glyph to be used for this
-									  ///< Icon entity (corresponds to
-									  ///< utility::graphic::Glyph::_name)
+									  ///< Icon entity
 		float _size { 24.0f };	  ///< Size of the icon to be used for this Icon
 								  ///< entity
 		utility::graphic::Color32Bit
@@ -176,7 +174,7 @@ namespace guillaume::entities
 		 * @param color The color of the icon to be used for this Icon entity
 		 * (RGBA).
 		 * @param style The style of the icon to be used for this Icon entity.
-		 * @see utility::graphic::Glyph::_name
+		 * @see components::Glyph::getName
 		 */
 		Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,
 			 const float size, const utility::graphic::Color32Bit &color,
@@ -191,7 +189,7 @@ namespace guillaume::entities
 		 * @brief Set the name of the glyph for this Icon entity.
 		 * @param glyphName The new name of the glyph to set.
 		 * @return Reference to this Icon for chaining.
-		 * @see utility::graphic::Glyph::_name
+		 * @see components::Glyph::getName
 		 */
 		Icon &setGlyphName(const std::string &glyphName);
 

@@ -30,11 +30,13 @@
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/standard_logger.hpp>
 
+#include <utility/asset_manager/default_asset_manager.hpp>
+#include <utility/ressource_manager.hpp>
+
 #include <utility/graphic/view.hpp>
 #include <utility/graphic/ray.hpp>
 #include <utility/graphic/orientation.hpp>
-#include <utility/graphic/text.hpp>
-#include <utility/graphic/glyph.hpp>
+#include <utility/graphic/text/text.hpp>
 #include <utility/graphic/vertex.hpp>
 
 #include <utility/math/vector.hpp>
@@ -59,6 +61,8 @@ namespace guillaume
 
 		private:
 		utility::graphic::ViewF _view;	  ///< View state
+			utility::RessourceManager _ressourceManager;	 ///< Shared text/resource manager
+			utility::DefaultAssetManager _assetManager;	 ///< Shared asset manager
 
 		public:
 		/**
@@ -121,14 +125,6 @@ namespace guillaume
 							  const utility::graphic::PoseF &pose) = 0;
 
 		/**
-		 * @brief Draw a glyph at the specified pose.
-		 * @param glyph The glyph to draw.
-		 * @param pose The pose at which to draw the glyph.
-		 */
-		virtual void drawGlyph(const utility::graphic::Glyph &glyph,
-							   const utility::graphic::PoseF &pose) = 0;
-
-		/**
 		 * @brief Set the full view model.
 		 * @param view The new view instance.
 		 * @note Synchronizes cached orientation and last mouse ray.
@@ -145,6 +141,24 @@ namespace guillaume
 		utility::graphic::ViewF getView(void) const
 		{
 			return _view;
+		}
+
+		/**
+		 * @brief Get the shared utility resource manager.
+		 * @return Reference to the renderer resource manager.
+		 */
+		utility::RessourceManager &getRessourceManager(void)
+		{
+			return _ressourceManager;
+		}
+
+		/**
+		 * @brief Get the shared utility asset manager.
+		 * @return Reference to the renderer asset manager.
+		 */
+		utility::DefaultAssetManager &getAssetManager(void)
+		{
+			return _assetManager;
 		}
 	};
 

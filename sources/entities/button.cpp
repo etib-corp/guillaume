@@ -414,7 +414,7 @@ namespace guillaume::entities
 		buttonColor.setColor(getContainerColor(
 			_colorStyle, interaction.isMouseHovered(),
 			interaction.isMouseButtonClicked(
-				utility::event::MouseButtonEvent::MouseButton::Left)));
+				utility::event::MouseButtonEvent::Button::Left)));
 
 		auto &buttonBorders =
 			getComponentRegistry().getComponent<components::Borders>(
@@ -423,7 +423,7 @@ namespace guillaume::entities
 		buttonBorders.setBorderRadius(getBorderRadius(
 			_size, restingShape,
 			interaction.isMouseButtonClicked(
-				utility::event::MouseButtonEvent::MouseButton::Left)));
+				utility::event::MouseButtonEvent::Button::Left)));
 
 		if (_iconIdentifier != ecs::Entity::InvalidIdentifier) {
 			getComponentRegistry()
@@ -725,10 +725,10 @@ namespace guillaume::entities
 			.setMouseOnHoverHandler(std::bind(&Button::hoverHandler, this))
 			.setMouseOnUnhoverHandler(std::bind(&Button::unHoverHandler, this))
 			.setMouseButtonOnClickHandler(
-				utility::event::MouseButtonEvent::MouseButton::Left,
+				utility::event::MouseButtonEvent::Button::Left,
 				std::bind(&Button::leftClickPressHandler, this))
 			.setMouseButtonOnClickReleaseHandler(
-				utility::event::MouseButtonEvent::MouseButton::Left,
+				utility::event::MouseButtonEvent::Button::Left,
 				std::bind(&Button::leftClickReleaseHandler, this));
 	}
 

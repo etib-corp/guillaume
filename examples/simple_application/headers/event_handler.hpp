@@ -48,7 +48,7 @@ namespace simple_application
 		utility::event::KeyboardEvent::KeyModifiers
 			convertKeyModifiers(SDL_Keymod modifiers);
 
-		utility::event::MouseButtonEvent::MouseButton
+		utility::event::MouseButtonEvent::Button
 			convertMouseButton(std::uint8_t sdlButton);
 
 		public:

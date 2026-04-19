@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include <utility/graphic/text.hpp>
+#include <utility/graphic/text/text.hpp>
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
@@ -35,7 +35,6 @@
 
 namespace
 {
-
 	class RendererStub: public guillaume::Renderer
 	{
 		public:
@@ -69,12 +68,6 @@ namespace
 					  const utility::graphic::PoseF &pose) override
 		{
 			(void)text;
-			(void)pose;
-		}
-		void drawGlyph(const utility::graphic::Glyph &glyph,
-					   const utility::graphic::PoseF &pose) override
-		{
-			(void)glyph;
 			(void)pose;
 		}
 	};

@@ -38,4 +38,6 @@ target_link_libraries(test_${PROJECT_NAME} PRIVATE
 
 # Discover and register tests
 include(GoogleTest)
-gtest_discover_tests(test_${PROJECT_NAME})
+gtest_discover_tests(test_${PROJECT_NAME}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)

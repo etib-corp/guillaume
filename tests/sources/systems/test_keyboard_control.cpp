@@ -71,7 +71,7 @@ namespace
 		void dispatchKeyboardEvent(
 			const utility::event::KeyboardEvent::KeyCode keycode,
 			const utility::event::KeyboardEvent::KeyModifiers modifiers =
-				utility::event::KeyboardEvent::KeyModifiers::None,
+				utility::event::KeyboardEvent::KeyModifiers::Unknown,
 			const bool isDownEvent = true)
 		{
 			auto event = std::make_unique<utility::event::KeyboardEvent>();
@@ -108,10 +108,10 @@ TEST_F(KeyboardControlFixture, IgnoresNonBackspaceAndKeyUpEvents)
 	setText("seed");
 
 	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::A,
-						  utility::event::KeyboardEvent::KeyModifiers::None,
+						  utility::event::KeyboardEvent::KeyModifiers::Unknown,
 						  true);
 	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace,
-						  utility::event::KeyboardEvent::KeyModifiers::None,
+						  utility::event::KeyboardEvent::KeyModifiers::Unknown,
 						  false);
 
 	EXPECT_EQ(getContent(), "seed");
