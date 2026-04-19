@@ -35,7 +35,6 @@
 
 namespace
 {
-
 	class RendererStub: public guillaume::Renderer
 	{
 		public:
