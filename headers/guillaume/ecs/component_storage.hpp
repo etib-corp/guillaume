@@ -1,0 +1,148 @@
+/*
+ Copyright (c) 2026 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+
+#pragma once
+
+#include <unordered_map>
+#include <utility>
+
+#include "guillaume/ecs/component.hpp"
+#include "guillaume/ecs/entity.hpp"
+
+namespace guillaume::ecs
+{
+
+	/**
+	 * @brief Interface for type-erased component storage.
+	 */
+	class IComponentStorage
+	{
+		public:
+		/**
+		 * @brief Virtual destructor.
+		 */
+		virtual ~IComponentStorage(void) = default;
+
+		/**
+		 * @brief Remove a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 */
+		virtual void remove(const Entity::Identifier &entityIdentifier) = 0;
+
+		/**
+		 * @brief Check if a component exists for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @return True if a component exists.
+		 */
+		virtual bool has(const Entity::Identifier &entityIdentifier) const = 0;
+
+		/**
+		 * @brief Check whether the stored component for an entity has changed.
+		 * @param entityIdentifier The entity identifier.
+		 * @return True when the component exists and is marked as changed.
+		 */
+		virtual bool
+			hasChanged(const Entity::Identifier &entityIdentifier) const = 0;
+
+		/**
+		 * @brief Clear the changed flags for all components in this storage.
+		 */
+		virtual void resetChangedFlags(void) = 0;
+	};
+
+	/**
+	 * @brief Storage for a single component type.
+	 * @tparam ComponentType The component type stored.
+	 */
+	template<InheritFromComponent ComponentType> class ComponentStorage:
+		public IComponentStorage
+	{
+		public:
+		/**
+		 * @brief Container type for components.
+		 */
+		using Storage = std::unordered_map<Entity::Identifier, ComponentType>;
+
+		private:
+		Storage _components;
+
+		public:
+		/**
+		 * @brief Default constructor.
+		 */
+		ComponentStorage(void) = default;
+
+		/**
+		 * @brief Default destructor.
+		 */
+		~ComponentStorage(void) override = default;
+
+		/**
+		 * @brief Add or replace a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @param args Arguments forwarded to the component constructor.
+		 * @return Reference to the stored component.
+		 * @note If a component already exists for the entity, it is replaced.
+		 */
+		template<typename... Args> ComponentType &
+			emplace(const Entity::Identifier &entityIdentifier, Args &&...args);
+
+		/**
+		 * @brief Find a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @return Pointer to the component or nullptr.
+		 * @retval nullptr No component exists for the entity.
+		 */
+		ComponentType *find(const Entity::Identifier &entityIdentifier);
+
+		/**
+		 * @brief Find a component for an entity (const).
+		 * @param entityIdentifier The entity identifier.
+		 * @return Pointer to the component or nullptr.
+		 * @retval nullptr No component exists for the entity.
+		 */
+		const ComponentType *
+			find(const Entity::Identifier &entityIdentifier) const;
+
+		/**
+		 * @brief Remove a component for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 */
+		void remove(const Entity::Identifier &entityIdentifier) override;
+
+		/**
+		 * @brief Check if a component exists for an entity.
+		 * @param entityIdentifier The entity identifier.
+		 * @return True if a component exists.
+		 */
+		bool has(const Entity::Identifier &entityIdentifier) const override;
+
+		bool hasChanged(
+			const Entity::Identifier &entityIdentifier) const override;
+
+		void resetChangedFlags(void) override;
+	};
+
+}	 // namespace guillaume::ecs
+
+// Include the implementation of the ComponentStorage template class.
+#include "guillaume/ecs/component_storage.tpp"
