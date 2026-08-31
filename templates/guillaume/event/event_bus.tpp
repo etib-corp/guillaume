@@ -26,8 +26,8 @@
 namespace guillaume::event
 {
     template<utility::event::InheritFromEvent EventType>
-    void EventBus::subscribe(const Listener &listener)
+    void EventBus::subscribe(Listener listener)
     {
-        _typedListeners[typeid(EventType)].push_back(listener);
+        _typedListeners[typeid(EventType)].push_back(std::move(listener));
     }
 } // namespace guillaume::event

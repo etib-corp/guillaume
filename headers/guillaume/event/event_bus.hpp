@@ -92,7 +92,7 @@ namespace guillaume::event
 		 * @param listener Listener to notify for matching events.
 		 */
 		template<utility::event::InheritFromEvent EventType>
-		void subscribe(const Listener &listener);
+		void subscribe(Listener listener);
 	};
 
 }	 // namespace guillaume::event

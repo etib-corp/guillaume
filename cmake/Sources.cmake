@@ -1,0 +1,87 @@
+# Explicit list of library source files.
+#
+# This list is intentionally explicit (no file(GLOB)) so that the installed
+# target is reproducible across machines and packaging is deterministic.
+# When adding or removing a source file, update this list.
+
+set(GUILLAUME_SOURCES
+    sources/application.cpp
+    sources/component_registry.cpp
+    sources/components/borders.cpp
+    sources/components/bound.cpp
+    sources/components/color.cpp
+    sources/components/focus.cpp
+    sources/components/glyph.cpp
+    sources/components/hand_hover_interaction.cpp
+    sources/components/hand_pinch_interaction.cpp
+    sources/components/hand_poke_interaction.cpp
+    sources/components/hand_squeeze_interaction.cpp
+    sources/components/hand_thumb_rest_interaction.cpp
+    sources/components/hand_thumb_stick_interaction.cpp
+    sources/components/hand_trigger_interaction.cpp
+    sources/components/model.cpp
+    sources/components/mouse_hover_interaction.cpp
+    sources/components/parent.cpp
+    sources/components/text.cpp
+    sources/components/transform.cpp
+    sources/ecs/component.cpp
+    sources/ecs/component_registry.cpp
+    sources/ecs/component_registry_filler.cpp
+    sources/ecs/component_storage.cpp
+    sources/ecs/component_type_id.cpp
+    sources/ecs/entity.cpp
+    sources/ecs/entity_builder.cpp
+    sources/ecs/entity_builder_manager.cpp
+    sources/ecs/entity_builder_manager_filler.cpp
+    sources/ecs/entity_director.cpp
+    sources/ecs/entity_director_manager.cpp
+    sources/ecs/entity_director_manager_filler.cpp
+    sources/ecs/entity_filler.cpp
+    sources/ecs/entity_registry.cpp
+    sources/ecs/entity_registry_container.cpp
+    sources/ecs/level_order_traveler.cpp
+    sources/ecs/parent_entity.cpp
+    sources/ecs/parent_entity_filler.cpp
+    sources/ecs/reverse_level_order_traveler.cpp
+    sources/ecs/system.cpp
+    sources/ecs/system_filler.cpp
+    sources/ecs/system_phase.cpp
+    sources/ecs/system_registry.cpp
+    sources/engine.cpp
+    sources/entities/button.cpp
+    sources/entities/icon.cpp
+    sources/entities/model.cpp
+    sources/entities/panel.cpp
+    sources/entities/text.cpp
+    sources/event/event_bus.cpp
+    sources/event/event_manager.cpp
+    sources/event/event_subscriber.cpp
+    sources/event_handler.cpp
+    sources/local_storage.cpp
+    sources/metadata.cpp
+    sources/scene.cpp
+    sources/scene_manager.cpp
+    sources/session_storage.cpp
+    sources/storage.cpp
+    sources/systems/focus.cpp
+    sources/systems/glyph_render.cpp
+    sources/systems/hand_button.cpp
+    sources/systems/hand_motion.cpp
+    sources/systems/hand_pinch.cpp
+    sources/systems/hand_poke.cpp
+    sources/systems/hand_squeeze.cpp
+    sources/systems/hand_thumb_rest.cpp
+    sources/systems/hand_thumb_stick.cpp
+    sources/systems/hand_trigger.cpp
+    sources/systems/keyboard_control.cpp
+    sources/systems/measure_glyph.cpp
+    sources/systems/measure_model.cpp
+    sources/systems/measure_text.cpp
+    sources/systems/model_render.cpp
+    sources/systems/mouse_button.cpp
+    sources/systems/mouse_motion.cpp
+    sources/systems/rectangle_render.cpp
+    sources/systems/text_input.cpp
+    sources/systems/text_render.cpp
+    sources/theme.cpp
+)

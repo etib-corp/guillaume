@@ -36,7 +36,10 @@ namespace guillaume::ecs
 	std::vector<std::shared_ptr<Entity>>
 		EntityRegistry::getEntitiesBreadthFirst(void)
 	{
-		std::vector<std::shared_ptr<Entity>> entities;
+		// Reuse a thread-local scratch buffer to avoid per-frame allocation
+		// churn on the hot traversal path.
+		thread_local std::vector<std::shared_ptr<Entity>> entities;
+		entities.clear();
 		std::queue<EntityRegistry *> registries;
 
 		registries.push(this);
@@ -61,7 +64,8 @@ namespace guillaume::ecs
 	std::vector<std::shared_ptr<Entity>>
 		EntityRegistry::getEntitiesBreadthFirst(void) const
 	{
-		std::vector<std::shared_ptr<Entity>> entities;
+		thread_local std::vector<std::shared_ptr<Entity>> entities;
+		entities.clear();
 		std::queue<const EntityRegistry *> registries;
 
 		registries.push(this);

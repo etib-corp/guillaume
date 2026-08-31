@@ -24,6 +24,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -40,6 +41,8 @@
 #include <utility/system_io/default_system_io.hpp>
 
 #include <utility/demangle.hpp>
+
+#include <utility/graphic/view.hpp>
 
 #include "guillaume/ecs/system_phase.hpp"
 #include "guillaume/ecs/system_registry.hpp"
@@ -113,6 +116,8 @@ namespace guillaume
 			_ressourceProvider;	   ///< Shared
 								   ///< ressource
 								   ///< provider
+		std::optional<utility::graphic::ViewF>
+			_firstView;	   ///< View captured on first scene entry
 
 		/**
 		 * @brief Run one system update pass for the active scene.

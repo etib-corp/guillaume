@@ -101,28 +101,22 @@ namespace guillaume::ecs
 		 * @brief Find an entity in this registry hierarchy by identifier.
 		 * @tparam EntityType The expected entity type to cast to.
 		 * @param identifier The entity identifier to search for.
-		 * @return Shared pointer to the entity.
-		 * @throws std::runtime_error if the entity is not found.
+		 * @return Shared pointer to the entity, or nullptr when no entity with
+		 * the given identifier exists or the entity is not of the expected
+		 * type.
 		 */
 		template<InheritFromEntity EntityType>
 		std::shared_ptr<EntityType> getEntity(Entity::Identifier identifier)
 		{
+			if (identifier == Entity::InvalidIdentifier) {
+				return nullptr;
+			}
 			for (auto &entity: accessDirectEntities()) {
 				if (entity->getIdentifier() == identifier) {
-					auto castEntity =
-						std::dynamic_pointer_cast<EntityType>(entity);
-					if (castEntity != nullptr) {
-						return castEntity;
-					} else {
-						throw std::runtime_error(
-							"Entity found for identifier: "
-							+ std::to_string(identifier)
-							+ ", but it is not of the expected type.");
-					}
+					return std::dynamic_pointer_cast<EntityType>(entity);
 				}
 			}
-			throw std::runtime_error("Entity not found for identifier: "
-									 + std::to_string(identifier));
+			return nullptr;
 		}
 
 		/**
@@ -130,28 +124,22 @@ namespace guillaume::ecs
 		 * (const).
 		 * @tparam EntityType The expected entity type to cast to.
 		 * @param identifier The entity identifier to search for.
-		 * @return Const shared pointer to the entity.
-		 * @throws std::runtime_error if the entity is not found.
+		 * @return Const shared pointer to the entity, or nullptr when no entity
+		 * with the given identifier exists or the entity is not of the
+		 * expected type.
 		 */
 		template<InheritFromEntity EntityType> std::shared_ptr<const EntityType>
 			getEntity(Entity::Identifier identifier) const
 		{
+			if (identifier == Entity::InvalidIdentifier) {
+				return nullptr;
+			}
 			for (const auto &entity: accessDirectEntities()) {
 				if (entity->getIdentifier() == identifier) {
-					auto castEntity =
-						std::dynamic_pointer_cast<const EntityType>(entity);
-					if (castEntity != nullptr) {
-						return castEntity;
-					} else {
-						throw std::runtime_error(
-							"Entity found for identifier: "
-							+ std::to_string(identifier)
-							+ ", but it is not of the expected type.");
-					}
+					return std::dynamic_pointer_cast<const EntityType>(entity);
 				}
 			}
-			throw std::runtime_error("Entity not found for identifier: "
-									 + std::to_string(identifier));
+			return nullptr;
 		}
 
 		/**

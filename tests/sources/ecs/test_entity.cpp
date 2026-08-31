@@ -48,9 +48,20 @@ namespace guillaume::ecs::tests
 		}
 	};
 
+	class DummyEntity: public Entity
+	{
+		public:
+		void initialize(void) override
+		{
+		}
+		void update(void) override
+		{
+		}
+	};
+
 	TEST_F(TestEntity, DefaultLayerIsZero)
 	{
-		Entity entity;
+		DummyEntity entity;
 
 		EXPECT_EQ(entity.getLayer(), 0);
 	}

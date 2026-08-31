@@ -108,13 +108,13 @@ namespace guillaume::ecs
 		 * @brief Get the unique identifier of the entity.
 		 * @return The entity's unique identifier.
 		 */
-		Entity::Identifier getIdentifier(void) const;
+		Entity::Identifier getIdentifier(void) const noexcept;
 
 		/**
 		 * @brief Get the entity's signature.
 		 * @return The entity's signature.
 		 */
-		Entity::Signature getSignature(void) const;
+		Entity::Signature getSignature(void) const noexcept;
 
 		/**
 		 * @brief Set the entity's signature.
@@ -126,7 +126,7 @@ namespace guillaume::ecs
 		 * @brief Get the entity's rendering layer.
 		 * @return The layer value.
 		 */
-		std::int32_t getLayer(void) const;
+		std::int32_t getLayer(void) const noexcept;
 
 		/**
 		 * @brief Set the parent entity.
@@ -139,7 +139,7 @@ namespace guillaume::ecs
 		 * @brief Get the parent entity.
 		 * @return The parent entity, or nullptr if there is no parent.
 		 */
-		std::shared_ptr<Entity> getParent(void) const;
+		std::shared_ptr<Entity> getParent(void) const noexcept;
 
 		/**
 		 * @brief Initialize the entity's derived state.
@@ -148,7 +148,7 @@ namespace guillaume::ecs
 		 * components are set up. Derived entities can override this method to
 		 * perform any necessary initialization based on their components.
 		 */
-		virtual void initialize(void) = 0;
+		virtual void initialize(void);
 
 		/**
 		 * @brief Recompute the entity's derived state.
@@ -157,7 +157,7 @@ namespace guillaume::ecs
 		 * this method to synchronize cached state or dependent components when
 		 * their component data changes.
 		 */
-		virtual void update(void) = 0;
+		virtual void update(void);
 	};
 
 	/**

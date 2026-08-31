@@ -49,6 +49,10 @@ namespace guillaume::ecs
 	const std::vector<std::unique_ptr<System>> &
 		SystemRegistry::getSystemsByPhase(Phase phase) const
 	{
-		return _systems.at(phase);
+		if (phase >= Phase::Count) {
+			throw std::out_of_range(
+				"SystemRegistry::getSystemsByPhase: invalid phase");
+		}
+		return _systems[phase];
 	}
 }	 // namespace guillaume::ecs

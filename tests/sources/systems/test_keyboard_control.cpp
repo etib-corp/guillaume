@@ -65,9 +65,11 @@ namespace
 
 		void setText(const std::string &content)
 		{
-			componentRegistry
-				.getComponent<guillaume::components::Text>(entityIdentifier)
-				.setContent(content);
+			auto &text =
+				componentRegistry
+					.getComponent<guillaume::components::Text>(entityIdentifier)
+					.setContent(content);
+			text.setCursorPosition(content.size());
 		}
 
 		void dispatchKeyboardEvent(

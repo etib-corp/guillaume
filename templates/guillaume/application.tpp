@@ -160,7 +160,10 @@ namespace guillaume
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
 	void Application<DefaultSceneType, SceneTypes...>::routine(void)
 	{
-		static auto firstView = _engine->getView();
+		if (!_firstView.has_value()) {
+			_firstView = _engine->getView();
+		}
+		auto &firstView = _firstView.value();
 
 		_sceneManager->getActiveScene()->placeEntitiesInFrontOfView(firstView);
 		this->getLogger().debug() << "Current view: " << _engine->getView();

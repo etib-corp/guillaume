@@ -33,6 +33,7 @@
 #include "storage.hpp"
 
 struct sqlite3;
+struct sqlite3_stmt;
 
 namespace guillaume
 {
@@ -53,6 +54,30 @@ namespace guillaume
 			_storageFilePath;		  ///< Backing SQLite database file
 		sqlite3 *_database;			  ///< SQLite connection handle
 		mutable std::mutex _mutex;	  ///< Synchronizes SQLite access
+		sqlite3_stmt *_setItemStmt {
+			nullptr
+		};	  ///< Cached prepared statement for setItem
+		sqlite3_stmt *_getItemStmt {
+			nullptr
+		};	  ///< Cached prepared statement for getItem
+		sqlite3_stmt *_removeItemStmt {
+			nullptr
+		};	  ///< Cached prepared statement for removeItem
+
+		/**
+		 * @brief Prepare (or reuse) a cached statement.
+		 * @param stmt Reference to the cached statement pointer.
+		 * @param sql SQL text to prepare when not yet cached.
+		 * @return The prepared statement.
+		 * @throws std::runtime_error If preparation fails.
+		 */
+		sqlite3_stmt *prepareStatement(sqlite3_stmt *&stmt,
+									   const char *sql) const;
+
+		/**
+		 * @brief Finalize all cached prepared statements.
+		 */
+		void finalizeStatements(void);
 
 		/**
 		 * @brief Initialize database schema.

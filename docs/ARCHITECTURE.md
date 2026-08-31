@@ -3,20 +3,69 @@
 Guillaume is organized around an entity-component-system model so UI state,
 presentation, and interaction logic stay separate.
 
-## Main Building Blocks
+## Module Layout
 
-- Entities represent UI objects such as buttons, labels, panels, and icons.
-- Components store data such as transform, bounds, text, color, and borders.
-- Systems apply behavior such as rendering, interaction, and text measurement.
-- Scenes group entities into screens and let the application switch between
- them.
+```mermaid
+graph TD
+    App[Application] --> SM[SceneManager]
+    App --> EB[EventBus]
+    App --> SR[SystemRegistry]
+    App --> Engine[Engine]
 
-## Runtime Flow
+    SM --> Scene[Scene]
+    Scene --> ER[EntityRegistry]
+    Scene --> CR[ComponentRegistry]
 
-1. The application create an engine.
-2. Scenes populate the UI tree using the storage objects passed in by the app.
-3. Systems render and update entities every frame.
-4. Input events update component state and drive transitions.
+    SR --> Systems[Systems]
+    Systems --> ER
+    Systems --> CR
+
+    EB --> Systems
+    Engine --> EB
+
+    Scene --> LS[LocalStorage]
+    Scene --> SS[SessionStorage]
+```
+
+- **Application** owns the engine, scene manager, event bus, and system
+  registry, and drives the main loop.
+- **SceneManager** owns the registered scenes and handles transitions.
+- **Scene** owns an entity registry and a component registry.
+- **Systems** read components and traverse entities each frame.
+- **EventBus** routes typed events to subscribed listeners and systems.
+- **Storage** (`LocalStorage`/`SessionStorage`) provides key-value persistence.
+
+## Frame Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant Engine
+    participant SM as SceneManager
+    participant SR as SystemRegistry
+
+    loop each frame
+        App->>Engine: pollEvents()
+        App->>Engine: clear()
+        App->>Engine: update()
+        App->>SR: run phases (Event, Measure, Layout, Render)
+        App->>SM: processSceneTransition()
+        App->>Engine: present()
+    end
+```
+
+The main loop is single-threaded: input → update → render → present.
+
+## Scene Transition Flow
+
+```mermaid
+flowchart LR
+    A[Active scene requests switch] --> B{Next scene registered?}
+    B -- No --> E[Log error + throw]
+    B -- Yes --> C[Call onExit on current scene]
+    C --> D[Set active scene type]
+    D --> F[Call onEnter on new scene]
+```
 
 ## Design Goal
 

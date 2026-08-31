@@ -984,6 +984,18 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	ecs::Entity::Identifier Button::getIconIdentifier(void) const
+	{
+		return _icon != nullptr ? _icon->getIdentifier()
+								: ecs::Entity::InvalidIdentifier;
+	}
+
+	ecs::Entity::Identifier Button::getLabelIdentifier(void) const
+	{
+		return _label != nullptr ? _label->getIdentifier()
+								 : ecs::Entity::InvalidIdentifier;
+	}
+
 	void Button::initialize(void)
 	{
 		Icon::Builder iconBuilder(getComponentRegistry(), *this);

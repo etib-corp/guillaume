@@ -28,8 +28,15 @@ jobs:
           cmake
           -B ${{ github.workspace }}/build
           -S ${{ github.workspace }}
+          -DBUILD_TESTING=ON
 
       - name: Build
         run: >
           cmake
           --build ${{ github.workspace }}/build
+
+      - name: Run tests
+        run: >
+          ctest
+          --test-dir ${{ github.workspace }}/build
+          --output-on-failure

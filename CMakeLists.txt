@@ -21,6 +21,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # 02. Options & configuration
 option(BUILD_DOCS "Build Doxygen documentation" OFF)
 option(BUILD_DOCS_ONLY "Configure only the documentation target" OFF)
+option(BUILD_BENCHMARKS "Build the benchmark harness" OFF)
 
 if(BUILD_DOCS_ONLY)
     set(BUILD_DOCS ON)
@@ -46,6 +47,12 @@ if(NOT BUILD_DOCS_ONLY)
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
     )
+    # Prefer a local utility checkout (../utility) for development so that
+    # local fixes are picked up without pushing to GitHub first.
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../utility/CMakeLists.txt")
+        set(FETCHCONTENT_SOURCE_DIR_UTILITY
+            "${CMAKE_CURRENT_SOURCE_DIR}/../utility" CACHE PATH "" FORCE)
+    endif()
     FetchContent_MakeAvailable(utility)
 
     # 04. Library definition
@@ -53,43 +60,78 @@ if(NOT BUILD_DOCS_ONLY)
     # Set the files directories
     set(HEADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/headers")
     set(TEMPLATES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/templates")
-    set(SOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sources")
 
-    # Add the headers directories
-    include_directories(
-        ${HEADERS_DIR}
-        ${TEMPLATES_DIR}
+    # Explicit source list (no file(GLOB)) for reproducible packaging.
+    include(cmake/Sources.cmake)
+
+    add_library(${PROJECT_NAME} ${GUILLAUME_SOURCES})
+
+    # 05. Include directories (target-scoped, with build/install interfaces)
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            $<BUILD_INTERFACE:${HEADERS_DIR}>
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${TEMPLATES_DIR}>
+            $<INSTALL_INTERFACE:include>
     )
 
-    # Add the source files
-    file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
-        "${SOURCES_DIR}/*.cpp"
-    )
-
-    add_library(${PROJECT_NAME} ${SOURCES})
-
-    # 07. Link dependencies
+    # 06. Link dependencies
     target_link_libraries(${PROJECT_NAME}
         PUBLIC
             utility
             SQLite::SQLite3
     )
 
-    # 05. Include directories
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC
-            $<BUILD_INTERFACE:${HEADERS_DIR}>
-            $<INSTALL_INTERFACE:include>
+    # 07. Packaging & consumability
+    include(GNUInstallDirs)
+
+    install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}Targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC
-            $<BUILD_INTERFACE:${TEMPLATES_DIR}>
-            $<INSTALL_INTERFACE:include>
+    install(DIRECTORY ${HEADERS_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(DIRECTORY ${TEMPLATES_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+    install(EXPORT ${PROJECT_NAME}Targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
+
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(
+        cmake/${PROJECT_NAME}Config.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
+    install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+
+    # 08. CPack packaging
+    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
+    set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
+    set(CPACK_PACKAGE_VENDOR "ETIB Corporation")
+    set(CPACK_PACKAGE_CONTACT "clement-antoine.xavier@epitech.eu")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+    include(CPack)
 endif()
 
-# 08. Documentations
+# 09. Documentations
 
 if(BUILD_DOCS)
     message(STATUS "Building documentation...")
@@ -99,7 +141,7 @@ else()
     message(STATUS "Skipping documentation...")
 endif()
 
-# 09. Tests
+# 10. Tests
 
 if(BUILD_TESTING)
     message(STATUS "Building tests...")
@@ -107,3 +149,14 @@ if(BUILD_TESTING)
 else()
     message(STATUS "Skipping tests...")
 endif()
+
+# 11. Benchmarks
+
+if(BUILD_BENCHMARKS)
+    message(STATUS "Building benchmarks...")
+    add_subdirectory(benchmarks)
+endif()
+
+# 12. Examples
+
+add_subdirectory(examples)

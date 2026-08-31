@@ -143,13 +143,13 @@ namespace guillaume::ecs
 		 * @brief Get the system's update phase.
 		 * @return The system's update phase.
 		 */
-		Phase getPhase(void) const;
+		Phase getPhase(void) const noexcept;
 
 		/**
 		 * @brief Get the system's signature.
 		 * @return The system's signature.
 		 */
-		Entity::Signature getSignature(void) const;
+		Entity::Signature getSignature(void) const noexcept;
 
 		/**
 		 * @brief Routine to update all managed entities.

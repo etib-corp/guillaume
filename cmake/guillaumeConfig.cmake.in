@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Guillaume links against the utility library and SQLite3. Downstream
+# consumers must be able to resolve these dependencies.
+find_dependency(utility)
+find_dependency(sqlite3)
+
+include("${CMAKE_CURRENT_LIST_DIR}/guillaumeTargets.cmake")
+
+check_required_components(guillaume)

@@ -116,8 +116,7 @@ namespace guillaume::ecs
 		 * @return Vector of pointers to systems registered for the specified
 		 * phase. Returns an empty vector if no systems are registered for the
 		 * phase.
-		 * @throws std::runtime_error if no systems are registered for the
-		 * specified phase.
+		 * @throws std::out_of_range if the phase is not a valid Phase value.
 		 */
 		const std::vector<std::unique_ptr<System>> &
 			getSystemsByPhase(Phase phase) const;

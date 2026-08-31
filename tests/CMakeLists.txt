@@ -3,10 +3,39 @@ enable_testing()
 
 # Set test directories
 set(TEST_HEADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/headers")
-set(TEST_SOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/sources")
 
-# Find all source files in the test sources directory
-file(GLOB_RECURSE TEST_SOURCES "${TEST_SOURCES_DIR}/*.cpp")
+# Explicit test source list (no file(GLOB)) for reproducible builds.
+set(TEST_SOURCES
+    sources/components/test_bound.cpp
+    sources/components/test_focus.cpp
+    sources/components/test_text.cpp
+    sources/components/test_transform.cpp
+    sources/ecs/test_component.cpp
+    sources/ecs/test_component_registry.cpp
+    sources/ecs/test_component_registry_filler.cpp
+    sources/ecs/test_entity.cpp
+    sources/ecs/test_entity_filler.cpp
+    sources/ecs/test_entity_registry_container.cpp
+    sources/ecs/test_system.cpp
+    sources/ecs/test_system_filler.cpp
+    sources/ecs/test_system_registry.cpp
+    sources/entities/test_button.cpp
+    sources/event/test_event_bus.cpp
+    sources/event/test_event_handler.cpp
+    sources/event/test_event_subscriber.cpp
+    sources/systems/test_focus.cpp
+    sources/systems/test_interaction.cpp
+    sources/systems/test_keyboard_control.cpp
+    sources/systems/test_measure_text.cpp
+    sources/systems/test_text_input.cpp
+    sources/systems/test_text_render.cpp
+    sources/systems/text_glyph_render.cpp
+    sources/test_application.cpp
+    sources/test_ecs.cpp
+    sources/test_engine.cpp
+    sources/test_metadata.cpp
+    sources/test_storage.cpp
+)
 
 # Fetch GoogleTest
 include(FetchContent)

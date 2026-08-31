@@ -71,12 +71,16 @@ namespace guillaume::systems::tests
 		{
 			return true;
 		}
-		utility::math::Vector2F
+		utility::graphic::SizeF
 			measureText(const utility::graphic::Text &) const override
 		{
 			return { 0.0f, 0.0f };
 		}
-		size_t addText(const utility::graphic::Text &) override
+		size_t addText(utility::graphic::Text) override
+		{
+			return 0;
+		}
+		size_t addModel(std::shared_ptr<utility::graphic::Model>) override
 		{
 			return 0;
 		}

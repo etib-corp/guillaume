@@ -396,6 +396,20 @@ namespace guillaume::entities
 		Button &setOnClick(std::function<void(void)> onClick);
 
 		/**
+		 * @brief Get the identifier of the internal icon child entity.
+		 * @return The icon entity identifier, or InvalidIdentifier when no icon
+		 * is attached.
+		 */
+		ecs::Entity::Identifier getIconIdentifier(void) const;
+
+		/**
+		 * @brief Get the identifier of the internal label child entity.
+		 * @return The label entity identifier, or InvalidIdentifier when no
+		 * label is attached.
+		 */
+		ecs::Entity::Identifier getLabelIdentifier(void) const;
+
+		/**
 		 * @brief Initialize the button entity's derived state.
 		 */
 		void initialize(void) override;

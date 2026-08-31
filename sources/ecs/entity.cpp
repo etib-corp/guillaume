@@ -22,13 +22,15 @@
 
 #include "guillaume/ecs/entity.hpp"
 
+#include <atomic>
+
 namespace guillaume::ecs
 {
 
 	Entity::Identifier Entity::getNextIdentifier(void)
 	{
-		static Identifier currentId = InvalidIdentifier;
-		return ++currentId;
+		static std::atomic<Identifier> currentId { InvalidIdentifier };
+		return currentId.fetch_add(1, std::memory_order_relaxed) + 1;
 	}
 
 	Entity::Entity(void)
@@ -37,12 +39,12 @@ namespace guillaume::ecs
 	{
 	}
 
-	Entity::Identifier Entity::getIdentifier(void) const
+	Entity::Identifier Entity::getIdentifier(void) const noexcept
 	{
 		return _identifier;
 	}
 
-	Entity::Signature Entity::getSignature(void) const
+	Entity::Signature Entity::getSignature(void) const noexcept
 	{
 		return _signature;
 	}
@@ -52,7 +54,7 @@ namespace guillaume::ecs
 		_signature = signature;
 	}
 
-	std::int32_t Entity::getLayer(void) const
+	std::int32_t Entity::getLayer(void) const noexcept
 	{
 		return _layer;
 	}
@@ -68,8 +70,16 @@ namespace guillaume::ecs
 		return *this;
 	}
 
-	std::shared_ptr<Entity> Entity::getParent(void) const
+	std::shared_ptr<Entity> Entity::getParent(void) const noexcept
 	{
 		return _parent;
+	}
+
+	void Entity::initialize(void)
+	{
+	}
+
+	void Entity::update(void)
+	{
 	}
 }	 // namespace guillaume::ecs

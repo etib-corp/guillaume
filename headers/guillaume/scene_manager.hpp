@@ -101,7 +101,7 @@ namespace guillaume
 		 * @return Pointer to the active scene, or nullptr if no active scene
 		 * is set.
 		 */
-		std::unique_ptr<Scene> &getActiveScene(void);
+		Scene *getActiveScene(void);
 
 		/**
 		 * @brief Check whether at least one scene is registered.

@@ -1,2 +1,5 @@
 # CMake build files
 /build/
+
+# Local storage database created by tests
+.guillaume-local-storage.db

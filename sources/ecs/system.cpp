@@ -49,12 +49,12 @@ namespace guillaume::ecs
 		return *_activeComponentRegistry;
 	}
 
-	Phase System::getPhase(void) const
+	Phase System::getPhase(void) const noexcept
 	{
 		return _phase;
 	}
 
-	Entity::Signature System::getSignature(void) const
+	Entity::Signature System::getSignature(void) const noexcept
 	{
 		return _signature;
 	}

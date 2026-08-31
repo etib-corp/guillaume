@@ -56,8 +56,7 @@ namespace guillaume
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	std::unique_ptr<Scene> &
-		SceneManager<DefaultSceneType, SceneTypes...>::getActiveScene(void)
+	Scene *SceneManager<DefaultSceneType, SceneTypes...>::getActiveScene(void)
 	{
 		if (_scenes.empty()) {
 			this->getLogger().error() << "Cannot activate scene: no scenes are "
@@ -73,7 +72,7 @@ namespace guillaume
 				<< "No active scene set. Defaulting to first "
 				   "registered scene";
 		}
-		return _scenes[_activeSceneType];
+		return _scenes[_activeSceneType].get();
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
@@ -147,7 +146,7 @@ namespace guillaume
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
 	void SceneManager<DefaultSceneType, SceneTypes...>::enterActiveScene(void)
 	{
-		std::unique_ptr<Scene> &activeScene = getActiveScene();
+		Scene *activeScene = getActiveScene();
 		if (_engine != nullptr) {
 			activeScene->placeEntitiesInFrontOfView(_engine->getView());
 		}
@@ -159,7 +158,7 @@ namespace guillaume
 	void SceneManager<DefaultSceneType, SceneTypes...>::processSceneTransition(
 		void)
 	{
-		std::unique_ptr<Scene> &activeScene = getActiveScene();
+		Scene *activeScene = getActiveScene();
 
 		if (!activeScene->wantsToSwitch()) {
 			return;

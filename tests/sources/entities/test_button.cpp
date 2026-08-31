@@ -28,31 +28,33 @@ namespace guillaume::entities::tests
 {
 	TEST_F(TestButton, ChildrenHaveDistinctLayersAndDepthOffsets)
 	{
-		ComponentRegistry registry;
-		Button button(registry, "home", "Save", false, Button::Color::Filled,
-					  Button::Shape::Round, Button::Size::Medium, false, {});
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(registry, "home", components::Glyph::Style::Outlined,
+					  "Save", false, Button::Color::Filled, Button::Shape::Round,
+					  Button::Size::Medium, false, std::function<void(void)>());
 
 		auto &buttonTransform = registry.getComponent<components::Transform>(
-			button.getIdentifier());
+			button->getIdentifier());
 		buttonTransform.setPose(utility::graphic::PoseF(
 			utility::graphic::PositionF(0.0f, 0.0f, -300.0f),
 			utility::graphic::OrientationF()));
 
-		button.update();
+		button->initialize();
+		button->update();
 
-		const auto iconIdentifier  = button.getIconIdentifier();
-		const auto labelIdentifier = button.getLabelIdentifier();
+		const auto iconIdentifier  = button->getIconIdentifier();
+		const auto labelIdentifier = button->getLabelIdentifier();
 
 		ASSERT_NE(iconIdentifier, ecs::Entity::InvalidIdentifier);
 		ASSERT_NE(labelIdentifier, ecs::Entity::InvalidIdentifier);
 
-		const auto iconEntity  = button.getEntity(iconIdentifier);
-		const auto labelEntity = button.getEntity(labelIdentifier);
+		const auto iconEntity  = button->getEntity<ecs::Entity>(iconIdentifier);
+		const auto labelEntity = button->getEntity<ecs::Entity>(labelIdentifier);
 		ASSERT_NE(iconEntity, nullptr);
 		ASSERT_NE(labelEntity, nullptr);
 
 		EXPECT_EQ(iconEntity->getLayer(), 1);
-		EXPECT_EQ(labelEntity->getLayer(), 2);
+		EXPECT_EQ(labelEntity->getLayer(), 1);
 
 		const float baseZ = buttonTransform.getPose().getPosition().getZ();
 		const auto iconZ =
@@ -67,68 +69,39 @@ namespace guillaume::entities::tests
 				.getZ();
 
 		EXPECT_FLOAT_EQ(iconZ, baseZ + 1.0f);
-		EXPECT_FLOAT_EQ(textZ, baseZ + 2.0f);
+		EXPECT_FLOAT_EQ(textZ, baseZ + 1.0f);
 		EXPECT_LT(baseZ, iconZ);
-		EXPECT_LT(iconZ, textZ);
+		EXPECT_LT(baseZ, textZ);
 	}
 
-	TEST_F(TestButton, TextOnlyChildUsesLayerOffset)
+	TEST_F(TestButton, EmptyContentStillCreatesBothChildren)
 	{
-		ComponentRegistry registry;
-		Button button(registry, "", "Save", false, Button::Color::Filled,
-					  Button::Shape::Round, Button::Size::Medium, false, {});
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(registry, "", components::Glyph::Style::Outlined, "",
+					  false, Button::Color::Filled, Button::Shape::Round,
+					  Button::Size::Medium, false, std::function<void(void)>());
 
 		auto &buttonTransform = registry.getComponent<components::Transform>(
-			button.getIdentifier());
+			button->getIdentifier());
 		buttonTransform.setPose(utility::graphic::PoseF(
 			utility::graphic::PositionF(0.0f, 0.0f, -300.0f),
 			utility::graphic::OrientationF()));
 
-		button.update();
+		button->initialize();
+		button->update();
 
-		const auto iconIdentifier  = button.getIconIdentifier();
-		const auto labelIdentifier = button.getLabelIdentifier();
-
-		EXPECT_EQ(iconIdentifier, ecs::Entity::InvalidIdentifier);
-		ASSERT_NE(labelIdentifier, ecs::Entity::InvalidIdentifier);
-
-		const auto labelEntity = button.getEntity(labelIdentifier);
-		ASSERT_NE(labelEntity, nullptr);
-		EXPECT_EQ(labelEntity->getLayer(), 2);
-
-		const float baseZ = buttonTransform.getPose().getPosition().getZ();
-		const auto textZ =
-			registry.getComponent<components::Transform>(labelIdentifier)
-				.getPose()
-				.getPosition()
-				.getZ();
-
-		EXPECT_FLOAT_EQ(textZ, baseZ + 2.0f);
-	}
-
-	TEST_F(TestButton, IconOnlyChildUsesLayerOffset)
-	{
-		ComponentRegistry registry;
-		Button button(registry, "home", "", false, Button::Color::Filled,
-					  Button::Shape::Round, Button::Size::Medium, false, {});
-
-		auto &buttonTransform = registry.getComponent<components::Transform>(
-			button.getIdentifier());
-		buttonTransform.setPose(utility::graphic::PoseF(
-			utility::graphic::PositionF(0.0f, 0.0f, -300.0f),
-			utility::graphic::OrientationF()));
-
-		button.update();
-
-		const auto iconIdentifier  = button.getIconIdentifier();
-		const auto labelIdentifier = button.getLabelIdentifier();
+		const auto iconIdentifier  = button->getIconIdentifier();
+		const auto labelIdentifier = button->getLabelIdentifier();
 
 		ASSERT_NE(iconIdentifier, ecs::Entity::InvalidIdentifier);
-		EXPECT_EQ(labelIdentifier, ecs::Entity::InvalidIdentifier);
+		ASSERT_NE(labelIdentifier, ecs::Entity::InvalidIdentifier);
 
-		const auto iconEntity = button.getEntity(iconIdentifier);
+		const auto iconEntity = button->getEntity<ecs::Entity>(iconIdentifier);
+		const auto labelEntity = button->getEntity<ecs::Entity>(labelIdentifier);
 		ASSERT_NE(iconEntity, nullptr);
+		ASSERT_NE(labelEntity, nullptr);
 		EXPECT_EQ(iconEntity->getLayer(), 1);
+		EXPECT_EQ(labelEntity->getLayer(), 1);
 
 		const float baseZ = buttonTransform.getPose().getPosition().getZ();
 		const auto iconZ =
@@ -136,7 +109,13 @@ namespace guillaume::entities::tests
 				.getPose()
 				.getPosition()
 				.getZ();
+		const auto textZ =
+			registry.getComponent<components::Transform>(labelIdentifier)
+				.getPose()
+				.getPosition()
+				.getZ();
 
 		EXPECT_FLOAT_EQ(iconZ, baseZ + 1.0f);
+		EXPECT_FLOAT_EQ(textZ, baseZ + 1.0f);
 	}
 }	 // namespace guillaume::entities::tests

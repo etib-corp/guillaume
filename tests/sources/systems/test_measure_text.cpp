@@ -41,14 +41,10 @@ namespace
 	class EngineStub: public guillaume::Engine
 	{
 		public:
-		mutable utility::math::Vector2F measurement = { 0.0f, 0.0f };
+		mutable utility::graphic::SizeF measurement = { 0.0f, 0.0f };
 		mutable std::size_t measureCallCount		= 0;
 		mutable std::string lastContent;
 
-		ViewportSize getViewportSize(void) const override
-		{
-			return { 800.0f, 600.0f };
-		}
 		void clear(void) override
 		{
 		}
@@ -65,14 +61,18 @@ namespace
 			(void)objectID;
 			return true;
 		}
-		utility::math::Vector2F
+		utility::graphic::SizeF
 			measureText(const utility::graphic::Text &text) const override
 		{
 			++measureCallCount;
 			lastContent = text.getContent();
 			return measurement;
 		}
-		size_t addText(const utility::graphic::Text &) override
+		size_t addText(utility::graphic::Text) override
+		{
+			return 0;
+		}
+		size_t addModel(std::shared_ptr<utility::graphic::Model>) override
 		{
 			return 0;
 		}
@@ -125,6 +125,8 @@ namespace
 			componentRegistry.addComponent<guillaume::components::Text>(
 				entityIdentifier);
 			componentRegistry.addComponent<guillaume::components::Bound>(
+				entityIdentifier);
+			componentRegistry.addComponent<guillaume::components::Color>(
 				entityIdentifier);
 		}
 	};
