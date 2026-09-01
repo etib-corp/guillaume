@@ -72,7 +72,7 @@ namespace guillaume::ecs
 
 	std::shared_ptr<Entity> Entity::getParent(void) const noexcept
 	{
-		return _parent;
+		return _parent.lock();
 	}
 
 	void Entity::initialize(void)
