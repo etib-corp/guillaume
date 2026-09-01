@@ -94,6 +94,7 @@ jobs:
           --directory ${{ github.workspace }}/build
           --output-file coverage.info
           --no-external
+          --ignore-errors unused
           --exclude '*/_deps/*'
           --exclude '*/tests/*'
           --exclude '*/googletest*'
