@@ -1,6 +1,3 @@
-# Enable testing
-enable_testing()
-
 # Set test directories
 set(TEST_HEADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/headers")
 
