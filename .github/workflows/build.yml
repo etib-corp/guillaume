@@ -30,14 +30,14 @@ jobs:
           -S ${{ github.workspace }}
           -DBUILD_TESTING=ON
 
+      - name: Add OpenAL DLL to PATH (Windows)
+        if: runner.os == 'Windows'
+        run: echo "${{ github.workspace }}/build/_deps/openal-build/Debug" >> $GITHUB_PATH
+
       - name: Build
         run: >
           cmake
           --build ${{ github.workspace }}/build
-
-      - name: Add OpenAL DLL to PATH (Windows)
-        if: runner.os == 'Windows'
-        run: echo "${{ github.workspace }}/build/_deps/openal-build/Debug" >> $GITHUB_PATH
 
       - name: Run tests
         run: >
