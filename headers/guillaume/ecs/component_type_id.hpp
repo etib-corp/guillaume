@@ -33,7 +33,7 @@ namespace guillaume::ecs
 	 * @brief Maximum number of distinct component types supported by
 	 * signatures.
 	 */
-	constexpr std::size_t MaxComponentTypes = 64;
+	constexpr std::size_t MaxComponentTypes = 128;
 
 	/**
 	 * @brief Exception thrown when the component type limit is exceeded.

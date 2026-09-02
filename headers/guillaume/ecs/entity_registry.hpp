@@ -43,6 +43,20 @@ namespace guillaume::ecs
 	 */
 	class EntityRegistry
 	{
+		private:
+		/**
+		 * @brief Cached breadth-first traversal of this registry hierarchy.
+		 *
+		 * Rebuilt lazily when the global tree version changes (i.e. when any
+		 * entity is added anywhere in the hierarchy).
+		 */
+		mutable std::vector<std::shared_ptr<Entity>> _bfsCache;
+
+		/**
+		 * @brief Tree version at which _bfsCache was last computed.
+		 */
+		mutable std::size_t _cachedVersion { 0 };
+
 		protected:
 		/**
 		 * @brief Access mutable direct child entities owned by this registry.

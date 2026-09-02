@@ -22,6 +22,75 @@
 
 #include "ecs/test_component_registry.hpp"
 
+#include <memory>
+
+#include "guillaume/ecs/entity.hpp"
+
 namespace guillaume::ecs::tests
 {
+
+	class DummyComponent: public Component
+	{
+		public:
+		DummyComponent(void)		   = default;
+		~DummyComponent(void) override = default;
+	};
+
+	TEST_F(TestComponentRegistry, HasChangedIsFalseForMissingComponent)
+	{
+		ComponentRegistry registry;
+
+		EXPECT_FALSE(registry.hasChanged(Entity::InvalidIdentifier));
+	}
+
+	TEST_F(TestComponentRegistry, HasChangedTracksOnlyTheTargetEntity)
+	{
+		ComponentRegistry registry;
+
+		auto firstEntity  = std::make_shared<Entity>();
+		auto secondEntity = std::make_shared<Entity>();
+
+		const auto firstIdentifier	= firstEntity->getIdentifier();
+		const auto secondIdentifier = secondEntity->getIdentifier();
+
+		registry.addComponent<DummyComponent>(firstIdentifier);
+		registry.addComponent<DummyComponent>(secondIdentifier);
+
+		EXPECT_FALSE(registry.hasChanged(firstIdentifier));
+		EXPECT_FALSE(registry.hasChanged(secondIdentifier));
+
+		registry.getComponent<DummyComponent>(firstIdentifier)
+			.setHasChanged(true);
+
+		EXPECT_TRUE(registry.hasChanged(firstIdentifier));
+		EXPECT_FALSE(registry.hasChanged(secondIdentifier));
+	}
+
+	TEST_F(TestComponentRegistry, ResetChangedFlagsClearsAllDirtyFlags)
+	{
+		ComponentRegistry registry;
+
+		auto firstEntity  = std::make_shared<Entity>();
+		auto secondEntity = std::make_shared<Entity>();
+
+		const auto firstIdentifier	= firstEntity->getIdentifier();
+		const auto secondIdentifier = secondEntity->getIdentifier();
+
+		registry.addComponent<DummyComponent>(firstIdentifier);
+		registry.addComponent<DummyComponent>(secondIdentifier);
+
+		registry.getComponent<DummyComponent>(firstIdentifier)
+			.setHasChanged(true);
+		registry.getComponent<DummyComponent>(secondIdentifier)
+			.setHasChanged(true);
+
+		EXPECT_TRUE(registry.hasChanged(firstIdentifier));
+		EXPECT_TRUE(registry.hasChanged(secondIdentifier));
+
+		registry.resetChangedFlags();
+
+		EXPECT_FALSE(registry.hasChanged(firstIdentifier));
+		EXPECT_FALSE(registry.hasChanged(secondIdentifier));
+	}
+
 }	 // namespace guillaume::ecs::tests

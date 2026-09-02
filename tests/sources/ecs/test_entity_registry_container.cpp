@@ -220,4 +220,48 @@ namespace guillaume::ecs::tests
 		EXPECT_EQ(matchingIdentifiers[1], firstRootIdentifier);
 	}
 
+	TEST_F(TestEntityRegistry, BreadthFirstCacheInvalidatesOnAddEntity)
+	{
+		TestEntityRegistryContainer registry;
+
+		auto firstRoot				   = std::make_shared<DummyEntity>();
+		const auto firstRootIdentifier = firstRoot->getIdentifier();
+		registry.addEntity(firstRoot);
+
+		auto firstTraversal = registry.getEntitiesBreadthFirst();
+		ASSERT_EQ(firstTraversal.size(), 1U);
+		EXPECT_EQ(firstTraversal[0]->getIdentifier(), firstRootIdentifier);
+
+		auto secondRoot					= std::make_shared<DummyEntity>();
+		const auto secondRootIdentifier = secondRoot->getIdentifier();
+		registry.addEntity(secondRoot);
+
+		auto secondTraversal = registry.getEntitiesBreadthFirst();
+		ASSERT_EQ(secondTraversal.size(), 2U);
+		EXPECT_EQ(secondTraversal[0]->getIdentifier(), firstRootIdentifier);
+		EXPECT_EQ(secondTraversal[1]->getIdentifier(), secondRootIdentifier);
+	}
+
+	TEST_F(TestEntityRegistry, BreadthFirstCacheInvalidatesOnChildAdd)
+	{
+		TestEntityRegistryContainer registry;
+
+		auto parent					= std::make_shared<DummyParentEntity>();
+		const auto parentIdentifier = parent->getIdentifier();
+		registry.addEntity(parent);
+
+		auto firstTraversal = registry.getEntitiesBreadthFirst();
+		ASSERT_EQ(firstTraversal.size(), 1U);
+		EXPECT_EQ(firstTraversal[0]->getIdentifier(), parentIdentifier);
+
+		auto child				   = std::make_shared<DummyEntity>();
+		const auto childIdentifier = child->getIdentifier();
+		parent->addEntity(child);
+
+		auto secondTraversal = registry.getEntitiesBreadthFirst();
+		ASSERT_EQ(secondTraversal.size(), 2U);
+		EXPECT_EQ(secondTraversal[0]->getIdentifier(), parentIdentifier);
+		EXPECT_EQ(secondTraversal[1]->getIdentifier(), childIdentifier);
+	}
+
 }	 // namespace guillaume::ecs::tests

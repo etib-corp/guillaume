@@ -179,6 +179,7 @@ namespace guillaume
 				(this->runPhase(phaseDefinition), ...);
 			},
 			_systemPhases);
+		_sceneManager->getActiveComponentRegistry().resetChangedFlags();
 		_sceneManager->processSceneTransition();
 		_engine->present();
 	}

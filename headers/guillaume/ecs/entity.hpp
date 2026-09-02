@@ -54,9 +54,9 @@ namespace guillaume::ecs
 		 */
 		using Identifier = std::size_t;
 		/**
-		 * @brief Type alias for entity signatures (64-bit component bitmask).
+		 * @brief Type alias for entity signatures (128-bit component bitmask).
 		 */
-		using Signature = std::bitset<64>;
+		using Signature = std::bitset<128>;
 
 		constexpr static Identifier InvalidIdentifier =
 			0;	  ///< Invalid identifier
@@ -78,10 +78,10 @@ namespace guillaume::ecs
 		static Signature getSignatureFromTypes(void);
 
 		private:
-		const Identifier _identifier;		///< Unique identifier
-		Signature _signature;				///< Entity signature
-		std::int32_t _layer { 0 };			///< Rendering/depth layer
-		std::weak_ptr<Entity> _parent;	///< Parent entity (if any)
+		const Identifier _identifier;	  ///< Unique identifier
+		Signature _signature;			  ///< Entity signature
+		std::int32_t _layer { 0 };		  ///< Rendering/depth layer
+		std::weak_ptr<Entity> _parent;	  ///< Parent entity (if any)
 
 		protected:
 		/**

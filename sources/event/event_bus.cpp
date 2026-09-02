@@ -32,7 +32,7 @@ namespace guillaume::event
 			if (!listener) {
 				continue;
 			}
-			listener(std::move(event));
+			listener(event);
 		}
 	}
 

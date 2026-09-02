@@ -22,6 +22,51 @@
 
 #include "event/test_event_bus.hpp"
 
+#include <memory>
+
+#include <utility/event/keyboard_event.hpp>
+
 namespace guillaume::event::tests
 {
+
+	TEST_F(TestEventBus, PublishDeliversToAllSubscribersOfSameType)
+	{
+		EventBus bus;
+
+		int firstCount	= 0;
+		int secondCount = 0;
+
+		bus.subscribe<utility::event::KeyboardEvent>(
+			[&firstCount](std::shared_ptr<utility::event::Event>) {
+				++firstCount;
+			});
+		bus.subscribe<utility::event::KeyboardEvent>(
+			[&secondCount](std::shared_ptr<utility::event::Event>) {
+				++secondCount;
+			});
+
+		auto event = std::make_shared<utility::event::KeyboardEvent>();
+		bus.publish(std::move(event));
+
+		EXPECT_EQ(firstCount, 1);
+		EXPECT_EQ(secondCount, 1);
+	}
+
+	TEST_F(TestEventBus, PublishDoesNotDeliverToUnrelatedTypes)
+	{
+		EventBus bus;
+
+		int keyboardCount = 0;
+
+		bus.subscribe<utility::event::KeyboardEvent>(
+			[&keyboardCount](std::shared_ptr<utility::event::Event>) {
+				++keyboardCount;
+			});
+
+		auto event = std::make_shared<utility::event::KeyboardEvent>();
+		bus.publish(std::move(event));
+
+		EXPECT_EQ(keyboardCount, 1);
+	}
+
 }	 // namespace guillaume::event::tests

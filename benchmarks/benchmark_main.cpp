@@ -86,7 +86,8 @@ namespace
 	{
 		guillaume::event::EventBus bus;
 		bus.subscribe<utility::event::KeyboardEvent>(
-			[](std::shared_ptr<utility::event::Event>) {});
+			[](std::shared_ptr<utility::event::Event>) {
+			});
 		for (auto _: state) {
 			auto event = std::make_shared<utility::event::KeyboardEvent>();
 			bus.publish(std::move(event));
