@@ -25,6 +25,7 @@ include(CTest)
 # 02. Options & configuration
 option(BUILD_DOCS "Build Doxygen documentation" OFF)
 option(BUILD_DOCS_ONLY "Configure only the documentation target" OFF)
+option(BUILD_ALL_DOCS "Build documentation for all libraries" OFF)
 option(BUILD_BENCHMARKS "Build the benchmark harness" OFF)
 
 if(BUILD_DOCS_ONLY)
@@ -137,10 +138,10 @@ endif()
 
 # 09. Documentations
 
-if(BUILD_DOCS)
+if(BUILD_ALL_DOCS OR BUILD_DOCS_ONLY)
     message(STATUS "Building documentation...")
     include(cmake/Docs.cmake)
-    add_project_docs()
+    add_subdirectory(docs)
 else()
     message(STATUS "Skipping documentation...")
 endif()
