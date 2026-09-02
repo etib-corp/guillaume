@@ -81,7 +81,7 @@ namespace guillaume::ecs
 		const Identifier _identifier;		///< Unique identifier
 		Signature _signature;				///< Entity signature
 		std::int32_t _layer { 0 };			///< Rendering/depth layer
-		std::shared_ptr<Entity> _parent;	///< Parent entity (if any)
+		std::weak_ptr<Entity> _parent;	///< Parent entity (if any)
 
 		protected:
 		/**
