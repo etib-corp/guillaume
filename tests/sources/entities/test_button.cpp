@@ -29,9 +29,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, ChildrenHaveDistinctLayersAndDepthOffsets)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(registry, "home", components::Glyph::Style::Outlined,
-					  "Save", false, Button::Color::Filled, Button::Shape::Round,
-					  Button::Size::Medium, false, std::function<void(void)>());
+		auto button = std::make_shared<Button>(
+			registry, "home", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, std::function<void(void)>());
 
 		auto &buttonTransform = registry.getComponent<components::Transform>(
 			button->getIdentifier());
@@ -48,8 +49,9 @@ namespace guillaume::entities::tests
 		ASSERT_NE(iconIdentifier, ecs::Entity::InvalidIdentifier);
 		ASSERT_NE(labelIdentifier, ecs::Entity::InvalidIdentifier);
 
-		const auto iconEntity  = button->getEntity<ecs::Entity>(iconIdentifier);
-		const auto labelEntity = button->getEntity<ecs::Entity>(labelIdentifier);
+		const auto iconEntity = button->getEntity<ecs::Entity>(iconIdentifier);
+		const auto labelEntity =
+			button->getEntity<ecs::Entity>(labelIdentifier);
 		ASSERT_NE(iconEntity, nullptr);
 		ASSERT_NE(labelEntity, nullptr);
 
@@ -77,9 +79,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, EmptyContentStillCreatesBothChildren)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(registry, "", components::Glyph::Style::Outlined, "",
-					  false, Button::Color::Filled, Button::Shape::Round,
-					  Button::Size::Medium, false, std::function<void(void)>());
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, std::function<void(void)>());
 
 		auto &buttonTransform = registry.getComponent<components::Transform>(
 			button->getIdentifier());
@@ -97,7 +100,8 @@ namespace guillaume::entities::tests
 		ASSERT_NE(labelIdentifier, ecs::Entity::InvalidIdentifier);
 
 		const auto iconEntity = button->getEntity<ecs::Entity>(iconIdentifier);
-		const auto labelEntity = button->getEntity<ecs::Entity>(labelIdentifier);
+		const auto labelEntity =
+			button->getEntity<ecs::Entity>(labelIdentifier);
 		ASSERT_NE(iconEntity, nullptr);
 		ASSERT_NE(labelEntity, nullptr);
 		EXPECT_EQ(iconEntity->getLayer(), 1);

@@ -52,8 +52,7 @@ namespace guillaume
 				throw std::runtime_error(
 					"Failed to open local storage database (file and in-memory "
 					"fallback): "
-					+ _storageFilePath.string()
-					+ " - reason: "
+					+ _storageFilePath.string() + " - reason: "
 					+ (_database != nullptr
 						   ? std::string(sqlite3_errmsg(_database))
 						   : std::string("database not available")));
@@ -184,9 +183,9 @@ namespace guillaume
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
 		if (!_database) {
-			throw std::runtime_error(
-				"Failed to clear local storage: " + _storageFilePath.string()
-				+ " - reason: database not available");
+			throw std::runtime_error("Failed to clear local storage: "
+									 + _storageFilePath.string()
+									 + " - reason: database not available");
 		}
 
 		if (!executeStatement("DELETE FROM local_storage;")) {
