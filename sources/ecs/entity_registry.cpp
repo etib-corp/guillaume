@@ -27,19 +27,34 @@
 namespace guillaume::ecs
 {
 
+	namespace
+	{
+		/**
+		 * @brief Global tree version, incremented whenever an entity is added
+		 * to any registry. Used to invalidate cached breadth-first traversals.
+		 */
+		std::size_t &getTreeVersion(void)
+		{
+			static std::size_t version = 0;
+			return version;
+		}
+	}	 // namespace
+
 	void EntityRegistry::addEntity(std::shared_ptr<Entity> entity)
 	{
 		entity->initialize();
 		accessDirectEntities().push_back(entity);
+		++getTreeVersion();
 	}
 
 	std::vector<std::shared_ptr<Entity>>
 		EntityRegistry::getEntitiesBreadthFirst(void)
 	{
-		// Reuse a thread-local scratch buffer to avoid per-frame allocation
-		// churn on the hot traversal path.
-		thread_local std::vector<std::shared_ptr<Entity>> entities;
-		entities.clear();
+		if (_cachedVersion == getTreeVersion()) {
+			return _bfsCache;
+		}
+
+		_bfsCache.clear();
 		std::queue<EntityRegistry *> registries;
 
 		registries.push(this);
@@ -48,7 +63,7 @@ namespace guillaume::ecs
 			registries.pop();
 
 			for (auto &entity: registry->accessDirectEntities()) {
-				entities.push_back(entity);
+				_bfsCache.push_back(entity);
 
 				auto *childRegistry =
 					dynamic_cast<EntityRegistry *>(entity.get());
@@ -58,14 +73,18 @@ namespace guillaume::ecs
 			}
 		}
 
-		return entities;
+		_cachedVersion = getTreeVersion();
+		return _bfsCache;
 	}
 
 	std::vector<std::shared_ptr<Entity>>
 		EntityRegistry::getEntitiesBreadthFirst(void) const
 	{
-		thread_local std::vector<std::shared_ptr<Entity>> entities;
-		entities.clear();
+		if (_cachedVersion == getTreeVersion()) {
+			return _bfsCache;
+		}
+
+		_bfsCache.clear();
 		std::queue<const EntityRegistry *> registries;
 
 		registries.push(this);
@@ -74,7 +93,7 @@ namespace guillaume::ecs
 			registries.pop();
 
 			for (const auto &entity: registry->accessDirectEntities()) {
-				entities.push_back(entity);
+				_bfsCache.push_back(entity);
 
 				auto *childRegistry =
 					dynamic_cast<const EntityRegistry *>(entity.get());
@@ -84,7 +103,8 @@ namespace guillaume::ecs
 			}
 		}
 
-		return entities;
+		_cachedVersion = getTreeVersion();
+		return _bfsCache;
 	}
 
 	std::vector<Entity::Identifier> EntityRegistry::getEntityWithSignature(
