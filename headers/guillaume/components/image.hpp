@@ -20,24 +20,44 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#pragma once
 
-namespace guillaume
+#include <string>
+
+#include "guillaume/ecs/component.hpp"
+
+namespace guillaume::components
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image>()
+	/**
+	 * @brief Component representing a 2D image attached to an entity.
+	 */
+	class Image: public ecs::Component
 	{
-	}
-}	 // namespace guillaume
+		private:
+		std::string _texturePath {};	///< Path to the image texture file
+
+		public:
+		/**
+		 * @brief Default constructor for the Image component.
+		 */
+		Image(void) = default;
+
+		/**
+		 * @brief Default destructor for the Image component.
+		 */
+		~Image(void) = default;
+
+		/**
+		 * @brief Set the image texture path.
+		 * @param path The new image texture path.
+		 * @return Reference to this Image component for chaining.
+		 */
+		Image &setTexturePath(const std::string &path);
+
+		/**
+		 * @brief Get the image texture path.
+		 * @return The image texture path.
+		 */
+		std::string getTexturePath(void) const;
+	};
+}	 // namespace guillaume::components

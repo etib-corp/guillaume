@@ -26,6 +26,7 @@
 
 #include "guillaume/systems/measure_model.hpp"
 #include "guillaume/systems/model_render.hpp"
+#include "guillaume/systems/image_render.hpp"
 
 namespace guillaume
 {
@@ -95,6 +96,9 @@ namespace guillaume
 													_engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::ModelRender>(_ressourceProvider,
+												   _engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::ImageRender>(_ressourceProvider,
 												   _engine));
 	}
 

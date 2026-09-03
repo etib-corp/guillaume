@@ -28,6 +28,7 @@
 #include "guillaume/entities/button.hpp"
 #include "guillaume/entities/icon.hpp"
 #include "guillaume/entities/model.hpp"
+#include "guillaume/entities/image.hpp"
 
 namespace guillaume
 {
@@ -41,12 +42,13 @@ namespace guillaume
 			  std::make_unique<ecs::EntityBuilderManagerFiller<
 				  entities::Panel::Builder, entities::Text::Builder,
 				  entities::Button::Builder, entities::Icon::Builder,
-				  entities::Model::Builder>>(_componentRegistry, *this))
+				  entities::Model::Builder, entities::Image::Builder>>(
+				  _componentRegistry, *this))
 		, _entityDirectorManager(
 			  std::make_unique<ecs::EntityDirectorManagerFiller<
 				  entities::Panel::Director, entities::Text::Director,
 				  entities::Button::Director, entities::Icon::Director,
-				  entities::Model::Director>>())
+				  entities::Model::Director, entities::Image::Director>>())
 		, _nextSceneType(typeid(void))
 	{
 		getLogger().info()

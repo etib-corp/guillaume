@@ -20,24 +20,22 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#include "guillaume/components/image.hpp"
 
-namespace guillaume
+namespace guillaume::components
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image>()
+	Image &Image::setTexturePath(const std::string &path)
 	{
+		if (_texturePath == path) {
+			return *this;
+		}
+		_texturePath = path;
+		setHasChanged(true);
+		return *this;
 	}
-}	 // namespace guillaume
+
+	std::string Image::getTexturePath(void) const
+	{
+		return _texturePath;
+	}
+}	 // namespace guillaume::components
