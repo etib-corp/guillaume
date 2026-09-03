@@ -19,6 +19,7 @@ set(GUILLAUME_SOURCES
     sources/components/hand_thumb_rest_interaction.cpp
     sources/components/hand_thumb_stick_interaction.cpp
     sources/components/hand_trigger_interaction.cpp
+    sources/components/image.cpp
     sources/components/model.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/parent.cpp
@@ -50,6 +51,7 @@ set(GUILLAUME_SOURCES
     sources/engine.cpp
     sources/entities/button.cpp
     sources/entities/icon.cpp
+    sources/entities/image.cpp
     sources/entities/model.cpp
     sources/entities/panel.cpp
     sources/entities/text.cpp
@@ -73,6 +75,7 @@ set(GUILLAUME_SOURCES
     sources/systems/hand_thumb_rest.cpp
     sources/systems/hand_thumb_stick.cpp
     sources/systems/hand_trigger.cpp
+    sources/systems/image_render.cpp
     sources/systems/keyboard_control.cpp
     sources/systems/measure_glyph.cpp
     sources/systems/measure_model.cpp
