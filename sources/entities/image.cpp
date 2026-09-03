@@ -76,9 +76,10 @@ namespace guillaume::entities
 	{
 	}
 
-	std::shared_ptr<Image> Image::Director::makeImage(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &texturePath)
+	std::shared_ptr<Image>
+		Image::Director::makeImage(Builder &builder,
+								   std::shared_ptr<Entity> parent,
+								   const std::string &texturePath)
 	{
 		return builder.withTexturePath(texturePath).registerEntity(parent);
 	}

@@ -45,7 +45,7 @@ namespace guillaume::systems
 	struct ImageRenderCacheKey {
 		utility::graphic::PoseF pose;	 ///< The pose of the image
 		utility::graphic::SizeF size;	 ///< The size of the image
-		std::string texturePath;	 ///< The path of the image texture
+		std::string texturePath;		 ///< The path of the image texture
 
 		/**
 		 * @brief Equality operator for ImageRenderCacheKey.

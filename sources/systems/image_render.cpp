@@ -117,8 +117,7 @@ namespace guillaume::systems
 			vertex.setPosition(utility::graphic::PositionF(
 				center[0] + x, center[1] + y, center[2]));
 			vertex.setColor(white);
-			vertex.setTextureCoordinates(
-				utility::math::Vector2F({ u, v }));
+			vertex.setTextureCoordinates(utility::math::Vector2F({ u, v }));
 			mesh.addVertex(vertex);
 		};
 
@@ -134,8 +133,8 @@ namespace guillaume::systems
 		mesh.addIndex(2);
 		mesh.addIndex(3);
 
-		auto identifier = _engine->addMesh(
-			mesh, "image_" + cacheKey.texturePath);
+		auto identifier =
+			_engine->addMesh(mesh, "image_" + cacheKey.texturePath);
 
 		ImageRenderCacheEntry cacheEntry {
 			.used  = true,

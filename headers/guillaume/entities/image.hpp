@@ -120,9 +120,9 @@ namespace guillaume::entities
 			 * entity.
 			 * @return A shared pointer to the newly created image entity.
 			 */
-			std::shared_ptr<Image>
-				makeImage(Builder &builder, std::shared_ptr<Entity> parent,
-						  const std::string &texturePath);
+			std::shared_ptr<Image> makeImage(Builder &builder,
+											 std::shared_ptr<Entity> parent,
+											 const std::string &texturePath);
 		};
 
 		private:
@@ -137,8 +137,7 @@ namespace guillaume::entities
 		 * @param texturePath The name of the texture to be used for this Image
 		 * entity.
 		 */
-		Image(ecs::ComponentRegistry &registry,
-			  const std::string &texturePath);
+		Image(ecs::ComponentRegistry &registry, const std::string &texturePath);
 
 		/**
 		 * @brief Default destructor for the Image component.
