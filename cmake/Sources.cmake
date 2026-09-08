@@ -50,10 +50,18 @@ set(GUILLAUME_SOURCES
     sources/ecs/system_registry.cpp
     sources/engine.cpp
     sources/entities/button.cpp
+    sources/entities/button_base.cpp
+    sources/entities/segmented_button.cpp
+    sources/entities/extended_floating_action_button.cpp
+    sources/entities/floating_action_button.cpp
+    sources/entities/floating_action_button_menu.cpp
     sources/entities/icon.cpp
+    sources/entities/icon_button.cpp
     sources/entities/image.cpp
     sources/entities/model.cpp
     sources/entities/panel.cpp
+    sources/entities/split_button.cpp
+    sources/entities/standard_button_group.cpp
     sources/entities/text.cpp
     sources/event/event_bus.cpp
     sources/event/event_manager.cpp

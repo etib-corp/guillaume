@@ -1305,4 +1305,19 @@ namespace guillaume
 
 	const Theme defaultTheme = initializeDefaultTheme();
 
+	namespace
+	{
+		ThemeSchemeRole activeSchemeRole = ThemeSchemeRole::Light;
+	}
+
+	const Scheme &getActiveScheme(void)
+	{
+		return defaultTheme.getScheme(activeSchemeRole);
+	}
+
+	void setActiveScheme(ThemeSchemeRole role)
+	{
+		activeSchemeRole = role;
+	}
+
 }	 // namespace guillaume

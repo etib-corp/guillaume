@@ -32,7 +32,7 @@ namespace guillaume::entities::tests
 		auto button = std::make_shared<Button>(
 			registry, "home", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
-			false, std::function<void(void)>());
+			false, false, false, "", std::function<void(void)>());
 
 		auto &buttonTransform = registry.getComponent<components::Transform>(
 			button->getIdentifier());
@@ -82,7 +82,7 @@ namespace guillaume::entities::tests
 		auto button = std::make_shared<Button>(
 			registry, "", components::Glyph::Style::Outlined, "", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
-			false, std::function<void(void)>());
+			false, false, false, "", std::function<void(void)>());
 
 		auto &buttonTransform = registry.getComponent<components::Transform>(
 			button->getIdentifier());
@@ -121,5 +121,213 @@ namespace guillaume::entities::tests
 
 		EXPECT_FLOAT_EQ(iconZ, baseZ + 1.0f);
 		EXPECT_FLOAT_EQ(textZ, baseZ + 1.0f);
+	}
+
+	TEST_F(TestButton, ToggleFlipsSelectedOnRelease)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", true,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		EXPECT_FALSE(button->isSelected());
+
+		auto &mouseInteraction =
+			registry.getComponent<components::MouseButtonInteraction>(
+				button->getIdentifier());
+
+		mouseInteraction.getOnButtonReleaseHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_TRUE(button->isSelected());
+
+		mouseInteraction.getOnButtonReleaseHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_FALSE(button->isSelected());
+	}
+
+	TEST_F(TestButton, SetSelectedUpdatesState)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", true,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		button->setSelected(true);
+		EXPECT_TRUE(button->isSelected());
+
+		button->setSelected(false);
+		EXPECT_FALSE(button->isSelected());
+	}
+
+	TEST_F(TestButton, SetSelectedIgnoredWhenNotToggle)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		button->setSelected(true);
+		EXPECT_FALSE(button->isSelected());
+	}
+
+	TEST_F(TestButton, SetIsToggleFalseResetsSelected)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", true,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		button->setSelected(true);
+		EXPECT_TRUE(button->isSelected());
+
+		button->setIsToggle(false);
+		EXPECT_FALSE(button->isSelected());
+	}
+
+	TEST_F(TestButton, MorphGatesShapeFlip)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", true,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		auto &borders =
+			registry.getComponent<components::Borders>(button->getIdentifier());
+
+		button->setSelected(true);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 100.0f);
+
+		button->setMorph(true);
+		button->setSelected(true);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 16.0f);
+	}
+
+	TEST_F(TestButton, IconOnlyButtonHasNoLabelSpacing)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "home", components::Glyph::Style::Outlined, "", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		const auto &bound =
+			registry.getComponent<components::Bound>(button->getIdentifier());
+		EXPECT_GT(bound.getWidth(), 0.0f);
+	}
+
+	TEST_F(TestButton, DisabledButtonIgnoresRelease)
+	{
+		ecs::ComponentRegistry registry;
+		bool clicked = false;
+		auto button	 = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", true,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", [&clicked]() {
+				clicked = true;
+			});
+
+		button->initialize();
+		button->update();
+
+		button->setDisabled(true);
+		EXPECT_TRUE(button->isDisabled());
+
+		auto &mouseInteraction =
+			registry.getComponent<components::MouseButtonInteraction>(
+				button->getIdentifier());
+
+		mouseInteraction.getOnButtonReleaseHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_FALSE(button->isSelected());
+		EXPECT_FALSE(clicked);
+	}
+
+	TEST_F(TestButton, DisabledButtonAppliesDisabledColors)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		button->setDisabled(true);
+
+		const auto &color =
+			registry.getComponent<components::Color>(button->getIdentifier());
+		EXPECT_EQ(color.getColor().getAlpha(), 31);
+	}
+
+	TEST_F(TestButton, TrailingIconPlacesIconAfterLabel)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "home", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, true, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		registry.getComponent<components::Bound>(button->getLabelIdentifier())
+			.setWidth(50.0f);
+
+		button->setTrailingIcon(true);
+
+		const auto iconX  = registry
+								.getComponent<components::Transform>(
+									button->getIconIdentifier())
+								.getPose()
+								.getPosition()
+								.getX();
+		const auto labelX = registry
+								.getComponent<components::Transform>(
+									button->getLabelIdentifier())
+								.getPose()
+								.getPosition()
+								.getX();
+
+		EXPECT_GT(iconX, labelX);
+	}
+
+	TEST_F(TestButton, AccessibilityLabelRoundTrip)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		button->setAccessibilityLabel("Save changes");
+		EXPECT_EQ(button->getAccessibilityLabel(), "Save changes");
 	}
 }	 // namespace guillaume::entities::tests
