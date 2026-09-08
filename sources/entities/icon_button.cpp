@@ -197,8 +197,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getDefaultContainerColor(IconButton::Variant variant)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		switch (variant) {
 			case IconButton::Variant::Standard:
@@ -218,8 +217,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getSelectedContainerColor(IconButton::Variant variant)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		switch (variant) {
 			case IconButton::Variant::Standard:
@@ -241,8 +239,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getContentColor(IconButton::Variant variant, bool isSelected)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		if (isSelected) {
 			switch (variant) {
@@ -285,8 +282,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getBorderColor(IconButton::Variant variant, bool isSelected)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		if (variant != IconButton::Variant::Outlined) {
 			return utility::graphic::Color32Bit(0, 0, 0, 0);
@@ -327,10 +323,25 @@ namespace guillaume::entities
 			return;
 		}
 
+		const auto baseContainerColor = _isSelected
+			? getSelectedContainerColor(_variant)
+			: getDefaultContainerColor(_variant);
+
+		utility::graphic::Color32Bit containerColor = baseContainerColor;
+
+		if (isPressed()) {
+			containerColor = ButtonBase::applyStateLayer(
+				baseContainerColor, getContentColor(_variant, _isSelected),
+				31U);
+		} else if (isHovered()) {
+			containerColor = ButtonBase::applyStateLayer(
+				baseContainerColor, getContentColor(_variant, _isSelected),
+				20U);
+		}
+
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
-			.setColor(_isSelected ? getSelectedContainerColor(_variant)
-								  : getDefaultContainerColor(_variant));
+			.setColor(containerColor);
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())

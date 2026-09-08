@@ -500,4 +500,16 @@ namespace guillaume
 
 	extern const Theme defaultTheme;
 
+	/**
+	 * @brief Get the currently active color scheme.
+	 * @return Immutable reference to the active scheme.
+	 */
+	const Scheme &getActiveScheme(void);
+
+	/**
+	 * @brief Set the currently active color scheme.
+	 * @param role The scheme role to activate.
+	 */
+	void setActiveScheme(ThemeSchemeRole role);
+
 }	 // namespace guillaume

@@ -200,7 +200,7 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::Surface };	  ///< Color variant
+		Variant _variant { Variant::Primary };	  ///< Color variant
 		Size _size { Size::Medium };			  ///< Size
 		bool _lowered { false };	///< Whether the FAB is lowered
 

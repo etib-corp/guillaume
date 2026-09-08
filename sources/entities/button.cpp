@@ -333,8 +333,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getDefaultContainerColor(Button::Color style)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		switch (style) {
 			case Button::Color::Elevated:
@@ -350,6 +349,7 @@ namespace guillaume::entities
 
 			case Button::Color::Outlined:
 			case Button::Color::Text:
+			case Button::Color::Segmented:
 				return utility::graphic::Color32Bit(0, 0, 0, 0);
 
 			default:
@@ -360,8 +360,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getToggleUnselectedContainerColor(Button::Color style)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		switch (style) {
 			case Button::Color::Elevated:
@@ -378,6 +377,7 @@ namespace guillaume::entities
 
 			case Button::Color::Outlined:
 			case Button::Color::Text:
+			case Button::Color::Segmented:
 				return utility::graphic::Color32Bit(0, 0, 0, 0);
 
 			default:
@@ -388,8 +388,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getToggleSelectedContainerColor(Button::Color style)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		switch (style) {
 			case Button::Color::Elevated:
@@ -400,7 +399,8 @@ namespace guillaume::entities
 				return scheme.getColor(SchemeColorRole::Secondary).getColor();
 
 			case Button::Color::Outlined:
-				return scheme.getColor(SchemeColorRole::InverseSurface)
+			case Button::Color::Segmented:
+				return scheme.getColor(SchemeColorRole::SecondaryContainer)
 					.getColor();
 
 			case Button::Color::Text:
@@ -412,177 +412,39 @@ namespace guillaume::entities
 	}
 
 	static utility::graphic::Color32Bit
+		getContentColor(Button::Color style, bool isToggle, bool isSelected);
+
+	static utility::graphic::Color32Bit
+		getBaseContainerColor(Button::Color style, bool isToggle,
+							  bool isSelected)
+	{
+		if (!isToggle) {
+			return getDefaultContainerColor(style);
+		}
+
+		if (isSelected) {
+			return getToggleSelectedContainerColor(style);
+		}
+
+		return getToggleUnselectedContainerColor(style);
+	}
+
+	static utility::graphic::Color32Bit
 		getPressedContainerColor(Button::Color style, bool isToggle,
 								 bool isSelected)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
-
-		if (isToggle) {
-			switch (style) {
-				case Button::Color::Elevated:
-				case Button::Color::Filled:
-					return ButtonBase::applyStateAlpha(
-						isSelected
-							? scheme.getColor(SchemeColorRole::Primary)
-								  .getColor()
-							: (style == Button::Color::Filled
-								   ? scheme
-										 .getColor(
-											 SchemeColorRole::SurfaceContainer)
-										 .getColor()
-								   : scheme
-										 .getColor(SchemeColorRole::
-													   SurfaceContainerLow)
-										 .getColor()),
-						220U);
-
-				case Button::Color::Tonal:
-					return ButtonBase::applyStateAlpha(
-						isSelected
-							? scheme.getColor(SchemeColorRole::Secondary)
-								  .getColor()
-							: scheme
-								  .getColor(SchemeColorRole::SecondaryContainer)
-								  .getColor(),
-						220U);
-
-				case Button::Color::Outlined:
-					return ButtonBase::applyStateAlpha(
-						isSelected
-							? scheme.getColor(SchemeColorRole::InverseSurface)
-								  .getColor()
-							: scheme.getColor(SchemeColorRole::InverseOnSurface)
-								  .getColor(),
-						isSelected ? 220U : 64U);
-
-				case Button::Color::Text:
-					return ButtonBase::applyStateAlpha(
-						scheme.getColor(SchemeColorRole::Primary).getColor(),
-						48U);
-
-				default:
-					throw std::runtime_error("Invalid button color style");
-			}
-		}
-
-		switch (style) {
-			case Button::Color::Elevated:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::SurfaceContainerHigh)
-						.getColor(),
-					220U);
-
-			case Button::Color::Filled:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::Primary).getColor(), 220U);
-
-			case Button::Color::Tonal:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::SecondaryContainer)
-						.getColor(),
-					220U);
-
-			case Button::Color::Outlined:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-						.getColor(),
-					64U);
-
-			case Button::Color::Text:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::Primary).getColor(), 48U);
-
-			default:
-				throw std::runtime_error("Invalid button color style");
-		}
+		return ButtonBase::applyStateLayer(
+			getBaseContainerColor(style, isToggle, isSelected),
+			getContentColor(style, isToggle, isSelected), 31U);
 	}
 
 	static utility::graphic::Color32Bit
 		getHoverContainerColor(Button::Color style, bool isToggle,
 							   bool isSelected)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
-
-		if (isToggle) {
-			switch (style) {
-				case Button::Color::Elevated:
-				case Button::Color::Filled:
-					return ButtonBase::applyStateAlpha(
-						isSelected
-							? scheme.getColor(SchemeColorRole::Primary)
-								  .getColor()
-							: (style == Button::Color::Filled
-								   ? scheme
-										 .getColor(
-											 SchemeColorRole::SurfaceContainer)
-										 .getColor()
-								   : scheme
-										 .getColor(SchemeColorRole::
-													   SurfaceContainerLow)
-										 .getColor()),
-						235U);
-
-				case Button::Color::Tonal:
-					return ButtonBase::applyStateAlpha(
-						isSelected
-							? scheme.getColor(SchemeColorRole::Secondary)
-								  .getColor()
-							: scheme
-								  .getColor(SchemeColorRole::SecondaryContainer)
-								  .getColor(),
-						235U);
-
-				case Button::Color::Outlined:
-					return ButtonBase::applyStateAlpha(
-						isSelected
-							? scheme.getColor(SchemeColorRole::InverseSurface)
-								  .getColor()
-							: scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-								  .getColor(),
-						isSelected ? 235U : 32U);
-
-				case Button::Color::Text:
-					return ButtonBase::applyStateAlpha(
-						scheme.getColor(SchemeColorRole::Primary).getColor(),
-						24U);
-
-				default:
-					throw std::runtime_error("Invalid button color style");
-			}
-		}
-
-		switch (style) {
-			case Button::Color::Elevated:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::SurfaceContainer)
-						.getColor(),
-					235U);
-
-			case Button::Color::Filled:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::Primary).getColor(), 235U);
-
-			case Button::Color::Tonal:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::SecondaryContainer)
-						.getColor(),
-					235U);
-
-			case Button::Color::Outlined:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-						.getColor(),
-					32U);
-
-			case Button::Color::Text:
-				return ButtonBase::applyStateAlpha(
-					scheme.getColor(SchemeColorRole::Primary).getColor(), 24U);
-
-			default:
-				throw std::runtime_error("Invalid button color style");
-		}
+		return ButtonBase::applyStateLayer(
+			getBaseContainerColor(style, isToggle, isSelected),
+			getContentColor(style, isToggle, isSelected), 20U);
 	}
 
 	static utility::graphic::Color32Bit
@@ -611,8 +473,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getContentColor(Button::Color style, bool isToggle, bool isSelected)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		if (!isToggle) {
 			switch (style) {
@@ -626,10 +487,12 @@ namespace guillaume::entities
 						.getColor(SchemeColorRole::OnSecondaryContainer)
 						.getColor();
 				case Button::Color::Outlined:
-					return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-						.getColor();
+					return scheme.getColor(SchemeColorRole::Primary).getColor();
 				case Button::Color::Text:
 					return scheme.getColor(SchemeColorRole::Primary).getColor();
+				case Button::Color::Segmented:
+					return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
+						.getColor();
 				default:
 					throw std::runtime_error("Invalid button color style");
 			}
@@ -641,9 +504,11 @@ namespace guillaume::entities
 					return scheme.getColor(SchemeColorRole::Primary).getColor();
 
 				case Button::Color::Filled:
-				case Button::Color::Outlined:
 					return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
 						.getColor();
+
+				case Button::Color::Outlined:
+					return scheme.getColor(SchemeColorRole::Primary).getColor();
 
 				case Button::Color::Tonal:
 					return scheme
@@ -652,6 +517,10 @@ namespace guillaume::entities
 
 				case Button::Color::Text:
 					return scheme.getColor(SchemeColorRole::Primary).getColor();
+
+				case Button::Color::Segmented:
+					return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
+						.getColor();
 
 				default:
 					throw std::runtime_error("Invalid button color style");
@@ -667,7 +536,8 @@ namespace guillaume::entities
 				return scheme.getColor(SchemeColorRole::OnSecondary).getColor();
 
 			case Button::Color::Outlined:
-				return scheme.getColor(SchemeColorRole::InverseOnSurface)
+			case Button::Color::Segmented:
+				return scheme.getColor(SchemeColorRole::OnSecondaryContainer)
 					.getColor();
 
 			case Button::Color::Text:
@@ -681,15 +551,15 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getBorderColor(Button::Color style, bool isToggle, bool isSelected)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
-		if (style != Button::Color::Outlined) {
+		if (style != Button::Color::Outlined
+			&& style != Button::Color::Segmented) {
 			return utility::graphic::Color32Bit(0, 0, 0, 0);
 		}
 
 		if (!isToggle || !isSelected) {
-			return scheme.getColor(SchemeColorRole::OutlineVariant).getColor();
+			return scheme.getColor(SchemeColorRole::Outline).getColor();
 		}
 
 		return utility::graphic::Color32Bit(0, 0, 0, 0);

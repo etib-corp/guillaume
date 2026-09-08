@@ -304,6 +304,18 @@ namespace guillaume::entities
 							std::uint8_t alpha);
 
 		/**
+		 * @brief Apply a Material Design state layer over a base color.
+		 * @param base The base container color.
+		 * @param overlay The state layer overlay color.
+		 * @param alpha The overlay opacity (0-255).
+		 * @return The base color with the overlay blended on top.
+		 */
+		static utility::graphic::Color32Bit
+			applyStateLayer(const utility::graphic::Color32Bit &base,
+							const utility::graphic::Color32Bit &overlay,
+							std::uint8_t alpha);
+
+		/**
 		 * @brief Disabled container color used by every button type.
 		 * @return The disabled container color.
 		 */

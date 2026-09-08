@@ -284,7 +284,7 @@ namespace guillaume::entities
 			auto segment = buttonDirector.makeButton(
 				buttonBuilder, shared_from_this(), _labels[i],
 				std::bind(&SegmentedButton::segmentChangeHandler, this, i),
-				Button::Color::Outlined, Button::Shape::Square,
+				Button::Color::Segmented, Button::Shape::Square,
 				Button::Size::Medium, false);
 
 			segment->setIsToggle(true);

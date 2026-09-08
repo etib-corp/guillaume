@@ -45,7 +45,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Color style of the button.
 		 */
-		enum class Color { Elevated, Filled, Tonal, Outlined, Text };
+		enum class Color { Elevated, Filled, Tonal, Outlined, Text, Segmented };
 
 		/**
 		 * @brief Shape of the button.

@@ -64,7 +64,7 @@ namespace guillaume::entities
 		_iconGlyphName.clear();
 		_iconStyle = components::Glyph::Style::Outlined;
 		_labelContent.clear();
-		_variant	= Variant::Surface;
+		_variant	= Variant::Primary;
 		_size		= Size::Medium;
 		_lowered	= false;
 		_isDisabled = false;
@@ -203,8 +203,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getContainerColor(FloatingActionButton::Variant variant, bool lowered)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		switch (variant) {
 			case FloatingActionButton::Variant::Surface:
@@ -229,8 +228,7 @@ namespace guillaume::entities
 	static utility::graphic::Color32Bit
 		getContentColor(FloatingActionButton::Variant variant)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		switch (variant) {
 			case FloatingActionButton::Variant::Surface:
@@ -278,9 +276,29 @@ namespace guillaume::entities
 			return;
 		}
 
+		const auto baseContainerColor = getContainerColor(_variant, _lowered);
+
+		utility::graphic::Color32Bit containerColor = baseContainerColor;
+
+		if (isPressed()) {
+			containerColor = ButtonBase::applyStateLayer(
+				baseContainerColor,
+				guillaume::getActiveScheme()
+					.getColor(SchemeColorRole::OnPrimaryContainer)
+					.getColor(),
+				31U);
+		} else if (isHovered()) {
+			containerColor = ButtonBase::applyStateLayer(
+				baseContainerColor,
+				guillaume::getActiveScheme()
+					.getColor(SchemeColorRole::OnPrimaryContainer)
+					.getColor(),
+				20U);
+		}
+
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
-			.setColor(getContainerColor(_variant, _lowered));
+			.setColor(containerColor);
 
 		if (_icon) {
 			_icon->setColor(getContentColor(_variant));

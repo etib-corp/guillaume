@@ -275,10 +275,17 @@ namespace guillaume::entities
 											color.getBlue(), alpha);
 	}
 
+	utility::graphic::Color32Bit
+		ButtonBase::applyStateLayer(const utility::graphic::Color32Bit &base,
+									const utility::graphic::Color32Bit &overlay,
+									std::uint8_t alpha)
+	{
+		return overlay.withAlpha(alpha).blendOver(base);
+	}
+
 	utility::graphic::Color32Bit ButtonBase::getDisabledContainerColor(void)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
 			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 31U);
@@ -286,8 +293,7 @@ namespace guillaume::entities
 
 	utility::graphic::Color32Bit ButtonBase::getDisabledContentColor(void)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
 			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 97U);
@@ -295,8 +301,7 @@ namespace guillaume::entities
 
 	utility::graphic::Color32Bit ButtonBase::getDisabledBorderColor(void)
 	{
-		const auto &scheme = guillaume::defaultTheme.getScheme(
-			guillaume::ThemeSchemeRole::Light);
+		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
 			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 31U);
