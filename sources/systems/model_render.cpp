@@ -99,9 +99,9 @@ namespace guillaume::systems
 		}
 
 		auto model		= cacheKey.texturePath.empty()
-				 ? _ressourceProvider->loadModel(cacheKey.modelPath, cacheKey.pose)
-				 : _ressourceProvider->loadModel(cacheKey.modelPath, cacheKey.pose,
-												 cacheKey.texturePath);
+			? _ressourceProvider->loadModel(cacheKey.modelPath, cacheKey.pose)
+			: _ressourceProvider->loadModel(cacheKey.modelPath, cacheKey.pose,
+											cacheKey.texturePath);
 		auto identifier = _engine->addModel(std::move(model));
 
 		ModelRenderCacheEntry cacheEntry { .used = true, .value = identifier };
