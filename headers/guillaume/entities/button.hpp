@@ -29,42 +29,17 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/parent_entity_filler.hpp"
 
-#include "guillaume/components/borders.hpp"
-#include "guillaume/components/transform.hpp"
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/color.hpp"
-#include "guillaume/components/focus.hpp"
-#include "guillaume/components/hand_button_interaction.hpp"
-#include "guillaume/components/hand_hover_interaction.hpp"
-#include "guillaume/components/hand_squeeze_interaction.hpp"
-#include "guillaume/components/hand_pinch_interaction.hpp"
-#include "guillaume/components/hand_poke_interaction.hpp"
-#include "guillaume/components/hand_thumb_rest_interaction.hpp"
-#include "guillaume/components/hand_thumb_stick_interaction.hpp"
-#include "guillaume/components/hand_trigger_interaction.hpp"
-#include "guillaume/components/mouse_hover_interaction.hpp"
-#include "guillaume/components/mouse_button_interaction.hpp"
-
-#include "guillaume/entities/icon.hpp"
-#include "guillaume/entities/text.hpp"
+#include "guillaume/entities/button_base.hpp"
 
 namespace guillaume::entities
 {
 
 	/**
-	 * @brief Button entity class representing a UI button with various
-	 * components.
+	 * @brief Button entity class representing a standard action button with an
+	 * optional icon and label.
 	 */
-	class Button:
-		public std::enable_shared_from_this<Button>,
-		public ecs::ParentEntityFiller<
-			components::Transform, components::Bound, components::Color,
-			components::Borders, components::Focus,
-			components::HandButtonInteraction, components::HandHoverInteraction,
-			components::MouseHoverInteraction,
-			components::MouseButtonInteraction>
+	class Button: public ButtonBase
 	{
 		public:
 		/**
@@ -97,12 +72,17 @@ namespace guillaume::entities
 			std::string
 				_labelContent;	  ///< Label content to attach to the button
 			std::function<void(void)>
-				_onClick;		  ///< Click event handler for the button
-			bool _isToggle;		  ///< Whether the button is a toggle button
-			Color _colorStyle;	  ///< Button color style
-			Shape _shape;		  ///< Button shape
-			Size _size;			  ///< Button size
-			bool _isMorph;		  ///< Whether the button is in a morph state
+				_onClick;			 ///< Click event handler for the button
+			bool _isToggle;			 ///< Whether the button is a toggle button
+			Color _colorStyle;		 ///< Button color style
+			Shape _shape;			 ///< Button shape
+			Size _size;				 ///< Button size
+			bool _isMorph;			 ///< Whether the button is in a morph state
+			bool _isDisabled;		 ///< Whether the button is disabled
+			bool _isTrailingIcon;	 ///< Whether the icon is placed after the
+									 ///< label
+			std::string
+				_accessibilityLabel;	///< Accessibility label for the button
 
 			public:
 			/**
@@ -196,6 +176,28 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withMorph(const bool &isMorph);
+
+			/**
+			 * @brief Set if the button is disabled.
+			 * @param isDisabled Whether the button should be disabled.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withDisabled(const bool &isDisabled);
+
+			/**
+			 * @brief Set if the icon is placed after the label.
+			 * @param isTrailingIcon Whether the icon should trail the label.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withTrailingIcon(const bool &isTrailingIcon);
+
+			/**
+			 * @brief Set the accessibility label for the button.
+			 * @param accessibilityLabel The accessibility label to set.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &
+				withAccessibilityLabel(const std::string &accessibilityLabel);
 		};
 
 		/**
@@ -264,46 +266,43 @@ namespace guillaume::entities
 		};
 
 		private:
-		std::string _iconGlyphName {};	  ///< Icon glyph name to attach.
-		components::Glyph::Style _iconStyle {
-			components::Glyph::Style::Outlined
-		};	  ///< Style of the icon to attach.
-		std::string _labelContent {};	 ///< Label content to attach.
-		std::shared_ptr<Icon> _icon;	 ///< Internal child icon entity
-		std::shared_ptr<Text> _label;	 ///< Internal child label entity
-		bool _isToggle { false };	 ///< Whether the button is a toggle button
 		Color _colorStyle { Color::Filled };	///< Color style of the button
 		Shape _shape { Shape::Round };			///< Shape of the button
 		Size _size { Size::Small };				///< Size of the button
-		bool _isMorph { false };	///< Whether the button is in a morph state
-		std::function<void(void)>
-			_onClick {};	///< Click event handler for the button
-		static constexpr float _layerDepthStep {
-			1.0f
-		};	  ///< Distance pushed toward the camera per layer.
-		bool _isSelected;	 ///< Whether the button is currently selected (for
-							 ///< toggle buttons)
 
-		private:
+		protected:
 		/**
-		 * @brief Hover event handler for the button.
+		 * @brief Re-apply the visual state (colors, borders, radius) from the
+		 * current interaction/selected state.
 		 */
-		void hoverHandler(void);
+		void applyStyleState(void) override;
 
 		/**
-		 * @brief Unhover event handler for the button.
+		 * @brief Re-measure and lay out the button and its children.
 		 */
-		void unHoverHandler(void);
+		void applyGeometry(void) override;
 
 		/**
-		 * @brief Left click event handler for the button.
+		 * @brief Font size used for the icon child.
+		 * @return The icon font size.
 		 */
-		void buttonPressHandler(void);
+		float getIconFontSize(void) const override;
 
 		/**
-		 * @brief Left click release event handler for the button.
+		 * @brief Whether this button type displays a text label.
+		 * @return True when a label child is used.
 		 */
-		void buttonReleaseHandler(void);
+		bool usesLabel(void) const override
+		{
+			return true;
+		}
+
+		/**
+		 * @brief Get the initial content color used when creating children.
+		 * @return The initial content color.
+		 */
+		utility::graphic::Color32Bit
+			getInitialContentColor(void) const override;
 
 		public:
 		/**
@@ -318,47 +317,23 @@ namespace guillaume::entities
 		 * @param shape Initial shape for the button.
 		 * @param size Initial size for the button.
 		 * @param isMorph Initial morph state for the button.
+		 * @param isDisabled Initial disabled state for the button.
+		 * @param isTrailingIcon Initial trailing icon state for the button.
+		 * @param accessibilityLabel Initial accessibility label for the button.
 		 * @param onClick Click event handler for the button.
 		 */
 		Button(ecs::ComponentRegistry &registry,
 			   const std::string &iconGlyphName,
 			   const components::Glyph::Style &iconStyle,
 			   const std::string &labelContent, bool isToggle, Color colorStyle,
-			   Shape shape, Size size, bool isMorph,
+			   Shape shape, Size size, bool isMorph, bool isDisabled,
+			   bool isTrailingIcon, const std::string &accessibilityLabel,
 			   std::function<void(void)> onClick);
 
 		/**
 		 * @brief Default destructor for the Button entity.
 		 */
-		~Button(void);
-
-		/**
-		 * @brief Set the icon glyph name for the button.
-		 * @param iconGlyphName The glyph name of the icon to attach.
-		 * @return Reference to this Button for chaining.
-		 */
-		Button &setIconGlyphName(const std::string &iconGlyphName);
-
-		/**
-		 * @brief Set the style of the icon for the button.
-		 * @param iconStyle The style of the icon to attach.
-		 * @return Reference to this Button for chaining.
-		 */
-		Button &setIconStyle(const components::Glyph::Style &iconStyle);
-
-		/**
-		 * @brief Set the label content for the button.
-		 * @param labelContent The label content to attach to the button.
-		 * @return Reference to this Button for chaining.
-		 */
-		Button &setLabelContent(const std::string &labelContent);
-
-		/**
-		 * @brief Set if the button is a toggle button.
-		 * @param isToggle Whether the button should be a toggle button.
-		 * @return Reference to this Button for chaining.
-		 */
-		Button &setIsToggle(const bool &isToggle);
+		~Button(void) override;
 
 		/**
 		 * @brief Set the color style of the button.
@@ -382,42 +357,22 @@ namespace guillaume::entities
 		Button &setSize(const Size &size);
 
 		/**
-		 * @brief Set the morph state of the button.
-		 * @param isMorph The new morph state to set.
-		 * @return Reference to this Button for chaining.
+		 * @brief Get the color style of the button.
+		 * @return The color style.
 		 */
-		Button &setMorph(const bool &isMorph);
+		Color getColorStyle(void) const;
 
 		/**
-		 * @brief Set the click event handler for the button.
-		 * @param onClick The new click event handler to set.
-		 * @return Reference to this Button for chaining.
+		 * @brief Get the shape of the button.
+		 * @return The shape.
 		 */
-		Button &setOnClick(std::function<void(void)> onClick);
+		Shape getShape(void) const;
 
 		/**
-		 * @brief Get the identifier of the internal icon child entity.
-		 * @return The icon entity identifier, or InvalidIdentifier when no icon
-		 * is attached.
+		 * @brief Get the size of the button.
+		 * @return The size.
 		 */
-		ecs::Entity::Identifier getIconIdentifier(void) const;
-
-		/**
-		 * @brief Get the identifier of the internal label child entity.
-		 * @return The label entity identifier, or InvalidIdentifier when no
-		 * label is attached.
-		 */
-		ecs::Entity::Identifier getLabelIdentifier(void) const;
-
-		/**
-		 * @brief Initialize the button entity's derived state.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the button entity's derived state.
-		 */
-		void update(void) override;
+		Size getSize(void) const;
 	};
 
 }	 // namespace guillaume::entities
