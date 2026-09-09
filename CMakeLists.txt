@@ -41,8 +41,7 @@ if(NOT BUILD_DOCS_ONLY)
     # Fetch external dependencies
     FetchContent_Declare(
         sqlite3
-        GIT_REPOSITORY https://github.com/sjinks/sqlite3-cmake
-        GIT_TAG v3.49.1
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/sqlite3
     )
     FetchContent_MakeAvailable(sqlite3)
 
