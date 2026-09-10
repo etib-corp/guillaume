@@ -79,31 +79,41 @@ namespace guillaume::systems
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
 
-		TextRenderCacheKey cacheKey { transformComponent.getPose(),
-									  textComponent.getContent(),
-									  textComponent.getFontSize(),
-									  colorComponent.getColor() };
+		const auto pose		= transformComponent.getPose();
+		const auto content	= textComponent.getContent();
+		const auto fontSize = textComponent.getFontSize();
+		const auto color	= colorComponent.getColor();
 
-		getLogger().debug() << "Rendering text for entity " << entityIdentifier
-							<< " (content: '" << cacheKey.content
-							<< "', fontSize: " << cacheKey.fontSize
-							<< ", color: " << cacheKey.color << ")";
+		TextRenderCacheKey cacheKey { entityIdentifier };
+
+		getLogger().debug()
+			<< "Rendering text for entity " << entityIdentifier
+			<< " (content: '" << content << "', fontSize: " << fontSize
+			<< ", color: " << color << ")";
 
 		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			TextRenderCacheEntry newEntry { .used  = true,
-											.value = entry->value };
-			put(cacheKey, std::move(newEntry));
-			getLogger().debug() << "Cache hit for entity " << entityIdentifier;
-			return;
+			if (entry->content == content && entry->pose == pose) {
+				TextRenderCacheEntry newEntry { .used	 = true,
+												.value	 = entry->value,
+												.content = entry->content,
+												.pose	 = entry->pose };
+				put(cacheKey, std::move(newEntry));
+				getLogger().debug()
+					<< "Cache hit for entity " << entityIdentifier;
+				return;
+			}
+
+			_engine->removeObject(entry->value);
 		}
 
-		utility::graphic::Text text(_ressourceProvider, cacheKey.pose,
-									cacheKey.color, cacheKey.content,
-									cacheKey.fontSize, _defaultFontPath);
+		utility::graphic::Text text(_ressourceProvider, pose, color, content,
+									fontSize, _defaultFontPath);
 
 		auto identifier = _engine->addText(std::move(text));
 
-		TextRenderCacheEntry cacheEntry { .used = true, .value = identifier };
+		TextRenderCacheEntry cacheEntry {
+			.used = true, .value = identifier, .content = content, .pose = pose
+		};
 		put(cacheKey, std::move(cacheEntry));
 	}
 
