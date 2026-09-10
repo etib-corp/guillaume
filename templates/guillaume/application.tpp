@@ -169,7 +169,12 @@ namespace guillaume
 		}
 		auto &firstView = _firstView.value();
 
-		_sceneManager->getActiveScene()->placeEntitiesInFrontOfView(firstView);
+		auto currentView = _engine->getView();
+		if (hasViewChanged(firstView, currentView)) {
+			_sceneManager->getActiveScene()->placeEntitiesInFrontOfView(
+				currentView);
+			_firstView = currentView;
+		}
 		this->getLogger().debug() << "Current view: " << _engine->getView();
 		this->getLogger().debug()
 			<< "Forward vector: "

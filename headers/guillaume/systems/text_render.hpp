@@ -39,14 +39,15 @@ namespace guillaume::systems
 {
 	/**
 	 * @brief Key structure for caching text rendering results.
+	 *
+	 * The key is the entity identifier, which is stable across frames. The
+	 * rendered pose and content are tracked in the entry instead, so a text
+	 * entity keeps a stable render object identity while its content or pose
+	 * changes.
 	 */
 	struct TextRenderCacheKey {
-		utility::graphic::PoseF pose;	 ///< The pose of the text, including
-										 ///< position and orientation
-		std::string content;			 ///< The text content to be rendered
-		float fontSize;	   ///< The font size used for rendering the text
-		utility::graphic::Color32Bit
-			color;	  ///< The color of the text, which may affect its rendering
+		ecs::Entity::Identifier
+			entityIdentifier;	 ///< Identifier of the text entity
 
 		/**
 		 * @brief Equality operator for TextRenderCacheKey.
@@ -55,19 +56,7 @@ namespace guillaume::systems
 		 */
 		bool operator==(const TextRenderCacheKey &other) const
 		{
-			if (pose != other.pose) {
-				return false;
-			}
-			if (content != other.content) {
-				return false;
-			}
-			if (fontSize != other.fontSize) {
-				return false;
-			}
-			if (color != other.color) {
-				return false;
-			}
-			return true;
+			return entityIdentifier == other.entityIdentifier;
 		}
 
 		/**
@@ -87,19 +76,7 @@ namespace guillaume::systems
 		 */
 		bool operator<(const TextRenderCacheKey &other) const
 		{
-			if (pose != other.pose) {
-				return pose < other.pose;
-			}
-			if (content != other.content) {
-				return content < other.content;
-			}
-			if (fontSize != other.fontSize) {
-				return fontSize < other.fontSize;
-			}
-			if (color != other.color) {
-				return color < other.color;
-			}
-			return false;
+			return entityIdentifier < other.entityIdentifier;
 		}
 	};
 
@@ -109,8 +86,11 @@ namespace guillaume::systems
 	struct TextRenderCacheEntry {
 		bool used;	  ///< Flag indicating whether the cache entry has been used
 					  ///< in the current frame
-		size_t value;	 ///< The cached value associated with the text
-						 ///< rendering result
+		size_t value;			///< The cached value associated with the text
+								///< rendering result
+		std::string content;	///< The content last rendered for this entity
+		utility::graphic::PoseF
+			pose;	 ///< The pose last rendered for this entity
 	};
 
 	/**
