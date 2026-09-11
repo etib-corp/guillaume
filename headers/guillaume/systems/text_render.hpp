@@ -40,14 +40,15 @@ namespace guillaume::systems
 	/**
 	 * @brief Key structure for caching text rendering results.
 	 *
-	 * The key is the entity identifier, which is stable across frames. The
-	 * rendered pose and content are tracked in the entry instead, so a text
-	 * entity keeps a stable render object identity while its content or pose
-	 * changes.
+	 * The cache is keyed on the entity identifier only. The rendered text mesh
+	 * bakes the pose and content at creation time and the engine offers no
+	 * in-place update, so an entry stores the last rendered state instead and
+	 * the object is regenerated only when that state actually changes. This
+	 * keeps the engine object identity stable while the entity itself lives,
+	 * across frames and layout reflows.
 	 */
 	struct TextRenderCacheKey {
-		ecs::Entity::Identifier
-			entityIdentifier;	 ///< Identifier of the text entity
+		ecs::Entity::Identifier entity;	   ///< Identifier of the text entity
 
 		/**
 		 * @brief Equality operator for TextRenderCacheKey.
@@ -56,7 +57,7 @@ namespace guillaume::systems
 		 */
 		bool operator==(const TextRenderCacheKey &other) const
 		{
-			return entityIdentifier == other.entityIdentifier;
+			return entity == other.entity;
 		}
 
 		/**
@@ -76,7 +77,7 @@ namespace guillaume::systems
 		 */
 		bool operator<(const TextRenderCacheKey &other) const
 		{
-			return entityIdentifier < other.entityIdentifier;
+			return entity < other.entity;
 		}
 	};
 
@@ -86,11 +87,14 @@ namespace guillaume::systems
 	struct TextRenderCacheEntry {
 		bool used;	  ///< Flag indicating whether the cache entry has been used
 					  ///< in the current frame
-		size_t value;			///< The cached value associated with the text
-								///< rendering result
-		std::string content;	///< The content last rendered for this entity
-		utility::graphic::PoseF
-			pose;	 ///< The pose last rendered for this entity
+		size_t value;	 ///< The cached value associated with the text
+						 ///< rendering result
+		std::string content;	///< Content the engine object was rendered with
+		float fontSize;	   ///< Font size the engine object was rendered with
+		utility::graphic::Color32Bit
+			color;	  ///< Color the engine object was rendered with
+		utility::graphic::PoseF pose;	 ///< Pose the engine object was
+										 ///< rendered with
 	};
 
 	/**

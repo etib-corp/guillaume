@@ -92,17 +92,28 @@ namespace guillaume::systems
 			<< ", color: " << color << ")";
 
 		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			if (entry->content == content && entry->pose == pose) {
-				TextRenderCacheEntry newEntry { .used	 = true,
-												.value	 = entry->value,
-												.content = entry->content,
-												.pose	 = entry->pose };
+			// The rendered mesh bakes the pose and content at creation time, so
+			// the engine object is reused for as long as none of them change.
+			// This keeps the object identity stable through layout reflows and
+			// scene switches instead of tearing the object down and recreating
+			// it every frame while its pose is in flux.
+			if (entry->content == content && entry->fontSize == fontSize
+				&& entry->color == color && entry->pose == pose) {
+				TextRenderCacheEntry newEntry { .used	  = true,
+												.value	  = entry->value,
+												.content  = entry->content,
+												.fontSize = entry->fontSize,
+												.color	  = entry->color,
+												.pose	  = entry->pose };
 				put(cacheKey, std::move(newEntry));
 				getLogger().debug()
 					<< "Cache hit for entity " << entityIdentifier;
 				return;
 			}
 
+			getLogger().debug()
+				<< "Text state changed for entity " << entityIdentifier
+				<< ", regenerating the render object";
 			_engine->removeObject(entry->value);
 		}
 
@@ -112,7 +123,12 @@ namespace guillaume::systems
 		auto identifier = _engine->addText(std::move(text));
 
 		TextRenderCacheEntry cacheEntry {
-			.used = true, .value = identifier, .content = content, .pose = pose
+			.used	  = true,
+			.value	  = identifier,
+			.content  = content,
+			.fontSize = fontSize,
+			.color	  = color,
+			.pose	  = pose,
 		};
 		put(cacheKey, std::move(cacheEntry));
 	}
