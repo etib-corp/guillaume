@@ -39,14 +39,16 @@ namespace guillaume::systems
 {
 	/**
 	 * @brief Key structure for caching text rendering results.
+	 *
+	 * The cache is keyed on the entity identifier only. The rendered text mesh
+	 * bakes the pose and content at creation time and the engine offers no
+	 * in-place update, so an entry stores the last rendered state instead and
+	 * the object is regenerated only when that state actually changes. This
+	 * keeps the engine object identity stable while the entity itself lives,
+	 * across frames and layout reflows.
 	 */
 	struct TextRenderCacheKey {
-		utility::graphic::PoseF pose;	 ///< The pose of the text, including
-										 ///< position and orientation
-		std::string content;			 ///< The text content to be rendered
-		float fontSize;	   ///< The font size used for rendering the text
-		utility::graphic::Color32Bit
-			color;	  ///< The color of the text, which may affect its rendering
+		ecs::Entity::Identifier entity;	   ///< Identifier of the text entity
 
 		/**
 		 * @brief Equality operator for TextRenderCacheKey.
@@ -55,19 +57,7 @@ namespace guillaume::systems
 		 */
 		bool operator==(const TextRenderCacheKey &other) const
 		{
-			if (pose != other.pose) {
-				return false;
-			}
-			if (content != other.content) {
-				return false;
-			}
-			if (fontSize != other.fontSize) {
-				return false;
-			}
-			if (color != other.color) {
-				return false;
-			}
-			return true;
+			return entity == other.entity;
 		}
 
 		/**
@@ -87,19 +77,7 @@ namespace guillaume::systems
 		 */
 		bool operator<(const TextRenderCacheKey &other) const
 		{
-			if (pose != other.pose) {
-				return pose < other.pose;
-			}
-			if (content != other.content) {
-				return content < other.content;
-			}
-			if (fontSize != other.fontSize) {
-				return fontSize < other.fontSize;
-			}
-			if (color != other.color) {
-				return color < other.color;
-			}
-			return false;
+			return entity < other.entity;
 		}
 	};
 
@@ -111,6 +89,12 @@ namespace guillaume::systems
 					  ///< in the current frame
 		size_t value;	 ///< The cached value associated with the text
 						 ///< rendering result
+		std::string content;	///< Content the engine object was rendered with
+		float fontSize;	   ///< Font size the engine object was rendered with
+		utility::graphic::Color32Bit
+			color;	  ///< Color the engine object was rendered with
+		utility::graphic::PoseF pose;	 ///< Pose the engine object was
+										 ///< rendered with
 	};
 
 	/**

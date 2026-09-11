@@ -79,31 +79,57 @@ namespace guillaume::systems
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
 
-		TextRenderCacheKey cacheKey { transformComponent.getPose(),
-									  textComponent.getContent(),
-									  textComponent.getFontSize(),
-									  colorComponent.getColor() };
+		const auto pose		= transformComponent.getPose();
+		const auto content	= textComponent.getContent();
+		const auto fontSize = textComponent.getFontSize();
+		const auto color	= colorComponent.getColor();
 
-		getLogger().debug() << "Rendering text for entity " << entityIdentifier
-							<< " (content: '" << cacheKey.content
-							<< "', fontSize: " << cacheKey.fontSize
-							<< ", color: " << cacheKey.color << ")";
+		TextRenderCacheKey cacheKey { entityIdentifier };
+
+		getLogger().debug()
+			<< "Rendering text for entity " << entityIdentifier
+			<< " (content: '" << content << "', fontSize: " << fontSize
+			<< ", color: " << color << ")";
 
 		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			TextRenderCacheEntry newEntry { .used  = true,
-											.value = entry->value };
-			put(cacheKey, std::move(newEntry));
-			getLogger().debug() << "Cache hit for entity " << entityIdentifier;
-			return;
+			// The rendered mesh bakes the pose and content at creation time, so
+			// the engine object is reused for as long as none of them change.
+			// This keeps the object identity stable through layout reflows and
+			// scene switches instead of tearing the object down and recreating
+			// it every frame while its pose is in flux.
+			if (entry->content == content && entry->fontSize == fontSize
+				&& entry->color == color && entry->pose == pose) {
+				TextRenderCacheEntry newEntry { .used	  = true,
+												.value	  = entry->value,
+												.content  = entry->content,
+												.fontSize = entry->fontSize,
+												.color	  = entry->color,
+												.pose	  = entry->pose };
+				put(cacheKey, std::move(newEntry));
+				getLogger().debug()
+					<< "Cache hit for entity " << entityIdentifier;
+				return;
+			}
+
+			getLogger().debug()
+				<< "Text state changed for entity " << entityIdentifier
+				<< ", regenerating the render object";
+			_engine->removeObject(entry->value);
 		}
 
-		utility::graphic::Text text(_ressourceProvider, cacheKey.pose,
-									cacheKey.color, cacheKey.content,
-									cacheKey.fontSize, _defaultFontPath);
+		utility::graphic::Text text(_ressourceProvider, pose, color, content,
+									fontSize, _defaultFontPath);
 
 		auto identifier = _engine->addText(std::move(text));
 
-		TextRenderCacheEntry cacheEntry { .used = true, .value = identifier };
+		TextRenderCacheEntry cacheEntry {
+			.used	  = true,
+			.value	  = identifier,
+			.content  = content,
+			.fontSize = fontSize,
+			.color	  = color,
+			.pose	  = pose,
+		};
 		put(cacheKey, std::move(cacheEntry));
 	}
 

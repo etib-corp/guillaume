@@ -215,7 +215,15 @@ namespace guillaume::entities
 
 	void Panel::update(void)
 	{
-		setPose(_pose);
+		// The framework may move the panel through the Transform component
+		// directly (Scene::placeEntitiesInFrontOfView), so the registry pose is
+		// adopted instead of restoring the stale private copy. Restoring it
+		// would snap the panel back to its construction pose and re-lift its
+		// children from a wrong depth every time a component changes.
+		_pose = getComponentRegistry()
+					.getComponent<components::Transform>(getIdentifier())
+					.getPose();
+
 		setColor(_color);
 		setBorderRadius(_borderRadius);
 		setPadding(_padding);

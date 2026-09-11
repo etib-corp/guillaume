@@ -169,7 +169,17 @@ namespace guillaume
 		}
 		auto &firstView = _firstView.value();
 
-		_sceneManager->getActiveScene()->placeEntitiesInFrontOfView(firstView);
+		// Repositioning the scene every frame keeps entity poses in constant
+		// flux, which defeats the render caches keyed on entity state and makes
+		// text objects get torn down and recreated endlessly. The scene is
+		// therefore only re-laid out when the view flips to the other side of
+		// the viewer; scene entry still places the entities once.
+		auto currentView = _engine->getView();
+		if (hasViewChanged(firstView, currentView)) {
+			_sceneManager->getActiveScene()->placeEntitiesInFrontOfView(
+				currentView);
+			_firstView = currentView;
+		}
 		this->getLogger().debug() << "Current view: " << _engine->getView();
 		this->getLogger().debug()
 			<< "Forward vector: "
