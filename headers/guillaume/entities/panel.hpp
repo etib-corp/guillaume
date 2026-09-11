@@ -22,9 +22,14 @@
 
 #pragma once
 
+#include <cstdint>
+#include <memory>
+#include <vector>
+
 #include <utility/graphic/color.hpp>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/parent_entity_filler.hpp"
@@ -39,6 +44,12 @@ namespace guillaume::entities
 
 	/**
 	 * @brief Panel component
+	 *
+	 * A `Panel` is a non-interactive container surface (background color and
+	 * border radius) that owns a set of child entities. It computes its own
+	 * bounding box from the children it contains plus a padding, and lifts its
+	 * children toward the camera by one layer depth step so that they never
+	 * z-fight with the panel surface.
 	 */
 	class Panel:
 		public std::enable_shared_from_this<Panel>,
@@ -56,11 +67,12 @@ namespace guillaume::entities
 				_panel;	   ///< Unique pointer to the Panel entity being built
 			utility::graphic::PoseF _pose;	  ///< Pose of the panel to be used
 											  ///< (position, rotation, scale)
-			std::vector<ecs::Entity::Identifier>
-				_entities;	  ///< Entities to be attached to the panel
 			utility::graphic::Color32Bit
 				_color;				///< Color of the panel to be used (RGBA)
 			float _borderRadius;	///< Border radius to be used for the panel
+			float _padding;			///< Padding to be used around the children
+			std::vector<std::shared_ptr<ecs::Entity>>
+				_entities;	  ///< Entities to be attached to the panel
 
 			public:
 			/**
@@ -102,15 +114,6 @@ namespace guillaume::entities
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
-			 * @brief Set the entities to be attached to the panel for the Panel
-			 * entity.
-			 * @param entities The entities to attach to the panel.
-			 * @return Reference to the builder for chaining.
-			 */
-			Builder &withEntities(
-				const std::vector<ecs::Entity::Identifier> &entities);
-
-			/**
 			 * @brief Set the color of the panel to be used for the Panel
 			 * entity.
 			 * @param color The color of the panel to set.
@@ -125,6 +128,23 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withBorderRadius(float borderRadius);
+
+			/**
+			 * @brief Set the padding of the panel to be used for the Panel
+			 * entity.
+			 * @param padding The padding of the panel to set.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withPadding(float padding);
+
+			/**
+			 * @brief Set the entities to be attached to the panel for the Panel
+			 * entity.
+			 * @param entities The entities to attach to the panel.
+			 * @return Reference to the builder for chaining.
+			 */
+			Builder &withEntities(
+				const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 		};
 
 		/**
@@ -159,7 +179,7 @@ namespace guillaume::entities
 			std::shared_ptr<Panel> makeDefaultPanel(
 				Builder &builder, std::shared_ptr<Entity> parent,
 				const utility::graphic::PoseF &pose,
-				const std::vector<ecs::Entity::Identifier> &entities);
+				const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 
 			/**
 			 * @brief Create a color panel entity using the builder.
@@ -177,7 +197,7 @@ namespace guillaume::entities
 				Builder &builder, std::shared_ptr<Entity> parent,
 				const utility::graphic::PoseF &pose,
 				const utility::graphic::Color32Bit &color,
-				const std::vector<ecs::Entity::Identifier> &entities);
+				const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 		};
 
 		private:
@@ -189,9 +209,14 @@ namespace guillaume::entities
 						  ///< (RGBA)
 		float _borderRadius { 16.0f };	  ///< Border radius to be used for
 										  ///< creating panel entities
-		std::vector<ecs::Entity::Identifier>
+		float _padding { 16.0f };		  ///< Padding to be used around the
+									 ///< children when creating panel entities
+		std::vector<std::shared_ptr<ecs::Entity>>
 			_entities {};	 ///< Entities to be attached to created panel
 							 ///< entities
+		static constexpr float _layerDepthStep {
+			1.0f
+		};	  ///< Distance pushed toward the camera per layer.
 
 		public:
 		/**
@@ -202,13 +227,16 @@ namespace guillaume::entities
 		 * (position, rotation, scale).
 		 * @param color The color to initialize the Panel component with (RGBA).
 		 * @param borderRadius The border radius to initialize the Panel
+		 * component with.
+		 * @param padding The padding to initialize the Panel component with.
 		 * @param entities The entities to attach to the panel for this
-		 * Panel component with.
+		 * Panel component.
 		 */
 		Panel(ecs::ComponentRegistry &registry,
 			  const utility::graphic::PoseF &pose,
 			  const utility::graphic::Color32Bit &color, float borderRadius,
-			  const std::vector<ecs::Entity::Identifier> &entities);
+			  float padding,
+			  const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 
 		/**
 		 * @brief Default destructor for the Panel component.
@@ -238,13 +266,20 @@ namespace guillaume::entities
 		Panel &setBorderRadius(float borderRadius);
 
 		/**
+		 * @brief Set the padding of the panel for this Panel entity.
+		 * @param padding The new padding to set for the panel.
+		 * @return Reference to this Panel for chaining.
+		 */
+		Panel &setPadding(float padding);
+
+		/**
 		 * @brief Set the entities to be attached to the panel for this
 		 * Panel entity.
 		 * @param entities The new entities to attach to the panel.
 		 * @return Reference to this Panel for chaining.
 		 */
-		Panel &
-			setEntities(const std::vector<ecs::Entity::Identifier> &entities);
+		Panel &setEntities(
+			const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 
 		/**
 		 * @brief Initialize the panel entity's derived state.
@@ -255,5 +290,24 @@ namespace guillaume::entities
 		 * @brief Recompute the panel entity's derived state.
 		 */
 		void update(void) override;
+
+		/**
+		 * @brief Apply the current layer depth offset to a position.
+		 * @param position The base position.
+		 * @param orientation The orientation.
+		 * @param layer The panel layer.
+		 * @return The offset pose.
+		 */
+		static const utility::graphic::PoseF applyLayerToPosition(
+			const utility::graphic::PositionF &position,
+			const utility::graphic::OrientationF &orientation,
+			const std::uint32_t &layer);
+
+		private:
+		/**
+		 * @brief Re-measure the panel from its children and lift the children
+		 * toward the camera to avoid z-fighting with the panel surface.
+		 */
+		void applyGeometry(void);
 	};
 };	  // namespace guillaume::entities

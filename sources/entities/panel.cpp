@@ -20,13 +20,15 @@
  SOFTWARE.
  */
 
+#include <algorithm>
+
 #include "guillaume/entities/panel.hpp"
 
 namespace guillaume::entities
 {
 
-	Panel::Panel::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
-								   ecs::EntityRegistry &entityRegistry)
+	Panel::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+							ecs::EntityRegistry &entityRegistry)
 		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
 		reset();
@@ -39,8 +41,9 @@ namespace guillaume::entities
 	std::shared_ptr<Panel>
 		Panel::Builder::registerEntity(std::shared_ptr<Entity> parent)
 	{
-		_panel = std::make_shared<Panel>(this->getComponentRegistry(), _pose,
-										 _color, _borderRadius, _entities);
+		_panel =
+			std::make_shared<Panel>(this->getComponentRegistry(), _pose, _color,
+									_borderRadius, _padding, _entities);
 		_panel->setParent(parent);
 
 		this->getEntityRegistry().addEntity(_panel);
@@ -59,6 +62,8 @@ namespace guillaume::entities
 		_pose		  = utility::graphic::PoseF();
 		_color		  = { 255, 255, 255, 255 };
 		_borderRadius = 16.0f;
+		_padding	  = 16.0f;
+		_entities.clear();
 	}
 
 	Panel::Builder &
@@ -68,17 +73,29 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Panel::Builder &Panel::Builder::withEntities(
-		const std::vector<ecs::Entity::Identifier> &entities)
-	{
-		_entities = entities;
-		return *this;
-	}
-
 	Panel::Builder &
 		Panel::Builder::withColor(const utility::graphic::Color32Bit &color)
 	{
 		_color = color;
+		return *this;
+	}
+
+	Panel::Builder &Panel::Builder::withBorderRadius(float borderRadius)
+	{
+		_borderRadius = borderRadius;
+		return *this;
+	}
+
+	Panel::Builder &Panel::Builder::withPadding(float padding)
+	{
+		_padding = padding;
+		return *this;
+	}
+
+	Panel::Builder &Panel::Builder::withEntities(
+		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
+	{
+		_entities = entities;
 		return *this;
 	}
 
@@ -94,7 +111,7 @@ namespace guillaume::entities
 	std::shared_ptr<Panel> Panel::Director::makeDefaultPanel(
 		Builder &builder, std::shared_ptr<Entity> parent,
 		const utility::graphic::PoseF &pose,
-		const std::vector<ecs::Entity::Identifier> &entities)
+		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
 		return builder.withPose(pose).withEntities(entities).registerEntity(
 			parent);
@@ -104,7 +121,7 @@ namespace guillaume::entities
 		Builder &builder, std::shared_ptr<Entity> parent,
 		const utility::graphic::PoseF &pose,
 		const utility::graphic::Color32Bit &color,
-		const std::vector<ecs::Entity::Identifier> &entities)
+		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
 		return builder.withPose(pose)
 			.withColor(color)
@@ -115,13 +132,15 @@ namespace guillaume::entities
 	Panel::Panel(ecs::ComponentRegistry &registry,
 				 const utility::graphic::PoseF &pose,
 				 const utility::graphic::Color32Bit &color, float borderRadius,
-				 const std::vector<ecs::Entity::Identifier> &entities)
+				 float padding,
+				 const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 		: ecs::ParentEntityFiller<components::Transform, components::Bound,
 								  components::Color, components::Borders>(
 			  registry)
 		, _pose(pose)
 		, _color(color)
 		, _borderRadius(borderRadius)
+		, _padding(padding)
 		, _entities(entities)
 	{
 	}
@@ -136,6 +155,9 @@ namespace guillaume::entities
 		getComponentRegistry()
 			.getComponent<components::Transform>(getIdentifier())
 			.setPose(pose);
+
+		applyGeometry();
+
 		return *this;
 	}
 
@@ -157,16 +179,38 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Panel &
-		Panel::setEntities(const std::vector<ecs::Entity::Identifier> &entities)
+	Panel &Panel::setPadding(float padding)
+	{
+		_padding = padding;
+
+		applyGeometry();
+
+		return *this;
+	}
+
+	Panel &Panel::setEntities(
+		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
 		_entities = entities;
+
+		for (const auto &entity: _entities) {
+			if (entity != nullptr) {
+				entity->setParent(shared_from_this());
+			}
+		}
+
+		applyGeometry();
 
 		return *this;
 	}
 
 	void Panel::initialize(void)
 	{
+		for (const auto &entity: _entities) {
+			if (entity != nullptr) {
+				entity->setParent(shared_from_this());
+			}
+		}
 	}
 
 	void Panel::update(void)
@@ -174,7 +218,83 @@ namespace guillaume::entities
 		setPose(_pose);
 		setColor(_color);
 		setBorderRadius(_borderRadius);
+		setPadding(_padding);
 		setEntities(_entities);
+	}
+
+	const utility::graphic::PoseF Panel::applyLayerToPosition(
+		const utility::graphic::PositionF &position,
+		const utility::graphic::OrientationF &orientation,
+		const std::uint32_t &layer)
+	{
+		const auto forwardVector					= orientation.getForward();
+		utility::graphic::PositionF forwardPosition = position;
+
+		forwardPosition.translate(utility::graphic::PositionF(
+			-forwardVector * static_cast<float>(layer + 1) * _layerDepthStep));
+
+		return utility::graphic::PoseF(forwardPosition, orientation);
+	}
+
+	void Panel::applyGeometry(void)
+	{
+		const auto &panelPose =
+			getComponentRegistry()
+				.getComponent<components::Transform>(getIdentifier())
+				.getPose();
+		const auto &panelOrientation = panelPose.getOrientation();
+
+		const float panelX = panelPose.getPosition().getX();
+		const float panelY = panelPose.getPosition().getY();
+		const float panelZ = panelPose.getPosition().getZ();
+
+		float maxRight	= 0.0f;
+		float maxBottom = 0.0f;
+
+		for (const auto &entity: _entities) {
+			if (entity == nullptr
+				|| entity->getIdentifier() == ecs::Entity::InvalidIdentifier) {
+				continue;
+			}
+
+			const auto &childBound =
+				getComponentRegistry().getComponent<components::Bound>(
+					entity->getIdentifier());
+
+			auto &childTransform =
+				getComponentRegistry().getComponent<components::Transform>(
+					entity->getIdentifier());
+
+			const auto childPose = childTransform.getPose();
+
+			// Keep the child's own placement but anchor its depth to the panel
+			// plane and lift it toward the camera by its layer depth step so it
+			// never z-fights with the panel surface.
+			const utility::graphic::PositionF childBasePosition(
+				childPose.getPosition().getX(), childPose.getPosition().getY(),
+				panelZ);
+
+			const auto layeredPose = applyLayerToPosition(
+				childBasePosition, panelOrientation, getLayer());
+
+			utility::graphic::PoseF positionedPose = childPose;
+			positionedPose.setPosition(layeredPose.getPosition());
+			childTransform.setPose(positionedPose);
+
+			// Measure the panel size from the children sizes.
+			const float right =
+				childPose.getPosition().getX() - panelX + childBound.getWidth();
+			const float bottom = childPose.getPosition().getY() - panelY
+				+ childBound.getHeight();
+
+			maxRight  = std::max(maxRight, right);
+			maxBottom = std::max(maxBottom, bottom);
+		}
+
+		getComponentRegistry()
+			.getComponent<components::Bound>(getIdentifier())
+			.setWidth(maxRight + _padding)
+			.setHeight(maxBottom + _padding);
 	}
 
 }	 // namespace guillaume::entities
