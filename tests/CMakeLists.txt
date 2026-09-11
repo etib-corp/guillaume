@@ -17,6 +17,7 @@ set(TEST_SOURCES
     sources/ecs/test_system_filler.cpp
     sources/ecs/test_system_registry.cpp
     sources/entities/test_button.cpp
+    sources/entities/test_panel.cpp
     sources/entities/test_segmented_button.cpp
     sources/entities/test_extended_floating_action_button.cpp
     sources/entities/test_floating_action_button.cpp

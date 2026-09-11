@@ -76,3 +76,28 @@ Several trivial getters (e.g. `Entity::getIdentifier`, `Entity::getSignature`,
 ## `Entity::getNextIdentifier` is atomic
 
 Identifier generation is now thread-safe. No source change is required.
+
+## `Panel` children are attached by shared pointer, not identifier
+
+**Before:** `Panel::Builder::withEntities` (and the `Panel` constructor) took a
+`std::vector<ecs::Entity::Identifier>`. The identifiers were stored but never
+resolved, so children were not actually attached to the panel.
+
+**After:** The panel takes a
+`std::vector<std::shared_ptr<ecs::Entity>>`. Children are parented to the
+panel on initialization, lifted toward the camera by their layer depth step
+to avoid z-fighting with the panel surface, and the panel `Bound` is
+computed from the children bounds plus the panel padding.
+
+**Update:** Pass the shared pointers returned by the entity builders instead
+of identifiers, e.g.:
+
+```cpp
+// Before
+panelDirector.makeDefaultPanel(panelBuilder, parent, pose,
+                               { text->getIdentifier() });
+
+// After
+panelDirector.makeDefaultPanel(panelBuilder, parent, pose, { text });
+```
+
