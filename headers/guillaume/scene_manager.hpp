@@ -34,6 +34,7 @@
 #include <utility/ressource_provider.hpp>
 
 #include "guillaume/scene.hpp"
+#include "guillaume/engine.hpp"
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
@@ -44,9 +45,6 @@
 
 namespace guillaume
 {
-
-	// Forward declaration
-	class Engine;
 
 	/**
 	 * @brief Scene manager class responsible for managing scenes in the
