@@ -41,8 +41,8 @@ namespace
 	class EngineStub: public guillaume::Engine
 	{
 		public:
-		std::size_t addTextCallCount		 = 0;
-		std::size_t removeObjectCallCount	 = 0;
+		std::size_t addTextCallCount	  = 0;
+		std::size_t removeObjectCallCount = 0;
 		std::string lastAddedContent;
 		size_t lastRemovedObject { 0 };
 		size_t nextObjectID { 1 };
@@ -116,11 +116,10 @@ namespace
 		{
 			auto entity		 = std::make_shared<guillaume::ecs::Entity>();
 			entityIdentifier = entity->getIdentifier();
-			entity->setSignature(
-				guillaume::ecs::Entity::getSignatureFromTypes<
-					guillaume::components::Transform,
-					guillaume::components::Text,
-					guillaume::components::Color>());
+			entity->setSignature(guillaume::ecs::Entity::getSignatureFromTypes<
+								 guillaume::components::Transform,
+								 guillaume::components::Text,
+								 guillaume::components::Color>());
 			entityRegistry.addEntity(std::move(entity));
 
 			componentRegistry.addComponent<guillaume::components::Transform>(

@@ -10,6 +10,7 @@ set(GUILLAUME_SOURCES
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/color.cpp
+    sources/components/ellipse.cpp
     sources/components/focus.cpp
     sources/components/glyph.cpp
     sources/components/hand_hover_interaction.cpp
@@ -73,6 +74,7 @@ set(GUILLAUME_SOURCES
     sources/scene_manager.cpp
     sources/session_storage.cpp
     sources/storage.cpp
+    sources/systems/ellipse_render.cpp
     sources/systems/focus.cpp
     sources/systems/glyph_render.cpp
     sources/systems/hand_button.cpp

@@ -87,8 +87,8 @@ namespace guillaume::systems
 	struct TextRenderCacheEntry {
 		bool used;	  ///< Flag indicating whether the cache entry has been used
 					  ///< in the current frame
-		size_t value;	 ///< The cached value associated with the text
-						 ///< rendering result
+		size_t value;			///< The cached value associated with the text
+								///< rendering result
 		std::string content;	///< Content the engine object was rendered with
 		float fontSize;	   ///< Font size the engine object was rendered with
 		utility::graphic::Color32Bit
