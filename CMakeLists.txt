@@ -38,6 +38,11 @@ endif()
 if(NOT BUILD_DOCS_ONLY)
     include(FetchContent)
 
+    # Disable sibling-library tests while fetching; dependencies are consumed
+    # here as libraries only (their tests run in their own CI).
+    set(GUILLAUME_BUILD_TESTING ${BUILD_TESTING})
+    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+
     # Fetch external dependencies
     FetchContent_Declare(
         sqlite3
@@ -52,6 +57,8 @@ if(NOT BUILD_DOCS_ONLY)
         GIT_PROGRESS TRUE
     )
     FetchContent_MakeAvailable(utility)
+
+    set(BUILD_TESTING ${GUILLAUME_BUILD_TESTING} CACHE BOOL "" FORCE)
 
     # 04. Library definition
 

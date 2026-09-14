@@ -77,27 +77,36 @@ Several trivial getters (e.g. `Entity::getIdentifier`, `Entity::getSignature`,
 
 Identifier generation is now thread-safe. No source change is required.
 
-## `Panel` children are attached by shared pointer, not identifier
+## `Panel` replaced by `Container`
 
-**Before:** `Panel::Builder::withEntities` (and the `Panel` constructor) took a
-`std::vector<ecs::Entity::Identifier>`. The identifiers were stored but never
-resolved, so children were not actually attached to the panel.
+The `Panel` entity was removed and replaced by `Container`, which arranges its
+children in a row or a column.
 
-**After:** The panel takes a
-`std::vector<std::shared_ptr<ecs::Entity>>`. Children are parented to the
-panel on initialization, lifted toward the camera by their layer depth step
-to avoid z-fighting with the panel surface, and the panel `Bound` is
-computed from the children bounds plus the panel padding.
+**Before:** `Panel` owned children, lifted them toward the camera to avoid
+z-fighting, and computed its `Bound` from the children bounds plus a uniform
+padding.
 
-**Update:** Pass the shared pointers returned by the entity builders instead
-of identifiers, e.g.:
+**After:** `Container` keeps the same surface behavior (pose, color, border
+radius, padding) and adds layout controls:
+
+- `Container::Direction::Row` / `Container::Direction::Column` (default `Row`)
+- `spacing` — gap between adjacent children
+- `margin` — extra space around the container bound (outside the padding)
+
+Children are still attached by shared pointer and are arranged starting from
+the container origin plus the padding, advancing along the main axis by each
+child size plus the spacing.
+
+**Update:** Rename `Panel` to `Container` and use the new builder/director
+methods. The builder and director method names changed from `makeDefaultPanel`
+/`makeColorPanel` to `makeDefaultContainer` / `makeColorContainer`:
 
 ```cpp
 // Before
-panelDirector.makeDefaultPanel(panelBuilder, parent, pose,
-                               { text->getIdentifier() });
+panelDirector.makeDefaultPanel(panelBuilder, parent, pose, { text });
 
 // After
-panelDirector.makeDefaultPanel(panelBuilder, parent, pose, { text });
+containerDirector.makeDefaultContainer(containerBuilder, parent, pose,
+                                       { text });
 ```
 
