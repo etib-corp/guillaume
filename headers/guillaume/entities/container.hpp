@@ -255,8 +255,8 @@ namespace guillaume::entities
 			  ///< children when creating container entities
 		float _spacing { 8.0f };	///< Spacing to be used between children
 									///< when creating container entities
-		float _margin { 0.0f };	   ///< Margin to be used around the container
-								   ///< when creating container entities
+		float _margin { 0.0f };		///< Margin to be used around the container
+									///< when creating container entities
 		Direction _direction { Direction::Row };	///< Direction in which
 													///< children are arranged
 		std::vector<std::shared_ptr<ecs::Entity>>
