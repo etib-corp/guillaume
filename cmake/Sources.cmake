@@ -60,7 +60,7 @@ set(GUILLAUME_SOURCES
     sources/entities/icon_button.cpp
     sources/entities/image.cpp
     sources/entities/model.cpp
-    sources/entities/panel.cpp
+    sources/entities/container.cpp
     sources/entities/split_button.cpp
     sources/entities/standard_button_group.cpp
     sources/entities/text.cpp

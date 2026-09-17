@@ -25,16 +25,16 @@
 #include <gtest/gtest.h>
 
 #include <guillaume/component_registry.hpp>
-#include <guillaume/entities/panel.hpp>
+#include <guillaume/entities/container.hpp>
 
 namespace guillaume::entities::tests
 {
 
-	class TestPanel: public ::testing::Test
+	class TestContainer: public ::testing::Test
 	{
 		protected:
-		TestPanel(void)			  = default;
-		~TestPanel(void) override = default;
+		TestContainer(void)			  = default;
+		~TestContainer(void) override = default;
 		void SetUp(void) override
 		{
 		}

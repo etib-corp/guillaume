@@ -22,93 +22,114 @@
 
 #include <algorithm>
 
-#include "guillaume/entities/panel.hpp"
+#include "guillaume/entities/container.hpp"
 
 namespace guillaume::entities
 {
 
-	Panel::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
-							ecs::EntityRegistry &entityRegistry)
+	Container::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+								ecs::EntityRegistry &entityRegistry)
 		: ecs::EntityBuilder(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	Panel::Builder::~Builder(void)
+	Container::Builder::~Builder(void)
 	{
 	}
 
-	std::shared_ptr<Panel>
-		Panel::Builder::registerEntity(std::shared_ptr<Entity> parent)
+	std::shared_ptr<Container>
+		Container::Builder::registerEntity(std::shared_ptr<Entity> parent)
 	{
-		_panel =
-			std::make_shared<Panel>(this->getComponentRegistry(), _pose, _color,
-									_borderRadius, _padding, _entities);
-		_panel->setParent(parent);
+		_container = std::make_shared<Container>(
+			this->getComponentRegistry(), _pose, _color, _borderRadius,
+			_padding, _spacing, _margin, _direction, _entities);
+		_container->setParent(parent);
 
-		this->getEntityRegistry().addEntity(_panel);
+		this->getEntityRegistry().addEntity(_container);
 
-		auto panelCopy =
-			_panel;	   // Create a copy of the shared pointer to return
+		auto containerCopy =
+			_container;	   // Create a copy of the shared pointer to return
 
 		reset();
 
-		return panelCopy;
+		return containerCopy;
 	}
 
-	void Panel::Builder::reset(void)
+	void Container::Builder::reset(void)
 	{
-		_panel.reset();
+		_container.reset();
 		_pose		  = utility::graphic::PoseF();
 		_color		  = { 255, 255, 255, 255 };
 		_borderRadius = 16.0f;
 		_padding	  = 16.0f;
+		_spacing	  = 8.0f;
+		_margin		  = 0.0f;
+		_direction	  = Direction::Row;
 		_entities.clear();
 	}
 
-	Panel::Builder &
-		Panel::Builder::withPose(const utility::graphic::PoseF &pose)
+	Container::Builder &
+		Container::Builder::withPose(const utility::graphic::PoseF &pose)
 	{
 		_pose = pose;
 		return *this;
 	}
 
-	Panel::Builder &
-		Panel::Builder::withColor(const utility::graphic::Color32Bit &color)
+	Container::Builder &
+		Container::Builder::withColor(const utility::graphic::Color32Bit &color)
 	{
 		_color = color;
 		return *this;
 	}
 
-	Panel::Builder &Panel::Builder::withBorderRadius(float borderRadius)
+	Container::Builder &Container::Builder::withBorderRadius(float borderRadius)
 	{
 		_borderRadius = borderRadius;
 		return *this;
 	}
 
-	Panel::Builder &Panel::Builder::withPadding(float padding)
+	Container::Builder &Container::Builder::withPadding(float padding)
 	{
 		_padding = padding;
 		return *this;
 	}
 
-	Panel::Builder &Panel::Builder::withEntities(
+	Container::Builder &Container::Builder::withSpacing(float spacing)
+	{
+		_spacing = spacing;
+		return *this;
+	}
+
+	Container::Builder &Container::Builder::withMargin(float margin)
+	{
+		_margin = margin;
+		return *this;
+	}
+
+	Container::Builder &Container::Builder::withDirection(Direction direction)
+	{
+		_direction = direction;
+		return *this;
+	}
+
+	Container::Builder &Container::Builder::withEntities(
 		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
 		_entities = entities;
 		return *this;
 	}
 
-	Panel::Director::Director(void)
+	Container::Director::Director(void)
 		: ecs::EntityDirector()
 	{
 	}
 
-	Panel::Director::~Director(void)
+	Container::Director::~Director(void)
 	{
 	}
 
-	std::shared_ptr<Panel> Panel::Director::makeDefaultPanel(
+	std::shared_ptr<Container> Container::Director::makeDefaultContainer(
 		Builder &builder, std::shared_ptr<Entity> parent,
 		const utility::graphic::PoseF &pose,
 		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
@@ -117,7 +138,7 @@ namespace guillaume::entities
 			parent);
 	}
 
-	std::shared_ptr<Panel> Panel::Director::makeColorPanel(
+	std::shared_ptr<Container> Container::Director::makeColorContainer(
 		Builder &builder, std::shared_ptr<Entity> parent,
 		const utility::graphic::PoseF &pose,
 		const utility::graphic::Color32Bit &color,
@@ -129,11 +150,11 @@ namespace guillaume::entities
 			.registerEntity(parent);
 	}
 
-	Panel::Panel(ecs::ComponentRegistry &registry,
-				 const utility::graphic::PoseF &pose,
-				 const utility::graphic::Color32Bit &color, float borderRadius,
-				 float padding,
-				 const std::vector<std::shared_ptr<ecs::Entity>> &entities)
+	Container::Container(
+		ecs::ComponentRegistry &registry, const utility::graphic::PoseF &pose,
+		const utility::graphic::Color32Bit &color, float borderRadius,
+		float padding, float spacing, float margin, Direction direction,
+		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 		: ecs::ParentEntityFiller<components::Transform, components::Bound,
 								  components::Color, components::Borders>(
 			  registry)
@@ -141,15 +162,18 @@ namespace guillaume::entities
 		, _color(color)
 		, _borderRadius(borderRadius)
 		, _padding(padding)
+		, _spacing(spacing)
+		, _margin(margin)
+		, _direction(direction)
 		, _entities(entities)
 	{
 	}
 
-	Panel::~Panel()
+	Container::~Container()
 	{
 	}
 
-	Panel &Panel::setPose(const utility::graphic::PoseF &pose)
+	Container &Container::setPose(const utility::graphic::PoseF &pose)
 	{
 		_pose = pose;
 		getComponentRegistry()
@@ -161,7 +185,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Panel &Panel::setColor(const utility::graphic::Color32Bit &color)
+	Container &Container::setColor(const utility::graphic::Color32Bit &color)
 	{
 		_color = color;
 		getComponentRegistry()
@@ -170,7 +194,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Panel &Panel::setBorderRadius(float borderRadius)
+	Container &Container::setBorderRadius(float borderRadius)
 	{
 		_borderRadius = borderRadius;
 		getComponentRegistry()
@@ -179,7 +203,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Panel &Panel::setPadding(float padding)
+	Container &Container::setPadding(float padding)
 	{
 		_padding = padding;
 
@@ -188,7 +212,34 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Panel &Panel::setEntities(
+	Container &Container::setSpacing(float spacing)
+	{
+		_spacing = spacing;
+
+		applyGeometry();
+
+		return *this;
+	}
+
+	Container &Container::setMargin(float margin)
+	{
+		_margin = margin;
+
+		applyGeometry();
+
+		return *this;
+	}
+
+	Container &Container::setDirection(Direction direction)
+	{
+		_direction = direction;
+
+		applyGeometry();
+
+		return *this;
+	}
+
+	Container &Container::setEntities(
 		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
 		_entities = entities;
@@ -204,7 +255,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void Panel::initialize(void)
+	void Container::initialize(void)
 	{
 		for (const auto &entity: _entities) {
 			if (entity != nullptr) {
@@ -213,13 +264,13 @@ namespace guillaume::entities
 		}
 	}
 
-	void Panel::update(void)
+	void Container::update(void)
 	{
-		// The framework may move the panel through the Transform component
+		// The framework may move the container through the Transform component
 		// directly (Scene::placeEntitiesInFrontOfView), so the registry pose is
 		// adopted instead of restoring the stale private copy. Restoring it
-		// would snap the panel back to its construction pose and re-lift its
-		// children from a wrong depth every time a component changes.
+		// would snap the container back to its construction pose and re-lift
+		// its children from a wrong depth every time a component changes.
 		_pose = getComponentRegistry()
 					.getComponent<components::Transform>(getIdentifier())
 					.getPose();
@@ -227,10 +278,13 @@ namespace guillaume::entities
 		setColor(_color);
 		setBorderRadius(_borderRadius);
 		setPadding(_padding);
+		setSpacing(_spacing);
+		setMargin(_margin);
+		setDirection(_direction);
 		setEntities(_entities);
 	}
 
-	const utility::graphic::PoseF Panel::applyLayerToPosition(
+	const utility::graphic::PoseF Container::applyLayerToPosition(
 		const utility::graphic::PositionF &position,
 		const utility::graphic::OrientationF &orientation,
 		const std::uint32_t &layer)
@@ -244,20 +298,26 @@ namespace guillaume::entities
 		return utility::graphic::PoseF(forwardPosition, orientation);
 	}
 
-	void Panel::applyGeometry(void)
+	void Container::applyGeometry(void)
 	{
-		const auto &panelPose =
+		const auto &containerPose =
 			getComponentRegistry()
 				.getComponent<components::Transform>(getIdentifier())
 				.getPose();
-		const auto &panelOrientation = panelPose.getOrientation();
+		const auto &containerOrientation = containerPose.getOrientation();
 
-		const float panelX = panelPose.getPosition().getX();
-		const float panelY = panelPose.getPosition().getY();
-		const float panelZ = panelPose.getPosition().getZ();
+		const float containerX = containerPose.getPosition().getX();
+		const float containerY = containerPose.getPosition().getY();
+		const float containerZ = containerPose.getPosition().getZ();
 
-		float maxRight	= 0.0f;
-		float maxBottom = 0.0f;
+		// Cursor starts at the container origin plus the padding along the
+		// main axis. The cross axis is centered within the padding.
+		float cursor = _padding;
+
+		float contentWidth	= 0.0f;
+		float contentHeight = 0.0f;
+
+		std::size_t placedCount = 0;
 
 		for (const auto &entity: _entities) {
 			if (entity == nullptr
@@ -275,34 +335,63 @@ namespace guillaume::entities
 
 			const auto childPose = childTransform.getPose();
 
-			// Keep the child's own placement but anchor its depth to the panel
-			// plane and lift it toward the camera by its layer depth step so it
-			// never z-fights with the panel surface.
-			const utility::graphic::PositionF childBasePosition(
-				childPose.getPosition().getX(), childPose.getPosition().getY(),
-				panelZ);
+			const float childWidth	= childBound.getWidth();
+			const float childHeight = childBound.getHeight();
+
+			float childX = containerX;
+			float childY = containerY;
+
+			if (_direction == Direction::Row) {
+				childX = containerX + cursor;
+				childY = containerY + _padding;
+
+				cursor += childWidth + _spacing;
+
+				contentWidth += childWidth;
+				contentHeight = std::max(contentHeight, childHeight);
+			} else {
+				childX = containerX + _padding;
+				childY = containerY + cursor;
+
+				cursor += childHeight + _spacing;
+
+				contentWidth = std::max(contentWidth, childWidth);
+				contentHeight += childHeight;
+			}
+
+			++placedCount;
+
+			// Anchor the child's depth to the container plane and lift it
+			// toward the camera by its layer depth step so it never z-fights
+			// with the container surface.
+			const utility::graphic::PositionF childBasePosition(childX, childY,
+																containerZ);
 
 			const auto layeredPose = applyLayerToPosition(
-				childBasePosition, panelOrientation, getLayer());
+				childBasePosition, containerOrientation, getLayer());
 
 			utility::graphic::PoseF positionedPose = childPose;
 			positionedPose.setPosition(layeredPose.getPosition());
 			childTransform.setPose(positionedPose);
-
-			// Measure the panel size from the children sizes.
-			const float right =
-				childPose.getPosition().getX() - panelX + childBound.getWidth();
-			const float bottom = childPose.getPosition().getY() - panelY
-				+ childBound.getHeight();
-
-			maxRight  = std::max(maxRight, right);
-			maxBottom = std::max(maxBottom, bottom);
 		}
+
+		if (placedCount > 1) {
+			const float totalSpacing =
+				_spacing * static_cast<float>(placedCount - 1);
+			if (_direction == Direction::Row) {
+				contentWidth += totalSpacing;
+			} else {
+				contentHeight += totalSpacing;
+			}
+		}
+
+		const float width  = contentWidth + 2.0f * (_padding + _margin);
+		const float height = contentHeight + 2.0f * (_padding + _margin);
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(getIdentifier())
-			.setWidth(maxRight + _padding)
-			.setHeight(maxBottom + _padding);
+			.setWidth(width)
+			.setHeight(height);
 	}
 
 }	 // namespace guillaume::entities
