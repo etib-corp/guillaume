@@ -135,11 +135,6 @@ namespace guillaume
 			[this](std::shared_ptr<utility::event::Event> &event) {
 				this->_eventBus.publish(std::move(event));
 			});
-		std::vector<std::type_index> sceneTypes =
-			_sceneManager->getRegisteredSceneTypes();
-		for (const auto &sceneType: sceneTypes) {
-			_engine->addScene(sceneType.hash_code());
-		}
 		_sceneManager->setEngine(_engine.get());
 		_sceneManager->enterActiveScene();
 	}

@@ -62,12 +62,18 @@ namespace guillaume::systems::tests
 		void present(void) override
 		{
 		}
-		size_t addMesh(const utility::graphic::Mesh &,
-					   const std::string &) override
+		size_t createObject(
+			std::shared_ptr<utility::graphic::Renderable>) override
 		{
 			return 0;
 		}
-		bool removeObject(size_t) override
+		bool updateObject(std::shared_ptr<utility::graphic::Renderable>,
+						  size_t) override
+		{
+			return true;
+		}
+		bool removeObject(std::shared_ptr<utility::graphic::Renderable>,
+						  size_t) override
 		{
 			return true;
 		}
@@ -76,20 +82,9 @@ namespace guillaume::systems::tests
 		{
 			return { 0.0f, 0.0f };
 		}
-		size_t addText(utility::graphic::Text) override
-		{
-			return 0;
-		}
-		size_t addModel(std::shared_ptr<utility::graphic::Model>) override
-		{
-			return 0;
-		}
 		utility::graphic::ViewF getView(void) const override
 		{
 			return utility::graphic::ViewF();
-		}
-		void addScene(size_t) override
-		{
 		}
 		void pollEvents(void) override
 		{
