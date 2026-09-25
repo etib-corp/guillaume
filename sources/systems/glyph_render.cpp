@@ -20,6 +20,8 @@
  SOFTWARE.
 */
 
+#include <memory>
+
 #include <utility/graphic/text/text.hpp>
 
 #include "guillaume/systems/glyph_render.hpp"
@@ -57,22 +59,12 @@ namespace guillaume::systems
 
 	void GlyphRender::prepare(void)
 	{
-		apply([this](const GlyphRenderCacheKey &key,
-					 GlyphRenderCacheEntry &entry) {
-			entry.used = false;
-		});
+		markAllUnused();
 	}
 
 	void GlyphRender::cleanup(void)
 	{
-		erase_if([this](const GlyphRenderCacheKey &key,
-						const GlyphRenderCacheEntry &entry) {
-			if (!entry.used) {
-				_engine->removeObject(entry.value);
-				return true;
-			}
-			return false;
-		});
+		removeUnused(*_engine);
 	}
 
 	void GlyphRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -88,47 +80,37 @@ namespace guillaume::systems
 
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
-		const auto &boundComponent =
-			getComponent<components::Bound>(entityIdentifier);
 		const auto &glyphComponent =
 			getComponent<components::Glyph>(entityIdentifier);
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
 
-		GlyphRenderCacheKey cacheKey { transformComponent.getPose(),
-									   glyphComponent.getName(),
-									   glyphComponent.getFontSize(),
-									   glyphComponent.getStyle(),
-									   colorComponent.getColor() };
-
-		getLogger().debug() << "Rendering glyph '" << cacheKey.glyphName
+		getLogger().debug() << "Rendering glyph '" << glyphComponent.getName()
 							<< "' for entity " << entityIdentifier;
-		getLogger().debug() << "Glyph code found for '" << cacheKey.glyphName
-							<< "': " << glyphComponent.getCode();
 
-		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			GlyphRenderCacheEntry newEntry { .used	= true,
-											 .value = entry->value };
-			put(cacheKey, std::move(newEntry));
-			getLogger().debug() << "Cache hit for entity " << entityIdentifier;
-			return;
-		}
-
-		uint32_t glyphCode = _codePoints->getCode(cacheKey.glyphName);
+		uint32_t glyphCode = _codePoints->getCode(glyphComponent.getName());
 
 		if (glyphCode == 0) {
 			glyphCode = '?';
 		}
 
-		utility::graphic::Text glyphText(
-			_ressourceProvider, cacheKey.pose, cacheKey.color,
-			utility::graphic::CodePoints::toUtf8(glyphCode), cacheKey.fontSize,
-			_defaultFontPath);
+		auto renderable = std::make_shared<utility::graphic::Text>(
+			_ressourceProvider, transformComponent.getPose(),
+			colorComponent.getColor(),
+			utility::graphic::CodePoints::toUtf8(glyphCode),
+			glyphComponent.getFontSize(), _defaultFontPath);
 
-		auto identifier = _engine->addText(std::move(glyphText));
-
-		GlyphRenderCacheEntry cacheEntry { .used = true, .value = identifier };
-		put(cacheKey, std::move(cacheEntry));
+		RenderHandle *handle = find(entityIdentifier);
+		if (handle == nullptr) {
+			size_t objectId = _engine->createObject(renderable);
+			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+		} else {
+			if (!_engine->updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine->createObject(renderable);
+			}
+			handle->renderable = renderable;
+			handle->used	  = true;
+		}
 	}
 
 }	 // namespace guillaume::systems

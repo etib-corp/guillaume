@@ -68,6 +68,7 @@ set(GUILLAUME_SOURCES
     sources/event_handler.cpp
     sources/local_storage.cpp
     sources/metadata.cpp
+    sources/mesh_renderable.cpp
     sources/scene.cpp
     sources/scene_manager.cpp
     sources/session_storage.cpp

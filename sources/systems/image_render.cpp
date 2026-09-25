@@ -20,7 +20,10 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include "guillaume/systems/image_render.hpp"
+#include "guillaume/mesh_renderable.hpp"
 
 namespace guillaume::systems
 {
@@ -41,22 +44,12 @@ namespace guillaume::systems
 
 	void ImageRender::prepare(void)
 	{
-		apply([this](const ImageRenderCacheKey &key,
-					 ImageRenderCacheEntry &entry) {
-			entry.used = false;
-		});
+		markAllUnused();
 	}
 
 	void ImageRender::cleanup(void)
 	{
-		erase_if([this](const ImageRenderCacheKey &key,
-						const ImageRenderCacheEntry &entry) {
-			if (!entry.used) {
-				_engine->removeObject(entry.value);
-				return true;
-			}
-			return false;
-		});
+		removeUnused(*_engine);
 	}
 
 	void ImageRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -77,35 +70,24 @@ namespace guillaume::systems
 		const auto &imageComponent =
 			getComponent<components::Image>(entityIdentifier);
 
-		ImageRenderCacheKey cacheKey { transformComponent.getPose(),
-									   boundComponent,
-									   imageComponent.getTexturePath() };
+		const std::string &texturePath = imageComponent.getTexturePath();
 
-		getLogger().debug() << "Rendering image '" << cacheKey.texturePath
+		getLogger().debug() << "Rendering image '" << texturePath
 							<< "' for entity " << entityIdentifier;
 
-		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			ImageRenderCacheEntry newEntry { .used	= true,
-											 .value = entry->value };
-			put(cacheKey, std::move(newEntry));
-			getLogger().debug() << "Cache hit for entity " << entityIdentifier;
-			return;
-		}
-
-		if (!_ressourceProvider->loadImageMaterial(cacheKey.texturePath)) {
+		if (!_ressourceProvider->loadImageMaterial(texturePath)) {
 			getLogger().warning()
-				<< "Failed to load image material for texture: "
-				<< cacheKey.texturePath;
+				<< "Failed to load image material for texture: " << texturePath;
 			return;
 		}
 
-		const float halfWidth  = cacheKey.size.getWidth() / 2.0f;
-		const float halfHeight = cacheKey.size.getHeight() / 2.0f;
+		const float halfWidth  = boundComponent.getWidth() / 2.0f;
+		const float halfHeight = boundComponent.getHeight() / 2.0f;
 
 		const utility::graphic::PositionF center(
-			cacheKey.pose.getPosition().x + halfWidth,
-			cacheKey.pose.getPosition().y + halfHeight,
-			cacheKey.pose.getPosition().z);
+			transformComponent.getPose().getPosition().x + halfWidth,
+			transformComponent.getPose().getPosition().y + halfHeight,
+			transformComponent.getPose().getPosition().z);
 
 		const utility::graphic::Color32Bit white(255, 255, 255, 255);
 
@@ -133,14 +115,20 @@ namespace guillaume::systems
 		mesh.addIndex(2);
 		mesh.addIndex(3);
 
-		auto identifier =
-			_engine->addMesh(mesh, "image_" + cacheKey.texturePath);
+		auto renderable = std::make_shared<MeshRenderable>(
+			std::vector<utility::graphic::Mesh> { mesh }, "image_" + texturePath);
 
-		ImageRenderCacheEntry cacheEntry {
-			.used  = true,
-			.value = identifier,
-		};
-		put(cacheKey, std::move(cacheEntry));
+		RenderHandle *handle = find(entityIdentifier);
+		if (handle == nullptr) {
+			size_t objectId = _engine->createObject(renderable);
+			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+		} else {
+			if (!_engine->updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine->createObject(renderable);
+			}
+			handle->renderable = renderable;
+			handle->used	  = true;
+		}
 	}
 
 }	 // namespace guillaume::systems

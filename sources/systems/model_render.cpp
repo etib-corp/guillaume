@@ -20,9 +20,12 @@
  SOFTWARE.
 */
 
+#include <vector>
+
 #include <utility/graphic/model.hpp>
 
 #include "guillaume/systems/model_render.hpp"
+#include "guillaume/mesh_renderable.hpp"
 
 namespace guillaume::systems
 {
@@ -43,22 +46,12 @@ namespace guillaume::systems
 
 	void ModelRender::prepare(void)
 	{
-		apply([this](const ModelRenderCacheKey &key,
-					 ModelRenderCacheEntry &entry) {
-			entry.used = false;
-		});
+		markAllUnused();
 	}
 
 	void ModelRender::cleanup(void)
 	{
-		erase_if([this](const ModelRenderCacheKey &key,
-						const ModelRenderCacheEntry &entry) {
-			if (!entry.used) {
-				_engine->removeObject(entry.value);
-				return true;
-			}
-			return false;
-		});
+		removeUnused(*_engine);
 	}
 
 	void ModelRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -73,39 +66,48 @@ namespace guillaume::systems
 
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
-		const auto &boundComponent =
-			getComponent<components::Bound>(entityIdentifier);
 		const auto &modelComponent =
 			getComponent<components::Model>(entityIdentifier);
 
-		ModelRenderCacheKey cacheKey {
-			modelComponent.getModelPath(),
-			modelComponent.getTexturePath(),
-			transformComponent.getPose(),
-			transformComponent.getScale(),
-		};
+		const std::string &modelPath	= modelComponent.getModelPath();
+		const std::string &texturePath	= modelComponent.getTexturePath();
+		const auto &pose				= transformComponent.getPose();
 
-		getLogger().debug() << "Rendering model '" << cacheKey.modelPath
+		getLogger().debug() << "Rendering model '" << modelPath
 							<< "' for entity " << entityIdentifier;
-		getLogger().debug()
-			<< "Model pose: " << cacheKey.pose << ", scale: " << cacheKey.scale;
 
-		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			ModelRenderCacheEntry newEntry { .used	= true,
-											 .value = entry->value };
-			put(cacheKey, std::move(newEntry));
-			getLogger().debug() << "Cache hit for entity " << entityIdentifier;
+		auto model = texturePath.empty()
+			? _ressourceProvider->loadModel(modelPath, pose)
+			: _ressourceProvider->loadModel(modelPath, pose, texturePath);
+
+		if (!model) {
+			getLogger().warning()
+				<< "Failed to load model '" << modelPath << "' for entity "
+				<< entityIdentifier;
 			return;
 		}
 
-		auto model		= cacheKey.texturePath.empty()
-			? _ressourceProvider->loadModel(cacheKey.modelPath, cacheKey.pose)
-			: _ressourceProvider->loadModel(cacheKey.modelPath, cacheKey.pose,
-											cacheKey.texturePath);
-		auto identifier = _engine->addModel(std::move(model));
+		std::vector<utility::graphic::Mesh> meshes;
+		meshes.reserve(model->getMeshes().size());
+		for (const auto &mesh: model->getMeshes()) {
+			meshes.push_back(*mesh);
+		}
 
-		ModelRenderCacheEntry cacheEntry { .used = true, .value = identifier };
-		put(cacheKey, std::move(cacheEntry));
+		auto renderable = std::make_shared<MeshRenderable>(
+			std::move(meshes),
+			texturePath.empty() ? "default_material" : "image_" + texturePath);
+
+		RenderHandle *handle = find(entityIdentifier);
+		if (handle == nullptr) {
+			size_t objectId = _engine->createObject(renderable);
+			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+		} else {
+			if (!_engine->updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine->createObject(renderable);
+			}
+			handle->renderable = renderable;
+			handle->used	  = true;
+		}
 	}
 
 }	 // namespace guillaume::systems

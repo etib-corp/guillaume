@@ -22,10 +22,7 @@
 
 #pragma once
 
-#include <map>
-#include <optional>
-
-#include <utility/cache.hpp>
+#include <string>
 
 #include "guillaume/ecs/system_filler.hpp"
 
@@ -34,92 +31,17 @@
 #include "guillaume/components/color.hpp"
 
 #include "guillaume/engine.hpp"
+#include "guillaume/systems/render_handle_map.hpp"
 
 namespace guillaume::systems
 {
-	/**
-	 * @brief Key structure for caching text rendering results.
-	 */
-	struct TextRenderCacheKey {
-		utility::graphic::PoseF pose;	 ///< The pose of the text, including
-										 ///< position and orientation
-		std::string content;			 ///< The text content to be rendered
-		float fontSize;	   ///< The font size used for rendering the text
-		utility::graphic::Color32Bit
-			color;	  ///< The color of the text, which may affect its rendering
-
-		/**
-		 * @brief Equality operator for TextRenderCacheKey.
-		 * @param other The other TextRenderCacheKey to compare with.
-		 * @return True if the keys are equal, false otherwise.
-		 */
-		bool operator==(const TextRenderCacheKey &other) const
-		{
-			if (pose != other.pose) {
-				return false;
-			}
-			if (content != other.content) {
-				return false;
-			}
-			if (fontSize != other.fontSize) {
-				return false;
-			}
-			if (color != other.color) {
-				return false;
-			}
-			return true;
-		}
-
-		/**
-		 * @brief Inequality operator for TextRenderCacheKey.
-		 * @param other The other TextRenderCacheKey to compare with.
-		 * @return True if the keys are not equal, false otherwise.
-		 */
-		bool operator!=(const TextRenderCacheKey &other) const
-		{
-			return !(*this == other);
-		}
-
-		/**
-		 * @brief Less-than operator for TextRenderCacheKey.
-		 * @param other The other TextRenderCacheKey to compare with.
-		 * @return True if this key is less than the other, false otherwise.
-		 */
-		bool operator<(const TextRenderCacheKey &other) const
-		{
-			if (pose != other.pose) {
-				return pose < other.pose;
-			}
-			if (content != other.content) {
-				return content < other.content;
-			}
-			if (fontSize != other.fontSize) {
-				return fontSize < other.fontSize;
-			}
-			if (color != other.color) {
-				return color < other.color;
-			}
-			return false;
-		}
-	};
-
-	/**
-	 * @brief Entry structure for caching text rendering results.
-	 */
-	struct TextRenderCacheEntry {
-		bool used;	  ///< Flag indicating whether the cache entry has been used
-					  ///< in the current frame
-		size_t value;	 ///< The cached value associated with the text
-						 ///< rendering result
-	};
-
 	/**
 	 * @brief System handling text rendering from ECS components.
 	 * @see components::Text
 	 * @see components::Transform
 	 */
 	class TextRender:
-		public utility::Cache<TextRenderCacheKey, TextRenderCacheEntry>,
+		public RenderHandleMap,
 		public ecs::SystemFiller<components::Transform, components::Text,
 								 components::Color>
 	{

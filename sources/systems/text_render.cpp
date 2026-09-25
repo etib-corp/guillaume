@@ -20,6 +20,8 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include <utility/graphic/text/text.hpp>
 
 #include "guillaume/systems/text_render.hpp"
@@ -44,22 +46,12 @@ namespace guillaume::systems
 
 	void TextRender::prepare(void)
 	{
-		apply(
-			[this](const TextRenderCacheKey &key, TextRenderCacheEntry &entry) {
-				entry.used = false;
-			});
+		markAllUnused();
 	}
 
 	void TextRender::cleanup(void)
 	{
-		erase_if([this](const TextRenderCacheKey &key,
-						const TextRenderCacheEntry &entry) {
-			if (!entry.used) {
-				_engine->removeObject(entry.value);
-				return true;
-			}
-			return false;
-		});
+		removeUnused(*_engine);
 	}
 
 	void TextRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -79,32 +71,26 @@ namespace guillaume::systems
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
 
-		TextRenderCacheKey cacheKey { transformComponent.getPose(),
-									  textComponent.getContent(),
-									  textComponent.getFontSize(),
-									  colorComponent.getColor() };
+		getLogger().debug()
+			<< "Rendering text for entity " << entityIdentifier
+			<< " (content: '" << textComponent.getContent() << "')";
 
-		getLogger().debug() << "Rendering text for entity " << entityIdentifier
-							<< " (content: '" << cacheKey.content
-							<< "', fontSize: " << cacheKey.fontSize
-							<< ", color: " << cacheKey.color << ")";
+		auto renderable = std::make_shared<utility::graphic::Text>(
+			_ressourceProvider, transformComponent.getPose(),
+			colorComponent.getColor(), textComponent.getContent(),
+			textComponent.getFontSize(), _defaultFontPath);
 
-		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			TextRenderCacheEntry newEntry { .used  = true,
-											.value = entry->value };
-			put(cacheKey, std::move(newEntry));
-			getLogger().debug() << "Cache hit for entity " << entityIdentifier;
-			return;
+		RenderHandle *handle = find(entityIdentifier);
+		if (handle == nullptr) {
+			size_t objectId = _engine->createObject(renderable);
+			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+		} else {
+			if (!_engine->updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine->createObject(renderable);
+			}
+			handle->renderable = renderable;
+			handle->used	  = true;
 		}
-
-		utility::graphic::Text text(_ressourceProvider, cacheKey.pose,
-									cacheKey.color, cacheKey.content,
-									cacheKey.fontSize, _defaultFontPath);
-
-		auto identifier = _engine->addText(std::move(text));
-
-		TextRenderCacheEntry cacheEntry { .used = true, .value = identifier };
-		put(cacheKey, std::move(cacheEntry));
 	}
 
 }	 // namespace guillaume::systems
