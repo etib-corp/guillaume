@@ -44,6 +44,9 @@
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/range.hpp"
+#include "guillaume/components/arc.hpp"
+#include "guillaume/components/line.hpp"
+#include "guillaume/components/ring.hpp"
 #include "guillaume/components/scrollable.hpp"
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/text.hpp"
@@ -74,7 +77,8 @@ namespace guillaume
 			components::Range, components::Scrollable,
 			components::DragInteraction, components::Selectable,
 			components::SelectionGroup, components::Animation,
-			components::Overlay, components::TextField>
+			components::Overlay, components::TextField, components::Ring,
+			components::Arc, components::Line>
 	{
 		public:
 		/**

@@ -97,6 +97,12 @@ namespace guillaume
 			std::make_unique<systems::RectangleRender>(_engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::EllipseRender>(_engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::RingRender>(_engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::ArcRender>(_engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::LineRender>(_engine));
 		_systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(_eventBus, _engine));

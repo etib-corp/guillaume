@@ -8,6 +8,7 @@ set(GUILLAUME_SOURCES
     sources/application.cpp
     sources/component_registry.cpp
     sources/components/animation.cpp
+    sources/components/arc.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/color.cpp
@@ -24,11 +25,13 @@ set(GUILLAUME_SOURCES
     sources/components/hand_trigger_interaction.cpp
     sources/components/image.cpp
     sources/components/layout.cpp
+    sources/components/line.cpp
     sources/components/model.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
     sources/components/range.cpp
+    sources/components/ring.cpp
     sources/components/scrollable.cpp
     sources/components/selection.cpp
     sources/components/text.cpp
@@ -85,6 +88,7 @@ set(GUILLAUME_SOURCES
     sources/session_storage.cpp
     sources/storage.cpp
     sources/systems/animation.cpp
+    sources/systems/arc_render.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/focus.cpp
@@ -100,6 +104,7 @@ set(GUILLAUME_SOURCES
     sources/systems/image_render.cpp
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp
+    sources/systems/line_render.cpp
     sources/systems/measure_glyph.cpp
     sources/systems/measure_model.cpp
     sources/systems/measure_text.cpp
@@ -108,8 +113,10 @@ set(GUILLAUME_SOURCES
     sources/systems/mouse_motion.cpp
     sources/systems/overlay.cpp
     sources/systems/rectangle_render.cpp
+    sources/systems/ring_render.cpp
     sources/systems/scroll.cpp
     sources/systems/selection.cpp
+    sources/systems/shape_mesh.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
