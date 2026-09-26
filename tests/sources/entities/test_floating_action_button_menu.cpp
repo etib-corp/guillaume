@@ -23,7 +23,12 @@
 #include "entities/test_floating_action_button_menu.hpp"
 
 #include <functional>
+#include <memory>
+#include <string>
 #include <vector>
+
+#include <guillaume/ecs/entity.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -82,5 +87,23 @@ namespace guillaume::entities::tests
 
 		menu->toggle();
 		EXPECT_FALSE(menu->isOpen());
+	}
+
+	TEST_F(TestFloatingActionButtonMenu, DirectorBuildsAndRegistersMenu)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		FloatingActionButtonMenu::Builder builder(registry, entityRegistry);
+		FloatingActionButtonMenu::Director director;
+
+		auto menu =
+			director.makeFloatingActionButtonMenu(builder, parent, "add");
+
+		ASSERT_NE(menu, nullptr);
+		EXPECT_EQ(menu->getParent(), parent);
+		EXPECT_NE(menu->getTriggerIdentifier(),
+				  ecs::Entity::InvalidIdentifier);
 	}
 }	 // namespace guillaume::entities::tests

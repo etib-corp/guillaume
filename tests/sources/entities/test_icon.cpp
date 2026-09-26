@@ -29,8 +29,10 @@
 #include <utility/graphic/text/text.hpp>
 
 #include "guillaume/components/bound.hpp"
+#include "guillaume/components/color.hpp"
 #include "guillaume/components/glyph.hpp"
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 #include "guillaume/ecs/level_order_traveler.hpp"
 #include "guillaume/entities/icon.hpp"
@@ -130,6 +132,50 @@ namespace guillaume::entities::tests
 		EXPECT_NE(std::dynamic_pointer_cast<utility::graphic::Text>(
 					  enginePtr->lastCreated()),
 				  nullptr);
+	}
+
+	TEST_F(IconEntityFixture, SettersUpdateComponents)
+	{
+		const utility::graphic::Color32Bit color(10, 20, 30, 255);
+
+		icon->setGlyphName("search");
+		icon->setFontSize(48.0f);
+		icon->setColor(color);
+		icon->setStyle(components::Glyph::Style::Sharp);
+
+		const auto &glyph = componentRegistry.getComponent<components::Glyph>(
+			icon->getIdentifier());
+		EXPECT_EQ(glyph.getName(), "search");
+		EXPECT_FLOAT_EQ(glyph.getFontSize(), 48.0f);
+		EXPECT_EQ(glyph.getStyle(), components::Glyph::Style::Sharp);
+
+		const auto &colorComponent =
+			componentRegistry.getComponent<components::Color>(
+				icon->getIdentifier());
+		EXPECT_EQ(colorComponent.getColor(), color);
+	}
+
+	TEST_F(TestIcon, DirectorBuildsAndRegistersIcon)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		entities::Icon::Builder builder(registry, entityRegistry);
+		entities::Icon::Director director;
+
+		auto icon = director.makeIcon(
+			builder, parent, "home", 32.0f,
+			utility::graphic::Color32Bit(255, 255, 255, 255),
+			components::Glyph::Style::Outlined);
+		icon->update();
+
+		ASSERT_NE(icon, nullptr);
+		EXPECT_EQ(icon->getParent(), parent);
+		EXPECT_EQ(registry.getComponent<components::Glyph>(
+					  icon->getIdentifier())
+					  .getName(),
+				  "home");
 	}
 
 }	 // namespace guillaume::entities::tests

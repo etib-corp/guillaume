@@ -22,7 +22,13 @@
 
 #include "entities/test_standard_button_group.hpp"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <guillaume/components/transform.hpp>
+#include <guillaume/ecs/entity.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -73,5 +79,22 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(firstX, 0.0f);
 		EXPECT_GT(secondX, firstX);
 		EXPECT_GT(thirdX, secondX);
+	}
+
+	TEST_F(TestStandardButtonGroup, DirectorBuildsAndRegistersGroup)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		StandardButtonGroup::Builder builder(registry, entityRegistry);
+		StandardButtonGroup::Director director;
+
+		auto group = director.makeStandardButtonGroup(
+			builder, parent, std::vector<std::string> { "A", "B" });
+
+		ASSERT_NE(group, nullptr);
+		EXPECT_EQ(group->getParent(), parent);
+		EXPECT_EQ(group->getButtonCount(), 2U);
 	}
 }	 // namespace guillaume::entities::tests

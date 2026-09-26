@@ -29,7 +29,10 @@
 #include <utility/system_io/default_system_io.hpp>
 
 #include "guillaume/components/bound.hpp"
+#include "guillaume/components/color.hpp"
+#include "guillaume/components/text.hpp"
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/ecs/entity.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 #include "guillaume/ecs/level_order_traveler.hpp"
 #include "guillaume/entities/text.hpp"
@@ -111,6 +114,48 @@ namespace guillaume::entities::tests
 			enginePtr->lastCreated());
 		ASSERT_NE(created, nullptr);
 		EXPECT_EQ(created->getContent(), "Hello");
+	}
+
+	TEST_F(TextEntityFixture, SettersUpdateComponents)
+	{
+		const utility::graphic::Color32Bit color(1, 2, 3, 255);
+
+		text->setContent("World");
+		text->setFontSize(40.0f);
+		text->setColor(color);
+
+		const auto &textComponent =
+			componentRegistry.getComponent<components::Text>(
+				text->getIdentifier());
+		EXPECT_EQ(textComponent.getContent(), "World");
+		EXPECT_FLOAT_EQ(textComponent.getFontSize(), 40.0f);
+
+		const auto &colorComponent =
+			componentRegistry.getComponent<components::Color>(
+				text->getIdentifier());
+		EXPECT_EQ(colorComponent.getColor(), color);
+	}
+
+	TEST_F(TestText, DirectorBuildsAndRegistersText)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		entities::Text::Builder builder(registry, entityRegistry);
+		entities::Text::Director director;
+
+		auto text = director.makeText(
+			builder, parent, "Hello", 18.0f,
+			utility::graphic::Color32Bit(255, 255, 255, 255));
+		text->update();
+
+		ASSERT_NE(text, nullptr);
+		EXPECT_EQ(text->getParent(), parent);
+		EXPECT_EQ(registry.getComponent<components::Text>(
+					  text->getIdentifier())
+					  .getContent(),
+				  "Hello");
 	}
 
 }	 // namespace guillaume::entities::tests

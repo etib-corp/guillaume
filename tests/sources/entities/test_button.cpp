@@ -22,6 +22,7 @@
 
 #include "entities/test_button.hpp"
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -30,6 +31,8 @@
 
 #include <guillaume/components/glyph.hpp>
 #include <guillaume/components/transform.hpp>
+#include <guillaume/ecs/entity.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/mesh_renderable.hpp>
 #include <guillaume/systems/glyph_render.hpp>
 #include <guillaume/systems/rectangle_render.hpp>
@@ -390,5 +393,42 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(enginePtr->countCreated<guillaume::MeshRenderable>(), 1);
 		EXPECT_EQ(enginePtr->countCreated<utility::graphic::Text>(), 2);
 		EXPECT_EQ(enginePtr->createObjectCallCount, 3);
+	}
+
+	TEST_F(TestButton, StyleAndSizeSettersRoundTrip)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+
+		button->setColorStyle(Button::Color::Outlined);
+		button->setShape(Button::Shape::Square);
+		button->setSize(Button::Size::Large);
+
+		EXPECT_EQ(button->getColorStyle(), Button::Color::Outlined);
+		EXPECT_EQ(button->getShape(), Button::Shape::Square);
+		EXPECT_EQ(button->getSize(), Button::Size::Large);
+	}
+
+	TEST_F(TestButton, DirectorBuildsAndRegistersButton)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		Button::Builder builder(registry, entityRegistry);
+		Button::Director director;
+
+		auto button = director.makeButton(
+			builder, parent, "Save", std::function<void(void)>(),
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Large,
+			false);
+
+		ASSERT_NE(button, nullptr);
+		EXPECT_EQ(button->getParent(), parent);
+		EXPECT_EQ(button->getColorStyle(), Button::Color::Filled);
+		EXPECT_EQ(button->getSize(), Button::Size::Large);
 	}
 }	 // namespace guillaume::entities::tests

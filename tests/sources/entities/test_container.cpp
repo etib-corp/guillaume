@@ -22,8 +22,15 @@
 
 #include "entities/test_container.hpp"
 
+#include <memory>
+#include <vector>
+
+#include <guillaume/components/borders.hpp>
+#include <guillaume/components/color.hpp>
 #include <guillaume/components/transform.hpp>
+#include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_filler.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -403,6 +410,57 @@ namespace guillaume::entities::tests
 		// Width: 10 + 2 * padding(16) = 42.
 		EXPECT_FLOAT_EQ(bound.getWidth(), 42.0f);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 42.0f);
+	}
+
+	TEST_F(TestContainer, SetColorUpdatesComponent)
+	{
+		ecs::ComponentRegistry registry;
+		auto container = makeContainer(registry, {});
+		const utility::graphic::Color32Bit color(1, 2, 3, 255);
+
+		container->setColor(color);
+
+		const auto &component = registry.getComponent<components::Color>(
+			container->getIdentifier());
+		EXPECT_EQ(component.getColor(), color);
+	}
+
+	TEST_F(TestContainer, SetBorderRadiusUpdatesComponent)
+	{
+		ecs::ComponentRegistry registry;
+		auto container = makeContainer(registry, {});
+
+		container->setBorderRadius(12.0f);
+
+		const auto &borders = registry.getComponent<components::Borders>(
+			container->getIdentifier());
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 12.0f);
+		EXPECT_FLOAT_EQ(borders.getBottomRightRadius(), 12.0f);
+	}
+
+	TEST_F(TestContainer, DirectorBuildsAndRegistersColorContainer)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		Container::Builder builder(registry, entityRegistry);
+		Container::Director director;
+		const utility::graphic::Color32Bit color(10, 20, 30, 255);
+
+		auto container = director.makeColorContainer(
+			builder, parent, utility::graphic::PoseF(), color, {});
+		container->update();
+
+		ASSERT_NE(container, nullptr);
+		EXPECT_EQ(container->getParent(), parent);
+		EXPECT_NE(
+			entityRegistry.getEntity<Container>(container->getIdentifier()),
+			nullptr);
+		EXPECT_EQ(registry.getComponent<components::Color>(
+					  container->getIdentifier())
+					  .getColor(),
+				  color);
 	}
 
 }	 // namespace guillaume::entities::tests

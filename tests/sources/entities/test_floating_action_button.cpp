@@ -22,7 +22,12 @@
 
 #include "entities/test_floating_action_button.hpp"
 
+#include <functional>
+#include <memory>
+
 #include <guillaume/components/transform.hpp>
+#include <guillaume/ecs/entity.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -83,5 +88,25 @@ namespace guillaume::entities::tests
 
 		fab->setAccessibilityLabel("Edit comment");
 		EXPECT_EQ(fab->getAccessibilityLabel(), "Edit comment");
+	}
+
+	TEST_F(TestFloatingActionButton, DirectorBuildsAndRegistersFab)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		FloatingActionButton::Builder builder(registry, entityRegistry);
+		FloatingActionButton::Director director;
+
+		auto fab = director.makeFloatingActionButton(
+			builder, parent, "edit", std::function<void(void)>(),
+			FloatingActionButton::Variant::Secondary,
+			FloatingActionButton::Size::Large);
+
+		ASSERT_NE(fab, nullptr);
+		EXPECT_EQ(fab->getParent(), parent);
+		EXPECT_EQ(fab->getVariant(), FloatingActionButton::Variant::Secondary);
+		EXPECT_EQ(fab->getSize(), FloatingActionButton::Size::Large);
 	}
 }	 // namespace guillaume::entities::tests
