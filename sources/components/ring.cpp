@@ -20,29 +20,43 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#include "guillaume/components/ring.hpp"
 
-namespace guillaume
+namespace guillaume::components
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image, components::Layout, components::Value,
-			  components::Range, components::Scrollable,
-			  components::DragInteraction, components::Selectable,
-			  components::SelectionGroup, components::Animation,
-			  components::Overlay, components::TextField, components::Ring,
-			  components::Arc, components::Line>()
+	Ring::Ring(void)
+		: _thickness(8.0f)
+		, _segments(48)
 	{
 	}
-}	 // namespace guillaume
+
+	float Ring::getThickness(void) const
+	{
+		return _thickness;
+	}
+
+	Ring &Ring::setThickness(float thickness)
+	{
+		if (_thickness == thickness) {
+			return *this;
+		}
+		_thickness = thickness;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Ring::SegmentCount Ring::getSegments(void) const
+	{
+		return _segments;
+	}
+
+	Ring &Ring::setSegments(SegmentCount segments)
+	{
+		if (_segments == segments) {
+			return *this;
+		}
+		_segments = segments;
+		setHasChanged(true);
+		return *this;
+	}
+}	 // namespace guillaume::components
