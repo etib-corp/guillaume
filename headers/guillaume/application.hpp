@@ -55,6 +55,7 @@
 #include "guillaume/event/event_bus.hpp"
 #include "guillaume/event/event_subscriber.hpp"
 
+#include "guillaume/systems/animation.hpp"
 #include "guillaume/systems/hand_button.hpp"
 #include "guillaume/systems/hand_motion.hpp"
 #include "guillaume/systems/hand_pinch.hpp"

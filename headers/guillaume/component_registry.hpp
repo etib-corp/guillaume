@@ -24,6 +24,7 @@
 
 #include "guillaume/ecs/component_registry_filler.hpp"
 
+#include "guillaume/components/animation.hpp"
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
@@ -70,7 +71,7 @@ namespace guillaume
 			components::Image, components::Layout, components::Value,
 			components::Range, components::Scrollable,
 			components::DragInteraction, components::Selectable,
-			components::SelectionGroup>
+			components::SelectionGroup, components::Animation>
 	{
 		public:
 		/**

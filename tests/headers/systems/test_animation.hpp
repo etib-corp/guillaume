@@ -20,27 +20,41 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#pragma once
 
-namespace guillaume
+#include <gtest/gtest.h>
+
+#include <memory>
+
+#include "guillaume/ecs/component_registry.hpp"
+
+#include "guillaume/components/animation.hpp"
+
+#include "guillaume/systems/animation.hpp"
+
+namespace guillaume::systems::tests
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image, components::Layout, components::Value,
-			  components::Range, components::Scrollable,
-			  components::DragInteraction, components::Selectable,
-			  components::SelectionGroup, components::Animation>()
+
+	class TestAnimation: public ::testing::Test
 	{
-	}
-}	 // namespace guillaume
+		protected:
+		std::unique_ptr<Animation> _animationSystem;
+		ecs::ComponentRegistry _componentRegistry;
+
+		TestAnimation(void)			   = default;
+		~TestAnimation(void) override = default;
+
+		void SetUp(void) override
+		{
+			_animationSystem = std::make_unique<Animation>();
+			_animationSystem->bindComponentRegistry(_componentRegistry);
+		}
+
+		void TearDown(void) override
+		{
+			_animationSystem->unbindComponentRegistry();
+			_animationSystem.reset();
+		}
+	};
+
+}	 // namespace guillaume::systems::tests
