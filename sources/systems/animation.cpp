@@ -20,27 +20,38 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#include "guillaume/systems/animation.hpp"
 
-namespace guillaume
+#include <algorithm>
+
+namespace guillaume::systems
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image, components::Layout, components::Value,
-			  components::Range, components::Scrollable,
-			  components::DragInteraction, components::Selectable,
-			  components::SelectionGroup, components::Animation>()
+	Animation::Animation(void)
+		: ecs::SystemFiller<components::Animation>(ecs::Phase::Event)
+		, _lastTime(std::chrono::steady_clock::now())
+		, _deltaTime(0.0f)
 	{
 	}
-}	 // namespace guillaume
+
+	void Animation::prepare(void)
+	{
+		const auto now = std::chrono::steady_clock::now();
+		const std::chrono::duration<float> elapsed = now - _lastTime;
+		_lastTime								   = now;
+		_deltaTime								   = elapsed.count();
+	}
+
+	void Animation::update(const ecs::Entity::Identifier &entityIdentifier)
+	{
+		if (!requireComponent<components::Animation>(entityIdentifier)) {
+			return;
+		}
+
+		// Clamp large deltas (e.g. after a stall) so animations do not jump.
+		const float deltaTime = std::clamp(_deltaTime, 0.0f, 0.1f);
+
+		getComponent<components::Animation>(entityIdentifier)
+			.advance(deltaTime);
+	}
+
+}	 // namespace guillaume::systems

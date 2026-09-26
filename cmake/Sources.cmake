@@ -7,6 +7,7 @@
 set(GUILLAUME_SOURCES
     sources/application.cpp
     sources/component_registry.cpp
+    sources/components/animation.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/color.cpp
@@ -76,10 +77,12 @@ set(GUILLAUME_SOURCES
     sources/local_storage.cpp
     sources/metadata.cpp
     sources/mesh_renderable.cpp
+    sources/motion/easing.cpp
     sources/scene.cpp
     sources/scene_manager.cpp
     sources/session_storage.cpp
     sources/storage.cpp
+    sources/systems/animation.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/focus.cpp
