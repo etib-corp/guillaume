@@ -61,6 +61,9 @@ namespace guillaume::ecs
 		ecs::ComponentRegistry *_activeComponentRegistry {
 			nullptr
 		};	  ///< Active component registry for the current update scope
+		ecs::EntityRegistry *_activeEntityRegistry {
+			nullptr
+		};	  ///< Active entity registry for the current update scope
 
 		protected:
 		/**
@@ -71,6 +74,18 @@ namespace guillaume::ecs
 		 */
 		template<InheritFromComponent... ComponentTypes>
 		void setSignature(void);
+
+		/**
+		 * @brief Get the active entity registry for the current update scope.
+		 * @return Mutable reference to the active entity registry.
+		 */
+		ecs::EntityRegistry &getEntityRegistry(void);
+
+		/**
+		 * @brief Get the active entity registry for the current update scope.
+		 * @return Const reference to the active entity registry.
+		 */
+		const ecs::EntityRegistry &getEntityRegistry(void) const;
 
 		/**
 		 * @brief Get the active component registry for the current update

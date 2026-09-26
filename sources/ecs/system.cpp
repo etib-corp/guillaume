@@ -28,6 +28,7 @@ namespace guillaume::ecs
 		: _phase(phase)
 		, _signature()
 		, _activeComponentRegistry(nullptr)
+		, _activeEntityRegistry(nullptr)
 	{
 	}
 
@@ -38,6 +39,24 @@ namespace guillaume::ecs
 				"No active component registry bound to system");
 		}
 		return *_activeComponentRegistry;
+	}
+
+	ecs::EntityRegistry &System::getEntityRegistry(void)
+	{
+		if (_activeEntityRegistry == nullptr) {
+			throw std::runtime_error(
+				"No active entity registry bound to system");
+		}
+		return *_activeEntityRegistry;
+	}
+
+	const ecs::EntityRegistry &System::getEntityRegistry(void) const
+	{
+		if (_activeEntityRegistry == nullptr) {
+			throw std::runtime_error(
+				"No active entity registry bound to system");
+		}
+		return *_activeEntityRegistry;
 	}
 
 	const ecs::ComponentRegistry &System::getComponentRegistry(void) const
@@ -64,6 +83,7 @@ namespace guillaume::ecs
 						 const ecs::EntityTreeTraveler &traveler)
 	{
 		_activeComponentRegistry = &componentRegistry;
+		_activeEntityRegistry	 = &entityRegistry;
 		getLogger().debug() << "System routine started";
 
 		prepare();
@@ -96,6 +116,7 @@ namespace guillaume::ecs
 							<< traversedEntities.size();
 
 		_activeComponentRegistry = nullptr;
+		_activeEntityRegistry	 = nullptr;
 	}
 
 	void
