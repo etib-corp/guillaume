@@ -26,11 +26,13 @@ set(GUILLAUME_SOURCES
     sources/components/layout.cpp
     sources/components/model.cpp
     sources/components/mouse_hover_interaction.cpp
+    sources/components/overlay.cpp
     sources/components/parent.cpp
     sources/components/range.cpp
     sources/components/scrollable.cpp
     sources/components/selection.cpp
     sources/components/text.cpp
+    sources/components/text_field.cpp
     sources/components/transform.cpp
     sources/components/value.cpp
     sources/ecs/component.cpp
@@ -104,9 +106,11 @@ set(GUILLAUME_SOURCES
     sources/systems/model_render.cpp
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
+    sources/systems/overlay.cpp
     sources/systems/rectangle_render.cpp
     sources/systems/scroll.cpp
     sources/systems/selection.cpp
+    sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
     sources/theme.cpp

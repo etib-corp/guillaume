@@ -20,28 +20,34 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#include "guillaume/systems/text_field.hpp"
 
-namespace guillaume
+namespace guillaume::systems
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image, components::Layout, components::Value,
-			  components::Range, components::Scrollable,
-			  components::DragInteraction, components::Selectable,
-			  components::SelectionGroup, components::Animation,
-			  components::Overlay, components::TextField>()
+	TextField::TextField(void)
+		: ecs::SystemFiller<components::TextField, components::Text>(
+			  ecs::Phase::Measure)
 	{
 	}
-}	 // namespace guillaume
+
+	void TextField::update(const ecs::Entity::Identifier &entityIdentifier)
+	{
+		if (!requireComponent<components::TextField>(entityIdentifier)
+			|| !requireComponent<components::Text>(entityIdentifier)) {
+			return;
+		}
+
+		auto &textField = getComponent<components::TextField>(entityIdentifier);
+		const auto &text = getComponent<components::Text>(entityIdentifier);
+
+		reconcile(textField, !text.getContent().empty());
+	}
+
+	bool TextField::reconcile(components::TextField &textField, bool hasContent)
+	{
+		const bool floating = hasContent || textField.isError();
+		textField.setLabelFloating(floating);
+		return floating;
+	}
+
+}	 // namespace guillaume::systems

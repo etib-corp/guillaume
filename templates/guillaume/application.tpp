@@ -103,6 +103,10 @@ namespace guillaume
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::Animation>());
 		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::Overlay>(_eventBus, _engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::TextField>());
+		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::MeasureModel>(_ressourceProvider,
 													_engine));
 		_systemRegistry.registerNewSystem(
