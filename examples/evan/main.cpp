@@ -30,8 +30,8 @@
 
 #include <guillaume/components/bound.hpp>
 #include <guillaume/entities/button.hpp>
+#include <guillaume/entities/container.hpp>
 #include <guillaume/entities/model.hpp>
-#include <guillaume/entities/panel.hpp>
 
 #include <utility/graphic/color.hpp>
 #include <utility/graphic/pose.hpp>
@@ -56,25 +56,25 @@ namespace
 
 		void onEnter(void) override
 		{
-			auto &panelBuilder =
+			auto &containerBuilder =
 				getBuilderManager()
-					.getBuilder<guillaume::entities::Panel::Builder>();
-			auto &panelDirector =
+					.getBuilder<guillaume::entities::Container::Builder>();
+			auto &containerDirector =
 				getDirectorManager()
-					.getDirector<guillaume::entities::Panel::Director>();
+					.getDirector<guillaume::entities::Container::Director>();
 
-			auto panel =
-				panelDirector.makeColorPanel(panelBuilder, nullptr, PoseF(),
-											 Color32Bit(64, 144, 240, 255), {});
-			panel->setBorderRadius(24.0f);
+			auto container = containerDirector.makeColorContainer(
+				containerBuilder, nullptr, PoseF(),
+				Color32Bit(64, 144, 240, 255), {});
+			container->setBorderRadius(24.0f);
 
 			getComponentRegistry()
 				.getComponent<guillaume::components::Bound>(
-					panel->getIdentifier())
+					container->getIdentifier())
 				.setWidth(260.0f)
 				.setHeight(140.0f);
 
-			addRootEntity("panel", panel);
+			addRootEntity("container", container);
 
 			auto &buttonBuilder =
 				getBuilderManager()

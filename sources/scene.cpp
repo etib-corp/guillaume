@@ -23,7 +23,7 @@
 #include "guillaume/scene.hpp"
 
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/panel.hpp"
+#include "guillaume/entities/container.hpp"
 #include "guillaume/entities/text.hpp"
 #include "guillaume/entities/button.hpp"
 #include "guillaume/entities/icon.hpp"
@@ -40,13 +40,13 @@ namespace guillaume
 		, _componentRegistry()
 		, _entityBuilderManager(
 			  std::make_unique<ecs::EntityBuilderManagerFiller<
-				  entities::Panel::Builder, entities::Text::Builder,
+				  entities::Container::Builder, entities::Text::Builder,
 				  entities::Button::Builder, entities::Icon::Builder,
 				  entities::Model::Builder, entities::Image::Builder>>(
 				  _componentRegistry, *this))
 		, _entityDirectorManager(
 			  std::make_unique<ecs::EntityDirectorManagerFiller<
-				  entities::Panel::Director, entities::Text::Director,
+				  entities::Container::Director, entities::Text::Director,
 				  entities::Button::Director, entities::Icon::Director,
 				  entities::Model::Director, entities::Image::Director>>())
 		, _nextSceneType(typeid(void))

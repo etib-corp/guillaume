@@ -38,6 +38,11 @@ endif()
 if(NOT BUILD_DOCS_ONLY)
     include(FetchContent)
 
+    # Disable sibling-library tests while fetching; dependencies are consumed
+    # here as libraries only (their tests run in their own CI).
+    set(GUILLAUME_BUILD_TESTING ${BUILD_TESTING})
+    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+
     # Fetch external dependencies
     FetchContent_Declare(
         sqlite3
@@ -51,13 +56,9 @@ if(NOT BUILD_DOCS_ONLY)
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
     )
-    # Prefer a local utility checkout (../utility) for development so that
-    # local fixes are picked up without pushing to GitHub first.
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../utility/CMakeLists.txt")
-        set(FETCHCONTENT_SOURCE_DIR_UTILITY
-            "${CMAKE_CURRENT_SOURCE_DIR}/../utility" CACHE PATH "" FORCE)
-    endif()
     FetchContent_MakeAvailable(utility)
+
+    set(BUILD_TESTING ${GUILLAUME_BUILD_TESTING} CACHE BOOL "" FORCE)
 
     # 04. Library definition
 

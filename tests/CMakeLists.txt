@@ -17,6 +17,7 @@ set(TEST_SOURCES
     sources/ecs/test_system_filler.cpp
     sources/ecs/test_system_registry.cpp
     sources/entities/test_button.cpp
+    sources/entities/test_container.cpp
     sources/entities/test_segmented_button.cpp
     sources/entities/test_extended_floating_action_button.cpp
     sources/entities/test_floating_action_button.cpp
@@ -28,6 +29,7 @@ set(TEST_SOURCES
     sources/event/test_event_handler.cpp
     sources/event/test_event_subscriber.cpp
     sources/systems/test_focus.cpp
+    sources/systems/test_ellipse_render.cpp
     sources/systems/test_interaction.cpp
     sources/systems/test_keyboard_control.cpp
     sources/systems/test_measure_text.cpp

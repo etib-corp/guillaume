@@ -7,11 +7,22 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
-      pages: write
-      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            runner: ubuntu-latest
+            archive: tar.gz
+          - name: macOS
+            runner: macos-latest
+            archive: tar.gz
+          - name: Windows
+            runner: windows-latest
+            archive: zip
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v6.0.2
@@ -21,20 +32,39 @@ jobs:
           cmake
           -B ${{ github.workspace }}/build
           -S ${{ github.workspace }}
+          -DBUILD_SHARED_LIBS=OFF
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
 
       - name: Build
         run: >
           cmake
           --build ${{ github.workspace }}/build
+          --config Release
 
-      - name: Package with CPack
+      - name: Install
         run: >
-          cpack
-          --config ${{ github.workspace }}/build/CPackConfig.cmake
-          -B ${{ github.workspace }}/packages
+          cmake
+          --install ${{ github.workspace }}/build
+          --config Release
+
+      - name: Package artifacts (Linux/macOS)
+        if: matrix.archive == 'tar.gz'
+        run: >
+          tar -czf
+          ${{ github.workspace }}/guillaume-${{ matrix.name }}.tar.gz
+          -C ${{ github.workspace }}/install .
+
+      - name: Package artifacts (Windows)
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: >
+          Compress-Archive
+          -Path "${{ github.workspace }}\install\*"
+          -DestinationPath "${{ github.workspace }}\guillaume-${{ matrix.name }}.zip"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2.2.1
         with:
-          files: ${{ github.workspace }}/packages/*
+          files: ${{ github.workspace }}/guillaume-${{ matrix.name }}.${{ matrix.archive }}
           generate_release_notes: true

@@ -22,6 +22,107 @@
 
 #include "test_application.hpp"
 
+#include <memory>
+#include <utility>
+
+#include <utility/system_io/default_system_io.hpp>
+
 namespace guillaume::tests
 {
+	namespace
+	{
+		class StubScene: public guillaume::Scene
+		{
+			public:
+			using guillaume::Scene::Scene;
+		};
+
+		class StubEngine: public guillaume::Engine
+		{
+			public:
+			StubEngine(void)
+				: guillaume::Engine()
+			{
+			}
+			~StubEngine(void) override = default;
+
+			void clear(void) override
+			{
+			}
+			void present(void) override
+			{
+			}
+			size_t createObject(
+				std::shared_ptr<utility::graphic::Renderable>) override
+			{
+				return 0u;
+			}
+			bool updateObject(std::shared_ptr<utility::graphic::Renderable>,
+							  size_t) override
+			{
+				return true;
+			}
+			bool removeObject(std::shared_ptr<utility::graphic::Renderable>,
+							  size_t) override
+			{
+				return true;
+			}
+			utility::graphic::SizeF
+				measureText(const utility::graphic::Text &) const override
+			{
+				return {};
+			}
+			utility::graphic::ViewF getView(void) const override
+			{
+				return {};
+			}
+			void pollEvents(void) override
+			{
+			}
+			void update(void) override
+			{
+			}
+		};
+	}	 // namespace
+
+	TEST_F(TestApplication, ConstructsWithRessourceProvider)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		guillaume::Application<StubScene, StubScene> application(
+			ressourceProvider);
+
+		EXPECT_FALSE(application.shouldQuit());
+	}
+
+	TEST_F(TestApplication, SetEngineAcceptsAnEngine)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		guillaume::Application<StubScene, StubScene> application(
+			ressourceProvider);
+
+		auto engine = std::make_unique<StubEngine>();
+		EXPECT_NO_THROW(application.setEngine(std::move(engine)));
+	}
+
+	TEST_F(TestApplication, LifecycleMethodsRunAfterEngineAttached)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		guillaume::Application<StubScene, StubScene> application(
+			ressourceProvider);
+
+		application.setEngine(std::make_unique<StubEngine>());
+
+		EXPECT_NO_THROW(application.update());
+		EXPECT_NO_THROW(application.clear());
+		EXPECT_NO_THROW(application.present());
+	}
 }	 // namespace guillaume::tests

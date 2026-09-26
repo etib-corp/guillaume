@@ -123,6 +123,15 @@ namespace guillaume::systems
 		}
 
 		/**
+		 * @brief Get the number of tracked handles.
+		 * @return Number of entity handles currently tracked.
+		 */
+		std::size_t size(void) const
+		{
+			return _handles.size();
+		}
+
+		/**
 		 * @brief Clear all handles without removing engine objects.
 		 */
 		void clear(void)
