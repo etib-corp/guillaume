@@ -42,10 +42,12 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
+#include "guillaume/components/overlay.hpp"
 #include "guillaume/components/range.hpp"
 #include "guillaume/components/scrollable.hpp"
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/text.hpp"
+#include "guillaume/components/text_field.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/value.hpp"
 
@@ -71,7 +73,8 @@ namespace guillaume
 			components::Image, components::Layout, components::Value,
 			components::Range, components::Scrollable,
 			components::DragInteraction, components::Selectable,
-			components::SelectionGroup, components::Animation>
+			components::SelectionGroup, components::Animation,
+			components::Overlay, components::TextField>
 	{
 		public:
 		/**
