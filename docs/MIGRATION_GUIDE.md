@@ -77,36 +77,41 @@ Several trivial getters (e.g. `Entity::getIdentifier`, `Entity::getSignature`,
 
 Identifier generation is now thread-safe. No source change is required.
 
-## `Panel` replaced by `Container`
+## `Panel` and `Container` replaced by `Layout`
 
-The `Panel` entity was removed and replaced by `Container`, which arranges its
-children in a row or a column.
+The `Panel` entity was replaced by `Container`, which is now itself replaced by
+`Layout`. `Layout` keeps the surface behavior (pose, color, border radius) and
+delegates child arrangement to `components::Layout` + `systems::Layout`.
 
-**Before:** `Panel` owned children, lifted them toward the camera to avoid
-z-fighting, and computed its `Bound` from the children bounds plus a uniform
-padding.
+**Before:** `Container` owned the row/column arrangement, padding, spacing and
+margin directly.
 
-**After:** `Container` keeps the same surface behavior (pose, color, border
-radius, padding) and adds layout controls:
+**After:** `Layout` stores the arrangement in a `components::Layout` and exposes
+the standard builder/director:
 
-- `Container::Direction::Row` / `Container::Direction::Column` (default `Row`)
+- `Layout::Axis::Horizontal` / `Layout::Axis::Vertical` (default `Horizontal`)
+- `Layout::MainAxisAlignment::{Start, Center, End, SpaceBetween}`
+- `Layout::CrossAxisAlignment::{Start, Center, End}`
 - `spacing` — gap between adjacent children
-- `margin` — extra space around the container bound (outside the padding)
+- `padding` — space around the children
+- `withFixedWidth` / `withFixedHeight` — force a dimension (auto by default)
 
-Children are still attached by shared pointer and are arranged starting from
-the container origin plus the padding, advancing along the main axis by each
-child size plus the spacing.
+The geometry is produced by `systems::Layout`, registered as a core system in
+the Layout phase. It positions the children, applies the main/cross axis
+alignments and writes the resulting size back to the container
+`components::Bound`. The old `margin` parameter is gone: use an outer `Layout`
+or adjust the pose instead.
 
-**Update:** Rename `Panel` to `Container` and use the new builder/director
-methods. The builder and director method names changed from `makeDefaultPanel`
-/`makeColorPanel` to `makeDefaultContainer` / `makeColorContainer`:
+**Update:** Rename `Container` to `Layout` and use the new builder/director
+methods. The method names changed from `makeDefaultContainer` /
+`makeColorContainer` to `makeDefaultLayout` / `makeColorLayout`:
 
 ```cpp
 // Before
-panelDirector.makeDefaultPanel(panelBuilder, parent, pose, { text });
-
-// After
 containerDirector.makeDefaultContainer(containerBuilder, parent, pose,
                                        { text });
+
+// After
+layoutDirector.makeDefaultLayout(layoutBuilder, parent, pose, { text });
 ```
 

@@ -37,6 +37,7 @@
 #include "guillaume/components/hand_thumb_stick_interaction.hpp"
 #include "guillaume/components/hand_trigger_interaction.hpp"
 #include "guillaume/components/image.hpp"
+#include "guillaume/components/layout.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/text.hpp"
@@ -61,7 +62,7 @@ namespace guillaume
 			components::HandThumbStickInteraction,
 			components::HandTriggerInteraction, components::Text,
 			components::Transform, components::Color, components::Borders,
-			components::Image>
+			components::Image, components::Layout>
 	{
 		public:
 		/**

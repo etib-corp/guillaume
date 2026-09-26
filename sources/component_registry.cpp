@@ -37,7 +37,7 @@ namespace guillaume
 			  components::HandThumbStickInteraction,
 			  components::HandTriggerInteraction, components::Text,
 			  components::Transform, components::Color, components::Borders,
-			  components::Image>()
+			  components::Image, components::Layout>()
 	{
 	}
 }	 // namespace guillaume
