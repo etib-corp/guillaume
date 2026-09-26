@@ -23,10 +23,13 @@
 #pragma once
 
 #include <chrono>
+#include <memory>
 
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/components/animation.hpp"
+
+#include <utility/engine.hpp>
 
 namespace guillaume::systems
 {
@@ -34,24 +37,26 @@ namespace guillaume::systems
 	/**
 	 * @brief System advancing time-based animations each frame.
 	 *
-	 * The per-frame delta time is derived from an internal monotonic clock (an
-	 * engine-provided delta-time hook can be layered on later). Each
-	 * `components::Animation` is then advanced by that delta.
+	 * The per-frame delta time is taken from the engine (`Engine::getDeltaTime`)
+	 * when it provides one, otherwise it is derived from an internal monotonic
+	 * clock. Each `components::Animation` is then advanced by that delta.
 	 *
 	 * @see components::Animation
 	 */
 	class Animation: public ecs::SystemFiller<components::Animation>
 	{
 		private:
+		std::unique_ptr<utility::Engine> &_engine;	 ///< Engine instance.
 		std::chrono::steady_clock::time_point
-			_lastTime;	  ///< Last frame time for the clock.
+			_lastTime;	  ///< Last frame time for the fallback clock.
 		float _deltaTime { 0.0f };	  ///< Delta time for the current frame.
 
 		public:
 		/**
 		 * @brief Construct an animation system running in the Event phase.
+		 * @param engine The engine providing the frame delta time.
 		 */
-		Animation(void);
+		Animation(std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.

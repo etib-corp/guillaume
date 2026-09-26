@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <memory>
+
+#include <utility/engine.hpp>
 #include <utility/graphic/pose.hpp>
 
 #include "guillaume/ecs/system_filler.hpp"
@@ -38,8 +41,14 @@ namespace guillaume::systems
 	 *
 	 * For every entity carrying a `components::Clip`, the system derives a
 	 * rectangle from the entity `components::Transform` and `components::Bound`
-	 * (inset by the clip margin) and stores it on the component, ready for a
-	 * renderer or an engine scissor layer to consume.
+	 * (inset by the clip margin), stores it on the component and pushes it to
+	 * the engine through `Engine::setScissor`. The scissor is cleared once per
+	 * frame in `prepare`, so all render systems that run after the Layout phase
+	 * draw with the active clip rectangle.
+	 *
+	 * @note A single engine scissor is active per frame; when several clip
+	 * entities are present the last one processed wins. Per-object clipping
+	 * would need engine support for scoped scissors.
 	 *
 	 * @see components::Clip
 	 */
@@ -47,11 +56,15 @@ namespace guillaume::systems
 		public ecs::SystemFiller<components::Transform, components::Bound,
 								 components::Clip>
 	{
+		private:
+		std::unique_ptr<utility::Engine> &_engine;	 ///< Engine instance.
+
 		public:
 		/**
 		 * @brief Construct a clip system running in the Layout phase.
+		 * @param engine The engine receiving the scissor rectangle.
 		 */
-		Clip(void);
+		Clip(std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.
@@ -59,7 +72,12 @@ namespace guillaume::systems
 		~Clip(void) override = default;
 
 		/**
-		 * @brief Resolve the clip rectangle of one entity.
+		 * @brief Clear the scissor before resolving this frame's clips.
+		 */
+		void prepare(void) override;
+
+		/**
+		 * @brief Resolve the clip rectangle of one entity and apply it.
 		 * @param entityIdentifier The target entity identifier.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;

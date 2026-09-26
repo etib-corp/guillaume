@@ -102,6 +102,12 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(rect.y, 20.0f);
 		EXPECT_FLOAT_EQ(rect.width, 100.0f);
 		EXPECT_FLOAT_EQ(rect.height, 50.0f);
+
+		ASSERT_EQ(_engineMock->setScissorCallCount, 1u);
+		EXPECT_FLOAT_EQ(_engineMock->lastScissor.x, 10.0f);
+		EXPECT_FLOAT_EQ(_engineMock->lastScissor.y, 20.0f);
+		EXPECT_FLOAT_EQ(_engineMock->lastScissor.width, 100.0f);
+		EXPECT_FLOAT_EQ(_engineMock->lastScissor.height, 50.0f);
 	}
 
 	TEST_F(TestSurfaceRender, ClipMarginInsetsRect)
@@ -119,6 +125,10 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(rect.y, 5.0f);
 		EXPECT_FLOAT_EQ(rect.width, 90.0f);
 		EXPECT_FLOAT_EQ(rect.height, 40.0f);
+
+		ASSERT_EQ(_engineMock->setScissorCallCount, 1u);
+		EXPECT_FLOAT_EQ(_engineMock->lastScissor.x, 5.0f);
+		EXPECT_FLOAT_EQ(_engineMock->lastScissor.width, 90.0f);
 	}
 
 	TEST_F(TestSurfaceRender, DisabledClipDoesNotResolveRect)
@@ -135,6 +145,14 @@ namespace guillaume::systems::tests
 
 		EXPECT_FLOAT_EQ(rect.width, 0.0f);
 		EXPECT_FLOAT_EQ(rect.height, 0.0f);
+		EXPECT_EQ(_engineMock->setScissorCallCount, 0u);
+	}
+
+	TEST_F(TestSurfaceRender, ClipPrepareClearsScissor)
+	{
+		_clipSystem->prepare();
+
+		EXPECT_EQ(_engineMock->clearScissorCallCount, 1u);
 	}
 
 }	 // namespace guillaume::systems::tests

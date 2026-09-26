@@ -86,6 +86,11 @@ namespace guillaume::tests
 		std::size_t presentCallCount { 0 };		  ///< present calls
 		std::size_t pollEventsCallCount { 0 };	  ///< pollEvents calls
 		std::size_t updateCallCount { 0 };		  ///< update calls
+		std::size_t setScissorCallCount { 0 };	  ///< setScissor calls
+		std::size_t clearScissorCallCount { 0 };  ///< clearScissor calls
+		float deltaTime { 0.0f };				  ///< getDeltaTime result
+		utility::graphic::ScissorRect
+			lastScissor {};	  ///< Last scissor rectangle applied
 
 		/**
 		 * @brief Events dispatched by the next pollEvents call.
@@ -167,6 +172,22 @@ namespace guillaume::tests
 		void update(void) override
 		{
 			++updateCallCount;
+		}
+
+		float getDeltaTime(void) const override
+		{
+			return deltaTime;
+		}
+
+		void setScissor(const utility::graphic::ScissorRect &rect) override
+		{
+			++setScissorCallCount;
+			lastScissor = rect;
+		}
+
+		void clearScissor(void) override
+		{
+			++clearScissorCallCount;
 		}
 
 		/**

@@ -26,8 +26,9 @@
 
 namespace guillaume::systems
 {
-	Animation::Animation(void)
+	Animation::Animation(std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Animation>(ecs::Phase::Event)
+		, _engine(engine)
 		, _lastTime(std::chrono::steady_clock::now())
 		, _deltaTime(0.0f)
 	{
@@ -35,6 +36,13 @@ namespace guillaume::systems
 
 	void Animation::prepare(void)
 	{
+		const float engineDelta = _engine ? _engine->getDeltaTime() : 0.0f;
+
+		if (engineDelta > 0.0f) {
+			_deltaTime = engineDelta;
+			return;
+		}
+
 		const auto now = std::chrono::steady_clock::now();
 		const std::chrono::duration<float> elapsed = now - _lastTime;
 		_lastTime								   = now;
