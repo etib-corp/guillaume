@@ -30,7 +30,7 @@ namespace guillaume::systems
 
 	MeasureGlyph::MeasureGlyph(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<Engine> &engine)
+		std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Glyph, components::Bound,
 							components::Transform, components::Color>(
 			  ecs::Phase::Measure)

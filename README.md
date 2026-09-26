@@ -22,14 +22,16 @@ model, scene management, event dispatching, and storage helpers.
 
 ## Quickstart
 
-A minimal application requires an `Engine` implementation and at least one
-`Scene` type:
+A minimal application requires a `utility::Engine` implementation and at least
+one `Scene` type:
 
 ```cpp
+#include <utility/engine.hpp>
+
 #include <guillaume/application.hpp>
 #include <guillaume/scene.hpp>
 
-class MyEngine : public guillaume::Engine {
+class MyEngine : public utility::Engine {
     // Implement the pure virtual rendering/event methods.
 };
 

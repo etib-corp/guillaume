@@ -26,6 +26,8 @@
 
 #include <memory>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
@@ -41,7 +43,6 @@
 
 #include "guillaume/systems/focus.hpp"
 #include "guillaume/event/event_bus.hpp"
-#include "guillaume/engine.hpp"
 
 #include <utility/graphic/mesh.hpp>
 #include <utility/graphic/text/text.hpp>
@@ -53,7 +54,7 @@
 namespace guillaume::systems::tests
 {
 
-	class EngineStub: public Engine
+	class EngineStub: public utility::Engine
 	{
 		public:
 		void clear(void) override
@@ -98,7 +99,7 @@ namespace guillaume::systems::tests
 	{
 		protected:
 		std::unique_ptr<event::EventBus> _eventBus;
-		std::unique_ptr<Engine> _engine;
+		std::unique_ptr<utility::Engine> _engine;
 		std::unique_ptr<Focus> _focusSystem;
 		ecs::ComponentRegistry _componentRegistry;
 		ecs::EntityRegistryContainer _entityRegistry;

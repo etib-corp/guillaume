@@ -34,11 +34,11 @@ namespace
 	/**
 	 * @brief Minimal engine stub.
 	 *
-	 * Guillaume delegates rendering and event polling to an Engine
+	 * Guillaume delegates rendering and event polling to a utility::Engine
 	 * implementation. Replace this with a real engine for your platform to
 	 * render actual content.
 	 */
-	class NoopEngine: public guillaume::Engine
+	class NoopEngine: public utility::Engine
 	{
 		public:
 		void clear(void) override

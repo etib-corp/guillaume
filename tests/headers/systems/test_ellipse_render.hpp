@@ -28,6 +28,8 @@
 #include <string>
 #include <vector>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 
@@ -36,7 +38,6 @@
 #include "guillaume/components/ellipse.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/engine.hpp"
 #include "guillaume/systems/ellipse_render.hpp"
 
 #include <utility/graphic/mesh.hpp>
@@ -49,9 +50,9 @@ namespace guillaume::systems::tests
 {
 
 	/**
-	 * @brief Engine stub recording the render object lifecycle.
+	 * @brief utility::Engine stub recording the render object lifecycle.
 	 */
-	class EllipseEngineStub: public Engine
+	class EllipseEngineStub: public utility::Engine
 	{
 		public:
 		int createObjectCount { 0 };	///< Number of createObject calls
@@ -114,7 +115,7 @@ namespace guillaume::systems::tests
 	class TestEllipseRender: public ::testing::Test
 	{
 		protected:
-		std::unique_ptr<Engine> _engine;
+		std::unique_ptr<utility::Engine> _engine;
 		EllipseEngineStub *_engineStub { nullptr };
 		std::unique_ptr<EllipseRender> _ellipseSystem;
 		ecs::ComponentRegistry _componentRegistry;

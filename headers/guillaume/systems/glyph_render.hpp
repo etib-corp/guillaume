@@ -28,6 +28,8 @@
 
 #include <utility/graphic/text/code_points.hpp>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/components/glyph.hpp"
@@ -35,7 +37,6 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/bound.hpp"
 
-#include "guillaume/engine.hpp"
 #include "guillaume/systems/render_handle_map.hpp"
 
 namespace guillaume::systems
@@ -56,7 +57,7 @@ namespace guillaume::systems
 		std::shared_ptr<utility::RessourceProvider>
 			_ressourceProvider;	   //< Shared resource provider for loading
 								   // fonts and glyphs
-		std::unique_ptr<Engine> &_engine;	 ///< Engine instance
+		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine instance
 		std::string _defaultFontPath;	 ///< Default font for glyph rendering
 		std::string _glyphCodePath;		 ///< Path to glyph code mapping file
 		std::shared_ptr<utility::graphic::CodePoints> _codePoints;
@@ -70,7 +71,7 @@ namespace guillaume::systems
 		 */
 		GlyphRender(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<Engine> &engine);
+			std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.

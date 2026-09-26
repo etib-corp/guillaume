@@ -175,7 +175,7 @@ namespace guillaume::systems
 		return vertex;
 	}
 
-	EllipseRender::EllipseRender(std::unique_ptr<Engine> &engine)
+	EllipseRender::EllipseRender(std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Color, components::Ellipse>(
 			  ecs::Phase::Render)

@@ -57,7 +57,7 @@ cmake -S . -B build -DBUILD_DOCS=ON
 ## C++ conventions for agents
 
 - **Header/source placement**:
-  - Public headers: `headers/guillaume/` (e.g., `headers/guillaume/engine.hpp`)
+  - Public headers: `headers/guillaume/` (e.g., `headers/guillaume/application.hpp`)
   - Implementation: `sources/`
   - Tests: `tests/sources/`
 - **File extensions**: Use `.hpp` for headers, `.cpp` for sources

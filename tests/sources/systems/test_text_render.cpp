@@ -38,9 +38,9 @@
 namespace
 {
 	/**
-	 * @brief Engine stub recording the text object lifecycle.
+	 * @brief utility::Engine stub recording the text object lifecycle.
 	 */
-	class EngineStub: public guillaume::Engine
+	class EngineStub: public utility::Engine
 	{
 		public:
 		std::size_t createObjectCallCount = 0;
@@ -111,7 +111,7 @@ namespace
 		protected:
 		std::unique_ptr<EngineStub> engineStub = std::make_unique<EngineStub>();
 		EngineStub *enginePtr				   = engineStub.get();
-		std::unique_ptr<guillaume::Engine> engine { std::move(engineStub) };
+		std::unique_ptr<utility::Engine> engine { std::move(engineStub) };
 		utility::DefaultSystemIO systemIo;
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);

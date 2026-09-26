@@ -3,33 +3,34 @@
 This tutorial walks you from an empty project to a working Guillaume scene. It
 assumes you have already [built the library](../README.md#building).
 
-## 1. Create an Engine implementation
+## 1. Create a utility::Engine implementation
 
-Guillaume is engine-coupled: rendering and event polling are delegated to an
-`Engine` subclass. Implement the pure virtual methods for your platform:
+Guillaume is engine-coupled: rendering and event polling are delegated to a
+`utility::Engine` subclass. Implement the pure virtual methods for your
+platform:
 
 ```cpp
-#include <guillaume/engine.hpp>
+#include <utility/engine.hpp>
 
-class MyEngine : public guillaume::Engine {
+class MyEngine : public utility::Engine {
     public:
     void clear(void) override { /* clear the back buffer */ }
     void present(void) override { /* swap buffers */ }
-    size_t addMesh(const utility::graphic::Mesh &mesh,
-                   const std::string &material) override { return 0; }
-    bool removeObject(size_t objectID) override { return true; }
+    size_t createObject(
+        std::shared_ptr<utility::graphic::Renderable> object) override {
+        return 0;
+    }
+    bool updateObject(std::shared_ptr<utility::graphic::Renderable> object,
+                      size_t objectID) override { return true; }
+    bool removeObject(std::shared_ptr<utility::graphic::Renderable> object,
+                      size_t objectID) override { return true; }
     utility::graphic::SizeF
         measureText(const utility::graphic::Text &text) const override {
         return { 0.0f, 0.0f };
     }
-    size_t addText(utility::graphic::Text text) override { return 0; }
-    size_t addModel(std::shared_ptr<utility::graphic::Model> model) override {
-        return 0;
-    }
     utility::graphic::ViewF getView(void) const override {
         return utility::graphic::ViewF();
     }
-    void addScene(size_t sceneIndex) override {}
     void pollEvents(void) override {}
     void update(void) override {}
 };

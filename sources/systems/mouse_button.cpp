@@ -25,7 +25,7 @@
 namespace guillaume::systems
 {
 	MouseButton::MouseButton(event::EventBus &eventBus,
-							 std::unique_ptr<Engine> &engine)
+							 std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::MouseButtonInteraction,
 							components::Transform, components::Bound>(
 			  ecs::Phase::Event)

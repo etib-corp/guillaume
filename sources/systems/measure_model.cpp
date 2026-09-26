@@ -29,7 +29,7 @@ namespace guillaume::systems
 {
 	MeasureModel::MeasureModel(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<Engine> &engine)
+		std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Model, components::Bound,
 							components::Transform>(ecs::Phase::Measure)
 		, _ressourceProvider(ressourceProvider)

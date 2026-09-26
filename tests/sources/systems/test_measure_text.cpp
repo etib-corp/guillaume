@@ -38,7 +38,7 @@
 
 namespace
 {
-	class EngineStub: public guillaume::Engine
+	class EngineStub: public utility::Engine
 	{
 		public:
 		mutable utility::graphic::SizeF measurement = { 0.0f, 0.0f };
@@ -90,7 +90,7 @@ namespace
 		protected:
 		std::unique_ptr<EngineStub> engineStub = std::make_unique<EngineStub>();
 		EngineStub *enginePtr				   = engineStub.get();
-		std::unique_ptr<guillaume::Engine> engine { std::move(engineStub) };
+		std::unique_ptr<utility::Engine> engine { std::move(engineStub) };
 		utility::DefaultSystemIO systemIo;
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);

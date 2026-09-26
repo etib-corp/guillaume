@@ -24,6 +24,8 @@
 
 #include <vector>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
@@ -31,7 +33,6 @@
 #include "guillaume/components/ellipse.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/engine.hpp"
 #include "guillaume/systems/render_handle_map.hpp"
 
 namespace guillaume::systems
@@ -49,7 +50,7 @@ namespace guillaume::systems
 								 components::Color, components::Ellipse>
 	{
 		private:
-		std::unique_ptr<Engine> &_engine;	 ///< Engine instance
+		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine instance
 
 		private:
 		/**
@@ -129,7 +130,7 @@ namespace guillaume::systems
 		 * @brief Construct an ellipse rendering system.
 		 * @param engine The engine used to draw ellipses.
 		 */
-		EllipseRender(std::unique_ptr<Engine> &engine);
+		EllipseRender(std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.

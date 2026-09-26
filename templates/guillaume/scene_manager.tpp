@@ -24,8 +24,9 @@
 
 #include <utility/demangle.hpp>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/scene_manager.hpp"
-#include "guillaume/engine.hpp"
 
 namespace guillaume
 {
@@ -137,7 +138,7 @@ namespace guillaume
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
 	void
-		SceneManager<DefaultSceneType, SceneTypes...>::setEngine(Engine *engine)
+		SceneManager<DefaultSceneType, SceneTypes...>::setEngine(utility::Engine *engine)
 	{
 		_engine = engine;
 	}

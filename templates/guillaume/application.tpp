@@ -130,7 +130,7 @@ namespace guillaume
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
 	void Application<DefaultSceneType, SceneTypes...>::setEngine(
-		std::unique_ptr<Engine> engine)
+		std::unique_ptr<utility::Engine> engine)
 	{
 		_engine = std::move(engine);
 		_engine->setEventCallback(

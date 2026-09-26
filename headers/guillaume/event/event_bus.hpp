@@ -45,7 +45,7 @@ namespace guillaume::event
 	 * @endcode
 	 *
 	 * @see EventSubscriber
-	 * @see Engine
+	 * @see utility::Engine
 	 */
 	class EventBus
 	{

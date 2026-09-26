@@ -227,7 +227,7 @@ namespace guillaume::systems
 		return vertex;
 	}
 
-	RectangleRender::RectangleRender(std::unique_ptr<Engine> &engine)
+	RectangleRender::RectangleRender(std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Color, components::Borders>(
 			  ecs::Phase::Render)

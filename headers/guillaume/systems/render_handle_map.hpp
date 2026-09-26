@@ -27,20 +27,21 @@
 
 #include <utility/graphic/renderable.hpp>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/entity.hpp"
-#include "guillaume/engine.hpp"
 
 namespace guillaume::systems
 {
 	/**
 	 * @brief Per-entity render handle linking an entity to an engine object.
 	 *
-	 * Keeps the stable engine object id returned by Engine::createObject and
-	 * the renderable that was last uploaded, so updateObject/removeObject can
-	 * be called with the matching renderable.
+	 * Keeps the stable engine object id returned by
+	 * utility::Engine::createObject and the renderable that was last uploaded,
+	 * so updateObject/removeObject can be called with the matching renderable.
 	 */
 	struct RenderHandle {
-		size_t objectId { 0 };	 ///< Engine object identifier
+		size_t objectId { 0 };	 ///< utility::Engine object identifier
 		std::shared_ptr<utility::graphic::Renderable>
 			renderable;	   ///< Last uploaded renderable
 		bool used { true };	   ///< Whether the entity was seen this frame
@@ -81,10 +82,10 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Remove unused handles, calling Engine::removeObject.
-		 * @param engine Engine used to remove stale objects.
+		 * @brief Remove unused handles, calling utility::Engine::removeObject.
+		 * @param engine utility::Engine used to remove stale objects.
 		 */
-		void removeUnused(Engine &engine)
+		void removeUnused(utility::Engine &engine)
 		{
 			for (auto it = _handles.begin(); it != _handles.end();) {
 				if (!it->second.used) {

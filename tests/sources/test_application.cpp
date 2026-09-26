@@ -37,11 +37,11 @@ namespace guillaume::tests
 			using guillaume::Scene::Scene;
 		};
 
-		class StubEngine: public guillaume::Engine
+		class StubEngine: public utility::Engine
 		{
 			public:
 			StubEngine(void)
-				: guillaume::Engine()
+				: utility::Engine()
 			{
 			}
 			~StubEngine(void) override = default;

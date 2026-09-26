@@ -24,6 +24,8 @@
 
 #include <vector>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/components/borders.hpp"
@@ -31,7 +33,6 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/engine.hpp"
 #include "guillaume/systems/render_handle_map.hpp"
 
 namespace guillaume::systems
@@ -49,7 +50,7 @@ namespace guillaume::systems
 								 components::Color, components::Borders>
 	{
 		private:
-		std::unique_ptr<Engine> &_engine;	 ///< Engine instance
+		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine instance
 
 		private:
 		/**
@@ -167,7 +168,7 @@ namespace guillaume::systems
 		 * @brief Construct a rectangle rendering system.
 		 * @param engine The engine used to draw rectangles.
 		 */
-		RectangleRender(std::unique_ptr<Engine> &engine);
+		RectangleRender(std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.
