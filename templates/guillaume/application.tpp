@@ -107,12 +107,13 @@ namespace guillaume
 			std::make_unique<systems::ElevationRender>(_engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::ScrimRender>(_engine));
-		_systemRegistry.registerNewSystem(std::make_unique<systems::Clip>());
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::Clip>(_engine));
 		_systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(_eventBus, _engine));
 		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Animation>());
+			std::make_unique<systems::Animation>(_engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::Overlay>(_eventBus, _engine));
 		_systemRegistry.registerNewSystem(

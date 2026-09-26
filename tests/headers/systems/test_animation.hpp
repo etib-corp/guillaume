@@ -32,12 +32,18 @@
 
 #include "guillaume/systems/animation.hpp"
 
+#include "mocks/engine_mock.hpp"
+
+#include <utility/engine.hpp>
+
 namespace guillaume::systems::tests
 {
 
 	class TestAnimation: public ::testing::Test
 	{
 		protected:
+		std::unique_ptr<utility::Engine> _engine;
+		guillaume::tests::EngineMock *_engineMock { nullptr };
 		std::unique_ptr<Animation> _animationSystem;
 		ecs::ComponentRegistry _componentRegistry;
 
@@ -46,7 +52,9 @@ namespace guillaume::systems::tests
 
 		void SetUp(void) override
 		{
-			_animationSystem = std::make_unique<Animation>();
+			_engine		= std::make_unique<guillaume::tests::EngineMock>();
+			_engineMock = static_cast<guillaume::tests::EngineMock *>(_engine.get());
+			_animationSystem = std::make_unique<Animation>(_engine);
 			_animationSystem->bindComponentRegistry(_componentRegistry);
 		}
 
@@ -54,6 +62,7 @@ namespace guillaume::systems::tests
 		{
 			_animationSystem->unbindComponentRegistry();
 			_animationSystem.reset();
+			_engine.reset();
 		}
 	};
 

@@ -124,7 +124,27 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(animation.getElapsed(), 0.0f);
 	}
 
-	TEST_F(TestAnimation, SystemAdvancesAnimation)
+	TEST_F(TestAnimation, SystemUsesEngineDeltaTime)
+	{
+		ecs::Entity entity;
+		const auto identifier = entity.getIdentifier();
+
+		_componentRegistry.addComponent<components::Animation>(identifier);
+		auto &animation =
+			_componentRegistry.getComponent<components::Animation>(identifier);
+		animation.setDuration(1.0f);
+		animation.setEasing(guillaume::motion::Easing::Linear);
+		animation.play();
+
+		_engineMock->deltaTime = 0.05f;
+
+		_animationSystem->prepare();
+		_animationSystem->update(identifier);
+
+		EXPECT_FLOAT_EQ(animation.getElapsed(), 0.05f);
+	}
+
+	TEST_F(TestAnimation, SystemFallsBackToInternalClock)
 	{
 		ecs::Entity entity;
 		const auto identifier = entity.getIdentifier();
@@ -133,8 +153,9 @@ namespace guillaume::systems::tests
 		auto &animation =
 			_componentRegistry.getComponent<components::Animation>(identifier);
 		animation.setDuration(10.0f);
-		animation.setEasing(guillaume::motion::Easing::Linear);
 		animation.play();
+
+		_engineMock->deltaTime = 0.0f;
 
 		_animationSystem->prepare();
 		_animationSystem->update(identifier);

@@ -24,10 +24,16 @@
 
 namespace guillaume::systems
 {
-	Clip::Clip(void)
+	Clip::Clip(std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Clip>(ecs::Phase::Layout)
+		, _engine(engine)
 	{
+	}
+
+	void Clip::prepare(void)
+	{
+		_engine->clearScissor();
 	}
 
 	components::Clip::Rect Clip::computeRect(
@@ -61,8 +67,12 @@ namespace guillaume::systems
 			getComponent<components::Transform>(entityIdentifier).getPose();
 		const auto &bound = getComponent<components::Bound>(entityIdentifier);
 
-		clip.setRect(computeRect(pose, bound.getWidth(), bound.getHeight(),
-								 clip.getMargin()));
+		const auto rect = computeRect(pose, bound.getWidth(),
+									  bound.getHeight(), clip.getMargin());
+		clip.setRect(rect);
+
+		_engine->setScissor(utility::graphic::ScissorRect {
+			rect.x, rect.y, rect.width, rect.height });
 	}
 
 }	 // namespace guillaume::systems
