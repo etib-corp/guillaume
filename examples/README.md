@@ -31,13 +31,15 @@ cmake --build build --target guillaume_hello_world
 
 ## evan
 
-An Evan-backed sample (Linux + GLFW) that uses the
+An Evan-backed sample (macOS / Linux / Windows + GLFW) that uses the
 [Evan](https://github.com/etib-corp/evan) Vulkan engine as the `Engine` behind a
 Guillaume `Application`, drawing a container, a button and a 3D model.
 
-Evan requires the Vulkan SDK. It is only added to the build on Linux; the Evan
-dependency stays scoped to the example, so the `guillaume` library itself has
-no engine dependency.
+Evan requires the Vulkan SDK. The example is added to the build on macOS, Linux
+and Windows, and the matching Evan platform (`BUILD_FOR_MACOS`,
+`BUILD_FOR_LINUX` or `BUILD_FOR_WINDOWS`) and the GLFW backend are selected
+automatically from the host. The Evan dependency stays scoped to the example,
+so the `guillaume` library itself has no engine dependency.
 
 ### Building
 

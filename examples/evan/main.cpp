@@ -23,7 +23,15 @@
 #include <memory>
 
 #include <evan/Engine.hpp>
-#include <evan/glfw/platform/LinuxDesktopPlatform.hpp>
+#include <evan/IPlatform.hpp>
+
+#if defined(__APPLE__)
+	#include <evan/glfw/platform/MacOsDesktopPlatform.hpp>
+#elif defined(__linux__)
+	#include <evan/glfw/platform/LinuxDesktopPlatform.hpp>
+#elif defined(_WIN32)
+	#include <evan/glfw/platform/WindowsPlatform.hpp>
+#endif
 
 #include <guillaume/application.hpp>
 #include <guillaume/scene.hpp>
@@ -105,12 +113,31 @@ namespace
 		}
 	};
 
+	/**
+	 * @brief Create a desktop platform appropriate for the current OS.
+	 * @return The platform instance, or nullptr on unsupported systems.
+	 */
+	std::shared_ptr<evan::IPlatform> makePlatform(void)
+	{
+#if defined(__APPLE__)
+		return std::make_shared<evan::MacOsDesktopPlatform>("Guillaume + Evan",
+															1280, 720);
+#elif defined(__linux__)
+		return std::make_shared<evan::LinuxDesktopPlatform>("Guillaume + Evan",
+															1280, 720);
+#elif defined(_WIN32)
+		return std::make_shared<evan::WindowsDesktopPlatform>(
+			"Guillaume + Evan", 1280, 720);
+#else
+		return nullptr;
+#endif
+	}
+
 }	 // namespace
 
 int main(void)
 {
-	auto platform = std::make_shared<evan::LinuxDesktopPlatform>(
-		"Guillaume + Evan", 1280, 720);
+	auto platform = makePlatform();
 
 	utility::DefaultSystemIO systemIo;
 	auto resources = std::make_shared<utility::RessourceProvider>(systemIo);
