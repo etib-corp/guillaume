@@ -7,6 +7,7 @@ set(TEST_SOURCES
     sources/components/test_focus.cpp
     sources/components/test_text.cpp
     sources/components/test_transform.cpp
+    sources/components/test_value.cpp
     sources/ecs/test_component.cpp
     sources/ecs/test_component_registry.cpp
     sources/ecs/test_component_registry_filler.cpp
@@ -39,6 +40,7 @@ set(TEST_SOURCES
     sources/systems/test_measure_text.cpp
     sources/systems/test_text_input.cpp
     sources/systems/test_text_render.cpp
+    sources/systems/test_value_interactions.cpp
     sources/systems/text_glyph_render.cpp
     sources/test_application.cpp
     sources/test_ecs.cpp

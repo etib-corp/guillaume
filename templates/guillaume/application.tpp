@@ -63,6 +63,12 @@ namespace guillaume
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::MouseButton>(_eventBus, _engine));
 		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::Drag>(_eventBus));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::Scroll>(_eventBus));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::Selection>());
+		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::HandMotion>(_eventBus));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::HandButton>(_eventBus));
@@ -91,8 +97,7 @@ namespace guillaume
 			std::make_unique<systems::RectangleRender>(_engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::EllipseRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Layout>());
+		_systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(_eventBus, _engine));
 		_systemRegistry.registerNewSystem(
@@ -120,7 +125,8 @@ namespace guillaume
 	{
 		registerCoreSystems();
 		_sceneManager =
-			std::make_unique<SceneManager<DefaultSceneType, SceneTypes...>>(_ressourceProvider);
+			std::make_unique<SceneManager<DefaultSceneType, SceneTypes...>>(
+				_ressourceProvider);
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>

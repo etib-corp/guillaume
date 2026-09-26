@@ -10,6 +10,7 @@ set(GUILLAUME_SOURCES
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/color.cpp
+    sources/components/drag_interaction.cpp
     sources/components/ellipse.cpp
     sources/components/focus.cpp
     sources/components/glyph.cpp
@@ -25,8 +26,12 @@ set(GUILLAUME_SOURCES
     sources/components/model.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/parent.cpp
+    sources/components/range.cpp
+    sources/components/scrollable.cpp
+    sources/components/selection.cpp
     sources/components/text.cpp
     sources/components/transform.cpp
+    sources/components/value.cpp
     sources/ecs/component.cpp
     sources/ecs/component_registry.cpp
     sources/ecs/component_registry_filler.cpp
@@ -75,6 +80,7 @@ set(GUILLAUME_SOURCES
     sources/scene_manager.cpp
     sources/session_storage.cpp
     sources/storage.cpp
+    sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/focus.cpp
     sources/systems/glyph_render.cpp
@@ -96,6 +102,8 @@ set(GUILLAUME_SOURCES
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
     sources/systems/rectangle_render.cpp
+    sources/systems/scroll.cpp
+    sources/systems/selection.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
     sources/theme.cpp

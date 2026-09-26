@@ -20,27 +20,48 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#pragma once
 
-namespace guillaume
+#include <gtest/gtest.h>
+
+#include <memory>
+
+#include "guillaume/ecs/component_registry.hpp"
+
+#include "guillaume/event/event_bus.hpp"
+
+#include "guillaume/systems/drag.hpp"
+#include "guillaume/systems/scroll.hpp"
+
+namespace guillaume::systems::tests
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image, components::Layout, components::Value,
-			  components::Range, components::Scrollable,
-			  components::DragInteraction, components::Selectable,
-			  components::SelectionGroup>()
+
+	class TestValueInteractions: public ::testing::Test
 	{
-	}
-}	 // namespace guillaume
+		protected:
+		event::EventBus _eventBus;
+		ecs::ComponentRegistry _componentRegistry;
+		std::unique_ptr<Drag> _dragSystem;
+		std::unique_ptr<Scroll> _scrollSystem;
+
+		TestValueInteractions(void)			  = default;
+		~TestValueInteractions(void) override = default;
+
+		void SetUp(void) override
+		{
+			_dragSystem = std::make_unique<Drag>(_eventBus);
+			_dragSystem->bindComponentRegistry(_componentRegistry);
+			_scrollSystem = std::make_unique<Scroll>(_eventBus);
+			_scrollSystem->bindComponentRegistry(_componentRegistry);
+		}
+
+		void TearDown(void) override
+		{
+			_dragSystem->unbindComponentRegistry();
+			_scrollSystem->unbindComponentRegistry();
+			_scrollSystem.reset();
+			_dragSystem.reset();
+		}
+	};
+
+}	 // namespace guillaume::systems::tests
