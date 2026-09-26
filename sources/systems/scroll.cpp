@@ -20,27 +20,46 @@
  SOFTWARE.
  */
 
-#include "guillaume/component_registry.hpp"
+#include "guillaume/systems/scroll.hpp"
 
-namespace guillaume
+namespace guillaume::systems
 {
-	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image, components::Layout, components::Value,
-			  components::Range, components::Scrollable,
-			  components::DragInteraction, components::Selectable,
-			  components::SelectionGroup>()
+	Scroll::Scroll(event::EventBus &eventBus)
+		: ecs::SystemFiller<components::Scrollable, components::Bound>(
+			  ecs::Phase::Event)
+		, event::EventManager<utility::event::MouseWheelEvent>(eventBus)
 	{
 	}
-}	 // namespace guillaume
+
+	Scroll::~Scroll(void)
+	{
+	}
+
+	void Scroll::prepare(void)
+	{
+		consumeNextEvent();
+	}
+
+	void Scroll::update(const ecs::Entity::Identifier &entityIdentifier)
+	{
+		const auto wheelEvent = getLastEvent();
+		if (!wheelEvent) {
+			return;
+		}
+
+		auto &scrollable =
+			getComponent<components::Scrollable>(entityIdentifier);
+		const auto &bound = getComponent<components::Bound>(entityIdentifier);
+
+		const auto offset = wheelEvent->getOffset();
+		const auto step	  = scrollable.getScrollStep();
+
+		auto contentOffset = scrollable.getContentOffset();
+		contentOffset.x += offset.x * step.x;
+		contentOffset.y += offset.y * step.y;
+
+		scrollable.setContentOffset(contentOffset);
+		scrollable.clampOffset(bound);
+	}
+
+}	 // namespace guillaume::systems

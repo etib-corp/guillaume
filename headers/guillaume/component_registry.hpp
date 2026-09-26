@@ -27,6 +27,7 @@
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
+#include "guillaume/components/drag_interaction.hpp"
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/hand_button_interaction.hpp"
 #include "guillaume/components/hand_hover_interaction.hpp"
@@ -40,8 +41,12 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
+#include "guillaume/components/range.hpp"
+#include "guillaume/components/scrollable.hpp"
+#include "guillaume/components/selection.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
+#include "guillaume/components/value.hpp"
 
 namespace guillaume
 {
@@ -62,7 +67,10 @@ namespace guillaume
 			components::HandThumbStickInteraction,
 			components::HandTriggerInteraction, components::Text,
 			components::Transform, components::Color, components::Borders,
-			components::Image, components::Layout>
+			components::Image, components::Layout, components::Value,
+			components::Range, components::Scrollable,
+			components::DragInteraction, components::Selectable,
+			components::SelectionGroup>
 	{
 		public:
 		/**

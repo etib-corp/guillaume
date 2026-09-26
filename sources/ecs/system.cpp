@@ -32,15 +32,6 @@ namespace guillaume::ecs
 	{
 	}
 
-	ecs::ComponentRegistry &System::getComponentRegistry(void)
-	{
-		if (_activeComponentRegistry == nullptr) {
-			throw std::runtime_error(
-				"No active component registry bound to system");
-		}
-		return *_activeComponentRegistry;
-	}
-
 	ecs::EntityRegistry &System::getEntityRegistry(void)
 	{
 		if (_activeEntityRegistry == nullptr) {
@@ -57,6 +48,15 @@ namespace guillaume::ecs
 				"No active entity registry bound to system");
 		}
 		return *_activeEntityRegistry;
+	}
+
+	ecs::ComponentRegistry &System::getComponentRegistry(void)
+	{
+		if (_activeComponentRegistry == nullptr) {
+			throw std::runtime_error(
+				"No active component registry bound to system");
+		}
+		return *_activeComponentRegistry;
 	}
 
 	const ecs::ComponentRegistry &System::getComponentRegistry(void) const
