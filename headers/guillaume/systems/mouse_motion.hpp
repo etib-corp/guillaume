@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/event/event_manager.hpp"
@@ -30,8 +32,6 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/transform.hpp"
-
-#include "guillaume/engine.hpp"
 
 #include <utility/event/mouse_motion_event.hpp>
 
@@ -46,7 +46,7 @@ namespace guillaume::systems
 		public event::EventManager<utility::event::MouseMotionEvent>
 	{
 		private:
-		std::unique_ptr<Engine>
+		std::unique_ptr<utility::Engine>
 			&_engine;	 ///< Reference to the engine for potential
 						 ///< visual feedback on motion interactions
 
@@ -57,7 +57,7 @@ namespace guillaume::systems
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 * @param engine Reference to the engine for visual feedback.
 		 */
-		MouseMotion(event::EventBus &eventBus, std::unique_ptr<Engine> &engine);
+		MouseMotion(event::EventBus &eventBus, std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor for the MouseMotion system.

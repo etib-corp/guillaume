@@ -33,6 +33,8 @@
 
 #include <utility/ressource_provider.hpp>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/scene.hpp"
 
 #include "guillaume/ecs/component_registry.hpp"
@@ -44,9 +46,6 @@
 
 namespace guillaume
 {
-
-	// Forward declaration
-	class Engine;
 
 	/**
 	 * @brief Scene manager class responsible for managing scenes in the
@@ -73,7 +72,7 @@ namespace guillaume
 		LocalStorage _localStorage;	   ///< Local storage for persistent data
 		SessionStorage
 			_sessionStorage;	///< Session storage for temporary data
-		Engine *_engine;	///< Pointer to the application engine (non-owning)
+		utility::Engine *_engine;	///< Pointer to the application engine (non-owning)
 
 		protected:
 		/**
@@ -119,7 +118,7 @@ namespace guillaume
 		 * @brief Set the engine pointer used to query the current view.
 		 * @param engine Pointer to the engine instance.
 		 */
-		void setEngine(Engine *engine);
+		void setEngine(utility::Engine *engine);
 
 		/**
 		 * @brief Enter the currently active scene, setting its view from the

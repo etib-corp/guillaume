@@ -20,33 +20,27 @@
  SOFTWARE.
  */
 
-#include "guillaume/engine.hpp"
+#pragma once
 
-namespace guillaume
+#include <gtest/gtest.h>
+
+namespace guillaume::entities::tests
 {
-	Engine::Engine(void)
 
+	/**
+	 * @brief Fixture for the `Icon` entity tests.
+	 */
+	class TestIcon: public ::testing::Test
 	{
-	}
+		protected:
+		TestIcon(void)			 = default;
+		~TestIcon(void) override = default;
+		void SetUp(void) override
+		{
+		}
+		void TearDown(void) override
+		{
+		}
+	};
 
-	Engine::Handler &Engine::getEventCallback(void)
-	{
-		return _callback;
-	}
-
-	void Engine::setEventCallback(const Handler &callback)
-	{
-		_callback = callback;
-	}
-
-	bool Engine::shouldCaptureViewportInput(void) const
-	{
-		return _shouldCaptureViewportInput;
-	}
-
-	void Engine::setShouldCaptureViewportInput(bool capture)
-	{
-		_shouldCaptureViewportInput = capture;
-	}
-
-}	 // namespace guillaume
+}	 // namespace guillaume::entities::tests

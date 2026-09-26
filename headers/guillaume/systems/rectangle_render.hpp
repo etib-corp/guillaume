@@ -22,10 +22,9 @@
 
 #pragma once
 
-#include <map>
-#include <optional>
+#include <vector>
 
-#include <utility/cache.hpp>
+#include <utility/engine.hpp>
 
 #include "guillaume/ecs/system_filler.hpp"
 
@@ -34,88 +33,10 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/engine.hpp"
+#include "guillaume/systems/render_handle_map.hpp"
 
 namespace guillaume::systems
 {
-	/**
-	 * @brief Key structure for caching rectangle rendering results.
-	 */
-	struct RectangleRenderCacheKey {
-		utility::graphic::PoseF pose;	 ///< The pose of the rectangle,
-										 ///< including position and orientation
-		utility::graphic::SizeF
-			size;	 ///< The size of the rectangle, including width and height
-		components::Borders borders;	///< The borders of the rectangle,
-										///< including corner radius
-		utility::graphic::Color32Bit
-			color;	  ///< The color of the rectangle, including RGBA values
-
-		/**
-		 * @brief Equality operator for RectangleRenderCacheKey.
-		 * @param other The other RectangleRenderCacheKey to compare with.
-		 * @return True if the keys are equal, false otherwise.
-		 */
-		bool operator==(const RectangleRenderCacheKey &other) const
-		{
-			if (pose != other.pose) {
-				return false;
-			}
-			if (size != other.size) {
-				return false;
-			}
-			if (borders != other.borders) {
-				return false;
-			}
-			if (color != other.color) {
-				return false;
-			}
-			return true;
-		}
-
-		/**
-		 * @brief Inequality operator for RectangleRenderCacheKey.
-		 * @param other The other RectangleRenderCacheKey to compare with.
-		 * @return True if the keys are not equal, false otherwise.
-		 */
-		bool operator!=(const RectangleRenderCacheKey &other) const
-		{
-			return !(*this == other);
-		}
-
-		/**
-		 * @brief Less-than operator for RectangleRenderCacheKey.
-		 * @param other The other RectangleRenderCacheKey to compare with.
-		 * @return True if this key is less than the other, false otherwise.
-		 */
-		bool operator<(const RectangleRenderCacheKey &other) const
-		{
-			if (pose != other.pose) {
-				return pose < other.pose;
-			}
-			if (size != other.size) {
-				return size < other.size;
-			}
-			if (borders != other.borders) {
-				return borders < other.borders;
-			}
-			if (color != other.color) {
-				return color < other.color;
-			}
-			return false;
-		}
-	};
-
-	/**
-	 * @brief Entry structure for caching rectangle rendering results.
-	 */
-	struct RectangleRenderCacheEntry {
-		bool used;	  ///< Flag indicating whether the cache entry has been used
-					  ///< in the current frame
-		size_t value;	 ///< The cached value associated with the glyph
-						 ///< rendering result
-	};
-
 	/**
 	 * @brief System handling rectangle rendering from ECS components.
 	 * @see components::Transform
@@ -124,13 +45,12 @@ namespace guillaume::systems
 	 * @see components::Borders
 	 */
 	class RectangleRender:
-		public utility::Cache<RectangleRenderCacheKey,
-							  RectangleRenderCacheEntry>,
+		public RenderHandleMap,
 		public ecs::SystemFiller<components::Transform, components::Bound,
 								 components::Color, components::Borders>
 	{
 		private:
-		std::unique_ptr<Engine> &_engine;	 ///< Engine instance
+		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine instance
 
 		private:
 		/**
@@ -248,7 +168,7 @@ namespace guillaume::systems
 		 * @brief Construct a rectangle rendering system.
 		 * @param engine The engine used to draw rectangles.
 		 */
-		RectangleRender(std::unique_ptr<Engine> &engine);
+		RectangleRender(std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.

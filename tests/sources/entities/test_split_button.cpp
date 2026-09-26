@@ -22,7 +22,12 @@
 
 #include "entities/test_split_button.hpp"
 
+#include <functional>
+#include <memory>
+
 #include <guillaume/components/mouse_button_interaction.hpp>
+#include <guillaume/ecs/entity.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -96,5 +101,25 @@ namespace guillaume::entities::tests
 			utility::event::MouseButtonEvent::Button::Left)();
 
 		EXPECT_TRUE(opened);
+	}
+
+	TEST_F(TestSplitButton, DirectorBuildsAndRegistersSplitButton)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		SplitButton::Builder builder(registry, entityRegistry);
+		SplitButton::Director director;
+
+		auto split = director.makeSplitButton(
+			builder, parent, "Send", std::function<void(void)>(),
+			std::function<void(void)>());
+
+		ASSERT_NE(split, nullptr);
+		EXPECT_EQ(split->getParent(), parent);
+		EXPECT_NE(split->getActionIdentifier(), ecs::Entity::InvalidIdentifier);
+		EXPECT_NE(split->getChevronIdentifier(),
+				  ecs::Entity::InvalidIdentifier);
 	}
 }	 // namespace guillaume::entities::tests

@@ -22,7 +22,9 @@
 
 #pragma once
 
-#include <utility/cache.hpp>
+#include <vector>
+
+#include <utility/engine.hpp>
 
 #include "guillaume/ecs/system_filler.hpp"
 
@@ -31,87 +33,10 @@
 #include "guillaume/components/ellipse.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/engine.hpp"
+#include "guillaume/systems/render_handle_map.hpp"
 
 namespace guillaume::systems
 {
-	/**
-	 * @brief Key structure for caching ellipse rendering results.
-	 */
-	struct EllipseRenderCacheKey {
-		utility::graphic::PoseF pose;	 ///< The pose of the ellipse, including
-										 ///< position and orientation
-		utility::graphic::SizeF
-			size;	 ///< The size of the ellipse bounding box
-		utility::graphic::Color32Bit
-			color;	  ///< The color of the ellipse, including RGBA values
-		components::Ellipse::SegmentCount
-			segments;	 ///< The number of outline segments
-
-		/**
-		 * @brief Equality operator for EllipseRenderCacheKey.
-		 * @param other The other EllipseRenderCacheKey to compare with.
-		 * @return True if the keys are equal, false otherwise.
-		 */
-		bool operator==(const EllipseRenderCacheKey &other) const
-		{
-			if (pose != other.pose) {
-				return false;
-			}
-			if (size != other.size) {
-				return false;
-			}
-			if (color != other.color) {
-				return false;
-			}
-			if (segments != other.segments) {
-				return false;
-			}
-			return true;
-		}
-
-		/**
-		 * @brief Inequality operator for EllipseRenderCacheKey.
-		 * @param other The other EllipseRenderCacheKey to compare with.
-		 * @return True if the keys are not equal, false otherwise.
-		 */
-		bool operator!=(const EllipseRenderCacheKey &other) const
-		{
-			return !(*this == other);
-		}
-
-		/**
-		 * @brief Less-than operator for EllipseRenderCacheKey.
-		 * @param other The other EllipseRenderCacheKey to compare with.
-		 * @return True if this key is less than the other, false otherwise.
-		 */
-		bool operator<(const EllipseRenderCacheKey &other) const
-		{
-			if (pose != other.pose) {
-				return pose < other.pose;
-			}
-			if (size != other.size) {
-				return size < other.size;
-			}
-			if (color != other.color) {
-				return color < other.color;
-			}
-			if (segments != other.segments) {
-				return segments < other.segments;
-			}
-			return false;
-		}
-	};
-
-	/**
-	 * @brief Entry structure for caching ellipse rendering results.
-	 */
-	struct EllipseRenderCacheEntry {
-		bool used;	  ///< Flag indicating whether the cache entry has been used
-					  ///< in the current frame
-		size_t value;	 ///< The cached mesh identifier
-	};
-
 	/**
 	 * @brief System handling ellipse rendering from ECS components.
 	 * @see components::Transform
@@ -120,12 +45,12 @@ namespace guillaume::systems
 	 * @see components::Ellipse
 	 */
 	class EllipseRender:
-		public utility::Cache<EllipseRenderCacheKey, EllipseRenderCacheEntry>,
+		public RenderHandleMap,
 		public ecs::SystemFiller<components::Transform, components::Bound,
 								 components::Color, components::Ellipse>
 	{
 		private:
-		std::unique_ptr<Engine> &_engine;	 ///< Engine instance
+		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine instance
 
 		private:
 		/**
@@ -205,7 +130,7 @@ namespace guillaume::systems
 		 * @brief Construct an ellipse rendering system.
 		 * @param engine The engine used to draw ellipses.
 		 */
-		EllipseRender(std::unique_ptr<Engine> &engine);
+		EllipseRender(std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.

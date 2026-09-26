@@ -44,11 +44,12 @@
 
 #include <utility/graphic/view.hpp>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/system_phase.hpp"
 #include "guillaume/ecs/system_registry.hpp"
 
 #include "guillaume/metadata.hpp"
-#include "guillaume/engine.hpp"
 #include "guillaume/scene_manager.hpp"
 
 #include "guillaume/event/event_bus.hpp"
@@ -86,14 +87,14 @@ namespace guillaume
 	 * in the application. Each scene type must inherit from the Scene class.
 	 *
 	 * @code
-	 * class MyEngine : public Engine { ... };
+	 * class MyEngine : public utility::Engine { ... };
 	 * Application<DefaultScene, Scene1, Scene2> app;
 	 * return app.run();
 	 * @endcode
 	 *
 	 * @see ecs::SystemRegistry
 	 * @see event::EventBus
-	 * @see Engine
+	 * @see utility::Engine
 	 */
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
@@ -103,7 +104,7 @@ namespace guillaume
 			utility::logging::DefaultLogger>
 	{
 		private:
-		std::unique_ptr<Engine>
+		std::unique_ptr<utility::Engine>
 			_engine;	///< Unique pointer to the application engine
 		std::unique_ptr<SceneManager<DefaultSceneType, SceneTypes...>>
 			_sceneManager;			  ///< Manager for application scenes
@@ -162,7 +163,7 @@ namespace guillaume
 		 * @brief Set the engine for the application.
 		 * @param engine The engine to be used by the application.
 		 */
-		void setEngine(std::unique_ptr<Engine> engine);
+		void setEngine(std::unique_ptr<utility::Engine> engine);
 
 		/**
 		 * @brief Run one system update pass for the active scene.

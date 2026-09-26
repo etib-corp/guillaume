@@ -12,14 +12,14 @@
 The audit brief describes an **engine-less GUI library** (Vulkan/Metal/DirectX/OpenGL,
 Android targets, layout, accessibility, packaging). The actual repository is **Guillaume**,
 an **ECS-based UI framework for desktop + XR** that is explicitly **engine-coupled** (it
-wraps an abstract `Engine` interface). The two do not match. Key divergences:
+wraps an abstract `utility::Engine` interface). The two do not match. Key divergences:
 
 | Brief assumption | Actual state |
 |---|---|
-| Engine-less (low-level rendering backends) | **Engine-coupled**: `Engine` is an abstract interface (`headers/guillaume/engine.hpp:66`) with `addMesh`/`addText`/`addModel`/`clear`/`present`; rendering is delegated to an external engine, not implemented here |
+| Engine-less (low-level rendering backends) | **Engine-coupled**: `utility::Engine` is an abstract interface (`utility/engine.hpp`) with `createObject`/`updateObject`/`removeObject`/`clear`/`present`; rendering is delegated to an external engine, not implemented here |
 | Android target | **No Android support anywhere** (no NDK, JNI, Gradle, AAR, toolchain) |
 | Layout, accessibility | **Absent** — no layout engine, no accessibility module |
-| Vulkan/Metal/DirectX/OpenGL | **None** — rendering is via the `Engine` abstraction + `utility` graphics types |
+| Vulkan/Metal/DirectX/OpenGL | **None** — rendering is via the `utility::Engine` abstraction + `utility` graphics types |
 | Packaging (vcpkg/Conan/AAR) | **None** — no `install()`/`export()`/CPack rules in CMake |
 | v1.0 beta | Single commit, `VERSION 1.0.0` already set, no changelog, no license file |
 

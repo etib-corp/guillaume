@@ -27,6 +27,8 @@
 
 #include <utility/system_io/default_system_io.hpp>
 
+#include "mocks/engine_mock.hpp"
+
 namespace guillaume::tests
 {
 	namespace
@@ -35,58 +37,6 @@ namespace guillaume::tests
 		{
 			public:
 			using guillaume::Scene::Scene;
-		};
-
-		class StubEngine: public guillaume::Engine
-		{
-			public:
-			StubEngine(void)
-				: guillaume::Engine()
-			{
-			}
-			~StubEngine(void) override = default;
-
-			void clear(void) override
-			{
-			}
-			void present(void) override
-			{
-			}
-			size_t addMesh(const utility::graphic::Mesh &,
-						   const std::string &) override
-			{
-				return 0u;
-			}
-			bool removeObject(size_t) override
-			{
-				return true;
-			}
-			utility::graphic::SizeF
-				measureText(const utility::graphic::Text &) const override
-			{
-				return {};
-			}
-			size_t addText(utility::graphic::Text) override
-			{
-				return 0u;
-			}
-			size_t addModel(std::shared_ptr<utility::graphic::Model>) override
-			{
-				return 0u;
-			}
-			utility::graphic::ViewF getView(void) const override
-			{
-				return {};
-			}
-			void addScene(size_t) override
-			{
-			}
-			void pollEvents(void) override
-			{
-			}
-			void update(void) override
-			{
-			}
 		};
 	}	 // namespace
 
@@ -111,7 +61,7 @@ namespace guillaume::tests
 		guillaume::Application<StubScene, StubScene> application(
 			ressourceProvider);
 
-		auto engine = std::make_unique<StubEngine>();
+		auto engine = std::make_unique<EngineMock>();
 		EXPECT_NO_THROW(application.setEngine(std::move(engine)));
 	}
 
@@ -124,7 +74,7 @@ namespace guillaume::tests
 		guillaume::Application<StubScene, StubScene> application(
 			ressourceProvider);
 
-		application.setEngine(std::make_unique<StubEngine>());
+		application.setEngine(std::make_unique<EngineMock>());
 
 		EXPECT_NO_THROW(application.update());
 		EXPECT_NO_THROW(application.clear());

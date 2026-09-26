@@ -31,13 +31,13 @@
 
 #include <utility/graphic/model.hpp>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/system_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/model.hpp"
 #include "guillaume/components/transform.hpp"
-
-#include "guillaume/engine.hpp"
 
 namespace guillaume::systems
 {
@@ -99,8 +99,8 @@ namespace guillaume::systems
 		std::shared_ptr<utility::RessourceProvider>
 			_ressourceProvider;	   ///< Shared resource provider for loading
 								   ///< fonts and models
-		std::unique_ptr<Engine>
-			&_engine;	 ///< Engine instance for text measurement
+		std::unique_ptr<utility::Engine>
+			&_engine;	 ///< utility::Engine instance for text measurement
 
 		public:
 		/**
@@ -111,7 +111,7 @@ namespace guillaume::systems
 		 */
 		MeasureModel(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<Engine> &engine);
+			std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor.

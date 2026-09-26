@@ -20,6 +20,8 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include <utility/graphic/text/text.hpp>
 
 #include "guillaume/systems/text_render.hpp"
@@ -28,7 +30,7 @@ namespace guillaume::systems
 {
 	TextRender::TextRender(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<Engine> &engine)
+		std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Transform, components::Text,
 							components::Color>(ecs::Phase::Render)
 		, _ressourceProvider(ressourceProvider)
@@ -44,22 +46,12 @@ namespace guillaume::systems
 
 	void TextRender::prepare(void)
 	{
-		apply(
-			[this](const TextRenderCacheKey &key, TextRenderCacheEntry &entry) {
-				entry.used = false;
-			});
+		markAllUnused();
 	}
 
 	void TextRender::cleanup(void)
 	{
-		erase_if([this](const TextRenderCacheKey &key,
-						const TextRenderCacheEntry &entry) {
-			if (!entry.used) {
-				_engine->removeObject(entry.value);
-				return true;
-			}
-			return false;
-		});
+		removeUnused(*_engine);
 	}
 
 	void TextRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -79,58 +71,26 @@ namespace guillaume::systems
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
 
-		const auto pose		= transformComponent.getPose();
-		const auto content	= textComponent.getContent();
-		const auto fontSize = textComponent.getFontSize();
-		const auto color	= colorComponent.getColor();
-
-		TextRenderCacheKey cacheKey { entityIdentifier };
-
 		getLogger().debug()
 			<< "Rendering text for entity " << entityIdentifier
-			<< " (content: '" << content << "', fontSize: " << fontSize
-			<< ", color: " << color << ")";
+			<< " (content: '" << textComponent.getContent() << "')";
 
-		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			// The rendered mesh bakes the pose and content at creation time, so
-			// the engine object is reused for as long as none of them change.
-			// This keeps the object identity stable through layout reflows and
-			// scene switches instead of tearing the object down and recreating
-			// it every frame while its pose is in flux.
-			if (entry->content == content && entry->fontSize == fontSize
-				&& entry->color == color && entry->pose == pose) {
-				TextRenderCacheEntry newEntry { .used	  = true,
-												.value	  = entry->value,
-												.content  = entry->content,
-												.fontSize = entry->fontSize,
-												.color	  = entry->color,
-												.pose	  = entry->pose };
-				put(cacheKey, std::move(newEntry));
-				getLogger().debug()
-					<< "Cache hit for entity " << entityIdentifier;
-				return;
+		auto renderable = std::make_shared<utility::graphic::Text>(
+			_ressourceProvider, transformComponent.getPose(),
+			colorComponent.getColor(), textComponent.getContent(),
+			textComponent.getFontSize(), _defaultFontPath);
+
+		RenderHandle *handle = find(entityIdentifier);
+		if (handle == nullptr) {
+			size_t objectId = _engine->createObject(renderable);
+			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+		} else {
+			if (!_engine->updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine->createObject(renderable);
 			}
-
-			getLogger().debug()
-				<< "Text state changed for entity " << entityIdentifier
-				<< ", regenerating the render object";
-			_engine->removeObject(entry->value);
+			handle->renderable = renderable;
+			handle->used	  = true;
 		}
-
-		utility::graphic::Text text(_ressourceProvider, pose, color, content,
-									fontSize, _defaultFontPath);
-
-		auto identifier = _engine->addText(std::move(text));
-
-		TextRenderCacheEntry cacheEntry {
-			.used	  = true,
-			.value	  = identifier,
-			.content  = content,
-			.fontSize = fontSize,
-			.color	  = color,
-			.pose	  = pose,
-		};
-		put(cacheKey, std::move(cacheEntry));
 	}
 
 }	 // namespace guillaume::systems

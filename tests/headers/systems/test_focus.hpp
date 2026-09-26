@@ -26,6 +26,8 @@
 
 #include <memory>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
@@ -41,7 +43,6 @@
 
 #include "guillaume/systems/focus.hpp"
 #include "guillaume/event/event_bus.hpp"
-#include "guillaume/engine.hpp"
 
 #include <utility/graphic/mesh.hpp>
 #include <utility/graphic/text/text.hpp>
@@ -50,60 +51,16 @@
 #include <utility/event/mouse_button_event.hpp>
 #include <utility/event/hand_button_event.hpp>
 
+#include "mocks/engine_mock.hpp"
+
 namespace guillaume::systems::tests
 {
-
-	class EngineStub: public Engine
-	{
-		public:
-		void clear(void) override
-		{
-		}
-		void present(void) override
-		{
-		}
-		size_t addMesh(const utility::graphic::Mesh &,
-					   const std::string &) override
-		{
-			return 0;
-		}
-		bool removeObject(size_t) override
-		{
-			return true;
-		}
-		utility::graphic::SizeF
-			measureText(const utility::graphic::Text &) const override
-		{
-			return { 0.0f, 0.0f };
-		}
-		size_t addText(utility::graphic::Text) override
-		{
-			return 0;
-		}
-		size_t addModel(std::shared_ptr<utility::graphic::Model>) override
-		{
-			return 0;
-		}
-		utility::graphic::ViewF getView(void) const override
-		{
-			return utility::graphic::ViewF();
-		}
-		void addScene(size_t) override
-		{
-		}
-		void pollEvents(void) override
-		{
-		}
-		void update(void) override
-		{
-		}
-	};
 
 	class TestFocusSystem: public ::testing::Test
 	{
 		protected:
 		std::unique_ptr<event::EventBus> _eventBus;
-		std::unique_ptr<Engine> _engine;
+		std::unique_ptr<utility::Engine> _engine;
 		std::unique_ptr<Focus> _focusSystem;
 		ecs::ComponentRegistry _componentRegistry;
 		ecs::EntityRegistryContainer _entityRegistry;
@@ -114,7 +71,7 @@ namespace guillaume::systems::tests
 		void SetUp(void) override
 		{
 			_eventBus	 = std::make_unique<event::EventBus>();
-			_engine		 = std::make_unique<EngineStub>();
+			_engine = std::make_unique<guillaume::tests::EngineMock>();
 			_focusSystem = std::make_unique<Focus>(*_eventBus, _engine);
 			_focusSystem->bindComponentRegistry(_componentRegistry);
 		}

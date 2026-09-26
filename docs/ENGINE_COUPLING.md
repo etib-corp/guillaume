@@ -8,20 +8,21 @@ abstraction layer will be introduced before v1.0.
 ## Context
 
 The original audit brief described an "engine-less" library, but Guillaume is
-engine-coupled: `Engine` is an abstract interface
-(`headers/guillaume/engine.hpp`) and `Application`/`SceneManager`/systems call
-`addMesh`/`addText`/`addModel`/`clear`/`present`. There is no rendering
-backend, windowing, or platform abstraction shipped in this repository.
+engine-coupled: `utility::Engine` is an abstract interface
+(`utility/engine.hpp`) and `Application`/`SceneManager`/systems call
+`createObject`/`updateObject`/`removeObject`/`clear`/`present`. There is no
+rendering backend, windowing, or platform abstraction shipped in this
+repository.
 
 ## Decision
 
 We **accept the engine-coupled design** and document it explicitly:
 
-- Rendering and event polling are delegated to an `Engine` implementation that
-  consumers provide for their platform.
+- Rendering and event polling are delegated to a `utility::Engine`
+  implementation that consumers provide for their platform.
 - Guillaume provides the application shell, ECS-based UI composition, scene
   management, event dispatching, and storage.
-- The `Engine` interface is the single integration point for a platform.
+- The `utility::Engine` interface is the single integration point for a platform.
 
 ## Rationale
 
@@ -29,11 +30,11 @@ We **accept the engine-coupled design** and document it explicitly:
   composition rather than platform plumbing.
 - A platform/rendering abstraction layer is a large effort and is better
   scoped as a post-v1.0 roadmap item.
-- Consumers already integrate via a single `Engine` subclass.
+- Consumers already integrate via a single `utility::Engine` subclass.
 
 ## Consequences
 
-- A runnable sample requires a real `Engine` implementation (see
+- A runnable sample requires a real `utility::Engine` implementation (see
   `examples/hello_world`, which ships a no-op engine stub).
 - Visual-regression testing is deferred until a rendering backend is available
   (see the visual-regression issue).
@@ -41,7 +42,7 @@ We **accept the engine-coupled design** and document it explicitly:
 ## Visual-Regression Testing (Deferred)
 
 There is **no visual-regression harness** in v1.0. Rendering is delegated to an
-external `Engine` abstraction, and no rendering backend is shipped in this
+external `utility::Engine` abstraction, and no rendering backend is shipped in this
 repository, so there is nothing to render and diff against golden images.
 
 Once a rendering backend exists (or an external reference engine is used), a

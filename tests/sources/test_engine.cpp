@@ -29,17 +29,16 @@
 namespace guillaume::tests
 {
 	/**
-	 * @brief Exposes the protected Engine state so the concrete, device-free
-	 * surface of guillaume::Engine can be exercised without a rendering
-	 * backend.
+	 * @brief Exposes the protected utility::Engine state so its concrete,
+	 * device-free surface can be exercised without a rendering backend.
 	 */
-	class EngineProbe: public guillaume::Engine
+	class EngineProbe: public utility::Engine
 	{
 		public:
 		EngineProbe(void)			= default;
 		~EngineProbe(void) override = default;
 
-		using guillaume::Engine::getEventCallback;
+		using utility::Engine::getEventCallback;
 
 		void clear(void) override
 		{
@@ -47,12 +46,18 @@ namespace guillaume::tests
 		void present(void) override
 		{
 		}
-		size_t addMesh(const utility::graphic::Mesh &,
-					   const std::string &) override
+		size_t
+			createObject(std::shared_ptr<utility::graphic::Renderable>) override
 		{
 			return 0u;
 		}
-		bool removeObject(size_t) override
+		bool updateObject(std::shared_ptr<utility::graphic::Renderable>,
+						  size_t) override
+		{
+			return true;
+		}
+		bool removeObject(std::shared_ptr<utility::graphic::Renderable>,
+						  size_t) override
 		{
 			return true;
 		}
@@ -61,20 +66,9 @@ namespace guillaume::tests
 		{
 			return {};
 		}
-		size_t addText(utility::graphic::Text) override
-		{
-			return 0u;
-		}
-		size_t addModel(std::shared_ptr<utility::graphic::Model>) override
-		{
-			return 0u;
-		}
 		utility::graphic::ViewF getView(void) const override
 		{
 			return {};
-		}
-		void addScene(size_t) override
-		{
 		}
 		void pollEvents(void) override
 		{
@@ -115,7 +109,7 @@ namespace guillaume::tests
 		EngineProbe engine;
 		bool invoked = false;
 
-		guillaume::Engine::Handler handler =
+		utility::Engine::Handler handler =
 			[&invoked](std::shared_ptr<utility::event::Event> &) {
 				invoked = true;
 			};

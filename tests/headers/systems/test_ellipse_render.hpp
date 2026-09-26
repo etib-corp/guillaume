@@ -28,6 +28,8 @@
 #include <string>
 #include <vector>
 
+#include <utility/engine.hpp>
+
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 
@@ -36,90 +38,24 @@
 #include "guillaume/components/ellipse.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/engine.hpp"
 #include "guillaume/systems/ellipse_render.hpp"
 
 #include <utility/graphic/mesh.hpp>
 #include <utility/graphic/pose.hpp>
+#include <utility/graphic/renderable.hpp>
 #include <utility/graphic/text/text.hpp>
 #include <utility/graphic/view.hpp>
+
+#include "mocks/engine_mock.hpp"
 
 namespace guillaume::systems::tests
 {
 
-	/**
-	 * @brief Engine stub recording the meshes added to it.
-	 */
-	class EllipseEngineStub: public Engine
-	{
-		public:
-		int addMeshCount { 0 };			///< Number of addMesh calls
-		int removeObjectCount { 0 };	///< Number of removeObject calls
-		utility::graphic::Mesh lastMesh {
-			std::vector<utility::graphic::VertexF> {}, std::vector<uint32_t> {}
-		};	  ///< Last mesh passed to addMesh
-
-		void clear(void) override
-		{
-		}
-
-		void present(void) override
-		{
-		}
-
-		size_t addMesh(const utility::graphic::Mesh &mesh,
-					   const std::string &) override
-		{
-			++addMeshCount;
-			lastMesh = mesh;
-			return static_cast<size_t>(addMeshCount);
-		}
-
-		bool removeObject(size_t) override
-		{
-			++removeObjectCount;
-			return true;
-		}
-
-		utility::graphic::SizeF
-			measureText(const utility::graphic::Text &) const override
-		{
-			return { 0.0f, 0.0f };
-		}
-
-		size_t addText(utility::graphic::Text) override
-		{
-			return 0;
-		}
-
-		size_t addModel(std::shared_ptr<utility::graphic::Model>) override
-		{
-			return 0;
-		}
-
-		utility::graphic::ViewF getView(void) const override
-		{
-			return utility::graphic::ViewF();
-		}
-
-		void addScene(size_t) override
-		{
-		}
-
-		void pollEvents(void) override
-		{
-		}
-
-		void update(void) override
-		{
-		}
-	};
-
 	class TestEllipseRender: public ::testing::Test
 	{
 		protected:
-		std::unique_ptr<Engine> _engine;
-		EllipseEngineStub *_engineStub { nullptr };
+		std::unique_ptr<utility::Engine> _engine;
+		guillaume::tests::EngineMock *_engineStub { nullptr };
 		std::unique_ptr<EllipseRender> _ellipseSystem;
 		ecs::ComponentRegistry _componentRegistry;
 		ecs::EntityRegistryContainer _entityRegistry;
@@ -129,8 +65,9 @@ namespace guillaume::systems::tests
 
 		void SetUp(void) override
 		{
-			_engine		   = std::make_unique<EllipseEngineStub>();
-			_engineStub	   = static_cast<EllipseEngineStub *>(_engine.get());
+			_engine = std::make_unique<guillaume::tests::EngineMock>();
+			_engineStub =
+				static_cast<guillaume::tests::EngineMock *>(_engine.get());
 			_ellipseSystem = std::make_unique<EllipseRender>(_engine);
 			_ellipseSystem->bindComponentRegistry(_componentRegistry);
 		}

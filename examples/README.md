@@ -5,37 +5,21 @@ Guillaume framework.
 
 ## hello_world
 
-A desktop sample that:
+A minimal desktop sample that:
 
-- Implements a concrete `Engine` subclass backed by the Evan Vulkan engine.
+- Implements a minimal `Engine` subclass.
 - Defines a `Scene` type.
 - Runs the `Application` main loop.
 
-Guillaume is engine-less: it delegates rendering and event polling to an
-`Engine` implementation that consumers provide. This example fetches the
-[Evan](https://github.com/etib-corp/evan) engine via FetchContent and wraps it
-in a local `EvanEngine : guillaume::Engine` class. The Evan dependency is
-scoped to the example only — the `guillaume` library itself has no engine
-dependency.
+Because Guillaume is engine-coupled (rendering is delegated to an `Engine`
+implementation), this sample ships a no-op engine stub. To render actual
+content, replace `NoopEngine` with a real engine implementation for your
+platform, or see the `evan` example.
 
 ### Building
 
-Evan requires the Vulkan SDK and an explicit platform/backend selection.
-
 ```sh
-# macOS
-cmake -S . -B build -DBUILD_EXAMPLES=ON \
-  -DBUILD_FOR_GLFW=ON -DBUILD_FOR_MACOS=ON
-cmake --build build --target guillaume_hello_world
-
-# Linux
-cmake -S . -B build -DBUILD_EXAMPLES=ON \
-  -DBUILD_FOR_GLFW=ON -DBUILD_FOR_LINUX=ON
-cmake --build build --target guillaume_hello_world
-
-# Windows
-cmake -S . -B build -DBUILD_EXAMPLES=ON \
-  -DBUILD_FOR_GLFW=ON -DBUILD_FOR_WINDOWS=ON
+cmake -S . -B build -DBUILD_EXAMPLES=ON
 cmake --build build --target guillaume_hello_world
 ```
 
@@ -43,4 +27,29 @@ cmake --build build --target guillaume_hello_world
 
 ```sh
 ./build/examples/hello_world/guillaume_hello_world
+```
+
+## evan
+
+An Evan-backed sample (macOS / Linux / Windows + GLFW) that uses the
+[Evan](https://github.com/etib-corp/evan) Vulkan engine as the `Engine` behind a
+Guillaume `Application`, drawing a container, a button and a 3D model.
+
+Evan requires the Vulkan SDK. The example is added to the build on macOS, Linux
+and Windows, and the matching Evan platform (`BUILD_FOR_MACOS`,
+`BUILD_FOR_LINUX` or `BUILD_FOR_WINDOWS`) and the GLFW backend are selected
+automatically from the host. The Evan dependency stays scoped to the example,
+so the `guillaume` library itself has no engine dependency.
+
+### Building
+
+```sh
+cmake -S . -B build -DBUILD_EXAMPLES=ON
+cmake --build build --target guillaume_evan_example
+```
+
+### Running
+
+```sh
+./build/examples/evan/guillaume_evan_example
 ```

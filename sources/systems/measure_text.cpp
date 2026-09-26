@@ -29,7 +29,7 @@ namespace guillaume::systems
 
 	MeasureText::MeasureText(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<Engine> &engine)
+		std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Text, components::Bound,
 							components::Transform, components::Color>(
 			  ecs::Phase::Measure)

@@ -21,9 +21,11 @@
  */
 
 #include "guillaume/systems/rectangle_render.hpp"
+#include "guillaume/mesh_renderable.hpp"
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 namespace guillaume::systems
 {
@@ -225,7 +227,7 @@ namespace guillaume::systems
 		return vertex;
 	}
 
-	RectangleRender::RectangleRender(std::unique_ptr<Engine> &engine)
+	RectangleRender::RectangleRender(std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Color, components::Borders>(
 			  ecs::Phase::Render)
@@ -240,22 +242,12 @@ namespace guillaume::systems
 
 	void RectangleRender::prepare(void)
 	{
-		apply([this](const RectangleRenderCacheKey &key,
-					 RectangleRenderCacheEntry &entry) {
-			entry.used = false;
-		});
+		markAllUnused();
 	}
 
 	void RectangleRender::cleanup(void)
 	{
-		erase_if([this](const RectangleRenderCacheKey &key,
-						const RectangleRenderCacheEntry &entry) {
-			if (!entry.used) {
-				_engine->removeObject(entry.value);
-				return true;
-			}
-			return false;
-		});
+		removeUnused(*_engine);
 	}
 
 	void
@@ -280,44 +272,43 @@ namespace guillaume::systems
 		const auto &bordersComponent =
 			getComponent<components::Borders>(entityIdentifier);
 
-		RectangleRenderCacheKey cacheKey { transformComponent.getPose(),
-										   boundComponent, bordersComponent,
-										   colorComponent.getColor() };
+		const auto &pose	= transformComponent.getPose();
+		const auto &color	= colorComponent.getColor();
 
 		getLogger().debug()
-			<< "Rendering rectangle with pose: " << cacheKey.pose
-			<< ", size: " << cacheKey.size << ", borders: " << cacheKey.borders
-			<< ", color: " << cacheKey.color;
-
-		if (const auto &entry = get(cacheKey); entry.has_value()) {
-			RectangleRenderCacheEntry newEntry { .used	= true,
-												 .value = entry->value };
-			put(cacheKey, std::move(newEntry));
-			getLogger().debug() << "Cache hit for entity " << entityIdentifier;
-			return;
-		}
+			<< "Rendering rectangle with pose: " << pose
+			<< ", size: " << boundComponent.getWidth() << "x"
+			<< boundComponent.getHeight()
+			<< ", color: " << color;
 
 		const utility::graphic::PositionF center(
-			cacheKey.pose.getPosition().x + cacheKey.size.getWidth() / 2.0f,
-			cacheKey.pose.getPosition().y + cacheKey.size.getHeight() / 2.0f,
-			cacheKey.pose.getPosition().z);
+			pose.getPosition().x + boundComponent.getWidth() / 2.0f,
+			pose.getPosition().y + boundComponent.getHeight() / 2.0f,
+			pose.getPosition().z);
 
 		const auto roundedVertices = buildRoundedRectVertices(
-			center, cacheKey.pose.getOrientation(),
-			utility::math::Vector2F({ 1.0f, 1.0f }), cacheKey.size,
-			extractAverageRadius(cacheKey.borders), 16, 0.001f);
+			center, pose.getOrientation(),
+			utility::math::Vector2F({ 1.0f, 1.0f }), boundComponent,
+			extractAverageRadius(bordersComponent), 16, 0.001f);
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
-		buildTriangleFanVertices(mesh, center, roundedVertices, cacheKey.color);
+		buildTriangleFanVertices(mesh, center, roundedVertices, color);
 
-		auto identifier = _engine->addMesh(mesh, "mesh_material");
+		auto renderable = std::make_shared<MeshRenderable>(
+			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");
 
-		RectangleRenderCacheEntry cacheEntry {
-			.used  = true,
-			.value = identifier,
-		};
-		put(cacheKey, std::move(cacheEntry));
+		RenderHandle *handle = find(entityIdentifier);
+		if (handle == nullptr) {
+			size_t objectId = _engine->createObject(renderable);
+			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+		} else {
+			if (!_engine->updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine->createObject(renderable);
+			}
+			handle->renderable = renderable;
+			handle->used	  = true;
+		}
 	}
 
 }	 // namespace guillaume::systems

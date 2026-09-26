@@ -49,7 +49,6 @@ set(GUILLAUME_SOURCES
     sources/ecs/system_filler.cpp
     sources/ecs/system_phase.cpp
     sources/ecs/system_registry.cpp
-    sources/engine.cpp
     sources/entities/button.cpp
     sources/entities/button_base.cpp
     sources/entities/segmented_button.cpp
@@ -70,6 +69,7 @@ set(GUILLAUME_SOURCES
     sources/event_handler.cpp
     sources/local_storage.cpp
     sources/metadata.cpp
+    sources/mesh_renderable.cpp
     sources/scene.cpp
     sources/scene_manager.cpp
     sources/session_storage.cpp

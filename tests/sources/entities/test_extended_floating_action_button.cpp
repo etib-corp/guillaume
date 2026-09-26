@@ -22,7 +22,12 @@
 
 #include "entities/test_extended_floating_action_button.hpp"
 
+#include <functional>
+#include <memory>
+
 #include <guillaume/components/text.hpp>
+#include <guillaume/ecs/entity.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -60,5 +65,24 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Text>(fab->getLabelIdentifier())
 				.getContent(),
 			"Compose");
+	}
+
+	TEST_F(TestExtendedFloatingActionButton,
+		   DirectorBuildsAndRegistersExtendedFab)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		ExtendedFloatingActionButton::Builder builder(registry, entityRegistry);
+		ExtendedFloatingActionButton::Director director;
+
+		auto fab = director.makeExtendedFloatingActionButton(
+			builder, parent, "Compose", std::function<void(void)>());
+
+		ASSERT_NE(fab, nullptr);
+		EXPECT_EQ(fab->getParent(), parent);
+		EXPECT_EQ(fab->getVariant(),
+				  ExtendedFloatingActionButton::Variant::Primary);
 	}
 }	 // namespace guillaume::entities::tests

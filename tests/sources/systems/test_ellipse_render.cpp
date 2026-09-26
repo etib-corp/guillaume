@@ -37,26 +37,30 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		EXPECT_EQ(_engineStub->addMeshCount, 1);
+		ASSERT_EQ(_engineStub->createObjectCallCount, 1);
+		const auto meshes = _engineStub->lastCreated()->getMeshes();
+		ASSERT_FALSE(meshes.empty());
+		const auto &mesh = *meshes.front();
 		// Center vertex + (segments + 1) outline vertices
-		EXPECT_EQ(_engineStub->lastMesh.getVertices().size(),
-				  static_cast<std::size_t>(8 + 2));
+		EXPECT_EQ(mesh.getVertices().size(), static_cast<std::size_t>(8 + 2));
 		// 3 indices per outline segment
-		EXPECT_EQ(_engineStub->lastMesh.getIndices().size(),
+		EXPECT_EQ(mesh.getIndices().size(),
 				  static_cast<std::size_t>(3 * (8 + 1)));
 	}
 
-	TEST_F(TestEllipseRender, CacheHitAvoidsDuplicateMesh)
+	TEST_F(TestEllipseRender, ReusesRenderObjectWhenStateIsUnchanged)
 	{
 		const auto entity = createEllipseEntity();
 
 		_ellipseSystem->update(entity);
 		_ellipseSystem->update(entity);
 
-		EXPECT_EQ(_engineStub->addMeshCount, 1);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->updateObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->removeObjectCallCount, 0);
 	}
 
-	TEST_F(TestEllipseRender, PoseChangeCreatesNewMesh)
+	TEST_F(TestEllipseRender, PoseChangeUpdatesRenderObjectInPlace)
 	{
 		const auto entity = createEllipseEntity();
 
@@ -70,10 +74,11 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		EXPECT_EQ(_engineStub->addMeshCount, 2);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->updateObjectCallCount, 1);
 	}
 
-	TEST_F(TestEllipseRender, SegmentChangeCreatesNewMesh)
+	TEST_F(TestEllipseRender, SegmentChangeUpdatesRenderObjectInPlace)
 	{
 		const auto entity = createEllipseEntity();
 
@@ -85,7 +90,8 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		EXPECT_EQ(_engineStub->addMeshCount, 2);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->updateObjectCallCount, 1);
 	}
 
 	TEST_F(TestEllipseRender, CenterVertexMatchesEntityCenter)
@@ -98,8 +104,9 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		const auto center =
-			_engineStub->lastMesh.getVertices().front().getPosition();
+		const auto meshes = _engineStub->lastCreated()->getMeshes();
+		ASSERT_FALSE(meshes.empty());
+		const auto center = meshes.front()->getVertices().front().getPosition();
 
 		EXPECT_FLOAT_EQ(center.x, 60.0f);
 		EXPECT_FLOAT_EQ(center.y, 45.0f);
@@ -115,7 +122,7 @@ namespace guillaume::systems::tests
 		_ellipseSystem->prepare();
 		_ellipseSystem->cleanup();
 
-		EXPECT_EQ(_engineStub->removeObjectCount, 1);
+		EXPECT_EQ(_engineStub->removeObjectCallCount, 1);
 	}
 
 	TEST_F(TestEllipseRender, CleanupKeepsUsedMesh)
@@ -126,8 +133,8 @@ namespace guillaume::systems::tests
 		_ellipseSystem->update(entity);
 		_ellipseSystem->cleanup();
 
-		EXPECT_EQ(_engineStub->removeObjectCount, 0);
-		EXPECT_EQ(_engineStub->addMeshCount, 1);
+		EXPECT_EQ(_engineStub->removeObjectCallCount, 0);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
 	}
 
 }	 // namespace guillaume::systems::tests

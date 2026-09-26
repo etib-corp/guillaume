@@ -22,7 +22,12 @@
 
 #include "entities/test_icon_button.hpp"
 
+#include <functional>
+#include <memory>
+
 #include <guillaume/components/transform.hpp>
+#include <guillaume/ecs/entity.hpp>
+#include <guillaume/ecs/entity_registry_container.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -127,5 +132,24 @@ namespace guillaume::entities::tests
 
 		button->setAccessibilityLabel("Favorite");
 		EXPECT_EQ(button->getAccessibilityLabel(), "Favorite");
+	}
+
+	TEST_F(TestIconButton, DirectorBuildsAndRegistersIconButton)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		IconButton::Builder builder(registry, entityRegistry);
+		IconButton::Director director;
+
+		auto button = director.makeIconButton(
+			builder, parent, "favorite", std::function<void(void)>(),
+			IconButton::Variant::Filled, IconButton::Size::Large);
+
+		ASSERT_NE(button, nullptr);
+		EXPECT_EQ(button->getParent(), parent);
+		EXPECT_EQ(button->getVariant(), IconButton::Variant::Filled);
+		EXPECT_EQ(button->getSize(), IconButton::Size::Large);
 	}
 }	 // namespace guillaume::entities::tests

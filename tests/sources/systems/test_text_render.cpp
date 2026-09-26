@@ -22,6 +22,8 @@
 
 #include <memory>
 
+#include <utility/graphic/renderable.hpp>
+#include <utility/graphic/text/text.hpp>
 #include <utility/system_io/default_system_io.hpp>
 
 #include "guillaume/components/color.hpp"
@@ -31,76 +33,33 @@
 #include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 
+#include "mocks/engine_mock.hpp"
 #include "systems/test_text_render.hpp"
 
 namespace
 {
 	/**
-	 * @brief Engine stub recording the text object lifecycle.
+	 * @brief Read the content of a renderable when it is a text object.
+	 * @param object The renderable to inspect.
+	 * @return The text content, or an empty string for non-text renderables.
 	 */
-	class EngineStub: public guillaume::Engine
+	std::string renderableText(
+		const std::shared_ptr<utility::graphic::Renderable> &object)
 	{
-		public:
-		std::size_t addTextCallCount	  = 0;
-		std::size_t removeObjectCallCount = 0;
-		std::string lastAddedContent;
-		size_t lastRemovedObject { 0 };
-		size_t nextObjectID { 1 };
-
-		void clear(void) override
-		{
+		if (const auto text =
+				std::dynamic_pointer_cast<utility::graphic::Text>(object)) {
+			return text->getContent();
 		}
-		void present(void) override
-		{
-		}
-		size_t addMesh(const utility::graphic::Mesh &,
-					   const std::string &) override
-		{
-			return 0;
-		}
-		bool removeObject(size_t objectID) override
-		{
-			++removeObjectCallCount;
-			lastRemovedObject = objectID;
-			return true;
-		}
-		utility::graphic::SizeF
-			measureText(const utility::graphic::Text &) const override
-		{
-			return { 0.0f, 0.0f };
-		}
-		size_t addText(utility::graphic::Text text) override
-		{
-			++addTextCallCount;
-			lastAddedContent = text.getContent();
-			return nextObjectID++;
-		}
-		size_t addModel(std::shared_ptr<utility::graphic::Model>) override
-		{
-			return 0;
-		}
-		utility::graphic::ViewF getView(void) const override
-		{
-			return utility::graphic::ViewF();
-		}
-		void addScene(size_t sceneIndex) override
-		{
-			(void)sceneIndex;
-		}
-		void pollEvents(void) override
-		{
-		}
-		void update(void) override
-		{
-		}
-	};
+		return {};
+	}
 
 	class TextRenderFixture: public guillaume::systems::tests::TestTextRender
 	{
 		protected:
-		std::unique_ptr<EngineStub> engineStub = std::make_unique<EngineStub>();
-		EngineStub *enginePtr				   = engineStub.get();
-		std::unique_ptr<guillaume::Engine> engine { std::move(engineStub) };
+		std::unique_ptr<guillaume::tests::EngineMock> engineStub =
+			std::make_unique<guillaume::tests::EngineMock>();
+		guillaume::tests::EngineMock *enginePtr = engineStub.get();
+		std::unique_ptr<utility::Engine> engine { std::move(engineStub) };
 		utility::DefaultSystemIO systemIo;
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
@@ -149,12 +108,13 @@ TEST_F(TextRenderFixture, ReusesRenderObjectWhenTextStateIsUnchanged)
 	textRenderSystem.update(entityIdentifier);
 	textRenderSystem.update(entityIdentifier);
 
-	EXPECT_EQ(enginePtr->addTextCallCount, 1);
+	EXPECT_EQ(enginePtr->createObjectCallCount, 1);
+	EXPECT_EQ(enginePtr->updateObjectCallCount, 1);
 	EXPECT_EQ(enginePtr->removeObjectCallCount, 0);
 	EXPECT_EQ(textRenderSystem.size(), 1);
 }
 
-TEST_F(TextRenderFixture, RegeneratesRenderObjectWhenContentChanges)
+TEST_F(TextRenderFixture, UpdatesRenderObjectWhenContentChanges)
 {
 	textRenderSystem.update(entityIdentifier);
 
@@ -164,14 +124,15 @@ TEST_F(TextRenderFixture, RegeneratesRenderObjectWhenContentChanges)
 
 	textRenderSystem.update(entityIdentifier);
 
-	EXPECT_EQ(enginePtr->addTextCallCount, 2);
-	EXPECT_EQ(enginePtr->removeObjectCallCount, 1);
-	EXPECT_EQ(enginePtr->lastRemovedObject, 1);
-	EXPECT_EQ(enginePtr->lastAddedContent, "New content");
+	EXPECT_EQ(enginePtr->createObjectCallCount, 1);
+	EXPECT_EQ(enginePtr->updateObjectCallCount, 1);
+	EXPECT_EQ(enginePtr->removeObjectCallCount, 0);
+	EXPECT_EQ(enginePtr->lastUpdatedObject, 1);
+	EXPECT_EQ(renderableText(enginePtr->lastUpdate()), "New content");
 	EXPECT_EQ(textRenderSystem.size(), 1);
 }
 
-TEST_F(TextRenderFixture, RegeneratesRenderObjectWhenPoseChanges)
+TEST_F(TextRenderFixture, UpdatesRenderObjectWhenPoseChanges)
 {
 	textRenderSystem.update(entityIdentifier);
 
@@ -183,9 +144,10 @@ TEST_F(TextRenderFixture, RegeneratesRenderObjectWhenPoseChanges)
 
 	textRenderSystem.update(entityIdentifier);
 
-	EXPECT_EQ(enginePtr->addTextCallCount, 2);
-	EXPECT_EQ(enginePtr->removeObjectCallCount, 1);
-	EXPECT_EQ(enginePtr->lastRemovedObject, 1);
+	EXPECT_EQ(enginePtr->createObjectCallCount, 1);
+	EXPECT_EQ(enginePtr->updateObjectCallCount, 1);
+	EXPECT_EQ(enginePtr->removeObjectCallCount, 0);
+	EXPECT_EQ(enginePtr->lastUpdatedObject, 1);
 	EXPECT_EQ(textRenderSystem.size(), 1);
 }
 
@@ -196,7 +158,7 @@ TEST_F(TextRenderFixture, RemovesRenderObjectWhenNoSceneUsesIt)
 	textRenderSystem.update(entityIdentifier);
 	textRenderSystem.cleanup();
 
-	EXPECT_EQ(enginePtr->addTextCallCount, 1);
+	EXPECT_EQ(enginePtr->createObjectCallCount, 1);
 	EXPECT_EQ(enginePtr->removeObjectCallCount, 0);
 
 	// Next frame: another scene is active and this text is not rendered.
@@ -210,7 +172,7 @@ TEST_F(TextRenderFixture, RemovesRenderObjectWhenNoSceneUsesIt)
 
 TEST_F(TextRenderFixture, RecreatesRenderObjectAfterCleanup)
 {
-	// The entry is gone after a frame without the entity, so rendering it
+	// The handle is gone after a frame without the entity, so rendering it
 	// again (scene switched back) creates a fresh object.
 	textRenderSystem.prepare();
 	textRenderSystem.update(entityIdentifier);
@@ -220,7 +182,7 @@ TEST_F(TextRenderFixture, RecreatesRenderObjectAfterCleanup)
 
 	textRenderSystem.update(entityIdentifier);
 
-	EXPECT_EQ(enginePtr->addTextCallCount, 2);
+	EXPECT_EQ(enginePtr->createObjectCallCount, 2);
 	EXPECT_EQ(enginePtr->removeObjectCallCount, 1);
 	EXPECT_EQ(textRenderSystem.size(), 1);
 }
