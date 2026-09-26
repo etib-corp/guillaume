@@ -51,49 +51,10 @@
 #include <utility/event/mouse_button_event.hpp>
 #include <utility/event/hand_button_event.hpp>
 
+#include "mocks/engine_mock.hpp"
+
 namespace guillaume::systems::tests
 {
-
-	class EngineStub: public utility::Engine
-	{
-		public:
-		void clear(void) override
-		{
-		}
-		void present(void) override
-		{
-		}
-		size_t createObject(
-			std::shared_ptr<utility::graphic::Renderable>) override
-		{
-			return 0;
-		}
-		bool updateObject(std::shared_ptr<utility::graphic::Renderable>,
-						  size_t) override
-		{
-			return true;
-		}
-		bool removeObject(std::shared_ptr<utility::graphic::Renderable>,
-						  size_t) override
-		{
-			return true;
-		}
-		utility::graphic::SizeF
-			measureText(const utility::graphic::Text &) const override
-		{
-			return { 0.0f, 0.0f };
-		}
-		utility::graphic::ViewF getView(void) const override
-		{
-			return utility::graphic::ViewF();
-		}
-		void pollEvents(void) override
-		{
-		}
-		void update(void) override
-		{
-		}
-	};
 
 	class TestFocusSystem: public ::testing::Test
 	{
@@ -110,7 +71,7 @@ namespace guillaume::systems::tests
 		void SetUp(void) override
 		{
 			_eventBus	 = std::make_unique<event::EventBus>();
-			_engine		 = std::make_unique<EngineStub>();
+			_engine = std::make_unique<guillaume::tests::EngineMock>();
 			_focusSystem = std::make_unique<Focus>(*_eventBus, _engine);
 			_focusSystem->bindComponentRegistry(_componentRegistry);
 		}

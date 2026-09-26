@@ -22,7 +22,21 @@
 
 #include "entities/test_button.hpp"
 
+#include <memory>
+#include <string>
+
+#include <utility/graphic/text/text.hpp>
+#include <utility/ressource_provider.hpp>
+
+#include <guillaume/components/glyph.hpp>
 #include <guillaume/components/transform.hpp>
+#include <guillaume/mesh_renderable.hpp>
+#include <guillaume/systems/glyph_render.hpp>
+#include <guillaume/systems/rectangle_render.hpp>
+#include <guillaume/systems/text_render.hpp>
+
+#include "mocks/engine_mock.hpp"
+#include "mocks/fake_system_io.hpp"
 
 namespace guillaume::entities::tests
 {
@@ -329,5 +343,52 @@ namespace guillaume::entities::tests
 
 		button->setAccessibilityLabel("Save changes");
 		EXPECT_EQ(button->getAccessibilityLabel(), "Save changes");
+	}
+
+	TEST_F(TestButton, RenderSystemsCreateBackgroundAndContentObjects)
+	{
+		const std::string glyphCodePointsPath =
+			"fonts/Material_Symbols_Outlined/"
+			"MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].codepoints";
+		const std::string glyphFontPath =
+			"fonts/Material_Symbols_Outlined/"
+			"MaterialSymbolsOutlined-VariableFont_FILL,GRAD,opsz,wght.ttf";
+
+		auto engineMock = std::make_unique<guillaume::tests::EngineMock>();
+		guillaume::tests::EngineMock *enginePtr = engineMock.get();
+		std::unique_ptr<utility::Engine> engine = std::move(engineMock);
+
+		guillaume::tests::FakeSystemIO systemIo;
+		systemIo.files[glyphCodePointsPath] = "home 41\n";
+		systemIo.addFileFromDisk(glyphFontPath, "fonts/Roboto-Regular.ttf");
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		guillaume::systems::RectangleRender rectangleRender(engine);
+		guillaume::systems::TextRender textRender(ressourceProvider, engine);
+		guillaume::systems::GlyphRender glyphRender(ressourceProvider, engine);
+
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "home", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", std::function<void(void)>());
+		button->initialize();
+		button->update();
+
+		rectangleRender.bindComponentRegistry(registry);
+		rectangleRender.update(button->getIdentifier());
+
+		textRender.bindComponentRegistry(registry);
+		textRender.update(button->getLabelIdentifier());
+
+		glyphRender.bindComponentRegistry(registry);
+		glyphRender.update(button->getIconIdentifier());
+
+		// One rectangle mesh for the background, two text objects for the
+		// label and the icon.
+		EXPECT_EQ(enginePtr->countCreated<guillaume::MeshRenderable>(), 1);
+		EXPECT_EQ(enginePtr->countCreated<utility::graphic::Text>(), 2);
+		EXPECT_EQ(enginePtr->createObjectCallCount, 3);
 	}
 }	 // namespace guillaume::entities::tests

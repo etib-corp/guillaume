@@ -34,62 +34,17 @@
 #include "guillaume/ecs/entity_registry_container.hpp"
 #include "guillaume/ecs/level_order_traveler.hpp"
 
+#include "mocks/engine_mock.hpp"
 #include "systems/test_measure_text.hpp"
 
 namespace
 {
-	class EngineStub: public utility::Engine
-	{
-		public:
-		mutable utility::graphic::SizeF measurement = { 0.0f, 0.0f };
-		mutable std::size_t measureCallCount		= 0;
-		mutable std::string lastContent;
-
-		void clear(void) override
-		{
-		}
-		void present(void) override
-		{
-		}
-		size_t createObject(
-			std::shared_ptr<utility::graphic::Renderable>) override
-		{
-			return 0;
-		}
-		bool updateObject(std::shared_ptr<utility::graphic::Renderable>,
-						  size_t) override
-		{
-			return true;
-		}
-		bool removeObject(std::shared_ptr<utility::graphic::Renderable>,
-						  size_t) override
-		{
-			return true;
-		}
-		utility::graphic::SizeF
-			measureText(const utility::graphic::Text &text) const override
-		{
-			++measureCallCount;
-			lastContent = text.getContent();
-			return measurement;
-		}
-		utility::graphic::ViewF getView(void) const override
-		{
-			return utility::graphic::ViewF();
-		}
-		void pollEvents(void) override
-		{
-		}
-		void update(void) override
-		{
-		}
-	};
-
 	class MeasureTextFixture: public guillaume::systems::tests::TestMeasureText
 	{
 		protected:
-		std::unique_ptr<EngineStub> engineStub = std::make_unique<EngineStub>();
-		EngineStub *enginePtr				   = engineStub.get();
+		std::unique_ptr<guillaume::tests::EngineMock> engineStub =
+			std::make_unique<guillaume::tests::EngineMock>();
+		guillaume::tests::EngineMock *enginePtr = engineStub.get();
 		std::unique_ptr<utility::Engine> engine { std::move(engineStub) };
 		utility::DefaultSystemIO systemIo;
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider =
@@ -132,7 +87,7 @@ TEST_F(MeasureTextFixture, SynchronizesBoundSizeWithMeasuredText)
 		.getComponent<guillaume::components::Text>(entityIdentifier)
 		.setContent("Measure me")
 		.setFontSize(32);
-	enginePtr->measurement = { 140.0f, 28.0f };
+	enginePtr->textMeasurement = { 140.0f, 28.0f };
 	guillaume::ecs::LevelOrderTraveler traveler;
 
 	measureTextSystem.routine(componentRegistry, entityRegistry, traveler);
@@ -142,8 +97,8 @@ TEST_F(MeasureTextFixture, SynchronizesBoundSizeWithMeasuredText)
 			entityIdentifier);
 	EXPECT_EQ(bound.getWidth(), 140U);
 	EXPECT_EQ(bound.getHeight(), 28U);
-	EXPECT_EQ(enginePtr->measureCallCount, 1);
-	EXPECT_EQ(enginePtr->lastContent, "Measure me");
+	EXPECT_EQ(enginePtr->measureTextCallCount, 1);
+	EXPECT_EQ(enginePtr->lastMeasuredContent, "Measure me");
 }
 
 TEST_F(MeasureTextFixture, SkipsMeasurementWhenRequiredComponentIsMissing)
@@ -154,7 +109,7 @@ TEST_F(MeasureTextFixture, SkipsMeasurementWhenRequiredComponentIsMissing)
 
 	measureTextSystem.routine(componentRegistry, entityRegistry, traveler);
 
-	EXPECT_EQ(enginePtr->measureCallCount, 0);
+	EXPECT_EQ(enginePtr->measureTextCallCount, 0);
 }
 
 namespace guillaume::systems::tests

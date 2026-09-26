@@ -37,8 +37,8 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		ASSERT_EQ(_engineStub->createObjectCount, 1);
-		const auto meshes = _engineStub->lastRenderable->getMeshes();
+		ASSERT_EQ(_engineStub->createObjectCallCount, 1);
+		const auto meshes = _engineStub->lastCreated()->getMeshes();
 		ASSERT_FALSE(meshes.empty());
 		const auto &mesh = *meshes.front();
 		// Center vertex + (segments + 1) outline vertices
@@ -55,9 +55,9 @@ namespace guillaume::systems::tests
 		_ellipseSystem->update(entity);
 		_ellipseSystem->update(entity);
 
-		EXPECT_EQ(_engineStub->createObjectCount, 1);
-		EXPECT_EQ(_engineStub->updateObjectCount, 1);
-		EXPECT_EQ(_engineStub->removeObjectCount, 0);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->updateObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->removeObjectCallCount, 0);
 	}
 
 	TEST_F(TestEllipseRender, PoseChangeUpdatesRenderObjectInPlace)
@@ -74,8 +74,8 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		EXPECT_EQ(_engineStub->createObjectCount, 1);
-		EXPECT_EQ(_engineStub->updateObjectCount, 1);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->updateObjectCallCount, 1);
 	}
 
 	TEST_F(TestEllipseRender, SegmentChangeUpdatesRenderObjectInPlace)
@@ -90,8 +90,8 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		EXPECT_EQ(_engineStub->createObjectCount, 1);
-		EXPECT_EQ(_engineStub->updateObjectCount, 1);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
+		EXPECT_EQ(_engineStub->updateObjectCallCount, 1);
 	}
 
 	TEST_F(TestEllipseRender, CenterVertexMatchesEntityCenter)
@@ -104,7 +104,7 @@ namespace guillaume::systems::tests
 
 		_ellipseSystem->update(entity);
 
-		const auto meshes = _engineStub->lastRenderable->getMeshes();
+		const auto meshes = _engineStub->lastCreated()->getMeshes();
 		ASSERT_FALSE(meshes.empty());
 		const auto center = meshes.front()->getVertices().front().getPosition();
 
@@ -122,7 +122,7 @@ namespace guillaume::systems::tests
 		_ellipseSystem->prepare();
 		_ellipseSystem->cleanup();
 
-		EXPECT_EQ(_engineStub->removeObjectCount, 1);
+		EXPECT_EQ(_engineStub->removeObjectCallCount, 1);
 	}
 
 	TEST_F(TestEllipseRender, CleanupKeepsUsedMesh)
@@ -133,8 +133,8 @@ namespace guillaume::systems::tests
 		_ellipseSystem->update(entity);
 		_ellipseSystem->cleanup();
 
-		EXPECT_EQ(_engineStub->removeObjectCount, 0);
-		EXPECT_EQ(_engineStub->createObjectCount, 1);
+		EXPECT_EQ(_engineStub->removeObjectCallCount, 0);
+		EXPECT_EQ(_engineStub->createObjectCallCount, 1);
 	}
 
 }	 // namespace guillaume::systems::tests

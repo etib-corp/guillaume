@@ -33,84 +33,32 @@
 #include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 
+#include "mocks/engine_mock.hpp"
 #include "systems/test_text_render.hpp"
 
 namespace
 {
 	/**
-	 * @brief utility::Engine stub recording the text object lifecycle.
+	 * @brief Read the content of a renderable when it is a text object.
+	 * @param object The renderable to inspect.
+	 * @return The text content, or an empty string for non-text renderables.
 	 */
-	class EngineStub: public utility::Engine
+	std::string renderableText(
+		const std::shared_ptr<utility::graphic::Renderable> &object)
 	{
-		public:
-		std::size_t createObjectCallCount = 0;
-		std::size_t updateObjectCallCount = 0;
-		std::size_t removeObjectCallCount = 0;
-		std::string lastObjectContent;
-		size_t lastUpdatedObject { 0 };
-		size_t lastRemovedObject { 0 };
-		size_t nextObjectID { 1 };
-
-		void clear(void) override
-		{
+		if (const auto text =
+				std::dynamic_pointer_cast<utility::graphic::Text>(object)) {
+			return text->getContent();
 		}
-		void present(void) override
-		{
-		}
-		size_t createObject(
-			std::shared_ptr<utility::graphic::Renderable> object) override
-		{
-			++createObjectCallCount;
-			recordContent(object);
-			return nextObjectID++;
-		}
-		bool updateObject(std::shared_ptr<utility::graphic::Renderable> object,
-						  size_t objectID) override
-		{
-			++updateObjectCallCount;
-			lastUpdatedObject = objectID;
-			recordContent(object);
-			return true;
-		}
-		bool removeObject(std::shared_ptr<utility::graphic::Renderable>,
-						  size_t objectID) override
-		{
-			++removeObjectCallCount;
-			lastRemovedObject = objectID;
-			return true;
-		}
-		utility::graphic::SizeF
-			measureText(const utility::graphic::Text &) const override
-		{
-			return { 0.0f, 0.0f };
-		}
-		utility::graphic::ViewF getView(void) const override
-		{
-			return utility::graphic::ViewF();
-		}
-		void pollEvents(void) override
-		{
-		}
-		void update(void) override
-		{
-		}
-
-		private:
-		void recordContent(
-			const std::shared_ptr<utility::graphic::Renderable> &object)
-		{
-			if (const auto text =
-					std::dynamic_pointer_cast<utility::graphic::Text>(object)) {
-				lastObjectContent = text->getContent();
-			}
-		}
-	};
+		return {};
+	}
 
 	class TextRenderFixture: public guillaume::systems::tests::TestTextRender
 	{
 		protected:
-		std::unique_ptr<EngineStub> engineStub = std::make_unique<EngineStub>();
-		EngineStub *enginePtr				   = engineStub.get();
+		std::unique_ptr<guillaume::tests::EngineMock> engineStub =
+			std::make_unique<guillaume::tests::EngineMock>();
+		guillaume::tests::EngineMock *enginePtr = engineStub.get();
 		std::unique_ptr<utility::Engine> engine { std::move(engineStub) };
 		utility::DefaultSystemIO systemIo;
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider =
@@ -180,7 +128,7 @@ TEST_F(TextRenderFixture, UpdatesRenderObjectWhenContentChanges)
 	EXPECT_EQ(enginePtr->updateObjectCallCount, 1);
 	EXPECT_EQ(enginePtr->removeObjectCallCount, 0);
 	EXPECT_EQ(enginePtr->lastUpdatedObject, 1);
-	EXPECT_EQ(enginePtr->lastObjectContent, "New content");
+	EXPECT_EQ(renderableText(enginePtr->lastUpdate()), "New content");
 	EXPECT_EQ(textRenderSystem.size(), 1);
 }
 

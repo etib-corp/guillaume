@@ -46,77 +46,16 @@
 #include <utility/graphic/text/text.hpp>
 #include <utility/graphic/view.hpp>
 
+#include "mocks/engine_mock.hpp"
+
 namespace guillaume::systems::tests
 {
-
-	/**
-	 * @brief utility::Engine stub recording the render object lifecycle.
-	 */
-	class EllipseEngineStub: public utility::Engine
-	{
-		public:
-		int createObjectCount { 0 };	///< Number of createObject calls
-		int updateObjectCount { 0 };	///< Number of updateObject calls
-		int removeObjectCount { 0 };	///< Number of removeObject calls
-		std::shared_ptr<utility::graphic::Renderable>
-			lastRenderable;	   ///< Last renderable passed to the engine
-
-		void clear(void) override
-		{
-		}
-
-		void present(void) override
-		{
-		}
-
-		size_t createObject(
-			std::shared_ptr<utility::graphic::Renderable> object) override
-		{
-			++createObjectCount;
-			lastRenderable = std::move(object);
-			return static_cast<size_t>(createObjectCount);
-		}
-
-		bool updateObject(std::shared_ptr<utility::graphic::Renderable> object,
-						  size_t) override
-		{
-			++updateObjectCount;
-			lastRenderable = std::move(object);
-			return true;
-		}
-
-		bool removeObject(std::shared_ptr<utility::graphic::Renderable>,
-						  size_t) override
-		{
-			++removeObjectCount;
-			return true;
-		}
-
-		utility::graphic::SizeF
-			measureText(const utility::graphic::Text &) const override
-		{
-			return { 0.0f, 0.0f };
-		}
-
-		utility::graphic::ViewF getView(void) const override
-		{
-			return utility::graphic::ViewF();
-		}
-
-		void pollEvents(void) override
-		{
-		}
-
-		void update(void) override
-		{
-		}
-	};
 
 	class TestEllipseRender: public ::testing::Test
 	{
 		protected:
 		std::unique_ptr<utility::Engine> _engine;
-		EllipseEngineStub *_engineStub { nullptr };
+		guillaume::tests::EngineMock *_engineStub { nullptr };
 		std::unique_ptr<EllipseRender> _ellipseSystem;
 		ecs::ComponentRegistry _componentRegistry;
 		ecs::EntityRegistryContainer _entityRegistry;
@@ -126,8 +65,9 @@ namespace guillaume::systems::tests
 
 		void SetUp(void) override
 		{
-			_engine		   = std::make_unique<EllipseEngineStub>();
-			_engineStub	   = static_cast<EllipseEngineStub *>(_engine.get());
+			_engine = std::make_unique<guillaume::tests::EngineMock>();
+			_engineStub =
+				static_cast<guillaume::tests::EngineMock *>(_engine.get());
 			_ellipseSystem = std::make_unique<EllipseRender>(_engine);
 			_ellipseSystem->bindComponentRegistry(_componentRegistry);
 		}
