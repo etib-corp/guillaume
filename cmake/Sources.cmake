@@ -11,8 +11,10 @@ set(GUILLAUME_SOURCES
     sources/components/arc.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
+    sources/components/clip.cpp
     sources/components/color.cpp
     sources/components/drag_interaction.cpp
+    sources/components/elevation.cpp
     sources/components/ellipse.cpp
     sources/components/focus.cpp
     sources/components/glyph.cpp
@@ -32,6 +34,7 @@ set(GUILLAUME_SOURCES
     sources/components/parent.cpp
     sources/components/range.cpp
     sources/components/ring.cpp
+    sources/components/scrim.cpp
     sources/components/scrollable.cpp
     sources/components/selection.cpp
     sources/components/text.cpp
@@ -89,8 +92,10 @@ set(GUILLAUME_SOURCES
     sources/storage.cpp
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
+    sources/systems/clip.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
+    sources/systems/elevation_render.cpp
     sources/systems/focus.cpp
     sources/systems/glyph_render.cpp
     sources/systems/hand_button.cpp
@@ -116,6 +121,7 @@ set(GUILLAUME_SOURCES
     sources/systems/ring_render.cpp
     sources/systems/scroll.cpp
     sources/systems/selection.cpp
+    sources/systems/scrim_render.cpp
     sources/systems/shape_mesh.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
