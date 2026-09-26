@@ -103,6 +103,11 @@ namespace guillaume
 			std::make_unique<systems::ArcRender>(_engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::LineRender>(_engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::ElevationRender>(_engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::ScrimRender>(_engine));
+		_systemRegistry.registerNewSystem(std::make_unique<systems::Clip>());
 		_systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(_eventBus, _engine));
