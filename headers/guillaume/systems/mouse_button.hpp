@@ -58,7 +58,8 @@ namespace guillaume::systems
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 * @param engine Reference to the game engine.
 		 */
-		MouseButton(event::EventBus &eventBus, std::unique_ptr<utility::Engine> &engine);
+		MouseButton(event::EventBus &eventBus,
+					std::unique_ptr<utility::Engine> &engine);
 
 		/**
 		 * @brief Default destructor for the MouseButton system.

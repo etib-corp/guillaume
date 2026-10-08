@@ -266,4 +266,32 @@ namespace guillaume::systems::tests
 				.isSelected());
 	}
 
+	TEST_F(TestValueInteractions, SelectionSelectMakesTargetExclusive)
+	{
+		const auto group	   = nextEntityId();
+		const auto firstChild  = nextEntityId();
+		const auto secondChild = nextEntityId();
+
+		_componentRegistry.addComponent<components::SelectionGroup>(group)
+			.setAllowEmpty(false);
+		_componentRegistry.addComponent<components::Selectable>(firstChild);
+		_componentRegistry.addComponent<components::Selectable>(secondChild);
+
+		const auto selected =
+			Selection::select(_componentRegistry, group,
+							  { firstChild, secondChild }, secondChild);
+
+		EXPECT_EQ(selected, secondChild);
+		EXPECT_FALSE(
+			_componentRegistry.getComponent<components::Selectable>(firstChild)
+				.isSelected());
+		EXPECT_TRUE(
+			_componentRegistry.getComponent<components::Selectable>(secondChild)
+				.isSelected());
+		EXPECT_EQ(
+			_componentRegistry.getComponent<components::SelectionGroup>(group)
+				.getSelected(),
+			secondChild);
+	}
+
 }	 // namespace guillaume::systems::tests

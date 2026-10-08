@@ -22,25 +22,13 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
+#include "entities/family_fixture.hpp"
 
-#include <guillaume/component_registry.hpp>
 #include <guillaume/entities/floating_action_button.hpp>
 
 namespace guillaume::entities::tests
 {
 
-	class TestFloatingActionButton: public ::testing::Test
-	{
-		protected:
-		TestFloatingActionButton(void)			 = default;
-		~TestFloatingActionButton(void) override = default;
-		void SetUp(void) override
-		{
-		}
-		void TearDown(void) override
-		{
-		}
-	};
+	using TestFloatingActionButton = FamilyFixture<FloatingActionButton>;
 
 }	 // namespace guillaume::entities::tests

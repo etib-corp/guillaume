@@ -20,43 +20,30 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include "guillaume/entities/text.hpp"
+#include "guillaume/entities/builder_base.hpp"
 
 namespace guillaume::entities
 {
 
 	Text::Text::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<Text>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	Text::Builder::~Builder(void)
+	std::shared_ptr<Text> Text::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<Text>
-		Text::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_text = std::make_shared<Text>(this->getComponentRegistry(), _content,
-									   _fontSize, _color);
-
-		_text->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_text);
-
-		auto textCopy =
-			_text;	  // Create a copy of the shared pointer to return
-
-		reset();
-
-		return textCopy;
+		auto entity = std::make_shared<Text>(this->getComponentRegistry(),
+											 _content, _fontSize, _color);
+		return entity;
 	}
 
 	void Text::Builder::reset(void)
 	{
-		_text.reset();
 		_content.clear();
 		_fontSize = 24;
 		_color	  = { 255, 255, 255, 255 };
@@ -79,15 +66,6 @@ namespace guillaume::entities
 	{
 		_color = color;
 		return *this;
-	}
-
-	Text::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	Text::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<Text> Text::Director::makeText(

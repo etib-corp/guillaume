@@ -57,24 +57,24 @@ namespace guillaume::entities::tests
 		group->initialize();
 		group->update();
 
-		const auto firstX  = registry
-								 .getComponent<components::Transform>(
-									 group->getButtonIdentifier(0))
-								 .getPose()
-								 .getPosition()
-								 .getX();
+		const auto firstX = registry
+								.getComponent<components::Transform>(
+									group->getButtonIdentifier(0))
+								.getPose()
+								.getPosition()
+								.getX();
 		const auto secondX = registry
 								 .getComponent<components::Transform>(
 									 group->getButtonIdentifier(1))
 								 .getPose()
 								 .getPosition()
 								 .getX();
-		const auto thirdX  = registry
-								 .getComponent<components::Transform>(
-									 group->getButtonIdentifier(2))
-								 .getPose()
-								 .getPosition()
-								 .getX();
+		const auto thirdX = registry
+								.getComponent<components::Transform>(
+									group->getButtonIdentifier(2))
+								.getPose()
+								.getPosition()
+								.getX();
 
 		EXPECT_EQ(firstX, 0.0f);
 		EXPECT_GT(secondX, firstX);

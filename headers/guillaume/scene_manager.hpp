@@ -72,7 +72,8 @@ namespace guillaume
 		LocalStorage _localStorage;	   ///< Local storage for persistent data
 		SessionStorage
 			_sessionStorage;	///< Session storage for temporary data
-		utility::Engine *_engine;	///< Pointer to the application engine (non-owning)
+		utility::Engine
+			*_engine;	 ///< Pointer to the application engine (non-owning)
 
 		protected:
 		/**

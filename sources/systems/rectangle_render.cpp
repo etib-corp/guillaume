@@ -272,14 +272,13 @@ namespace guillaume::systems
 		const auto &bordersComponent =
 			getComponent<components::Borders>(entityIdentifier);
 
-		const auto &pose	= transformComponent.getPose();
-		const auto &color	= colorComponent.getColor();
+		const auto &pose  = transformComponent.getPose();
+		const auto &color = colorComponent.getColor();
 
 		getLogger().debug()
 			<< "Rendering rectangle with pose: " << pose
 			<< ", size: " << boundComponent.getWidth() << "x"
-			<< boundComponent.getHeight()
-			<< ", color: " << color;
+			<< boundComponent.getHeight() << ", color: " << color;
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + boundComponent.getWidth() / 2.0f,
@@ -301,13 +300,14 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			size_t objectId = _engine->createObject(renderable);
-			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+			insert(entityIdentifier,
+				   RenderHandle { objectId, renderable, true });
 		} else {
 			if (!_engine->updateObject(renderable, handle->objectId)) {
 				handle->objectId = _engine->createObject(renderable);
 			}
 			handle->renderable = renderable;
-			handle->used	  = true;
+			handle->used	   = true;
 		}
 	}
 

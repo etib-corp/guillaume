@@ -20,43 +20,31 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include "guillaume/entities/image.hpp"
+#include "guillaume/entities/builder_base.hpp"
 
 namespace guillaume::entities
 {
 
 	Image::Image::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								   ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<Image>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	Image::Builder::~Builder(void)
+	std::shared_ptr<Image> Image::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<Image>
-		Image::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_image =
+		auto entity =
 			std::make_shared<Image>(this->getComponentRegistry(), _texturePath);
-		_image->setTexturePath(_texturePath);
-		_image->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_image);
-
-		auto imageCopy =
-			_image;	   // Create a copy of the shared pointer to return
-
-		reset();
-
-		return imageCopy;
+		entity->setTexturePath(_texturePath);
+		return entity;
 	}
 
 	void Image::Builder::reset(void)
 	{
-		_image.reset();
 		_texturePath.clear();
 	}
 
@@ -65,15 +53,6 @@ namespace guillaume::entities
 	{
 		_texturePath = texturePath;
 		return *this;
-	}
-
-	Image::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	Image::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<Image>

@@ -58,13 +58,14 @@ namespace guillaume::systems::tests
 		std::unique_ptr<LineRender> _lineSystem;
 		ecs::ComponentRegistry _componentRegistry;
 
-		TestShapeRender(void)			  = default;
+		TestShapeRender(void)			= default;
 		~TestShapeRender(void) override = default;
 
 		void SetUp(void) override
 		{
-			_engine		= std::make_unique<guillaume::tests::EngineMock>();
-			_engineMock = static_cast<guillaume::tests::EngineMock *>(_engine.get());
+			_engine = std::make_unique<guillaume::tests::EngineMock>();
+			_engineMock =
+				static_cast<guillaume::tests::EngineMock *>(_engine.get());
 			_ringSystem = std::make_unique<RingRender>(_engine);
 			_arcSystem	= std::make_unique<ArcRender>(_engine);
 			_lineSystem = std::make_unique<LineRender>(_engine);

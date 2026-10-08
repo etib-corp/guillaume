@@ -27,6 +27,7 @@
 #include <string>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
@@ -60,11 +61,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Button` entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<Button>
 		{
 			private:
-			std::shared_ptr<Button>
-				_button;	///< Unique pointer to the Button entity being built
 			std::string
 				_iconGlyphName;	   ///< Icon glyph name to attach to the button
 			components::Glyph::Style
@@ -95,18 +94,10 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the Button Builder class.
+			 * @brief Build the Button entity from the current configuration.
+			 * @return The newly created Button.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the button entity.
-			 * @param parent The parent entity to which the new button entity
-			 * will be attached.
-			 * @return A shared pointer to the newly created button entity.
-			 */
-			std::shared_ptr<Button>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<Button> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -204,19 +195,9 @@ namespace guillaume::entities
 		 * @brief Director that orchestrates `Button::Builder` to create
 		 * preconfigured button entities.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Button Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor for the Button Director class.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a text button entity using the builder.
 			 * @param builder The builder instance used to configure and create

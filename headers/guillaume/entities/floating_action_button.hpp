@@ -27,6 +27,7 @@
 #include <string>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
@@ -55,11 +56,9 @@ namespace guillaume::entities
 		 * @brief Builder used to configure and create `FloatingActionButton`
 		 * entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<FloatingActionButton>
 		{
 			private:
-			std::shared_ptr<FloatingActionButton>
-				_fab;					   ///< FAB entity being built
 			std::string _iconGlyphName;	   ///< Icon glyph name to attach
 			components::Glyph::Style
 				_iconStyle;				  ///< Style of the icon to attach
@@ -82,18 +81,11 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the Builder class.
+			 * @brief Build the FloatingActionButton entity from the current
+			 * configuration.
+			 * @return The newly created FloatingActionButton.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the FAB entity.
-			 * @param parent The parent entity to which the new entity will be
-			 * attached.
-			 * @return A shared pointer to the newly created FAB entity.
-			 */
-			std::shared_ptr<FloatingActionButton>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<FloatingActionButton> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state.
@@ -168,19 +160,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Director that orchestrates `FloatingActionButton::Builder`.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a FAB entity using the builder.
 			 * @param builder The builder instance used to configure and create

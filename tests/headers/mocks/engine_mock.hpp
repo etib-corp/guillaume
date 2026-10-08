@@ -82,15 +82,15 @@ namespace guillaume::tests
 			lastMeasuredContent;	///< Content of the last measured text
 		utility::graphic::ViewF view {};	///< Returned by getView
 
-		std::size_t clearCallCount { 0 };		  ///< clear calls
-		std::size_t presentCallCount { 0 };		  ///< present calls
-		std::size_t pollEventsCallCount { 0 };	  ///< pollEvents calls
-		std::size_t updateCallCount { 0 };		  ///< update calls
-		std::size_t setScissorCallCount { 0 };	  ///< setScissor calls
-		std::size_t clearScissorCallCount { 0 };  ///< clearScissor calls
-		float deltaTime { 0.0f };				  ///< getDeltaTime result
+		std::size_t clearCallCount { 0 };			///< clear calls
+		std::size_t presentCallCount { 0 };			///< present calls
+		std::size_t pollEventsCallCount { 0 };		///< pollEvents calls
+		std::size_t updateCallCount { 0 };			///< update calls
+		std::size_t setScissorCallCount { 0 };		///< setScissor calls
+		std::size_t clearScissorCallCount { 0 };	///< clearScissor calls
+		float deltaTime { 0.0f };					///< getDeltaTime result
 		utility::graphic::ScissorRect
-			lastScissor {};	  ///< Last scissor rectangle applied
+			lastScissor {};	   ///< Last scissor rectangle applied
 
 		/**
 		 * @brief Events dispatched by the next pollEvents call.

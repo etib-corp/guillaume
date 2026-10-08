@@ -20,43 +20,32 @@
  SOFTWARE.
  */
 
+#include <memory>
 #include <utility>
 
 #include "guillaume/entities/segmented_button.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/button.hpp"
+#include "guillaume/systems/layout.hpp"
 
 namespace guillaume::entities
 {
 	SegmentedButton::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 									  ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<SegmentedButton>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	SegmentedButton::Builder::~Builder(void)
+	std::shared_ptr<SegmentedButton> SegmentedButton::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<SegmentedButton>
-		SegmentedButton::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_segmentedButton = std::make_shared<SegmentedButton>(
+		auto entity = std::make_shared<SegmentedButton>(
 			this->getComponentRegistry(), _labels, _selectionMode, _onChange);
-		_segmentedButton->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_segmentedButton);
-
-		auto segmentedButtonCopy = _segmentedButton;
-
-		reset();
-
-		return segmentedButtonCopy;
+		return entity;
 	}
 
 	void SegmentedButton::Builder::reset(void)
 	{
-		_segmentedButton.reset();
 		_labels.clear();
 		_selectionMode = SelectionMode::Single;
 		_onChange	   = {};
@@ -81,15 +70,6 @@ namespace guillaume::entities
 	{
 		_onChange = std::move(onChange);
 		return *this;
-	}
-
-	SegmentedButton::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	SegmentedButton::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<SegmentedButton>
@@ -129,47 +109,25 @@ namespace guillaume::entities
 
 	void SegmentedButton::layoutSegments(void)
 	{
-		const auto segmentedPose =
-			getComponentRegistry()
-				.getComponent<components::Transform>(getIdentifier())
-				.getPose();
+		std::vector<ecs::Entity::Identifier> childIdentifiers;
+		childIdentifiers.reserve(_segments.size());
 
-		auto &selfBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
-
-		float offsetX = 0.0f;
-		float height  = 0.0f;
-
-		for (std::size_t i = 0; i < _segments.size(); ++i) {
-			const auto segmentId = _segments[i]->getIdentifier();
-
-			const auto &bound =
-				getComponentRegistry().getComponent<components::Bound>(
-					segmentId);
-			const float width = bound.getWidth();
-
-			height = bound.getHeight() > height ? bound.getHeight() : height;
-
-			utility::graphic::PoseF segmentPose = segmentedPose;
-			segmentPose.setPosition(utility::graphic::PositionF(
-				segmentedPose.getPosition().getX() + offsetX,
-				segmentedPose.getPosition().getY(),
-				segmentedPose.getPosition().getZ()));
-
-			getComponentRegistry()
-				.getComponent<components::Transform>(segmentId)
-				.setPose(segmentPose);
-
-			offsetX += width;
+		for (const auto &segment: _segments) {
+			childIdentifiers.push_back(segment->getIdentifier());
 		}
 
-		selfBound.setWidth(offsetX).setHeight(height);
+		systems::Layout::apply(getComponentRegistry(), getIdentifier(),
+							   childIdentifiers,
+							   static_cast<std::uint32_t>(getLayer()));
 
 		if (_segments.empty()) {
 			return;
 		}
 
+		const float height =
+			getComponentRegistry()
+				.getComponent<components::Bound>(getIdentifier())
+				.getHeight();
 		const float radius		= height * 0.5f;
 		const std::size_t count = _segments.size();
 
@@ -193,13 +151,21 @@ namespace guillaume::entities
 									 const std::vector<std::string> &labels,
 									 SelectionMode selectionMode,
 									 std::function<void(std::size_t)> onChange)
-		: ecs::ParentEntityFiller<components::Transform, components::Bound>(
-			  registry)
+		: ecs::ParentEntityFiller<components::Transform, components::Bound,
+								  components::Layout>(registry)
 		, _labels(labels)
 		, _selectionMode(selectionMode)
 		, _segments()
 		, _onChange(std::move(onChange))
 	{
+		getComponentRegistry()
+			.getComponent<components::Layout>(getIdentifier())
+			.setAxis(components::Layout::Axis::Horizontal)
+			.setMainAxisAlignment(components::Layout::MainAxisAlignment::Start)
+			.setCrossAxisAlignment(
+				components::Layout::CrossAxisAlignment::Center)
+			.setSpacing(0.0f)
+			.setPadding(0.0f);
 	}
 
 	SegmentedButton::~SegmentedButton(void)

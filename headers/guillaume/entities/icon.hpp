@@ -25,6 +25,7 @@
 #include <utility/graphic/color.hpp>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
@@ -48,11 +49,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Icon` entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<Icon>
 		{
 			private:
-			std::shared_ptr<Icon>
-				_icon;	  ///< Unique pointer to the Icon entity being built
 			std::string _glyphName;	   ///< Name of the glyph to be used
 			float _fontSize;		   ///< Font size of the icon to be used
 			utility::graphic::Color32Bit
@@ -72,18 +71,10 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the Icon Builder class.
+			 * @brief Build the Icon entity from the current configuration.
+			 * @return The newly created Icon.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the icon entity.
-			 * @param parent The parent entity to which the new icon entity will
-			 * be attached.
-			 * @return A shared pointer to the newly created icon entity.
-			 */
-			std::shared_ptr<Icon>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<Icon> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -126,19 +117,9 @@ namespace guillaume::entities
 		 * @brief Director that orchestrates `Icon::Builder` to create
 		 * preconfigured icon entities.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Icon Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor for the Icon Director class.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a default icon entity using the builder.
 			 * @param builder The builder instance used to configure and create

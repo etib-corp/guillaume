@@ -20,45 +20,33 @@
  SOFTWARE.
  */
 
+#include <memory>
 #include <utility>
 
 #include "guillaume/entities/icon_button.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
 	IconButton::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<IconButton>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	IconButton::Builder::~Builder(void)
+	std::shared_ptr<IconButton> IconButton::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<IconButton>
-		IconButton::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_iconButton = std::make_shared<IconButton>(
+		auto entity = std::make_shared<IconButton>(
 			this->getComponentRegistry(), _iconGlyphName,
 			_selectedIconGlyphName, _iconStyle, _isToggle, _variant, _size,
 			_isDisabled, _accessibilityLabel, _onClick);
-		_iconButton->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_iconButton);
-
-		auto iconButtonCopy = _iconButton;
-
-		reset();
-
-		return iconButtonCopy;
+		return entity;
 	}
 
 	void IconButton::Builder::reset(void)
 	{
-		_iconButton.reset();
 		_iconGlyphName.clear();
 		_selectedIconGlyphName.clear();
 		_iconStyle	= components::Glyph::Style::Outlined;
@@ -129,15 +117,6 @@ namespace guillaume::entities
 	{
 		_accessibilityLabel = accessibilityLabel;
 		return *this;
-	}
-
-	IconButton::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	IconButton::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<IconButton> IconButton::Director::makeIconButton(

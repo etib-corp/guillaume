@@ -20,46 +20,36 @@
  SOFTWARE.
  */
 
+#include <memory>
 #include <utility>
 
 #include "guillaume/entities/floating_action_button_menu.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/floating_action_button.hpp"
+#include "guillaume/systems/layout.hpp"
 
 namespace guillaume::entities
 {
 	FloatingActionButtonMenu::Builder::Builder(
 		ecs::ComponentRegistry &componentRegistry,
 		ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<FloatingActionButtonMenu>(componentRegistry,
+													  entityRegistry)
 	{
 		reset();
-	}
-
-	FloatingActionButtonMenu::Builder::~Builder(void)
-	{
 	}
 
 	std::shared_ptr<FloatingActionButtonMenu>
-		FloatingActionButtonMenu::Builder::registerEntity(
-			std::shared_ptr<Entity> parent)
+		FloatingActionButtonMenu::Builder::buildEntity(void)
 	{
-		_menu = std::make_shared<FloatingActionButtonMenu>(
+		auto entity = std::make_shared<FloatingActionButtonMenu>(
 			this->getComponentRegistry(), _iconGlyphName, _actions,
 			_accessibilityLabel);
-		_menu->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_menu);
-
-		auto menuCopy = _menu;
-
-		reset();
-
-		return menuCopy;
+		return entity;
 	}
 
 	void FloatingActionButtonMenu::Builder::reset(void)
 	{
-		_menu.reset();
 		_iconGlyphName.clear();
 		_actions.clear();
 		_accessibilityLabel.clear();
@@ -89,15 +79,6 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	FloatingActionButtonMenu::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	FloatingActionButtonMenu::Director::~Director(void)
-	{
-	}
-
 	std::shared_ptr<FloatingActionButtonMenu>
 		FloatingActionButtonMenu::Director::makeFloatingActionButtonMenu(
 			Builder &builder, std::shared_ptr<Entity> parent,
@@ -110,8 +91,8 @@ namespace guillaume::entities
 		ecs::ComponentRegistry &registry, const std::string &iconGlyphName,
 		const std::vector<Action> &actions,
 		const std::string &accessibilityLabel)
-		: ecs::ParentEntityFiller<components::Transform, components::Bound>(
-			  registry)
+		: ecs::ParentEntityFiller<components::Transform, components::Bound,
+								  components::Layout>(registry)
 		, _iconGlyphName(iconGlyphName)
 		, _actions(actions)
 		, _accessibilityLabel(accessibilityLabel)
@@ -119,6 +100,14 @@ namespace guillaume::entities
 		, _trigger()
 		, _actionButtons()
 	{
+		getComponentRegistry()
+			.getComponent<components::Layout>(getIdentifier())
+			.setAxis(components::Layout::Axis::Vertical)
+			.setMainAxisAlignment(components::Layout::MainAxisAlignment::End)
+			.setCrossAxisAlignment(
+				components::Layout::CrossAxisAlignment::Center)
+			.setSpacing(16.0f)
+			.setPadding(0.0f);
 	}
 
 	FloatingActionButtonMenu::~FloatingActionButtonMenu(void)
@@ -178,51 +167,21 @@ namespace guillaume::entities
 
 	void FloatingActionButtonMenu::layoutMenu(void)
 	{
-		const auto menuPose =
-			getComponentRegistry()
-				.getComponent<components::Transform>(getIdentifier())
-				.getPose();
+		std::vector<ecs::Entity::Identifier> childIdentifiers;
 
-		auto &selfBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
-
-		utility::graphic::PoseF triggerPose = menuPose;
-		getComponentRegistry()
-			.getComponent<components::Transform>(_trigger->getIdentifier())
-			.setPose(triggerPose);
-
-		const auto &triggerBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				_trigger->getIdentifier());
-		const float triggerSize = triggerBound.getHeight();
-		const float spacing		= 16.0f;
-
-		if (!_isOpen) {
-			selfBound.setWidth(triggerBound.getWidth())
-				.setHeight(triggerBound.getHeight());
-			return;
+		if (_isOpen) {
+			for (const auto &button: _actionButtons) {
+				childIdentifiers.push_back(button->getIdentifier());
+			}
 		}
 
-		float offsetY = triggerSize + spacing;
-
-		for (auto &button: _actionButtons) {
-			utility::graphic::PoseF actionPose = menuPose;
-			actionPose.setPosition(utility::graphic::PositionF(
-				menuPose.getPosition().getX(),
-				menuPose.getPosition().getY() - offsetY,
-				menuPose.getPosition().getZ()));
-
-			getComponentRegistry()
-				.getComponent<components::Transform>(button->getIdentifier())
-				.setPose(actionPose);
-
-			const auto &actionBound =
-				getComponentRegistry().getComponent<components::Bound>(
-					button->getIdentifier());
-
-			offsetY += actionBound.getHeight() + spacing;
+		if (_trigger != nullptr) {
+			childIdentifiers.push_back(_trigger->getIdentifier());
 		}
+
+		systems::Layout::apply(getComponentRegistry(), getIdentifier(),
+							   childIdentifiers,
+							   static_cast<std::uint32_t>(getLayer()));
 	}
 
 	void FloatingActionButtonMenu::initialize(void)

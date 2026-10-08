@@ -23,6 +23,7 @@
 #pragma once
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
@@ -45,11 +46,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Image` entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<Image>
 		{
 			private:
-			std::shared_ptr<Image>
-				_image;	   ///< Unique pointer to the Image entity being built
 			std::string _texturePath;	 ///< Name of the texture to be used for
 										 ///< this Image entity
 
@@ -65,18 +64,10 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the Image Builder class.
+			 * @brief Build the Image entity from the current configuration.
+			 * @return The newly created Image.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the image entity.
-			 * @param parent The parent entity to which the new image entity
-			 * will be attached.
-			 * @return A shared pointer to the newly created image entity.
-			 */
-			std::shared_ptr<Image>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<Image> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -97,19 +88,9 @@ namespace guillaume::entities
 		 * @brief Director that orchestrates `Image::Builder` to create
 		 * preconfigured image entities.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Image Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor for the Image Director class.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a default image entity using the builder.
 			 * @param builder The builder instance used to configure and create

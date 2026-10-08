@@ -33,6 +33,12 @@ namespace guillaume::ecs
 		return _componentRegistry;
 	}
 
+	template<InheritFromComponent... ComponentTypes> const ComponentRegistry &
+		ParentEntityFiller<ComponentTypes...>::getComponentRegistry(void) const
+	{
+		return _componentRegistry;
+	}
+
 	template<InheritFromComponent... ComponentTypes>
 	ParentEntityFiller<ComponentTypes...>::ParentEntityFiller(
 		ComponentRegistry &componentRegistry)

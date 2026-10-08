@@ -69,9 +69,9 @@ namespace guillaume::systems
 		const auto &modelComponent =
 			getComponent<components::Model>(entityIdentifier);
 
-		const std::string &modelPath	= modelComponent.getModelPath();
-		const std::string &texturePath	= modelComponent.getTexturePath();
-		const auto &pose				= transformComponent.getPose();
+		const std::string &modelPath   = modelComponent.getModelPath();
+		const std::string &texturePath = modelComponent.getTexturePath();
+		const auto &pose			   = transformComponent.getPose();
 
 		getLogger().debug() << "Rendering model '" << modelPath
 							<< "' for entity " << entityIdentifier;
@@ -81,9 +81,8 @@ namespace guillaume::systems
 			: _ressourceProvider->loadModel(modelPath, pose, texturePath);
 
 		if (!model) {
-			getLogger().warning()
-				<< "Failed to load model '" << modelPath << "' for entity "
-				<< entityIdentifier;
+			getLogger().warning() << "Failed to load model '" << modelPath
+								  << "' for entity " << entityIdentifier;
 			return;
 		}
 
@@ -100,13 +99,14 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			size_t objectId = _engine->createObject(renderable);
-			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+			insert(entityIdentifier,
+				   RenderHandle { objectId, renderable, true });
 		} else {
 			if (!_engine->updateObject(renderable, handle->objectId)) {
 				handle->objectId = _engine->createObject(renderable);
 			}
 			handle->renderable = renderable;
-			handle->used	  = true;
+			handle->used	   = true;
 		}
 	}
 

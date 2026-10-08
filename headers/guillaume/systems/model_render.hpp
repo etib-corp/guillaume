@@ -51,7 +51,8 @@ namespace guillaume::systems
 		std::shared_ptr<utility::RessourceProvider>
 			_ressourceProvider;	   //< Shared resource provider for loading
 								   // fonts and models
-		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine instance
+		std::unique_ptr<utility::Engine>
+			&_engine;	 ///< utility::Engine instance
 
 		public:
 		/**

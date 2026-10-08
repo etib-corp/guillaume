@@ -20,9 +20,11 @@
  SOFTWARE.
  */
 
+#include <memory>
 #include <utility>
 
 #include "guillaume/entities/extended_floating_action_button.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -30,37 +32,24 @@ namespace guillaume::entities
 	ExtendedFloatingActionButton::Builder::Builder(
 		ecs::ComponentRegistry &componentRegistry,
 		ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<ExtendedFloatingActionButton>(componentRegistry,
+														  entityRegistry)
 	{
 		reset();
-	}
-
-	ExtendedFloatingActionButton::Builder::~Builder(void)
-	{
 	}
 
 	std::shared_ptr<ExtendedFloatingActionButton>
-		ExtendedFloatingActionButton::Builder::registerEntity(
-			std::shared_ptr<Entity> parent)
+		ExtendedFloatingActionButton::Builder::buildEntity(void)
 	{
-		_fab = std::make_shared<ExtendedFloatingActionButton>(
+		auto entity = std::make_shared<ExtendedFloatingActionButton>(
 			this->getComponentRegistry(), _iconGlyphName, _iconStyle,
 			_labelContent, _variant, _size, _lowered, _isDisabled,
 			_accessibilityLabel, _onClick);
-		_fab->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_fab);
-
-		auto fabCopy = _fab;
-
-		reset();
-
-		return fabCopy;
+		return entity;
 	}
 
 	void ExtendedFloatingActionButton::Builder::reset(void)
 	{
-		_fab.reset();
 		_iconGlyphName.clear();
 		_iconStyle = components::Glyph::Style::Outlined;
 		_labelContent.clear();
@@ -140,15 +129,6 @@ namespace guillaume::entities
 	{
 		_accessibilityLabel = accessibilityLabel;
 		return *this;
-	}
-
-	ExtendedFloatingActionButton::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	ExtendedFloatingActionButton::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<ExtendedFloatingActionButton> ExtendedFloatingActionButton::

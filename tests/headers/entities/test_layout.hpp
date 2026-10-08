@@ -22,25 +22,13 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
+#include "entities/family_fixture.hpp"
 
-#include <guillaume/component_registry.hpp>
 #include <guillaume/entities/layout.hpp>
 
 namespace guillaume::entities::tests
 {
 
-	class TestLayout: public ::testing::Test
-	{
-		protected:
-		TestLayout(void)		   = default;
-		~TestLayout(void) override = default;
-		void SetUp(void) override
-		{
-		}
-		void TearDown(void) override
-		{
-		}
-	};
+	using TestLayout = FamilyFixture<Layout>;
 
 }	 // namespace guillaume::entities::tests

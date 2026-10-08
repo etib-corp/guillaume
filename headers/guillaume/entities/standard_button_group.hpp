@@ -28,12 +28,14 @@
 #include <vector>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/parent_entity_filler.hpp"
 
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/bound.hpp"
+#include "guillaume/components/layout.hpp"
 
 #include "guillaume/entities/button_base.hpp"
 
@@ -46,18 +48,17 @@ namespace guillaume::entities
 	 */
 	class StandardButtonGroup:
 		public std::enable_shared_from_this<StandardButtonGroup>,
-		public ecs::ParentEntityFiller<components::Transform, components::Bound>
+		public ecs::ParentEntityFiller<components::Transform, components::Bound,
+									   components::Layout>
 	{
 		public:
 		/**
 		 * @brief Builder used to configure and create `StandardButtonGroup`
 		 * entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<StandardButtonGroup>
 		{
 			private:
-			std::shared_ptr<StandardButtonGroup>
-				_group;							 ///< Group entity being built
 			std::vector<std::string> _labels;	 ///< Labels of the buttons
 			float _gap;							 ///< Gap between the buttons
 
@@ -72,18 +73,11 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the Builder class.
+			 * @brief Build the StandardButtonGroup entity from the current
+			 * configuration.
+			 * @return The newly created StandardButtonGroup.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the group entity.
-			 * @param parent The parent entity to which the new entity will be
-			 * attached.
-			 * @return A shared pointer to the newly created group entity.
-			 */
-			std::shared_ptr<StandardButtonGroup>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<StandardButtonGroup> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state.
@@ -108,19 +102,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Director that orchestrates `StandardButtonGroup::Builder`.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a standard button group using the builder.
 			 * @param builder The builder used to configure and create the

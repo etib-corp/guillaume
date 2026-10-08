@@ -20,7 +20,10 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include "guillaume/entities/layout.hpp"
+#include "guillaume/entities/builder_base.hpp"
 
 #include "guillaume/systems/layout.hpp"
 
@@ -29,37 +32,23 @@ namespace guillaume::entities
 
 	Layout::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 							 ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<Layout>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	Layout::Builder::~Builder(void)
+	std::shared_ptr<Layout> Layout::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<Layout>
-		Layout::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_layout = std::make_shared<Layout>(
+		auto entity = std::make_shared<Layout>(
 			this->getComponentRegistry(), _pose, _color, _borderRadius, _axis,
 			_mainAxisAlignment, _crossAxisAlignment, _spacing, _padding,
 			_hasFixedWidth, _fixedWidth, _hasFixedHeight, _fixedHeight,
 			_entities);
-		_layout->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_layout);
-
-		auto layoutCopy = _layout;
-
-		reset();
-
-		return layoutCopy;
+		return entity;
 	}
 
 	void Layout::Builder::reset(void)
 	{
-		_layout.reset();
 		_pose				= utility::graphic::PoseF();
 		_color				= { 255, 255, 255, 255 };
 		_borderRadius		= 16.0f;
@@ -146,15 +135,6 @@ namespace guillaume::entities
 	{
 		_entities = entities;
 		return *this;
-	}
-
-	Layout::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	Layout::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<Layout> Layout::Director::makeDefaultLayout(

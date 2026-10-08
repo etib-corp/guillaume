@@ -36,9 +36,9 @@ namespace guillaume::systems
 		_engine->clearScissor();
 	}
 
-	components::Clip::Rect Clip::computeRect(
-		const utility::graphic::PoseF &pose, float width, float height,
-		float margin)
+	components::Clip::Rect
+		Clip::computeRect(const utility::graphic::PoseF &pose, float width,
+						  float height, float margin)
 	{
 		components::Clip::Rect rect;
 
@@ -67,8 +67,8 @@ namespace guillaume::systems
 			getComponent<components::Transform>(entityIdentifier).getPose();
 		const auto &bound = getComponent<components::Bound>(entityIdentifier);
 
-		const auto rect = computeRect(pose, bound.getWidth(),
-									  bound.getHeight(), clip.getMargin());
+		const auto rect = computeRect(pose, bound.getWidth(), bound.getHeight(),
+									  clip.getMargin());
 		clip.setRect(rect);
 
 		_engine->setScissor(utility::graphic::ScissorRect {

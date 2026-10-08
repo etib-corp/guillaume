@@ -20,41 +20,31 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include "guillaume/entities/icon.hpp"
+#include "guillaume/entities/builder_base.hpp"
 
 namespace guillaume::entities
 {
 
 	Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								 ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<Icon>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	Icon::Builder::~Builder(void)
+	std::shared_ptr<Icon> Icon::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<Icon>
-		Icon::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_icon = std::make_shared<Icon>(this->getComponentRegistry(), _glyphName,
-									   _fontSize, _color, _style);
-		_icon->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_icon);
-
-		auto iconCopy = _icon;
-
-		reset();
-
-		return iconCopy;
+		auto entity =
+			std::make_shared<Icon>(this->getComponentRegistry(), _glyphName,
+								   _fontSize, _color, _style);
+		return entity;
 	}
 
 	void Icon::Builder::reset(void)
 	{
-		_icon.reset();
 		_glyphName.clear();
 		_fontSize = 24.0f;
 		_color	  = { 255, 255, 255, 255 };
@@ -85,15 +75,6 @@ namespace guillaume::entities
 	{
 		_style = style;
 		return *this;
-	}
-
-	Icon::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	Icon::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<Icon> Icon::Director::makeIcon(

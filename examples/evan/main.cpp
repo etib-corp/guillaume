@@ -38,7 +38,7 @@
 
 #include <guillaume/components/bound.hpp>
 #include <guillaume/entities/button.hpp>
-#include <guillaume/entities/container.hpp>
+#include <guillaume/entities/layout.hpp>
 #include <guillaume/entities/model.hpp>
 
 #include <utility/graphic/color.hpp>
@@ -66,21 +66,16 @@ namespace
 		{
 			auto &containerBuilder =
 				getBuilderManager()
-					.getBuilder<guillaume::entities::Container::Builder>();
+					.getBuilder<guillaume::entities::Layout::Builder>();
 			auto &containerDirector =
 				getDirectorManager()
-					.getDirector<guillaume::entities::Container::Director>();
+					.getDirector<guillaume::entities::Layout::Director>();
 
-			auto container = containerDirector.makeColorContainer(
+			auto container = containerDirector.makeColorLayout(
 				containerBuilder, nullptr, PoseF(),
 				Color32Bit(64, 144, 240, 255), {});
 			container->setBorderRadius(24.0f);
-
-			getComponentRegistry()
-				.getComponent<guillaume::components::Bound>(
-					container->getIdentifier())
-				.setWidth(260.0f)
-				.setHeight(140.0f);
+			container->setFixedWidth(260.0f).setFixedHeight(140.0f);
 
 			addRootEntity("container", container);
 
@@ -92,7 +87,9 @@ namespace
 					.getDirector<guillaume::entities::Button::Director>();
 
 			auto button = buttonDirector.makeButton(
-				buttonBuilder, nullptr, "Click me", []() {},
+				buttonBuilder, nullptr, "Click me",
+				[]() {
+				},
 				guillaume::entities::Button::Color::Filled,
 				guillaume::entities::Button::Shape::Round,
 				guillaume::entities::Button::Size::Medium, false);

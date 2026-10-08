@@ -27,6 +27,7 @@
 #include <string>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
@@ -56,11 +57,9 @@ namespace guillaume::entities
 		 * @brief Builder used to configure and create
 		 * `ExtendedFloatingActionButton` entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<ExtendedFloatingActionButton>
 		{
 			private:
-			std::shared_ptr<ExtendedFloatingActionButton>
-				_fab;					   ///< Extended FAB being built
 			std::string _iconGlyphName;	   ///< Icon glyph name to attach
 			components::Glyph::Style
 				_iconStyle;				  ///< Style of the icon to attach
@@ -84,18 +83,12 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor.
-			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the extended FAB entity.
-			 * @param parent The parent entity to which the new entity will be
-			 * attached.
-			 * @return A shared pointer to the newly created entity.
+			 * @brief Build the ExtendedFloatingActionButton entity from the
+			 * current configuration.
+			 * @return The newly created ExtendedFloatingActionButton.
 			 */
 			std::shared_ptr<ExtendedFloatingActionButton>
-				registerEntity(std::shared_ptr<Entity> parent);
+				buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state.
@@ -170,19 +163,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Director that orchestrates `ExtendedFloatingActionButton`.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Director.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create an extended FAB using the builder.
 			 * @param builder The builder instance used to configure and create

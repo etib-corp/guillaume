@@ -22,25 +22,13 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
+#include "entities/family_fixture.hpp"
 
-#include <guillaume/component_registry.hpp>
 #include <guillaume/entities/split_button.hpp>
 
 namespace guillaume::entities::tests
 {
 
-	class TestSplitButton: public ::testing::Test
-	{
-		protected:
-		TestSplitButton(void)			= default;
-		~TestSplitButton(void) override = default;
-		void SetUp(void) override
-		{
-		}
-		void TearDown(void) override
-		{
-		}
-	};
+	using TestSplitButton = FamilyFixture<SplitButton>;
 
 }	 // namespace guillaume::entities::tests

@@ -27,6 +27,7 @@
 #include <string>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
@@ -54,11 +55,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `IconButton` entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<IconButton>
 		{
 			private:
-			std::shared_ptr<IconButton>
-				_iconButton;			   ///< Icon button entity being built
 			std::string _iconGlyphName;	   ///< Icon glyph name to attach
 			std::string _selectedIconGlyphName;	   ///< Icon glyph name shown
 												   ///< when selected
@@ -82,18 +81,11 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the IconButton Builder class.
+			 * @brief Build the IconButton entity from the current
+			 * configuration.
+			 * @return The newly created IconButton.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the icon button entity.
-			 * @param parent The parent entity to which the new entity will be
-			 * attached.
-			 * @return A shared pointer to the newly created icon button entity.
-			 */
-			std::shared_ptr<IconButton>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<IconButton> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state.
@@ -168,19 +160,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Director that orchestrates `IconButton::Builder`.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new IconButton Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor for the IconButton Director class.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create an icon button entity using the builder.
 			 * @param builder The builder instance used to configure and create

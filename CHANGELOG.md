@@ -13,6 +13,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Material Design 3 component families (#39–#66): `AppBar`, `Badge`,
+  `BottomSheet`, `Card`, `Carousel`, `Checkbox`, `Chip`, `DatePicker`,
+  `Dialog`, `Divider`, `List`, `LoadingIndicator`, `Menu`, `NavigationBar`,
+  `NavigationDrawer`, `NavigationRail`, `ProgressIndicator`, `RadioButton`,
+  `Search`, `SideSheet`, `Slider`, `Snackbar`, `Switch`, `Tabs`, `TextField`,
+  `TimePicker`, `Toolbar`, and `Tooltip`, each with a `Builder` + `Director`
+  and `TEST_F` coverage.
+- Shared entity foundations for component families: `entities::SurfaceBase`
+  and `entities::SurfaceConfig`, which arrange children through
+  `systems::Layout` instead of hand-rolled geometry, plus
+  `entities/content_helpers.hpp`, `entities/style_helpers.hpp`,
+  `entities/placement_helpers.hpp` and `entities/overlay_helpers.hpp`.
+- Reusable `entities::EntityBuilderBase` (`buildEntity` hook + shared
+  `registerEntity`) and `entities::EntityDirectorBase`, adopted by all 41
+  entity builders/directors to remove the repeated boilerplate.
+- `systems::Selection::select`, which selects a child and reconciles a
+  `components::SelectionGroup` in one call.
+- Registered `components::Ellipse` in `ComponentRegistry`.
 - Standard open-source documentation: `CHANGELOG.md`, `CODE_OF_CONDUCT.md`,
   `CONTRIBUTING.md`, `SECURITY.md`, `AUTHORS.md`, and `LICENSE`.
 - Packaging & consumability: `install()`/`export()`, a CMake package config
@@ -39,14 +57,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   valid phases and validates the phase bounds.
 - `Entity::initialize`/`update` are no longer pure virtual (default no-ops).
 - Added `noexcept` to trivial getters across the ECS.
+- Rebased the button composite families (`SegmentedButton`, `SplitButton`,
+  `StandardButtonGroup`, `FloatingActionButtonMenu`) onto `systems::Layout`,
+  replacing their hand-rolled child positioning.
+- `ButtonBase` now reuses `systems::Layout::applyLayerToPosition` and the shared
+  `entities/style_helpers.hpp` helpers instead of duplicating them.
+- Refactored the M3 families to remove duplication: all builders/directors use
+  the shared CRTP bases; the navigation/tab/date families route exclusive
+  selection through `systems::Selection`; absolutely-positioned children use
+  `entities/placement_helpers.hpp`; the shared panel preset lives in
+  `SurfaceConfig::panel`.
+- Overlay families expose canonical `show()/hide()/isVisible()` with
+  `open()/close()/isOpen()` as forwarding aliases.
+- Component getters (`isVisible/isOpen/isSelected/isChecked/isRunning`,
+  `getText/getValue/getLow/getHigh`) are now `const`.
+- Test fixtures are consolidated into the shared
+  `tests/headers/entities/family_fixture.hpp` helper.
 
 ### Fixed
 
+- `DatePicker` day cells now render their day-number labels (the label child
+  was built but never attached).
 - Removed the shared `static firstView` in `Application::routine` (was shared
   across instances).
 - Removed the empty `test_entity_registry.cpp` test stub.
 - Fixed pre-existing test build failures (abstract `Entity` instantiation,
   stale test APIs, missing font asset).
+- Updated the `evan` example to the `entities::Layout` API (the removed
+  `entities::Container` was still referenced).
 
 ## [1.0.0] - 2025-08-25
 

@@ -145,15 +145,14 @@ namespace guillaume::entities::tests
 		entities::Text::Builder builder(registry, entityRegistry);
 		entities::Text::Director director;
 
-		auto text = director.makeText(
-			builder, parent, "Hello", 18.0f,
-			utility::graphic::Color32Bit(255, 255, 255, 255));
+		auto text =
+			director.makeText(builder, parent, "Hello", 18.0f,
+							  utility::graphic::Color32Bit(255, 255, 255, 255));
 		text->update();
 
 		ASSERT_NE(text, nullptr);
 		EXPECT_EQ(text->getParent(), parent);
-		EXPECT_EQ(registry.getComponent<components::Text>(
-					  text->getIdentifier())
+		EXPECT_EQ(registry.getComponent<components::Text>(text->getIdentifier())
 					  .getContent(),
 				  "Hello");
 	}

@@ -20,44 +20,33 @@
  SOFTWARE.
  */
 
+#include <memory>
 #include <utility>
 
 #include "guillaume/entities/split_button.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/icon_button.hpp"
 #include "guillaume/entities/button.hpp"
+#include "guillaume/systems/layout.hpp"
 
 namespace guillaume::entities
 {
 	SplitButton::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								  ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<SplitButton>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	SplitButton::Builder::~Builder(void)
+	std::shared_ptr<SplitButton> SplitButton::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<SplitButton>
-		SplitButton::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_splitButton = std::make_shared<SplitButton>(
+		auto entity = std::make_shared<SplitButton>(
 			this->getComponentRegistry(), _labelContent, _onClick, _onMenuOpen);
-		_splitButton->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_splitButton);
-
-		auto splitButtonCopy = _splitButton;
-
-		reset();
-
-		return splitButtonCopy;
+		return entity;
 	}
 
 	void SplitButton::Builder::reset(void)
 	{
-		_splitButton.reset();
 		_labelContent.clear();
 		_onClick	= {};
 		_onMenuOpen = {};
@@ -84,15 +73,6 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	SplitButton::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	SplitButton::Director::~Director(void)
-	{
-	}
-
 	std::shared_ptr<SplitButton> SplitButton::Director::makeSplitButton(
 		Builder &builder, std::shared_ptr<Entity> parent,
 		const std::string &labelContent, std::function<void(void)> onClick,
@@ -108,14 +88,22 @@ namespace guillaume::entities
 							 const std::string &labelContent,
 							 std::function<void(void)> onClick,
 							 std::function<void(void)> onMenuOpen)
-		: ecs::ParentEntityFiller<components::Transform, components::Bound>(
-			  registry)
+		: ecs::ParentEntityFiller<components::Transform, components::Bound,
+								  components::Layout>(registry)
 		, _labelContent(labelContent)
 		, _onClick(std::move(onClick))
 		, _onMenuOpen(std::move(onMenuOpen))
 		, _action()
 		, _chevron()
 	{
+		getComponentRegistry()
+			.getComponent<components::Layout>(getIdentifier())
+			.setAxis(components::Layout::Axis::Horizontal)
+			.setMainAxisAlignment(components::Layout::MainAxisAlignment::Start)
+			.setCrossAxisAlignment(
+				components::Layout::CrossAxisAlignment::Center)
+			.setSpacing(0.0f)
+			.setPadding(0.0f);
 	}
 
 	SplitButton::~SplitButton(void)
@@ -136,39 +124,14 @@ namespace guillaume::entities
 
 	void SplitButton::layoutParts(void)
 	{
-		const auto splitPose =
-			getComponentRegistry()
-				.getComponent<components::Transform>(getIdentifier())
-				.getPose();
-
-		auto &selfBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
+		systems::Layout::apply(
+			getComponentRegistry(), getIdentifier(),
+			{ _action->getIdentifier(), _chevron->getIdentifier() },
+			static_cast<std::uint32_t>(getLayer()));
 
 		const auto actionBound =
 			getComponentRegistry().getComponent<components::Bound>(
 				_action->getIdentifier());
-		const auto chevronBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				_chevron->getIdentifier());
-
-		utility::graphic::PoseF actionPose = splitPose;
-		actionPose.setPosition(utility::graphic::PositionF(
-			splitPose.getPosition().getX(), splitPose.getPosition().getY(),
-			splitPose.getPosition().getZ()));
-
-		getComponentRegistry()
-			.getComponent<components::Transform>(_action->getIdentifier())
-			.setPose(actionPose);
-
-		utility::graphic::PoseF chevronPose = splitPose;
-		chevronPose.setPosition(utility::graphic::PositionF(
-			splitPose.getPosition().getX() + actionBound.getWidth(),
-			splitPose.getPosition().getY(), splitPose.getPosition().getZ()));
-
-		getComponentRegistry()
-			.getComponent<components::Transform>(_chevron->getIdentifier())
-			.setPose(chevronPose);
 
 		auto &actionBorders =
 			getComponentRegistry().getComponent<components::Borders>(
@@ -188,13 +151,6 @@ namespace guillaume::entities
 			.setBottomLeftRadius(0.0f)
 			.setTopRightRadius(radius)
 			.setBottomRightRadius(radius);
-
-		const float height = actionBound.getHeight() > chevronBound.getHeight()
-			? actionBound.getHeight()
-			: chevronBound.getHeight();
-
-		selfBound.setWidth(actionBound.getWidth() + chevronBound.getWidth())
-			.setHeight(height);
 	}
 
 	void SplitButton::initialize(void)

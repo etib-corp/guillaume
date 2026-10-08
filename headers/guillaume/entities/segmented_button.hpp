@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/parent_entity_filler.hpp"
@@ -35,6 +36,7 @@
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/borders.hpp"
+#include "guillaume/components/layout.hpp"
 
 #include "guillaume/entities/button_base.hpp"
 
@@ -46,7 +48,8 @@ namespace guillaume::entities
 	 */
 	class SegmentedButton:
 		public std::enable_shared_from_this<SegmentedButton>,
-		public ecs::ParentEntityFiller<components::Transform, components::Bound>
+		public ecs::ParentEntityFiller<components::Transform, components::Bound,
+									   components::Layout>
 	{
 		public:
 		/**
@@ -58,7 +61,7 @@ namespace guillaume::entities
 		 * @brief Builder used to configure and create `SegmentedButton`
 		 * entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<SegmentedButton>
 		{
 			private:
 			std::shared_ptr<SegmentedButton>
@@ -80,20 +83,11 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the SegmentedButton Builder
-			 * class.
+			 * @brief Build the SegmentedButton entity from the current
+			 * configuration.
+			 * @return The newly created SegmentedButton.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the segmented button entity.
-			 * @param parent The parent entity to which the new entity will be
-			 * attached.
-			 * @return A shared pointer to the newly created connected button
-			 * group entity.
-			 */
-			std::shared_ptr<SegmentedButton>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<SegmentedButton> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state.
@@ -125,20 +119,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Director that orchestrates `SegmentedButton::Builder`.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new SegmentedButton Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor for the SegmentedButton Director
-			 * class.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a segmented button entity using the builder.
 			 * @param builder The builder instance used to configure and create

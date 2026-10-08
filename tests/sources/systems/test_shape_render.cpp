@@ -59,8 +59,8 @@ namespace guillaume::systems::tests
 
 		_ringSystem->update(entity);
 
-		_componentRegistry.getComponent<components::Ring>(entity)
-			.setThickness(12.0f);
+		_componentRegistry.getComponent<components::Ring>(entity).setThickness(
+			12.0f);
 
 		_ringSystem->update(entity);
 
@@ -113,8 +113,8 @@ namespace guillaume::systems::tests
 
 		_arcSystem->update(entity);
 
-		_componentRegistry.getComponent<components::Arc>(entity)
-			.setSweepAngle(1.0f);
+		_componentRegistry.getComponent<components::Arc>(entity).setSweepAngle(
+			1.0f);
 
 		_arcSystem->update(entity);
 

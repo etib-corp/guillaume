@@ -29,6 +29,7 @@
 #include <utility/graphic/color.hpp>
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
@@ -69,11 +70,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Layout` entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<Layout>
 		{
 			private:
-			std::shared_ptr<Layout>
-				_layout;	///< Pointer to the Layout entity being built.
 			utility::graphic::PoseF _pose;			///< Pose of the container.
 			utility::graphic::Color32Bit _color;	///< Surface color.
 			float _borderRadius;	///< Border radius of the surface.
@@ -102,17 +101,10 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the Layout Builder class.
+			 * @brief Build the Layout entity from the current configuration.
+			 * @return The newly created Layout.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the layout entity.
-			 * @param parent The parent entity to attach the container to.
-			 * @return A shared pointer to the newly created container entity.
-			 */
-			std::shared_ptr<Layout>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<Layout> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state.
@@ -201,19 +193,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Director that orchestrates `Layout::Builder`.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Layout Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor for the Layout Director class.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a default layout entity.
 			 * @param builder The builder used to configure the entity.

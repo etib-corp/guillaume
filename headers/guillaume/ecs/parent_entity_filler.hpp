@@ -46,6 +46,12 @@ namespace guillaume::ecs
 		 */
 		ComponentRegistry &getComponentRegistry(void);
 
+		/**
+		 * @brief Get the Component Registry (const).
+		 * @return Const reference to the component registry.
+		 */
+		const ComponentRegistry &getComponentRegistry(void) const;
+
 		public:
 		/**
 		 * @brief Construct a new Parent Entity Filler object.

@@ -57,7 +57,7 @@ namespace guillaume::systems
 								 components::Clip>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	 ///< Engine instance.
+		std::unique_ptr<utility::Engine> &_engine;	  ///< Engine instance.
 
 		public:
 		/**

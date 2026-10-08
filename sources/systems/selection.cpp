@@ -115,4 +115,23 @@ namespace guillaume::systems
 		return ecs::Entity::InvalidIdentifier;
 	}
 
+	ecs::Entity::Identifier Selection::select(
+		ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &groupIdentifier,
+		const std::vector<ecs::Entity::Identifier> &childIdentifiers,
+		ecs::Entity::Identifier selectedIdentifier)
+	{
+		for (const auto &childIdentifier: childIdentifiers) {
+			if (!registry.hasComponent<components::Selectable>(
+					childIdentifier)) {
+				continue;
+			}
+
+			registry.getComponent<components::Selectable>(childIdentifier)
+				.setSelected(childIdentifier == selectedIdentifier);
+		}
+
+		return reconcile(registry, groupIdentifier, childIdentifiers);
+	}
+
 }	 // namespace guillaume::systems

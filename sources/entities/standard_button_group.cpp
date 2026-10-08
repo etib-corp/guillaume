@@ -20,43 +20,34 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include "guillaume/entities/standard_button_group.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/button.hpp"
+#include "guillaume/systems/layout.hpp"
 
 namespace guillaume::entities
 {
 	StandardButtonGroup::Builder::Builder(
 		ecs::ComponentRegistry &componentRegistry,
 		ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<StandardButtonGroup>(componentRegistry,
+												 entityRegistry)
 	{
 		reset();
-	}
-
-	StandardButtonGroup::Builder::~Builder(void)
-	{
 	}
 
 	std::shared_ptr<StandardButtonGroup>
-		StandardButtonGroup::Builder::registerEntity(
-			std::shared_ptr<Entity> parent)
+		StandardButtonGroup::Builder::buildEntity(void)
 	{
-		_group = std::make_shared<StandardButtonGroup>(
+		auto entity = std::make_shared<StandardButtonGroup>(
 			this->getComponentRegistry(), _labels, _gap);
-		_group->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_group);
-
-		auto groupCopy = _group;
-
-		reset();
-
-		return groupCopy;
+		return entity;
 	}
 
 	void StandardButtonGroup::Builder::reset(void)
 	{
-		_group.reset();
 		_labels.clear();
 		_gap = 8.0f;
 	}
@@ -75,15 +66,6 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	StandardButtonGroup::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	StandardButtonGroup::Director::~Director(void)
-	{
-	}
-
 	std::shared_ptr<StandardButtonGroup>
 		StandardButtonGroup::Director::makeStandardButtonGroup(
 			Builder &builder, std::shared_ptr<Entity> parent,
@@ -95,12 +77,20 @@ namespace guillaume::entities
 	StandardButtonGroup::StandardButtonGroup(
 		ecs::ComponentRegistry &registry,
 		const std::vector<std::string> &labels, const float &gap)
-		: ecs::ParentEntityFiller<components::Transform, components::Bound>(
-			  registry)
+		: ecs::ParentEntityFiller<components::Transform, components::Bound,
+								  components::Layout>(registry)
 		, _labels(labels)
 		, _gap(gap)
 		, _buttons()
 	{
+		getComponentRegistry()
+			.getComponent<components::Layout>(getIdentifier())
+			.setAxis(components::Layout::Axis::Horizontal)
+			.setMainAxisAlignment(components::Layout::MainAxisAlignment::Start)
+			.setCrossAxisAlignment(
+				components::Layout::CrossAxisAlignment::Center)
+			.setSpacing(_gap)
+			.setPadding(0.0f);
 	}
 
 	StandardButtonGroup::~StandardButtonGroup(void)
@@ -124,43 +114,16 @@ namespace guillaume::entities
 
 	void StandardButtonGroup::layoutButtons(void)
 	{
-		const auto groupPose =
-			getComponentRegistry()
-				.getComponent<components::Transform>(getIdentifier())
-				.getPose();
+		std::vector<ecs::Entity::Identifier> childIdentifiers;
+		childIdentifiers.reserve(_buttons.size());
 
-		auto &selfBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
-
-		float offsetX = 0.0f;
-		float height  = 0.0f;
-
-		for (auto &button: _buttons) {
-			const auto buttonId = button->getIdentifier();
-
-			const auto &bound =
-				getComponentRegistry().getComponent<components::Bound>(
-					buttonId);
-			const float width = bound.getWidth();
-
-			height = bound.getHeight() > height ? bound.getHeight() : height;
-
-			utility::graphic::PoseF buttonPose = groupPose;
-			buttonPose.setPosition(utility::graphic::PositionF(
-				groupPose.getPosition().getX() + offsetX,
-				groupPose.getPosition().getY(),
-				groupPose.getPosition().getZ()));
-
-			getComponentRegistry()
-				.getComponent<components::Transform>(buttonId)
-				.setPose(buttonPose);
-
-			offsetX += width + _gap;
+		for (const auto &button: _buttons) {
+			childIdentifiers.push_back(button->getIdentifier());
 		}
 
-		selfBound.setWidth(offsetX > 0.0f ? offsetX - _gap : 0.0f)
-			.setHeight(height);
+		systems::Layout::apply(getComponentRegistry(), getIdentifier(),
+							   childIdentifiers,
+							   static_cast<std::uint32_t>(getLayer()));
 	}
 
 	void StandardButtonGroup::initialize(void)
