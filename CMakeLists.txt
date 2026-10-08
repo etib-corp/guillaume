@@ -6,7 +6,7 @@ if(POLICY CMP0077)
 endif()
 
 project(guillaume
-    VERSION 2026.2.0
+    VERSION 2026.3.0
     DESCRIPTION "A C++ UI framework designed for modern desktop and extended reality (XR) applications."
     HOMEPAGE_URL "https://etib-corp.github.io/guillaume"
     LANGUAGES CXX
