@@ -66,6 +66,26 @@ set(GUILLAUME_SOURCES
     sources/ecs/system_registry.cpp
     sources/entities/button.cpp
     sources/entities/button_base.cpp
+    sources/entities/builder_base.cpp
+    sources/entities/app_bar.cpp
+    sources/entities/badge.cpp
+    sources/entities/bottom_sheet.cpp
+    sources/entities/card.cpp
+    sources/entities/carousel.cpp
+    sources/entities/checkbox.cpp
+    sources/entities/chip.cpp
+    sources/entities/date_picker.cpp
+    sources/entities/dialog.cpp
+    sources/entities/divider.cpp
+    sources/entities/loading_indicator.cpp
+    sources/entities/menu.cpp
+    sources/entities/navigation_bar.cpp
+    sources/entities/navigation_drawer.cpp
+    sources/entities/navigation_rail.cpp
+    sources/entities/progress_indicator.cpp
+    sources/entities/search.cpp
+    sources/entities/side_sheet.cpp
+    sources/entities/slider.cpp
     sources/entities/segmented_button.cpp
     sources/entities/extended_floating_action_button.cpp
     sources/entities/floating_action_button.cpp
@@ -73,11 +93,21 @@ set(GUILLAUME_SOURCES
     sources/entities/icon.cpp
     sources/entities/icon_button.cpp
     sources/entities/image.cpp
+    sources/entities/list.cpp
     sources/entities/model.cpp
     sources/entities/layout.cpp
+    sources/entities/radio_button.cpp
+    sources/entities/snackbar.cpp
     sources/entities/split_button.cpp
     sources/entities/standard_button_group.cpp
+    sources/entities/surface.cpp
+    sources/entities/switch.cpp
+    sources/entities/tabs.cpp
     sources/entities/text.cpp
+    sources/entities/text_field.cpp
+    sources/entities/time_picker.cpp
+    sources/entities/toolbar.cpp
+    sources/entities/tooltip.cpp
     sources/event/event_bus.cpp
     sources/event/event_manager.cpp
     sources/event/event_subscriber.cpp

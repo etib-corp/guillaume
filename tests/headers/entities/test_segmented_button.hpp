@@ -22,25 +22,13 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
+#include "entities/family_fixture.hpp"
 
-#include <guillaume/component_registry.hpp>
 #include <guillaume/entities/segmented_button.hpp>
 
 namespace guillaume::entities::tests
 {
 
-	class TestSegmentedButton: public ::testing::Test
-	{
-		protected:
-		TestSegmentedButton(void)			= default;
-		~TestSegmentedButton(void) override = default;
-		void SetUp(void) override
-		{
-		}
-		void TearDown(void) override
-		{
-		}
-	};
+	using TestSegmentedButton = FamilyFixture<SegmentedButton>;
 
 }	 // namespace guillaume::entities::tests

@@ -103,7 +103,6 @@ namespace guillaume::entities::tests
 
 		ASSERT_NE(menu, nullptr);
 		EXPECT_EQ(menu->getParent(), parent);
-		EXPECT_NE(menu->getTriggerIdentifier(),
-				  ecs::Entity::InvalidIdentifier);
+		EXPECT_NE(menu->getTriggerIdentifier(), ecs::Entity::InvalidIdentifier);
 	}
 }	 // namespace guillaume::entities::tests

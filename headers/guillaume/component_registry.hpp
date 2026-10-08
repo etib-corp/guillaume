@@ -31,6 +31,7 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/drag_interaction.hpp"
 #include "guillaume/components/elevation.hpp"
+#include "guillaume/components/ellipse.hpp"
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/hand_button_interaction.hpp"
 #include "guillaume/components/hand_hover_interaction.hpp"
@@ -80,9 +81,9 @@ namespace guillaume
 			components::Range, components::Scrollable,
 			components::DragInteraction, components::Selectable,
 			components::SelectionGroup, components::Animation,
-			components::Overlay, components::TextField, components::Ring,
-			components::Arc, components::Line, components::Elevation,
-			components::Scrim, components::Clip>
+			components::Overlay, components::TextField, components::Ellipse,
+			components::Ring, components::Arc, components::Line,
+			components::Elevation, components::Scrim, components::Clip>
 	{
 		public:
 		/**

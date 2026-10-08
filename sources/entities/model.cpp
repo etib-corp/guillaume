@@ -20,44 +20,32 @@
  SOFTWARE.
  */
 
+#include <memory>
+
 #include "guillaume/entities/model.hpp"
+#include "guillaume/entities/builder_base.hpp"
 
 namespace guillaume::entities
 {
 
 	Model::Model::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 								   ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<Model>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	Model::Builder::~Builder(void)
+	std::shared_ptr<Model> Model::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<Model>
-		Model::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_model =
+		auto entity =
 			std::make_shared<Model>(this->getComponentRegistry(), _modelPath);
-		_model->setModelPath(_modelPath);
-		_model->setTexturePath(_texturePath);
-		_model->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_model);
-
-		auto modelCopy =
-			_model;	   // Create a copy of the shared pointer to return
-
-		reset();
-
-		return modelCopy;
+		entity->setModelPath(_modelPath);
+		entity->setTexturePath(_texturePath);
+		return entity;
 	}
 
 	void Model::Builder::reset(void)
 	{
-		_model.reset();
 		_modelPath.clear();
 		_texturePath.clear();
 	}
@@ -73,15 +61,6 @@ namespace guillaume::entities
 	{
 		_texturePath = texturePath;
 		return *this;
-	}
-
-	Model::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	Model::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<Model> Model::Director::makeModel(

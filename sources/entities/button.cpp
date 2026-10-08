@@ -20,45 +20,33 @@
  SOFTWARE.
  */
 
+#include <memory>
 #include <utility>
 
 #include "guillaume/entities/button.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
 	Button::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 							 ecs::EntityRegistry &entityRegistry)
-		: ecs::EntityBuilder(componentRegistry, entityRegistry)
+		: EntityBuilderBase<Button>(componentRegistry, entityRegistry)
 	{
 		reset();
 	}
 
-	Button::Builder::~Builder(void)
+	std::shared_ptr<Button> Button::Builder::buildEntity(void)
 	{
-	}
-
-	std::shared_ptr<Button>
-		Button::Builder::registerEntity(std::shared_ptr<Entity> parent)
-	{
-		_button = std::make_shared<Button>(
+		auto entity = std::make_shared<Button>(
 			this->getComponentRegistry(), _iconGlyphName, _iconStyle,
 			_labelContent, _isToggle, _colorStyle, _shape, _size, _isMorph,
 			_isDisabled, _isTrailingIcon, _accessibilityLabel, _onClick);
-		_button->setParent(parent);
-
-		this->getEntityRegistry().addEntity(_button);
-
-		auto buttonCopy = _button;
-
-		reset();
-
-		return buttonCopy;
+		return entity;
 	}
 
 	void Button::Builder::reset(void)
 	{
-		_button.reset();
 		_iconGlyphName.clear();
 		_iconStyle = components::Glyph::Style::Outlined;
 		_labelContent.clear();
@@ -147,15 +135,6 @@ namespace guillaume::entities
 	{
 		_accessibilityLabel = accessibilityLabel;
 		return *this;
-	}
-
-	Button::Director::Director(void)
-		: ecs::EntityDirector()
-	{
-	}
-
-	Button::Director::~Director(void)
-	{
 	}
 
 	std::shared_ptr<Button> Button::Director::makeButton(

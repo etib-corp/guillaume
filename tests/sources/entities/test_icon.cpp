@@ -164,18 +164,18 @@ namespace guillaume::entities::tests
 		entities::Icon::Builder builder(registry, entityRegistry);
 		entities::Icon::Director director;
 
-		auto icon = director.makeIcon(
-			builder, parent, "home", 32.0f,
-			utility::graphic::Color32Bit(255, 255, 255, 255),
-			components::Glyph::Style::Outlined);
+		auto icon =
+			director.makeIcon(builder, parent, "home", 32.0f,
+							  utility::graphic::Color32Bit(255, 255, 255, 255),
+							  components::Glyph::Style::Outlined);
 		icon->update();
 
 		ASSERT_NE(icon, nullptr);
 		EXPECT_EQ(icon->getParent(), parent);
-		EXPECT_EQ(registry.getComponent<components::Glyph>(
-					  icon->getIdentifier())
-					  .getName(),
-				  "home");
+		EXPECT_EQ(
+			registry.getComponent<components::Glyph>(icon->getIdentifier())
+				.getName(),
+			"home");
 	}
 
 }	 // namespace guillaume::entities::tests

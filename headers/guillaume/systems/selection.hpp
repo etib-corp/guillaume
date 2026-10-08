@@ -82,6 +82,26 @@ namespace guillaume::systems
 			ecs::ComponentRegistry &registry,
 			const ecs::Entity::Identifier &groupIdentifier,
 			const std::vector<ecs::Entity::Identifier> &childIdentifiers);
+
+		/**
+		 * @brief Select one child of a group and reconcile the group.
+		 *
+		 * Marks `selectedIdentifier` as selected, deselects the other
+		 * selectable children, then reconciles the group so its selection
+		 * identifier and the children stay consistent.
+		 *
+		 * @param registry The component registry holding the entities.
+		 * @param groupIdentifier The group entity identifier.
+		 * @param childIdentifiers The group children, in order.
+		 * @param selectedIdentifier The child to select, or InvalidIdentifier
+		 * to clear the selection.
+		 * @return The resulting selected child identifier.
+		 */
+		static ecs::Entity::Identifier
+			select(ecs::ComponentRegistry &registry,
+				   const ecs::Entity::Identifier &groupIdentifier,
+				   const std::vector<ecs::Entity::Identifier> &childIdentifiers,
+				   ecs::Entity::Identifier selectedIdentifier);
 	};
 
 }	 // namespace guillaume::systems

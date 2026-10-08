@@ -18,6 +18,34 @@ set(TEST_SOURCES
     sources/ecs/test_system_filler.cpp
     sources/ecs/test_system_registry.cpp
     sources/entities/test_button.cpp
+    sources/entities/test_app_bar.cpp
+    sources/entities/test_badge.cpp
+    sources/entities/test_bottom_sheet.cpp
+    sources/entities/test_card.cpp
+    sources/entities/test_carousel.cpp
+    sources/entities/test_checkbox.cpp
+    sources/entities/test_chip.cpp
+    sources/entities/test_date_picker.cpp
+    sources/entities/test_dialog.cpp
+    sources/entities/test_divider.cpp
+    sources/entities/test_list.cpp
+    sources/entities/test_loading_indicator.cpp
+    sources/entities/test_menu.cpp
+    sources/entities/test_navigation_bar.cpp
+    sources/entities/test_navigation_drawer.cpp
+    sources/entities/test_navigation_rail.cpp
+    sources/entities/test_progress_indicator.cpp
+    sources/entities/test_radio_button.cpp
+    sources/entities/test_search.cpp
+    sources/entities/test_side_sheet.cpp
+    sources/entities/test_slider.cpp
+    sources/entities/test_snackbar.cpp
+    sources/entities/test_switch.cpp
+    sources/entities/test_tabs.cpp
+    sources/entities/test_text_field.cpp
+    sources/entities/test_time_picker.cpp
+    sources/entities/test_toolbar.cpp
+    sources/entities/test_tooltip.cpp
     sources/entities/test_icon.cpp
     sources/entities/test_image.cpp
     sources/entities/test_layout.cpp

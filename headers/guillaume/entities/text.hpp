@@ -23,6 +23,7 @@
 #pragma once
 
 #include "guillaume/ecs/component_registry.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
@@ -52,12 +53,10 @@ namespace guillaume::entities
 		/**
 		 * @brief Builder used to configure and create `Text` entities.
 		 */
-		class Builder: public ecs::EntityBuilder
+		class Builder: public EntityBuilderBase<Text>
 		{
 			public:
 			private:
-			std::shared_ptr<Text>
-				_text;	  ///< Unique pointer to the Text entity being built
 			std::string
 				_content;	 ///< Text content to be set in the Text component
 			float _fontSize;	///< Font size to be set in the Text component
@@ -76,18 +75,10 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Default destructor for the Text Builder class.
+			 * @brief Build the Text entity from the current configuration.
+			 * @return The newly created Text.
 			 */
-			~Builder(void);
-
-			/**
-			 * @brief Build and register the text entity.
-			 * @param parent The parent entity to which the new text entity will
-			 * be attached.
-			 * @return The entity identifier of the newly created text entity.
-			 */
-			std::shared_ptr<Text>
-				registerEntity(std::shared_ptr<Entity> parent);
+			std::shared_ptr<Text> buildEntity(void) override;
 
 			/**
 			 * @brief Reset the builder to its initial state for creating a new
@@ -121,19 +112,9 @@ namespace guillaume::entities
 		 * @brief Director that orchestrates `Text::Builder` to create
 		 * preconfigured text entities.
 		 */
-		class Director: public ecs::EntityDirector
+		class Director: public EntityDirectorBase
 		{
 			public:
-			/**
-			 * @brief Construct a new Text Director object.
-			 */
-			Director(void);
-
-			/**
-			 * @brief Default destructor for the Text Director class.
-			 */
-			~Director(void);
-
 			/**
 			 * @brief Create a default Text entity using the builder.
 			 * @param builder The builder instance used to configure and create

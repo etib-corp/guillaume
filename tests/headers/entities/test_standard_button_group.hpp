@@ -22,25 +22,13 @@
 
 #pragma once
 
-#include <gtest/gtest.h>
+#include "entities/family_fixture.hpp"
 
-#include <guillaume/component_registry.hpp>
 #include <guillaume/entities/standard_button_group.hpp>
 
 namespace guillaume::entities::tests
 {
 
-	class TestStandardButtonGroup: public ::testing::Test
-	{
-		protected:
-		TestStandardButtonGroup(void)			= default;
-		~TestStandardButtonGroup(void) override = default;
-		void SetUp(void) override
-		{
-		}
-		void TearDown(void) override
-		{
-		}
-	};
+	using TestStandardButtonGroup = FamilyFixture<StandardButtonGroup>;
 
 }	 // namespace guillaume::entities::tests

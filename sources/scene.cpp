@@ -26,9 +26,37 @@
 #include "guillaume/entities/layout.hpp"
 #include "guillaume/entities/text.hpp"
 #include "guillaume/entities/button.hpp"
+#include "guillaume/entities/app_bar.hpp"
+#include "guillaume/entities/badge.hpp"
+#include "guillaume/entities/bottom_sheet.hpp"
+#include "guillaume/entities/card.hpp"
+#include "guillaume/entities/carousel.hpp"
+#include "guillaume/entities/checkbox.hpp"
+#include "guillaume/entities/chip.hpp"
+#include "guillaume/entities/date_picker.hpp"
+#include "guillaume/entities/dialog.hpp"
+#include "guillaume/entities/divider.hpp"
 #include "guillaume/entities/icon.hpp"
+#include "guillaume/entities/list.hpp"
+#include "guillaume/entities/loading_indicator.hpp"
+#include "guillaume/entities/menu.hpp"
 #include "guillaume/entities/model.hpp"
 #include "guillaume/entities/image.hpp"
+#include "guillaume/entities/navigation_bar.hpp"
+#include "guillaume/entities/navigation_drawer.hpp"
+#include "guillaume/entities/navigation_rail.hpp"
+#include "guillaume/entities/progress_indicator.hpp"
+#include "guillaume/entities/radio_button.hpp"
+#include "guillaume/entities/search.hpp"
+#include "guillaume/entities/side_sheet.hpp"
+#include "guillaume/entities/slider.hpp"
+#include "guillaume/entities/snackbar.hpp"
+#include "guillaume/entities/switch.hpp"
+#include "guillaume/entities/tabs.hpp"
+#include "guillaume/entities/text_field.hpp"
+#include "guillaume/entities/time_picker.hpp"
+#include "guillaume/entities/toolbar.hpp"
+#include "guillaume/entities/tooltip.hpp"
 
 namespace guillaume
 {
@@ -42,13 +70,47 @@ namespace guillaume
 			  std::make_unique<ecs::EntityBuilderManagerFiller<
 				  entities::Layout::Builder, entities::Text::Builder,
 				  entities::Button::Builder, entities::Icon::Builder,
-				  entities::Model::Builder, entities::Image::Builder>>(
-				  _componentRegistry, *this))
+				  entities::Model::Builder, entities::Image::Builder,
+				  entities::Divider::Builder, entities::Card::Builder,
+				  entities::Badge::Builder, entities::Toolbar::Builder,
+				  entities::AppBar::Builder, entities::Tooltip::Builder,
+				  entities::Snackbar::Builder, entities::List::Builder,
+				  entities::Checkbox::Builder, entities::RadioButton::Builder,
+				  entities::Switch::Builder, entities::Chip::Builder,
+				  entities::Tabs::Builder, entities::Dialog::Builder,
+				  entities::BottomSheet::Builder, entities::SideSheet::Builder,
+				  entities::Menu::Builder, entities::NavigationBar::Builder,
+				  entities::NavigationDrawer::Builder,
+				  entities::NavigationRail::Builder, entities::Search::Builder,
+				  entities::TextField::Builder,
+				  entities::ProgressIndicator::Builder,
+				  entities::LoadingIndicator::Builder,
+				  entities::Slider::Builder, entities::Carousel::Builder,
+				  entities::DatePicker::Builder,
+				  entities::TimePicker::Builder>>(_componentRegistry, *this))
 		, _entityDirectorManager(
 			  std::make_unique<ecs::EntityDirectorManagerFiller<
 				  entities::Layout::Director, entities::Text::Director,
 				  entities::Button::Director, entities::Icon::Director,
-				  entities::Model::Director, entities::Image::Director>>())
+				  entities::Model::Director, entities::Image::Director,
+				  entities::Divider::Director, entities::Card::Director,
+				  entities::Badge::Director, entities::Toolbar::Director,
+				  entities::AppBar::Director, entities::Tooltip::Director,
+				  entities::Snackbar::Director, entities::List::Director,
+				  entities::Checkbox::Director, entities::RadioButton::Director,
+				  entities::Switch::Director, entities::Chip::Director,
+				  entities::Tabs::Director, entities::Dialog::Director,
+				  entities::BottomSheet::Director,
+				  entities::SideSheet::Director, entities::Menu::Director,
+				  entities::NavigationBar::Director,
+				  entities::NavigationDrawer::Director,
+				  entities::NavigationRail::Director,
+				  entities::Search::Director, entities::TextField::Director,
+				  entities::ProgressIndicator::Director,
+				  entities::LoadingIndicator::Director,
+				  entities::Slider::Director, entities::Carousel::Director,
+				  entities::DatePicker::Director,
+				  entities::TimePicker::Director>>())
 		, _nextSceneType(typeid(void))
 	{
 		getLogger().info()

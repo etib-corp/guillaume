@@ -51,11 +51,11 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		bool clicked = false;
 		auto split	 = std::make_shared<SplitButton>(
-			registry, "Save",
-			[&clicked]() {
-				clicked = true;
-			},
-			std::function<void(void)>());
+			  registry, "Save",
+			  [&clicked]() {
+				  clicked = true;
+			  },
+			  std::function<void(void)>());
 
 		split->initialize();
 		split->update();
@@ -80,9 +80,9 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		bool opened = false;
 		auto split	= std::make_shared<SplitButton>(
-			registry, "Save", std::function<void(void)>(), [&opened]() {
-				opened = true;
-			});
+			 registry, "Save", std::function<void(void)>(), [&opened]() {
+				 opened = true;
+			 });
 
 		split->initialize();
 		split->update();
@@ -112,9 +112,9 @@ namespace guillaume::entities::tests
 		SplitButton::Builder builder(registry, entityRegistry);
 		SplitButton::Director director;
 
-		auto split = director.makeSplitButton(
-			builder, parent, "Send", std::function<void(void)>(),
-			std::function<void(void)>());
+		auto split = director.makeSplitButton(builder, parent, "Send",
+											  std::function<void(void)>(),
+											  std::function<void(void)>());
 
 		ASSERT_NE(split, nullptr);
 		EXPECT_EQ(split->getParent(), parent);

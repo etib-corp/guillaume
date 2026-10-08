@@ -23,6 +23,8 @@
 #include <utility>
 
 #include "guillaume/entities/button_base.hpp"
+#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -258,21 +260,15 @@ namespace guillaume::entities
 		const utility::graphic::OrientationF &orientation,
 		const std::uint32_t &layer)
 	{
-		const auto forwardVector					= orientation.getForward();
-		utility::graphic::PositionF forwardPosition = position;
-
-		forwardPosition.translate(utility::graphic::PositionF(
-			-forwardVector * static_cast<float>(layer + 1) * 1.0f));
-
-		return utility::graphic::PoseF(forwardPosition, orientation);
+		return systems::Layout::applyLayerToPosition(position, orientation,
+													 layer);
 	}
 
 	utility::graphic::Color32Bit
 		ButtonBase::applyStateAlpha(const utility::graphic::Color32Bit &color,
 									std::uint8_t alpha)
 	{
-		return utility::graphic::Color32Bit(color.getRed(), color.getGreen(),
-											color.getBlue(), alpha);
+		return withAlpha(color, alpha);
 	}
 
 	utility::graphic::Color32Bit
@@ -280,7 +276,7 @@ namespace guillaume::entities
 									const utility::graphic::Color32Bit &overlay,
 									std::uint8_t alpha)
 	{
-		return overlay.withAlpha(alpha).blendOver(base);
+		return stateLayer(base, overlay, alpha);
 	}
 
 	utility::graphic::Color32Bit ButtonBase::getDisabledContainerColor(void)

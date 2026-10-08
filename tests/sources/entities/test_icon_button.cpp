@@ -94,12 +94,12 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		bool clicked = false;
 		auto button	 = std::make_shared<IconButton>(
-			registry, "favorite", "favorite_border",
-			components::Glyph::Style::Outlined, true,
-			IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
-			[&clicked]() {
-				clicked = true;
-			});
+			 registry, "favorite", "favorite_border",
+			 components::Glyph::Style::Outlined, true,
+			 IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
+			 [&clicked]() {
+				 clicked = true;
+			 });
 
 		button->initialize();
 		button->update();
