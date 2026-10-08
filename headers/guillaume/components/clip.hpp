@@ -44,10 +44,10 @@ namespace guillaume::components
 		 * @brief Resolved clip rectangle.
 		 */
 		struct Rect {
-			float x { 0.0f };		///< Rectangle origin X.
-			float y { 0.0f };		///< Rectangle origin Y.
-			float width { 0.0f };	///< Rectangle width.
-			float height { 0.0f };	///< Rectangle height.
+			float x { 0.0f };		  ///< Rectangle origin X.
+			float y { 0.0f };		  ///< Rectangle origin Y.
+			float width { 0.0f };	  ///< Rectangle width.
+			float height { 0.0f };	  ///< Rectangle height.
 
 			/**
 			 * @brief Equality operator.

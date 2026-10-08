@@ -72,11 +72,10 @@ namespace guillaume::systems
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
 
-		shape::buildRingMesh(mesh, center, pose.getOrientation(),
-							 bound.getWidth() / 2.0f,
-							 bound.getHeight() / 2.0f, arc.getThickness(),
-							 arc.getStartAngle(), arc.getSweepAngle(),
-							 arc.getSegments(), false, color);
+		shape::buildRingMesh(
+			mesh, center, pose.getOrientation(), bound.getWidth() / 2.0f,
+			bound.getHeight() / 2.0f, arc.getThickness(), arc.getStartAngle(),
+			arc.getSweepAngle(), arc.getSegments(), false, color);
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");
@@ -84,14 +83,14 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable),
-								  renderable, true });
+				   RenderHandle { _engine->createObject(renderable), renderable,
+								  true });
 		} else {
 			if (!_engine->updateObject(renderable, handle->objectId)) {
 				handle->objectId = _engine->createObject(renderable);
 			}
 			handle->renderable = renderable;
-			handle->used	  = true;
+			handle->used	   = true;
 		}
 	}
 

@@ -37,16 +37,17 @@ namespace guillaume::systems
 	/**
 	 * @brief System advancing time-based animations each frame.
 	 *
-	 * The per-frame delta time is taken from the engine (`Engine::getDeltaTime`)
-	 * when it provides one, otherwise it is derived from an internal monotonic
-	 * clock. Each `components::Animation` is then advanced by that delta.
+	 * The per-frame delta time is taken from the engine
+	 * (`Engine::getDeltaTime`) when it provides one, otherwise it is derived
+	 * from an internal monotonic clock. Each `components::Animation` is then
+	 * advanced by that delta.
 	 *
 	 * @see components::Animation
 	 */
 	class Animation: public ecs::SystemFiller<components::Animation>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	 ///< Engine instance.
+		std::unique_ptr<utility::Engine> &_engine;	  ///< Engine instance.
 		std::chrono::steady_clock::time_point
 			_lastTime;	  ///< Last frame time for the fallback clock.
 		float _deltaTime { 0.0f };	  ///< Delta time for the current frame.

@@ -50,7 +50,8 @@ namespace guillaume::systems
 								 components::Color, components::Borders>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine instance
+		std::unique_ptr<utility::Engine>
+			&_engine;	 ///< utility::Engine instance
 
 		private:
 		/**

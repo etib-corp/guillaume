@@ -163,8 +163,8 @@ namespace guillaume::systems
 		const float padding = layout.getPadding();
 
 		const float gapsTotal	= children.size() > 1
-			? spacing * static_cast<float>(children.size() - 1)
-			: 0.0f;
+			  ? spacing * static_cast<float>(children.size() - 1)
+			  : 0.0f;
 		const float mainContent = rawMain + gapsTotal;
 
 		const bool fixedWidth  = layout.hasFixedWidth();
@@ -242,8 +242,8 @@ namespace guillaume::systems
 		}
 
 		const float width  = fixedWidth
-			? layout.getFixedWidth()
-			: (horizontal ? mainContent : rawCross) + 2.0f * padding;
+			 ? layout.getFixedWidth()
+			 : (horizontal ? mainContent : rawCross) + 2.0f * padding;
 		const float height = fixedHeight
 			? layout.getFixedHeight()
 			: (horizontal ? rawCross : mainContent) + 2.0f * padding;

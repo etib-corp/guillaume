@@ -74,10 +74,9 @@ namespace guillaume::systems
 									std::vector<uint32_t> {});
 
 		shape::buildRingMesh(mesh, center, pose.getOrientation(),
-							 bound.getWidth() / 2.0f,
-							 bound.getHeight() / 2.0f, ring.getThickness(), 0.0f,
-							 2.0f * std::acos(-1.0f), ring.getSegments(), true,
-							 color);
+							 bound.getWidth() / 2.0f, bound.getHeight() / 2.0f,
+							 ring.getThickness(), 0.0f, 2.0f * std::acos(-1.0f),
+							 ring.getSegments(), true, color);
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");
@@ -85,14 +84,14 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable),
-								  renderable, true });
+				   RenderHandle { _engine->createObject(renderable), renderable,
+								  true });
 		} else {
 			if (!_engine->updateObject(renderable, handle->objectId)) {
 				handle->objectId = _engine->createObject(renderable);
 			}
 			handle->renderable = renderable;
-			handle->used	  = true;
+			handle->used	   = true;
 		}
 	}
 

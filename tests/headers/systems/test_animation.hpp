@@ -47,13 +47,14 @@ namespace guillaume::systems::tests
 		std::unique_ptr<Animation> _animationSystem;
 		ecs::ComponentRegistry _componentRegistry;
 
-		TestAnimation(void)			   = default;
+		TestAnimation(void)			  = default;
 		~TestAnimation(void) override = default;
 
 		void SetUp(void) override
 		{
-			_engine		= std::make_unique<guillaume::tests::EngineMock>();
-			_engineMock = static_cast<guillaume::tests::EngineMock *>(_engine.get());
+			_engine = std::make_unique<guillaume::tests::EngineMock>();
+			_engineMock =
+				static_cast<guillaume::tests::EngineMock *>(_engine.get());
 			_animationSystem = std::make_unique<Animation>(_engine);
 			_animationSystem->bindComponentRegistry(_componentRegistry);
 		}

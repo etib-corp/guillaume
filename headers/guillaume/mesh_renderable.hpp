@@ -41,7 +41,7 @@ namespace guillaume
 	class MeshRenderable: public utility::graphic::Renderable
 	{
 		private:
-		std::string _materialName;	 ///< Material name used to render the mesh
+		std::string _materialName;	  ///< Material name used to render the mesh
 
 		public:
 		/**

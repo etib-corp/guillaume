@@ -71,7 +71,7 @@ namespace guillaume::systems::tests
 		void SetUp(void) override
 		{
 			_eventBus	 = std::make_unique<event::EventBus>();
-			_engine = std::make_unique<guillaume::tests::EngineMock>();
+			_engine		 = std::make_unique<guillaume::tests::EngineMock>();
 			_focusSystem = std::make_unique<Focus>(*_eventBus, _engine);
 			_focusSystem->bindComponentRegistry(_componentRegistry);
 		}

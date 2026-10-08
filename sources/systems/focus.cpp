@@ -25,7 +25,8 @@
 namespace guillaume::systems
 {
 
-	Focus::Focus(event::EventBus &eventBus, std::unique_ptr<utility::Engine> &engine)
+	Focus::Focus(event::EventBus &eventBus,
+				 std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Focus, components::Transform,
 							components::Bound,
 							components::MouseButtonInteraction,

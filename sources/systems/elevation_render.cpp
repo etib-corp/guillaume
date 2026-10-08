@@ -65,8 +65,9 @@ namespace guillaume::systems
 											   positionZ + (qw * tZ) + crossTZ);
 		}
 
-		std::vector<utility::math::Vector2F> buildRoundedRectOutline(
-			float halfWidth, float halfHeight, float radius, int arcSegments)
+		std::vector<utility::math::Vector2F>
+			buildRoundedRectOutline(float halfWidth, float halfHeight,
+									float radius, int arcSegments)
 		{
 			const float pi = std::acos(-1.0f);
 
@@ -96,7 +97,8 @@ namespace guillaume::systems
 				for (int i = 0; i <= arcSegments; ++i) {
 					const float t =
 						static_cast<float>(i) / static_cast<float>(arcSegments);
-					const float angle = startAngle + (endAngle - startAngle) * t;
+					const float angle =
+						startAngle + (endAngle - startAngle) * t;
 					localVertices.push_back(
 						center
 						+ utility::math::Vector2F(
@@ -105,17 +107,17 @@ namespace guillaume::systems
 				}
 			};
 
-			appendArc(utility::math::Vector2F(
-						  { halfWidth - cornerRadius, -halfHeight + cornerRadius }),
+			appendArc(utility::math::Vector2F({ halfWidth - cornerRadius,
+												-halfHeight + cornerRadius }),
 					  -pi / 2.0f, 0.0f, cornerRadius);
-			appendArc(utility::math::Vector2F(
-						  { halfWidth - cornerRadius, halfHeight - cornerRadius }),
+			appendArc(utility::math::Vector2F({ halfWidth - cornerRadius,
+												halfHeight - cornerRadius }),
 					  0.0f, pi / 2.0f, cornerRadius);
-			appendArc(utility::math::Vector2F(
-						  { -halfWidth + cornerRadius, halfHeight - cornerRadius }),
+			appendArc(utility::math::Vector2F({ -halfWidth + cornerRadius,
+												halfHeight - cornerRadius }),
 					  pi / 2.0f, pi, cornerRadius);
-			appendArc(utility::math::Vector2F(
-						  { -halfWidth + cornerRadius, -halfHeight + cornerRadius }),
+			appendArc(utility::math::Vector2F({ -halfWidth + cornerRadius,
+												-halfHeight + cornerRadius }),
 					  pi, 3.0f * pi / 2.0f, cornerRadius);
 
 			return localVertices;
@@ -130,7 +132,8 @@ namespace guillaume::systems
 			const auto outline =
 				buildRoundedRectOutline(halfWidth, halfHeight, radius, 8);
 
-			const uint32_t base = static_cast<uint32_t>(mesh.getVertices().size());
+			const uint32_t base =
+				static_cast<uint32_t>(mesh.getVertices().size());
 
 			utility::graphic::VertexF centerVertex;
 			centerVertex.setPosition(center);
@@ -179,8 +182,8 @@ namespace guillaume::systems
 		removeUnused(*_engine);
 	}
 
-	void ElevationRender::update(
-		const ecs::Entity::Identifier &entityIdentifier)
+	void
+		ElevationRender::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
 		if (!requireComponent<components::Bound>(entityIdentifier)
 			|| !requireComponent<components::Transform>(entityIdentifier)
@@ -210,8 +213,8 @@ namespace guillaume::systems
 									std::vector<uint32_t> {});
 
 		for (int i = 0; i < layers; ++i) {
-			const float t = static_cast<float>(i + 1)
-				/ static_cast<float>(layers);
+			const float t =
+				static_cast<float>(i + 1) / static_cast<float>(layers);
 			const float expansion =
 				elevation.getSpread() * elevation.getLevel() * t;
 			const float alpha =
@@ -229,14 +232,14 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable),
-								  renderable, true });
+				   RenderHandle { _engine->createObject(renderable), renderable,
+								  true });
 		} else {
 			if (!_engine->updateObject(renderable, handle->objectId)) {
 				handle->objectId = _engine->createObject(renderable);
 			}
 			handle->renderable = renderable;
-			handle->used	  = true;
+			handle->used	   = true;
 		}
 	}
 

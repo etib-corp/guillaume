@@ -116,18 +116,20 @@ namespace guillaume::systems
 		mesh.addIndex(3);
 
 		auto renderable = std::make_shared<MeshRenderable>(
-			std::vector<utility::graphic::Mesh> { mesh }, "image_" + texturePath);
+			std::vector<utility::graphic::Mesh> { mesh },
+			"image_" + texturePath);
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			size_t objectId = _engine->createObject(renderable);
-			insert(entityIdentifier, RenderHandle { objectId, renderable, true });
+			insert(entityIdentifier,
+				   RenderHandle { objectId, renderable, true });
 		} else {
 			if (!_engine->updateObject(renderable, handle->objectId)) {
 				handle->objectId = _engine->createObject(renderable);
 			}
 			handle->renderable = renderable;
-			handle->used	  = true;
+			handle->used	   = true;
 		}
 	}
 

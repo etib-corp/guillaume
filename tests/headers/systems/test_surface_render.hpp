@@ -57,13 +57,14 @@ namespace guillaume::systems::tests
 		std::unique_ptr<Clip> _clipSystem;
 		ecs::ComponentRegistry _componentRegistry;
 
-		TestSurfaceRender(void)			   = default;
+		TestSurfaceRender(void)			  = default;
 		~TestSurfaceRender(void) override = default;
 
 		void SetUp(void) override
 		{
-			_engine		= std::make_unique<guillaume::tests::EngineMock>();
-			_engineMock = static_cast<guillaume::tests::EngineMock *>(_engine.get());
+			_engine = std::make_unique<guillaume::tests::EngineMock>();
+			_engineMock =
+				static_cast<guillaume::tests::EngineMock *>(_engine.get());
 			_elevationSystem = std::make_unique<ElevationRender>(_engine);
 			_scrimSystem	 = std::make_unique<ScrimRender>(_engine);
 			_clipSystem		 = std::make_unique<Clip>(_engine);
@@ -92,7 +93,8 @@ namespace guillaume::systems::tests
 			const auto id = entity.getIdentifier();
 
 			_componentRegistry.registerComponentsForEntity<
-				components::Transform, components::Bound, ComponentTypes...>(id);
+				components::Transform, components::Bound, ComponentTypes...>(
+				id);
 
 			_componentRegistry.getComponent<components::Transform>(id).setPose(
 				pose);
@@ -105,8 +107,9 @@ namespace guillaume::systems::tests
 
 		std::size_t lastMeshVertexCount(void) const
 		{
-			const auto renderable = std::dynamic_pointer_cast<
-				guillaume::MeshRenderable>(_engineMock->lastCreated());
+			const auto renderable =
+				std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+					_engineMock->lastCreated());
 			if (renderable == nullptr || renderable->getMeshes().empty()) {
 				return 0;
 			}
@@ -115,8 +118,9 @@ namespace guillaume::systems::tests
 
 		std::size_t lastMeshIndexCount(void) const
 		{
-			const auto renderable = std::dynamic_pointer_cast<
-				guillaume::MeshRenderable>(_engineMock->lastCreated());
+			const auto renderable =
+				std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+					_engineMock->lastCreated());
 			if (renderable == nullptr || renderable->getMeshes().empty()) {
 				return 0;
 			}

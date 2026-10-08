@@ -27,8 +27,7 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestSurfaceRender, ElevationAddsShadowMesh)
 	{
-		const auto entity =
-			createEntity<components::Elevation>();
+		const auto entity = createEntity<components::Elevation>();
 
 		_componentRegistry.getComponent<components::Elevation>(entity)
 			.setLayers(2);
@@ -38,7 +37,8 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(_engineMock->createObjectCallCount, 1u);
 		// Each layer is a triangle fan with one center vertex and 4 * 9 arc
 		// vertices, so 2 layers produce 2 * (1 + 36) vertices.
-		EXPECT_EQ(lastMeshVertexCount(), static_cast<std::size_t>(2 * (1 + 36)));
+		EXPECT_EQ(lastMeshVertexCount(),
+				  static_cast<std::size_t>(2 * (1 + 36)));
 	}
 
 	TEST_F(TestSurfaceRender, ElevationSecondUpdateReusesObject)
@@ -114,7 +114,8 @@ namespace guillaume::systems::tests
 	{
 		const auto entity = createEntity<components::Clip>();
 
-		_componentRegistry.getComponent<components::Clip>(entity).setMargin(5.0f);
+		_componentRegistry.getComponent<components::Clip>(entity).setMargin(
+			5.0f);
 
 		_clipSystem->update(entity);
 

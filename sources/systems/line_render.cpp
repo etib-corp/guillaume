@@ -83,14 +83,14 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable),
-								  renderable, true });
+				   RenderHandle { _engine->createObject(renderable), renderable,
+								  true });
 		} else {
 			if (!_engine->updateObject(renderable, handle->objectId)) {
 				handle->objectId = _engine->createObject(renderable);
 			}
 			handle->renderable = renderable;
-			handle->used	  = true;
+			handle->used	   = true;
 		}
 	}
 

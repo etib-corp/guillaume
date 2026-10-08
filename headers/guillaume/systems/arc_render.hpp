@@ -47,7 +47,7 @@ namespace guillaume::systems
 								 components::Color, components::Arc>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine.
+		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
 
 		public:
 		/**

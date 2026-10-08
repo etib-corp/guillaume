@@ -41,9 +41,9 @@ namespace guillaume::systems
 	 * so updateObject/removeObject can be called with the matching renderable.
 	 */
 	struct RenderHandle {
-		size_t objectId { 0 };	 ///< utility::Engine object identifier
+		size_t objectId { 0 };	  ///< utility::Engine object identifier
 		std::shared_ptr<utility::graphic::Renderable>
-			renderable;	   ///< Last uploaded renderable
+			renderable;		   ///< Last uploaded renderable
 		bool used { true };	   ///< Whether the entity was seen this frame
 	};
 

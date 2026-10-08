@@ -47,8 +47,8 @@ namespace
 		void present(void) override
 		{
 		}
-		size_t createObject(
-			std::shared_ptr<utility::graphic::Renderable>) override
+		size_t
+			createObject(std::shared_ptr<utility::graphic::Renderable>) override
 		{
 			return 0;
 		}

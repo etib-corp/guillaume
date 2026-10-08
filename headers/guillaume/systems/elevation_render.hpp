@@ -46,7 +46,7 @@ namespace guillaume::systems
 								 components::Elevation>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	 ///< utility::Engine.
+		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
 
 		public:
 		/**
