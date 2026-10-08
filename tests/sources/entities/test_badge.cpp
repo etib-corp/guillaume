@@ -83,18 +83,20 @@ namespace guillaume::entities::tests
 	TEST_F(TestBadge, LargeIsTallerThanSmall)
 	{
 		ecs::ComponentRegistry registry;
-		auto small = makeBadge(registry, "9", Badge::Variant::Small);
-		small->initialize();
-		small->update();
+		auto smallEntity = makeBadge(registry, "9", Badge::Variant::Small);
+		smallEntity->initialize();
+		smallEntity->update();
 		const float smallHeight =
-			registry.getComponent<components::Bound>(small->getIdentifier())
+			registry
+				.getComponent<components::Bound>(smallEntity->getIdentifier())
 				.getHeight();
 
-		auto large = makeBadge(registry, "9", Badge::Variant::Large);
-		large->initialize();
-		large->update();
+		auto largeEntity = makeBadge(registry, "9", Badge::Variant::Large);
+		largeEntity->initialize();
+		largeEntity->update();
 		const float largeHeight =
-			registry.getComponent<components::Bound>(large->getIdentifier())
+			registry
+				.getComponent<components::Bound>(largeEntity->getIdentifier())
 				.getHeight();
 
 		EXPECT_GT(largeHeight, smallHeight);

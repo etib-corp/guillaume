@@ -128,11 +128,11 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Set the slider value range.
-			 * @param min The new minimum value.
-			 * @param max The new maximum value.
+			 * @param minimum The new minimum value.
+			 * @param maximum The new maximum value.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &withRange(float min, float max);
+			Builder &withRange(float minimum, float maximum);
 
 			/**
 			 * @brief Set the initial value.
@@ -174,15 +174,15 @@ namespace guillaume::entities
 			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The slider variant.
-			 * @param min The minimum value.
-			 * @param max The maximum value.
+			 * @param minimum The minimum value.
+			 * @param maximum The maximum value.
 			 * @param value The initial value.
 			 * @return The newly created slider.
 			 */
 			std::shared_ptr<Slider>
 				makeSlider(Builder &builder,
 						   std::shared_ptr<ecs::Entity> parent, Variant variant,
-						   float min, float max, float value);
+						   float minimum, float maximum, float value);
 		};
 
 		private:
@@ -230,15 +230,15 @@ namespace guillaume::entities
 		 * @param registry The component registry.
 		 * @param config The surface configuration.
 		 * @param variant The visual variant.
-		 * @param min The minimum value.
-		 * @param max The maximum value.
+		 * @param minimum The minimum value.
+		 * @param maximum The maximum value.
 		 * @param value The initial value.
 		 * @param step The snapping step (0 disables snapping).
 		 * @param onChanged The value change callback.
 		 */
 		Slider(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			   Variant variant, float min, float max, float value, float step,
-			   const std::function<void(float)> &onChanged);
+			   Variant variant, float minimum, float maximum, float value,
+			   float step, const std::function<void(float)> &onChanged);
 
 		/**
 		 * @brief Default destructor.
@@ -273,11 +273,11 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Set the slider value range.
-		 * @param min The new minimum value.
-		 * @param max The new maximum value.
+		 * @param minimum The new minimum value.
+		 * @param maximum The new maximum value.
 		 * @return Reference to this slider for chaining.
 		 */
-		Slider &setRange(float min, float max);
+		Slider &setRange(float minimum, float maximum);
 
 		/**
 		 * @brief Get the low end of the range interval.

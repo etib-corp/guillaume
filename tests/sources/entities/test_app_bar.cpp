@@ -69,19 +69,21 @@ namespace guillaume::entities::tests
 	TEST_F(TestAppBar, LargeVariantIsTallerThanSmall)
 	{
 		ecs::ComponentRegistry registry;
-		auto small = makeAppBar(registry, AppBar::Variant::Small);
-		small->initialize();
-		small->update();
+		auto smallEntity = makeAppBar(registry, AppBar::Variant::Small);
+		smallEntity->initialize();
+		smallEntity->update();
 
-		auto large = makeAppBar(registry, AppBar::Variant::Large);
-		large->initialize();
-		large->update();
+		auto largeEntity = makeAppBar(registry, AppBar::Variant::Large);
+		largeEntity->initialize();
+		largeEntity->update();
 
 		const float smallHeight =
-			registry.getComponent<components::Bound>(small->getIdentifier())
+			registry
+				.getComponent<components::Bound>(smallEntity->getIdentifier())
 				.getHeight();
 		const float largeHeight =
-			registry.getComponent<components::Bound>(large->getIdentifier())
+			registry
+				.getComponent<components::Bound>(largeEntity->getIdentifier())
 				.getHeight();
 
 		EXPECT_FLOAT_EQ(largeHeight, 152.0f);

@@ -190,10 +190,10 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Slider::Builder &Slider::Builder::withRange(float min, float max)
+	Slider::Builder &Slider::Builder::withRange(float minimum, float maximum)
 	{
-		_min = min;
-		_max = max;
+		_min = minimum;
+		_max = maximum;
 		return *this;
 	}
 
@@ -224,25 +224,25 @@ namespace guillaume::entities
 
 	std::shared_ptr<Slider> Slider::Director::makeSlider(
 		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
-		float min, float max, float value)
+		float minimum, float maximum, float value)
 	{
 		return builder.withVariant(variant)
-			.withRange(min, max)
+			.withRange(minimum, maximum)
 			.withValue(value)
 			.registerEntity(parent);
 	}
 
 	Slider::Slider(ecs::ComponentRegistry &registry,
-				   const SurfaceConfig &config, Variant variant, float min,
-				   float max, float value, float step,
+				   const SurfaceConfig &config, Variant variant, float minimum,
+				   float maximum, float value, float step,
 				   const std::function<void(float)> &onChanged)
 		: SurfaceBase<components::Value, components::Range,
 					  components::DragInteraction,
 					  components::MouseButtonInteraction,
 					  components::HandButtonInteraction>(registry, config)
 		, _variant(variant)
-		, _min(min)
-		, _max(max)
+		, _min(minimum)
+		, _max(maximum)
 		, _step(step)
 		, _trackLength(config.hasFixedWidth ? config.fixedWidth : 200.0f)
 		, _onChanged(onChanged)
@@ -255,15 +255,16 @@ namespace guillaume::entities
 		auto &valueComponent =
 			getComponentRegistry().getComponent<components::Value>(
 				getIdentifier());
-		valueComponent.setMin(min).setMax(max).setStep(
-			_variant == Variant::Discrete && step <= 0.0f ? (max - min) * 0.1f
-														  : step);
+		valueComponent.setMin(minimum).setMax(maximum).setStep(
+			_variant == Variant::Discrete && step <= 0.0f
+				? (maximum - minimum) * 0.1f
+				: step);
 		valueComponent.setValue(value);
 
 		auto &range = getComponentRegistry().getComponent<components::Range>(
 			getIdentifier());
-		range.setMin(min).setMax(max).setStep(valueComponent.getStep());
-		range.setLow(min).setHigh(max);
+		range.setMin(minimum).setMax(maximum).setStep(valueComponent.getStep());
+		range.setLow(minimum).setHigh(maximum);
 
 		// Handlers are installed last so that construction does not invoke the
 		// user callback before the entity is fully configured.
@@ -472,19 +473,19 @@ namespace guillaume::entities
 			.getValue();
 	}
 
-	Slider &Slider::setRange(float min, float max)
+	Slider &Slider::setRange(float minimum, float maximum)
 	{
-		_min = min;
-		_max = max;
+		_min = minimum;
+		_max = maximum;
 
 		getComponentRegistry()
 			.getComponent<components::Value>(getIdentifier())
-			.setMin(min)
-			.setMax(max);
+			.setMin(minimum)
+			.setMax(maximum);
 		getComponentRegistry()
 			.getComponent<components::Range>(getIdentifier())
-			.setMin(min)
-			.setMax(max);
+			.setMin(minimum)
+			.setMax(maximum);
 
 		applyState();
 
