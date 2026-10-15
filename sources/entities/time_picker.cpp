@@ -309,7 +309,8 @@ namespace guillaume::entities
 
 			placeChild(this->getComponentRegistry(), this->getIdentifier(),
 					   _markers[index]->getIdentifier(),
-					   utility::graphic::PositionF(x, y, 0.0f));
+					   utility::graphic::PositionF(x, y, 0.0f),
+					   static_cast<std::uint32_t>(this->getLayer()));
 		}
 	}
 

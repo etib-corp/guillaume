@@ -29,6 +29,7 @@
 #include <guillaume/components/value.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -96,6 +97,31 @@ namespace guillaume::entities::tests
 		EXPECT_FLOAT_EQ(value.getValue(), 1.0f);
 		EXPECT_FLOAT_EQ(value.getMax(), 1.0f);
 		EXPECT_FLOAT_EQ(value.getMin(), 0.0f);
+	}
+
+	TEST_F(TestSwitch, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, false,
+								 "check", "Label");
+
+		toggle->update();
+
+		const float baseZ =
+			registry
+				.getComponent<components::Transform>(toggle->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, toggle);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestSwitch, VariantRoundTrip)

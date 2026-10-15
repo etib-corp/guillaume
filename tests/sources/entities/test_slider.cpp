@@ -29,6 +29,7 @@
 #include <guillaume/components/value.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -60,6 +61,30 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(slider->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 200.0f);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 20.0f);
+	}
+
+	TEST_F(TestSlider, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto slider = makeSlider(registry);
+
+		slider->update();
+
+		const float baseZ =
+			registry
+				.getComponent<components::Transform>(slider->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, slider);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestSlider, ValueClampsToRange)

@@ -260,8 +260,7 @@ namespace guillaume::entities
 		const utility::graphic::OrientationF &orientation,
 		const std::uint32_t &layer)
 	{
-		return systems::Layout::applyLayerToPosition(position, orientation,
-													 layer);
+		return systems::Layout::contentLayerPose(position, orientation, layer);
 	}
 
 	utility::graphic::Color32Bit

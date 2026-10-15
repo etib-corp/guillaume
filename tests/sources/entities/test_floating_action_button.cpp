@@ -28,6 +28,7 @@
 #include <guillaume/components/transform.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -45,6 +46,51 @@ namespace guillaume::entities::tests
 
 		EXPECT_NE(fab->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
 		EXPECT_NE(fab->getLabelIdentifier(), ecs::Entity::InvalidIdentifier);
+	}
+
+	TEST_F(TestFloatingActionButton, ChildrenArePositionedAndLifted)
+	{
+		ecs::ComponentRegistry registry;
+		auto fab = std::make_shared<FloatingActionButton>(
+			registry, "edit", components::Glyph::Style::Outlined, "Edit",
+			FloatingActionButton::Variant::Surface,
+			FloatingActionButton::Size::Medium, false, false, "",
+			std::function<void(void)>());
+
+		fab->initialize();
+		fab->update();
+
+		const float baseX =
+			registry.getComponent<components::Transform>(fab->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getX();
+		const float baseZ =
+			registry.getComponent<components::Transform>(fab->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+
+		const auto iconId  = fab->getIconIdentifier();
+		const auto labelId = fab->getLabelIdentifier();
+		ASSERT_NE(iconId, ecs::Entity::InvalidIdentifier);
+		ASSERT_NE(labelId, ecs::Entity::InvalidIdentifier);
+
+		const auto &iconPose =
+			registry.getComponent<components::Transform>(iconId).getPose();
+		const auto &labelPose =
+			registry.getComponent<components::Transform>(labelId).getPose();
+
+		EXPECT_FLOAT_EQ(
+			iconPose.getPosition().getZ(),
+			baseZ + static_cast<float>(systems::Layout::ContentLayerOffset));
+		EXPECT_FLOAT_EQ(
+			labelPose.getPosition().getZ(),
+			baseZ + static_cast<float>(systems::Layout::ContentLayerOffset));
+
+		EXPECT_GT(iconPose.getPosition().getX(), baseX);
+		EXPECT_GE(labelPose.getPosition().getX(),
+				  iconPose.getPosition().getX());
 	}
 
 	TEST_F(TestFloatingActionButton, DisabledFabIgnoresRelease)

@@ -346,6 +346,29 @@ namespace guillaume::entities
 
 		if (_icon) {
 			_icon->setFontSize(getIconFontSize());
+
+			const auto &buttonPose =
+				getComponentRegistry()
+					.getComponent<components::Transform>(getIdentifier())
+					.getPose();
+			const auto &iconBound =
+				getComponentRegistry().getComponent<components::Bound>(
+					_icon->getIdentifier());
+
+			const float iconX = buttonPose.getPosition().x
+				+ (containerSize - iconBound.getWidth()) / 2.0f;
+			const float iconY = buttonPose.getPosition().y
+				+ (containerSize - iconBound.getHeight()) / 2.0f;
+
+			const auto iconPose = ButtonBase::applyLayerToPosition(
+				utility::graphic::PositionF(iconX, iconY,
+											buttonPose.getPosition().z),
+				buttonPose.getOrientation(),
+				static_cast<std::uint32_t>(getLayer()));
+
+			getComponentRegistry()
+				.getComponent<components::Transform>(_icon->getIdentifier())
+				.setPose(iconPose);
 		}
 	}
 

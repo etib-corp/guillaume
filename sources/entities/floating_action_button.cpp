@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -292,6 +293,7 @@ namespace guillaume::entities
 	void FloatingActionButton::applyGeometry(void)
 	{
 		const float containerSize = getContainerSize(_size);
+		const float fontHeight	  = getIconFontSize();
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(getIdentifier())
@@ -303,7 +305,87 @@ namespace guillaume::entities
 			.setBorderRadius(getBorderRadius(_size));
 
 		if (_icon) {
-			_icon->setFontSize(getIconFontSize());
+			_icon->setFontSize(fontHeight);
+		}
+
+		if (_label) {
+			_label->setFontSize(fontHeight);
+		}
+
+		if (!_icon && !_label) {
+			return;
+		}
+
+		const auto &buttonPose =
+			getComponentRegistry()
+				.getComponent<components::Transform>(getIdentifier())
+				.getPose();
+
+		const float iconWidth	= _icon
+			  ? getComponentRegistry()
+					.getComponent<components::Bound>(_icon->getIdentifier())
+					.getWidth()
+			  : 0.0f;
+		const float iconHeight	= _icon
+			 ? getComponentRegistry()
+				   .getComponent<components::Bound>(_icon->getIdentifier())
+				   .getHeight()
+			 : 0.0f;
+		const float labelWidth	= _label
+			 ? getComponentRegistry()
+				   .getComponent<components::Bound>(_label->getIdentifier())
+				   .getWidth()
+			 : 0.0f;
+		const float labelHeight = _label
+			? getComponentRegistry()
+				  .getComponent<components::Bound>(_label->getIdentifier())
+				  .getHeight()
+			: 0.0f;
+
+		const float gap			 = (_icon && _label) ? 8.0f : 0.0f;
+		const float contentWidth = iconWidth + gap + labelWidth;
+
+		// Content is centered in the container; when the row is wider than the
+		// container the bound grows so nothing is clipped.
+		const float width = std::max(containerSize, contentWidth);
+		const float startX =
+			buttonPose.getPosition().x + (width - contentWidth) / 2.0f;
+
+		if (_icon) {
+			const float iconY = buttonPose.getPosition().y
+				+ (containerSize - iconHeight) / 2.0f;
+
+			const auto iconPose = ButtonBase::applyLayerToPosition(
+				utility::graphic::PositionF(startX, iconY,
+											buttonPose.getPosition().z),
+				buttonPose.getOrientation(),
+				static_cast<std::uint32_t>(getLayer()));
+
+			getComponentRegistry()
+				.getComponent<components::Transform>(_icon->getIdentifier())
+				.setPose(iconPose);
+		}
+
+		if (_label) {
+			const float labelX = startX + iconWidth + gap;
+			const float labelY = buttonPose.getPosition().y
+				+ (containerSize - labelHeight) / 2.0f;
+
+			const auto labelPose = ButtonBase::applyLayerToPosition(
+				utility::graphic::PositionF(labelX, labelY,
+											buttonPose.getPosition().z),
+				buttonPose.getOrientation(),
+				static_cast<std::uint32_t>(getLayer()));
+
+			getComponentRegistry()
+				.getComponent<components::Transform>(_label->getIdentifier())
+				.setPose(labelPose);
+		}
+
+		if (width > containerSize) {
+			getComponentRegistry()
+				.getComponent<components::Bound>(getIdentifier())
+				.setWidth(width);
 		}
 	}
 

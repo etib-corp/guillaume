@@ -239,7 +239,7 @@ namespace guillaume::entities
 		if (_thumb != nullptr) {
 			placeNormalized(getComponentRegistry(), getIdentifier(),
 							_thumb->getIdentifier(), on ? 1.0f : 0.0f,
-							ThumbInset);
+							ThumbInset, static_cast<std::uint32_t>(getLayer()));
 
 			const auto thumbColor = disabled
 				? withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U)
@@ -252,7 +252,8 @@ namespace guillaume::entities
 
 			if (_icon != nullptr) {
 				centerChild(getComponentRegistry(), _thumb->getIdentifier(),
-							_icon->getIdentifier());
+							_icon->getIdentifier(),
+							static_cast<std::uint32_t>(_thumb->getLayer()));
 			}
 		}
 

@@ -288,7 +288,8 @@ namespace guillaume::entities
 
 			placeChild(getComponentRegistry(), getIdentifier(),
 					   _animation->getIdentifier(),
-					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f));
+					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+					   static_cast<std::uint32_t>(getLayer()));
 			getComponentRegistry()
 				.getComponent<components::Bound>(_animation->getIdentifier())
 				.setWidth(_diameter)
@@ -301,7 +302,8 @@ namespace guillaume::entities
 		placeChild(getComponentRegistry(), getIdentifier(),
 				   _animation->getIdentifier(),
 				   utility::graphic::PositionF(
-					   progress * (LinearWidth - segment), 0.0f, 0.0f));
+					   progress * (LinearWidth - segment), 0.0f, 0.0f),
+				   static_cast<std::uint32_t>(getLayer()));
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(_animation->getIdentifier())

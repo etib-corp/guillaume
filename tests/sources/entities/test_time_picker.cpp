@@ -30,6 +30,7 @@
 #include <guillaume/components/overlay.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -73,6 +74,30 @@ namespace guillaume::entities::tests
 		const auto &borders =
 			registry.getComponent<components::Borders>(picker->getIdentifier());
 		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 28.0f);
+	}
+
+	TEST_F(TestTimePicker, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto picker = makeTimePicker(registry, TimePicker::Variant::Clock);
+
+		picker->update();
+
+		const float baseZ =
+			registry
+				.getComponent<components::Transform>(picker->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, picker);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestTimePicker, OverlayIsModal)

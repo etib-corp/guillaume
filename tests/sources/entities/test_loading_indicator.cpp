@@ -29,6 +29,7 @@
 #include <guillaume/components/bound.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -75,6 +76,30 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(loading->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 48.0f);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 48.0f);
+	}
+
+	TEST_F(TestLoadingIndicator, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading = makeLoadingIndicator(registry);
+
+		loading->update();
+
+		const float baseZ =
+			registry
+				.getComponent<components::Transform>(loading->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, loading);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestLoadingIndicator, AnimationRunsAfterInitialize)

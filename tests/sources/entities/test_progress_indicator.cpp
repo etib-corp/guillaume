@@ -33,6 +33,7 @@
 #include <guillaume/components/value.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -95,6 +96,30 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(progress->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 48.0f);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 48.0f);
+	}
+
+	TEST_F(TestProgressIndicator, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+
+		progress->update();
+
+		const float baseZ =
+			registry
+				.getComponent<components::Transform>(progress->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, progress);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestProgressIndicator, ValueClampsAndRoundTrips)

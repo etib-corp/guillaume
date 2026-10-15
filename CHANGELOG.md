@@ -75,6 +75,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `getText/getValue/getLow/getHigh`) are now `const`.
 - Test fixtures are consolidated into the shared
   `tests/headers/entities/family_fixture.hpp` helper.
+- Text and icon children are now consistently lifted one content layer in
+  front of their container surface: `systems::Layout` exposes
+  `ContentLayerOffset`/`contentLayerPose`, and
+  `entities/placement_helpers.hpp` routes manual placement (`placeChild`,
+  `centerChild`, `placeNormalized`) through it, so `Slider`, `Switch`,
+  `ProgressIndicator`, `LoadingIndicator`, `RadioButton` and `TimePicker`
+  match the already-layered `Layout` families.
 
 ### Fixed
 
@@ -92,6 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   offset, `ScrimRender` now rotates its quad by the transform orientation like
   the other shape renderers, and the text/glyph renderers re-anchor the glyph
   box top-left onto the entity position via `systems::anchorTextTopLeft`.
+- `IconButton` and `FloatingActionButton` now position their icon (and the FAB
+  label) instead of leaving it at the default pose.
 
 ## [1.0.0] - 2025-08-25
 

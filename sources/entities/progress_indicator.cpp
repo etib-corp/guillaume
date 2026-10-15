@@ -399,7 +399,8 @@ namespace guillaume::entities
 								   _fill->getIdentifier(),
 								   utility::graphic::PositionF(
 									   progress * (_trackLength - segment),
-									   0.0f, 0.0f));
+									   0.0f, 0.0f),
+								   static_cast<std::uint32_t>(getLayer()));
 
 						getComponentRegistry()
 							.getComponent<components::Bound>(
@@ -433,10 +434,12 @@ namespace guillaume::entities
 		if (isCircular()) {
 			placeChild(getComponentRegistry(), getIdentifier(),
 					   _track->getIdentifier(),
-					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f));
+					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+					   static_cast<std::uint32_t>(getLayer()));
 			placeChild(getComponentRegistry(), getIdentifier(),
 					   _fill->getIdentifier(),
-					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f));
+					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+					   static_cast<std::uint32_t>(getLayer()));
 
 			getComponentRegistry()
 				.getComponent<components::Bound>(_track->getIdentifier())
@@ -465,7 +468,8 @@ namespace guillaume::entities
 
 		placeChild(getComponentRegistry(), getIdentifier(),
 				   _track->getIdentifier(),
-				   utility::graphic::PositionF(0.0f, 0.0f, 0.0f));
+				   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+				   static_cast<std::uint32_t>(getLayer()));
 		getComponentRegistry()
 			.getComponent<components::Bound>(_track->getIdentifier())
 			.setWidth(_trackLength)
@@ -476,7 +480,8 @@ namespace guillaume::entities
 
 		placeChild(getComponentRegistry(), getIdentifier(),
 				   _fill->getIdentifier(),
-				   utility::graphic::PositionF(0.0f, 0.0f, 0.0f));
+				   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+				   static_cast<std::uint32_t>(getLayer()));
 		getComponentRegistry()
 			.getComponent<components::Color>(_fill->getIdentifier())
 			.setColor(schemeColor(SchemeColorRole::Primary));

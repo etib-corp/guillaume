@@ -103,9 +103,18 @@ namespace guillaume::systems
 		utility::graphic::PositionF forwardPosition = position;
 
 		forwardPosition.translate(utility::graphic::PositionF(
-			-forwardVector * static_cast<float>(layer + 1) * LayerDepthStep));
+			-forwardVector * static_cast<float>(layer + ContentLayerOffset)
+			* LayerDepthStep));
 
 		return utility::graphic::PoseF(forwardPosition, orientation);
+	}
+
+	const utility::graphic::PoseF Layout::contentLayerPose(
+		const utility::graphic::PositionF &position,
+		const utility::graphic::OrientationF &orientation,
+		const std::uint32_t &containerLayer)
+	{
+		return applyLayerToPosition(position, orientation, containerLayer);
 	}
 
 	void Layout::apply(

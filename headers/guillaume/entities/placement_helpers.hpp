@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include <utility/graphic/pose.hpp>
 #include <utility/graphic/position.hpp>
 
@@ -30,6 +32,8 @@
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/transform.hpp"
+
+#include "guillaume/systems/layout.hpp"
 
 namespace guillaume::entities
 {
@@ -61,15 +65,20 @@ namespace guillaume::entities
 	/**
 	 * @brief Place a child entity at an absolute position offset from a parent.
 	 *
+	 * The child is lifted by the container content layer so it never z-fights
+	 * with the parent surface.
+	 *
 	 * @param registry The component registry.
 	 * @param parentIdentifier The parent entity identifier.
 	 * @param childIdentifier The child entity identifier.
 	 * @param offset The offset applied to the parent position.
+	 * @param parentLayer The layer of the parent container.
 	 */
 	inline void placeChild(ecs::ComponentRegistry &registry,
 						   const ecs::Entity::Identifier &parentIdentifier,
 						   const ecs::Entity::Identifier &childIdentifier,
-						   const utility::graphic::PositionF &offset)
+						   const utility::graphic::PositionF &offset,
+						   std::uint32_t parentLayer)
 	{
 		if (!registry.hasComponent<components::Transform>(childIdentifier)) {
 			return;
@@ -77,14 +86,16 @@ namespace guillaume::entities
 
 		const auto origin = poseOf(registry, parentIdentifier);
 
-		auto &transform =
-			registry.getComponent<components::Transform>(childIdentifier);
-		auto pose = transform.getPose();
-		pose.setPosition(
-			utility::graphic::PositionF(origin.getPosition().getX() + offset.x,
-										origin.getPosition().getY() + offset.y,
-										origin.getPosition().getZ()));
-		transform.setPose(pose);
+		const utility::graphic::PositionF basePosition(
+			origin.getPosition().getX() + offset.x,
+			origin.getPosition().getY() + offset.y,
+			origin.getPosition().getZ());
+
+		const auto pose = systems::Layout::contentLayerPose(
+			basePosition, origin.getOrientation(), parentLayer);
+
+		registry.getComponent<components::Transform>(childIdentifier)
+			.setPose(pose);
 	}
 
 	/**
@@ -93,10 +104,12 @@ namespace guillaume::entities
 	 * @param registry The component registry.
 	 * @param parentIdentifier The parent entity identifier.
 	 * @param childIdentifier The child entity identifier.
+	 * @param parentLayer The layer of the parent container.
 	 */
 	inline void centerChild(ecs::ComponentRegistry &registry,
 							const ecs::Entity::Identifier &parentIdentifier,
-							const ecs::Entity::Identifier &childIdentifier)
+							const ecs::Entity::Identifier &childIdentifier,
+							std::uint32_t parentLayer)
 	{
 		if (!registry.hasComponent<components::Bound>(parentIdentifier)
 			|| !registry.hasComponent<components::Bound>(childIdentifier)) {
@@ -113,7 +126,8 @@ namespace guillaume::entities
 			utility::graphic::PositionF(
 				(parentBound.getWidth() - childBound.getWidth()) / 2.0f,
 				(parentBound.getHeight() - childBound.getHeight()) / 2.0f,
-				0.0f));
+				0.0f),
+			parentLayer);
 	}
 
 	/**
@@ -127,11 +141,13 @@ namespace guillaume::entities
 	 * @param childIdentifier The child entity identifier.
 	 * @param normalized The normalized `[0, 1]` position along the width.
 	 * @param inset The horizontal inset reserved on both edges.
+	 * @param parentLayer The layer of the parent container.
 	 */
 	inline void placeNormalized(ecs::ComponentRegistry &registry,
 								const ecs::Entity::Identifier &parentIdentifier,
 								const ecs::Entity::Identifier &childIdentifier,
-								float normalized, float inset)
+								float normalized, float inset,
+								std::uint32_t parentLayer)
 	{
 		if (!registry.hasComponent<components::Bound>(parentIdentifier)
 			|| !registry.hasComponent<components::Bound>(childIdentifier)) {
@@ -151,7 +167,8 @@ namespace guillaume::entities
 			utility::graphic::PositionF(
 				inset + normalized * (travel > 0.0f ? travel : 0.0f),
 				(parentBound.getHeight() - childBound.getHeight()) / 2.0f,
-				0.0f));
+				0.0f),
+			parentLayer);
 	}
 
 }	 // namespace guillaume::entities

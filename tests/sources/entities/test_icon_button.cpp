@@ -28,6 +28,7 @@
 #include <guillaume/components/transform.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -52,6 +53,38 @@ namespace guillaume::entities::tests
 		mouseInteraction.getOnButtonReleaseHandler(
 			utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_TRUE(button->isSelected());
+	}
+
+	TEST_F(TestIconButton, IconIsCenteredAndLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<IconButton>(
+			registry, "favorite", "favorite_border",
+			components::Glyph::Style::Outlined, false,
+			IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
+			std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		const auto iconId = button->getIconIdentifier();
+		ASSERT_NE(iconId, ecs::Entity::InvalidIdentifier);
+
+		const auto &buttonPose =
+			registry
+				.getComponent<components::Transform>(button->getIdentifier())
+				.getPose();
+		const auto &iconPose =
+			registry.getComponent<components::Transform>(iconId).getPose();
+
+		EXPECT_FLOAT_EQ(
+			iconPose.getPosition().getZ(),
+			buttonPose.getPosition().getZ()
+				+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		EXPECT_GT(iconPose.getPosition().getX(),
+				  buttonPose.getPosition().getX());
+		EXPECT_GT(iconPose.getPosition().getY(),
+				  buttonPose.getPosition().getY());
 	}
 
 	TEST_F(TestIconButton, SetSelectedUpdatesState)

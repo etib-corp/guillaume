@@ -24,8 +24,13 @@
 
 #include <gtest/gtest.h>
 
+#include <memory>
+#include <vector>
+
 #include <guillaume/component_registry.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -43,6 +48,37 @@ namespace guillaume::entities::tests
 		static ecs::EntityRegistryContainer registry;
 		registry = ecs::EntityRegistryContainer();
 		return registry;
+	}
+
+	/**
+	 * @brief Collect the Z depth of every direct child owning a Transform.
+	 *
+	 * @tparam ParentType The concrete parent entity type (must own children).
+	 * @param registry The component registry.
+	 * @param parent The parent entity whose direct children are inspected.
+	 * @return The Z coordinate of each child transform, in child order.
+	 */
+	template<typename ParentType> inline std::vector<float>
+		directChildDepths(ecs::ComponentRegistry &registry,
+						  const std::shared_ptr<ParentType> &parent)
+	{
+		std::vector<float> depths;
+
+		for (const auto &child: parent->getEntities()) {
+			if (!registry.hasComponent<components::Transform>(
+					child->getIdentifier())) {
+				continue;
+			}
+
+			depths.push_back(
+				registry
+					.getComponent<components::Transform>(child->getIdentifier())
+					.getPose()
+					.getPosition()
+					.getZ());
+		}
+
+		return depths;
 	}
 
 	/**

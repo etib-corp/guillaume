@@ -307,7 +307,8 @@ namespace guillaume::entities
 
 		placeChild(getComponentRegistry(), getIdentifier(),
 				   thumb->getIdentifier(),
-				   utility::graphic::PositionF(x, y, 0.0f));
+				   utility::graphic::PositionF(x, y, 0.0f),
+				   static_cast<std::uint32_t>(getLayer()));
 	}
 
 	void Slider::buildChildren(void)
@@ -393,7 +394,8 @@ namespace guillaume::entities
 
 		placeChild(getComponentRegistry(), getIdentifier(),
 				   _track->getIdentifier(),
-				   utility::graphic::PositionF(0.0f, trackOffsetY, 0.0f));
+				   utility::graphic::PositionF(0.0f, trackOffsetY, 0.0f),
+				   static_cast<std::uint32_t>(getLayer()));
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(_track->getIdentifier())
@@ -415,7 +417,8 @@ namespace guillaume::entities
 			placeChild(getComponentRegistry(), getIdentifier(),
 					   _fill->getIdentifier(),
 					   utility::graphic::PositionF(lowNorm * _trackLength,
-												   trackOffsetY, 0.0f));
+												   trackOffsetY, 0.0f),
+					   static_cast<std::uint32_t>(getLayer()));
 
 			getComponentRegistry()
 				.getComponent<components::Bound>(_fill->getIdentifier())
@@ -427,7 +430,8 @@ namespace guillaume::entities
 		} else {
 			placeChild(getComponentRegistry(), getIdentifier(),
 					   _fill->getIdentifier(),
-					   utility::graphic::PositionF(0.0f, trackOffsetY, 0.0f));
+					   utility::graphic::PositionF(0.0f, trackOffsetY, 0.0f),
+					   static_cast<std::uint32_t>(getLayer()));
 
 			getComponentRegistry()
 				.getComponent<components::Bound>(_fill->getIdentifier())

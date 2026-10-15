@@ -35,6 +35,7 @@
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/mesh_renderable.hpp>
 #include <guillaume/systems/glyph_render.hpp>
+#include <guillaume/systems/layout.hpp>
 #include <guillaume/systems/rectangle_render.hpp>
 #include <guillaume/systems/text_render.hpp>
 
@@ -87,8 +88,12 @@ namespace guillaume::entities::tests
 				.getPosition()
 				.getZ();
 
-		EXPECT_FLOAT_EQ(iconZ, baseZ + 1.0f);
-		EXPECT_FLOAT_EQ(textZ, baseZ + 1.0f);
+		EXPECT_FLOAT_EQ(
+			iconZ,
+			baseZ + static_cast<float>(systems::Layout::ContentLayerOffset));
+		EXPECT_FLOAT_EQ(
+			textZ,
+			baseZ + static_cast<float>(systems::Layout::ContentLayerOffset));
 		EXPECT_LT(baseZ, iconZ);
 		EXPECT_LT(baseZ, textZ);
 	}
@@ -136,8 +141,12 @@ namespace guillaume::entities::tests
 				.getPosition()
 				.getZ();
 
-		EXPECT_FLOAT_EQ(iconZ, baseZ + 1.0f);
-		EXPECT_FLOAT_EQ(textZ, baseZ + 1.0f);
+		EXPECT_FLOAT_EQ(
+			iconZ,
+			baseZ + static_cast<float>(systems::Layout::ContentLayerOffset));
+		EXPECT_FLOAT_EQ(
+			textZ,
+			baseZ + static_cast<float>(systems::Layout::ContentLayerOffset));
 	}
 
 	TEST_F(TestButton, ToggleFlipsSelectedOnRelease)

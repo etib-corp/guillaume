@@ -30,6 +30,7 @@
 #include <guillaume/components/selection.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -65,6 +66,31 @@ namespace guillaume::entities::tests
 		const auto &ring =
 			registry.getComponent<components::Ring>(radio->getIdentifier());
 		EXPECT_FLOAT_EQ(ring.getThickness(), 2.0f);
+	}
+
+	TEST_F(TestRadioButton, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto radio =
+			makeRadio(registry, RadioButton::Variant::Enabled, "Label");
+
+		radio->select(true);
+		radio->update();
+
+		const float baseZ =
+			registry.getComponent<components::Transform>(radio->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, radio);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestRadioButton, VariantRoundTrip)

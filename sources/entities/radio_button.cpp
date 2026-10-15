@@ -218,7 +218,8 @@ namespace guillaume::entities
 
 			if (selected) {
 				centerChild(getComponentRegistry(), getIdentifier(),
-							_dot->getIdentifier());
+							_dot->getIdentifier(),
+							static_cast<std::uint32_t>(getLayer()));
 			}
 		}
 
