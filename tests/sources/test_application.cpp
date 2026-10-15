@@ -49,6 +49,44 @@ namespace guillaume::tests
 			public:
 			using guillaume::Scene::Scene;
 		};
+
+		/**
+		 * @brief Scene that registers a root entity from `onEnter`.
+		 *
+		 * Used to verify the scene manager places entities that scenes build
+		 * in `onEnter` rather than before they exist.
+		 */
+		class PlacementRecordingScene: public guillaume::Scene
+		{
+			public:
+			static PlacementRecordingScene *instance;
+			static ecs::Entity::Identifier entityIdentifier;
+
+			using guillaume::Scene::Scene;
+
+			void onEnter(void) override
+			{
+				instance = this;
+
+				auto entity		 = std::make_shared<ecs::Entity>();
+				entityIdentifier = entity->getIdentifier();
+
+				getComponentRegistry()
+					.registerComponentsForEntity<components::Transform,
+												 components::Bound>(
+						entityIdentifier);
+				getComponentRegistry()
+					.getComponent<components::Bound>(entityIdentifier)
+					.setWidth(100.0f)
+					.setHeight(50.0f);
+
+				addEntity(entity);
+			}
+		};
+
+		PlacementRecordingScene *PlacementRecordingScene::instance = nullptr;
+		ecs::Entity::Identifier PlacementRecordingScene::entityIdentifier =
+			ecs::Entity::InvalidIdentifier;
 	}	 // namespace
 
 	TEST_F(TestApplication, ConstructsWithRessourceProvider)
@@ -138,5 +176,38 @@ namespace guillaume::tests
 			+ std::abs(pose.getPosition()[1] - anchor[1])
 			+ std::abs(pose.getPosition()[2] - anchor[2]);
 		EXPECT_GT(distanceFromAnchor, 1e-3f);
+	}
+
+	TEST_F(TestApplication, PlacesEntitiesBuiltInOnEnter)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		guillaume::Application<PlacementRecordingScene, PlacementRecordingScene>
+			application(ressourceProvider);
+
+		application.setEngine(std::make_unique<EngineMock>());
+
+		ASSERT_NE(PlacementRecordingScene::instance, nullptr);
+
+		auto &registry =
+			PlacementRecordingScene::instance->getComponentRegistry();
+		const auto &pose = registry
+							   .getComponent<guillaume::components::Transform>(
+								   PlacementRecordingScene::entityIdentifier)
+							   .getPose();
+
+		const utility::graphic::ViewF view;
+		const auto anchor =
+			view.centerRay().origin() + view.centerRay().direction() * 300.0f;
+		const auto expected = anchor + view.getRight() * (-50.0f);
+
+		// The entity built in onEnter must have been placed, not left at the
+		// default origin.
+		EXPECT_NEAR(pose.getPosition()[0], expected[0], 1e-3f);
+		EXPECT_NEAR(pose.getPosition()[1], expected[1], 1e-3f);
+		EXPECT_NEAR(pose.getPosition()[2], expected[2], 1e-3f);
+		EXPECT_NE(pose.getPosition().getX(), 0.0f);
 	}
 }	 // namespace guillaume::tests

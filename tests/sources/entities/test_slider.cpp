@@ -31,6 +31,9 @@
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/systems/layout.hpp>
 
+#include <utility/graphic/pose.hpp>
+#include <utility/graphic/position.hpp>
+
 namespace guillaume::entities::tests
 {
 	namespace
@@ -84,6 +87,30 @@ namespace guillaume::entities::tests
 				depth,
 				baseZ
 					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
+	}
+
+	TEST_F(TestSlider, ChildrenArePositionedRelativeToTheSlider)
+	{
+		ecs::ComponentRegistry registry;
+		auto slider = makeSlider(registry);
+
+		registry.getComponent<components::Transform>(slider->getIdentifier())
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(100.0f, 50.0f, 0.0f),
+				utility::graphic::OrientationF()));
+
+		slider->update();
+
+		const auto positions = directChildPositions(registry, slider);
+		ASSERT_FALSE(positions.empty());
+		for (const auto &position: positions) {
+			// Children follow the slider, they are not left at the origin.
+			EXPECT_NE(position.getX(), 0.0f);
+			EXPECT_NE(position.getY(), 0.0f);
+			EXPECT_FLOAT_EQ(
+				position.getZ(),
+				static_cast<float>(systems::Layout::ContentLayerOffset));
 		}
 	}
 

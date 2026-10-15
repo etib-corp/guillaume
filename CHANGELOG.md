@@ -101,6 +101,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   box top-left onto the entity position via `systems::anchorTextTopLeft`.
 - `IconButton` and `FloatingActionButton` now position their icon (and the FAB
   label) instead of leaving it at the default pose.
+- Scenes now place their root entities *after* `onEnter()` builds them.
+  `SceneManager::enterActiveScene` previously called
+  `placeEntitiesInFrontOfView` before `onEnter`, so entities created there
+  (and their text/icon children) were never positioned and stayed at the
+  origin.
 
 ## [1.0.0] - 2025-08-25
 

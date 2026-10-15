@@ -51,6 +51,38 @@ namespace guillaume::entities::tests
 	}
 
 	/**
+	 * @brief Collect the local position of every direct child owning a
+	 * Transform.
+	 *
+	 * @tparam ParentType The concrete parent entity type (must own children).
+	 * @param registry The component registry.
+	 * @param parent The parent entity whose direct children are inspected.
+	 * @return The position of each child transform, in child order.
+	 */
+	template<typename ParentType>
+	inline std::vector<utility::graphic::PositionF>
+		directChildPositions(ecs::ComponentRegistry &registry,
+							 const std::shared_ptr<ParentType> &parent)
+	{
+		std::vector<utility::graphic::PositionF> positions;
+
+		for (const auto &child: parent->getEntities()) {
+			if (!registry.hasComponent<components::Transform>(
+					child->getIdentifier())) {
+				continue;
+			}
+
+			positions.push_back(
+				registry
+					.getComponent<components::Transform>(child->getIdentifier())
+					.getPose()
+					.getPosition());
+		}
+
+		return positions;
+	}
+
+	/**
 	 * @brief Collect the Z depth of every direct child owning a Transform.
 	 *
 	 * @tparam ParentType The concrete parent entity type (must own children).

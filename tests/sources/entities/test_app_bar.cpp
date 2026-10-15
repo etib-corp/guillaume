@@ -33,7 +33,11 @@
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/entities/style_helpers.hpp>
+#include <guillaume/systems/layout.hpp>
 #include <guillaume/theme.hpp>
+
+#include <utility/graphic/pose.hpp>
+#include <utility/graphic/position.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -64,6 +68,31 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(appBar->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 360.0f);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 56.0f);
+	}
+
+	TEST_F(TestAppBar, TitleChildIsPositionedByLayout)
+	{
+		ecs::ComponentRegistry registry;
+		auto appBar = makeAppBar(registry, AppBar::Variant::Small);
+		appBar->setTitle("Title");
+
+		registry.getComponent<components::Transform>(appBar->getIdentifier())
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(100.0f, 50.0f, 0.0f),
+				utility::graphic::OrientationF()));
+
+		appBar->update();
+
+		const auto positions = directChildPositions(registry, appBar);
+		ASSERT_EQ(positions.size(), 1u);
+
+		// Padding 16 on the main axis; the title is the only child and its
+		// bound is unmeasured (0x0) so it is centered in the 56px bar.
+		EXPECT_FLOAT_EQ(positions[0].getX(), 116.0f);
+		EXPECT_FLOAT_EQ(positions[0].getY(), 78.0f);
+		EXPECT_FLOAT_EQ(
+			positions[0].getZ(),
+			static_cast<float>(systems::Layout::ContentLayerOffset));
 	}
 
 	TEST_F(TestAppBar, LargeVariantIsTallerThanSmall)

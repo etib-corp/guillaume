@@ -148,10 +148,15 @@ namespace guillaume
 	void SceneManager<DefaultSceneType, SceneTypes...>::enterActiveScene(void)
 	{
 		Scene *activeScene = getActiveScene();
+
+		// Scenes build their root entities in onEnter(), so the scene must be
+		// entered before the entities are placed: placing first would run on
+		// an empty registry and leave every entity at its default pose.
+		activeScene->onEnter();
+
 		if (_engine != nullptr) {
 			activeScene->placeEntitiesInFrontOfView(_engine->getView());
 		}
-		activeScene->onEnter();
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
