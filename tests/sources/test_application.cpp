@@ -22,10 +22,21 @@
 
 #include "test_application.hpp"
 
+#include <cmath>
 #include <memory>
 #include <utility>
 
 #include <utility/system_io/default_system_io.hpp>
+
+#include <utility/graphic/orientation.hpp>
+#include <utility/graphic/position.hpp>
+#include <utility/graphic/view.hpp>
+
+#include "guillaume/components/bound.hpp"
+#include "guillaume/components/transform.hpp"
+#include "guillaume/ecs/entity.hpp"
+#include "guillaume/local_storage.hpp"
+#include "guillaume/session_storage.hpp"
 
 #include "mocks/engine_mock.hpp"
 
@@ -79,5 +90,53 @@ namespace guillaume::tests
 		EXPECT_NO_THROW(application.update());
 		EXPECT_NO_THROW(application.clear());
 		EXPECT_NO_THROW(application.present());
+	}
+
+	TEST_F(TestApplication, PlacesEntitiesFromTheirTopLeftCorner)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		guillaume::LocalStorage localStorage;
+		guillaume::SessionStorage sessionStorage;
+		StubScene scene(ressourceProvider, localStorage, sessionStorage);
+
+		auto &registry = scene.getComponentRegistry();
+
+		auto entity			= std::make_shared<guillaume::ecs::Entity>();
+		const auto entityId = entity->getIdentifier();
+
+		registry.registerComponentsForEntity<guillaume::components::Transform,
+											 guillaume::components::Bound>(
+			entityId);
+		registry.getComponent<guillaume::components::Bound>(entityId)
+			.setWidth(100.0f)
+			.setHeight(50.0f);
+
+		scene.addEntity(entity);
+
+		const utility::graphic::ViewF view;
+		scene.placeEntitiesInFrontOfView(view);
+
+		const auto &pose =
+			registry.getComponent<guillaume::components::Transform>(entityId)
+				.getPose();
+
+		const auto anchor =
+			view.centerRay().origin() + view.centerRay().direction() * 300.0f;
+		// A single 100px-wide entity must sit with its left edge half a width
+		// behind the anchor, not centred on it.
+		const auto expected = anchor + view.getRight() * (-50.0f);
+
+		EXPECT_NEAR(pose.getPosition()[0], expected[0], 1e-3f);
+		EXPECT_NEAR(pose.getPosition()[1], expected[1], 1e-3f);
+		EXPECT_NEAR(pose.getPosition()[2], expected[2], 1e-3f);
+
+		const float distanceFromAnchor =
+			std::abs(pose.getPosition()[0] - anchor[0])
+			+ std::abs(pose.getPosition()[1] - anchor[1])
+			+ std::abs(pose.getPosition()[2] - anchor[2]);
+		EXPECT_GT(distanceFromAnchor, 1e-3f);
 	}
 }	 // namespace guillaume::tests

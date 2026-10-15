@@ -228,11 +228,12 @@ namespace guillaume
 			const auto &bound =
 				_componentRegistry.getComponent<components::Bound>(id);
 
-			const float width		 = bound.getWidth();
-			const float centerOffset = cursor + width * 0.5f;
+			const float width = bound.getWidth();
 
-			utility::graphic::PositionF entityPosition(anchor
-													   + right * centerOffset);
+			// Renderers treat the transform position as the top-left corner,
+			// so lay the group out from `cursor` (its left edge) directly
+			// instead of adding half the width as a center offset.
+			utility::graphic::PositionF entityPosition(anchor + right * cursor);
 
 			auto &transform =
 				_componentRegistry.getComponent<components::Transform>(id);

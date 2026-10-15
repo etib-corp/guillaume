@@ -25,6 +25,7 @@
 #include <utility/graphic/text/text.hpp>
 
 #include "guillaume/systems/glyph_render.hpp"
+#include "guillaume/systems/text_anchor.hpp"
 
 namespace guillaume::systems
 {
@@ -99,6 +100,10 @@ namespace guillaume::systems
 			colorComponent.getColor(),
 			utility::graphic::CodePoints::toUtf8(glyphCode),
 			glyphComponent.getFontSize(), _defaultFontPath);
+
+		// Keep the top-left convention shared by every renderer: the glyph
+		// box top-left must land on the entity position.
+		anchorTextTopLeft(*renderable, transformComponent.getPose());
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {

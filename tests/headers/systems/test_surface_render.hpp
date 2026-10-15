@@ -126,6 +126,22 @@ namespace guillaume::systems::tests
 			}
 			return renderable->getMeshes().front()->getIndices().size();
 		}
+
+		utility::graphic::PositionF lastMeshFirstVertex(void) const
+		{
+			const auto renderable =
+				std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+					_engineMock->lastCreated());
+			if (renderable == nullptr || renderable->getMeshes().empty()
+				|| renderable->getMeshes().front()->getVertices().empty()) {
+				return utility::graphic::PositionF();
+			}
+			return renderable->getMeshes()
+				.front()
+				->getVertices()
+				.front()
+				.getPosition();
+		}
 	};
 
 }	 // namespace guillaume::systems::tests

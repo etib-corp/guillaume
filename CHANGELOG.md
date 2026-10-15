@@ -87,6 +87,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stale test APIs, missing font asset).
 - Updated the `evan` example to the `entities::Layout` API (the removed
   `entities::Container` was still referenced).
+- Unified every drawable on a single top-left origin convention:
+  `Scene::placeEntitiesInFrontOfView` no longer adds a half-width centre
+  offset, `ScrimRender` now rotates its quad by the transform orientation like
+  the other shape renderers, and the text/glyph renderers re-anchor the glyph
+  box top-left onto the entity position via `systems::anchorTextTopLeft`.
 
 ## [1.0.0] - 2025-08-25
 

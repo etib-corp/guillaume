@@ -20,6 +20,8 @@
  SOFTWARE.
  */
 
+#include <algorithm>
+#include <limits>
 #include <memory>
 
 #include <utility/graphic/renderable.hpp>
@@ -185,4 +187,39 @@ TEST_F(TextRenderFixture, RecreatesRenderObjectAfterCleanup)
 	EXPECT_EQ(enginePtr->createObjectCallCount, 2);
 	EXPECT_EQ(enginePtr->removeObjectCallCount, 1);
 	EXPECT_EQ(textRenderSystem.size(), 1);
+}
+
+TEST_F(TextRenderFixture, AnchorsGlyphBoxTopLeftOnPosition)
+{
+	const utility::graphic::PositionF anchor(100.0f, 50.0f, 0.0f);
+	componentRegistry
+		.getComponent<guillaume::components::Transform>(entityIdentifier)
+		.setPose(
+			utility::graphic::PoseF(anchor, utility::graphic::OrientationF()));
+
+	textRenderSystem.update(entityIdentifier);
+
+	auto renderable = std::dynamic_pointer_cast<utility::graphic::Text>(
+		enginePtr->lastCreated());
+	ASSERT_NE(renderable, nullptr);
+
+	const auto meshes = renderable->getMeshes();
+	ASSERT_FALSE(meshes.empty());
+	ASSERT_NE(meshes.front(), nullptr);
+	const auto &vertices = meshes.front()->getVertices();
+	ASSERT_FALSE(vertices.empty());
+
+	float minX = std::numeric_limits<float>::max();
+	float maxY = std::numeric_limits<float>::lowest();
+	for (const auto &vertex: vertices) {
+		const auto &position = vertex.getPosition();
+		minX				 = std::min(minX, position[0]);
+		maxY				 = std::max(maxY, position[1]);
+	}
+
+	// The model translation must map the local glyph-box top-left onto the
+	// entity position (identity orientation in this test).
+	const auto &posePosition = renderable->getPose().getPosition();
+	EXPECT_NEAR(posePosition[0] + minX, anchor[0], 1e-3f);
+	EXPECT_NEAR(posePosition[1] + maxY, anchor[1], 1e-3f);
 }
