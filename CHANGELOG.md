@@ -106,6 +106,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `placeEntitiesInFrontOfView` before `onEnter`, so entities created there
   (and their text/icon children) were never positioned and stayed at the
   origin.
+- Entities are no longer moved or rotated when the view changes. The removed
+  `Application::routine` view-flip re-placement (and its `_firstView` state)
+  used to reposition and re-orient every root entity when the view turned
+  more than 90 degrees; entities are now placed once per scene entry and left
+  untouched afterwards.
 
 ## [1.0.0] - 2025-08-25
 

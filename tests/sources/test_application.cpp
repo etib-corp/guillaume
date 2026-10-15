@@ -210,4 +210,43 @@ namespace guillaume::tests
 		EXPECT_NEAR(pose.getPosition()[2], expected[2], 1e-3f);
 		EXPECT_NE(pose.getPosition().getX(), 0.0f);
 	}
+
+	TEST_F(TestApplication, DoesNotMoveEntitiesOnViewChange)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		auto engine		= std::make_unique<EngineMock>();
+		auto *enginePtr = engine.get();
+
+		guillaume::Application<PlacementRecordingScene, PlacementRecordingScene>
+			application(ressourceProvider);
+
+		application.setEngine(std::move(engine));
+
+		ASSERT_NE(PlacementRecordingScene::instance, nullptr);
+
+		auto &registry =
+			PlacementRecordingScene::instance->getComponentRegistry();
+		auto &transform =
+			registry.getComponent<guillaume::components::Transform>(
+				PlacementRecordingScene::entityIdentifier);
+
+		const auto placedPose = transform.getPose();
+
+		// Flip the view ~180 degrees about Y: the entity must not move or
+		// rotate.
+		enginePtr->view.setPose(utility::graphic::PoseF(
+			utility::graphic::PositionF(),
+			utility::graphic::OrientationF(0.0f, 1.0f, 0.0f, 0.0f)));
+
+		application.routine();
+
+		const auto &pose = transform.getPose();
+		EXPECT_FLOAT_EQ(pose.getPosition()[0], placedPose.getPosition()[0]);
+		EXPECT_FLOAT_EQ(pose.getPosition()[1], placedPose.getPosition()[1]);
+		EXPECT_FLOAT_EQ(pose.getPosition()[2], placedPose.getPosition()[2]);
+		EXPECT_EQ(pose.getOrientation(), placedPose.getOrientation());
+	}
 }	 // namespace guillaume::tests

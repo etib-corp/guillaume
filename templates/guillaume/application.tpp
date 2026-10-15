@@ -167,42 +167,15 @@ namespace guillaume
 		_sceneManager->enterActiveScene();
 	}
 
-	static bool hasViewChanged(utility::graphic::ViewF &firstView,
-							   utility::graphic::ViewF &currentView)
-	{
-		auto firstViewForward =
-			firstView.getPose().getOrientation().getForward();
-		auto currentViewForward =
-			currentView.getPose().getOrientation().getForward();
-
-		if (utility::math::dot(utility::math::normalize(firstViewForward),
-							   utility::math::normalize(currentViewForward))
-			< 0.0f) {
-			return true;
-		}
-		return false;
-	}
-
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
 	void Application<DefaultSceneType, SceneTypes...>::routine(void)
 	{
-		if (!_firstView.has_value()) {
-			_firstView = _engine->getView();
-		}
-		auto &firstView = _firstView.value();
-
-		// Repositioning the scene every frame keeps entity poses in constant
-		// flux, which defeats the render caches keyed on entity state and makes
-		// text objects get torn down and recreated endlessly. The scene is
-		// therefore only re-laid out when the view flips to the other side of
-		// the viewer; scene entry still places the entities once.
-		auto currentView = _engine->getView();
-		if (hasViewChanged(firstView, currentView)) {
-			_sceneManager->getActiveScene()->placeEntitiesInFrontOfView(
-				currentView);
-			_firstView = currentView;
-		}
+		// Entities are placed once per scene entry (see
+		// SceneManager::enterActiveScene) and are deliberately left untouched
+		// afterwards: re-placing them on view changes would move and rotate
+		// them, defeating the render caches keyed on entity state and making
+		// UI jump when the view turns.
 		this->getLogger().debug() << "Current view: " << _engine->getView();
 		this->getLogger().debug()
 			<< "Forward vector: "

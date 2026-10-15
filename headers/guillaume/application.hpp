@@ -24,7 +24,6 @@
 
 #include <map>
 #include <memory>
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -132,8 +131,6 @@ namespace guillaume
 			_ressourceProvider;	   ///< Shared
 								   ///< ressource
 								   ///< provider
-		std::optional<utility::graphic::ViewF>
-			_firstView;	   ///< View captured on first scene entry
 
 		/**
 		 * @brief Run one system update pass for the active scene.
