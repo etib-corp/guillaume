@@ -46,10 +46,10 @@ namespace guillaume::entities
 
 	void Divider::Builder::reset(void)
 	{
-		_pose  = utility::graphic::PoseF();
-		_color = guillaume::getActiveScheme()
-					 .getColor(SchemeColorRole::OutlineVariant)
-					 .getColor();
+		_pose	   = utility::graphic::PoseF();
+		_color	   = guillaume::getActiveScheme()
+						 .getColor(SchemeColorRole::OutlineVariant)
+						 .getColor();
 		_length	   = 100.0f;
 		_thickness = 1.0f;
 		_inset	   = 16.0f;

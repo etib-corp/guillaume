@@ -57,24 +57,24 @@ namespace guillaume::entities::tests
 		segmented->initialize();
 		segmented->update();
 
-		const auto firstX = registry
-								.getComponent<components::Transform>(
-									segmented->getSegmentIdentifier(0))
-								.getPose()
-								.getPosition()
-								.getX();
+		const auto firstX  = registry
+								 .getComponent<components::Transform>(
+									 segmented->getSegmentIdentifier(0))
+								 .getPose()
+								 .getPosition()
+								 .getX();
 		const auto secondX = registry
 								 .getComponent<components::Transform>(
 									 segmented->getSegmentIdentifier(1))
 								 .getPose()
 								 .getPosition()
 								 .getX();
-		const auto thirdX = registry
-								.getComponent<components::Transform>(
-									segmented->getSegmentIdentifier(2))
-								.getPose()
-								.getPosition()
-								.getX();
+		const auto thirdX  = registry
+								 .getComponent<components::Transform>(
+									 segmented->getSegmentIdentifier(2))
+								 .getPose()
+								 .getPosition()
+								 .getX();
 
 		EXPECT_GT(secondX, firstX);
 		EXPECT_GT(thirdX, secondX);
