@@ -51,11 +51,11 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		bool clicked = false;
 		auto split	 = std::make_shared<SplitButton>(
-			  registry, "Save",
-			  [&clicked]() {
-				  clicked = true;
-			  },
-			  std::function<void(void)>());
+			registry, "Save",
+			[&clicked]() {
+				clicked = true;
+			},
+			std::function<void(void)>());
 
 		split->initialize();
 		split->update();
@@ -80,9 +80,9 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		bool opened = false;
 		auto split	= std::make_shared<SplitButton>(
-			 registry, "Save", std::function<void(void)>(), [&opened]() {
-				 opened = true;
-			 });
+			registry, "Save", std::function<void(void)>(), [&opened]() {
+				opened = true;
+			});
 
 		split->initialize();
 		split->update();
