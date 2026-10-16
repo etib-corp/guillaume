@@ -26,6 +26,7 @@
 
 #include <guillaume/components/borders.hpp>
 #include <guillaume/components/bound.hpp>
+#include <guillaume/components/layout.hpp>
 #include <guillaume/components/value.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
@@ -122,6 +123,24 @@ namespace guillaume::entities::tests
 				baseZ
 					+ static_cast<float>(systems::Layout::ContentLayerOffset));
 		}
+	}
+
+	TEST_F(TestSwitch, OnlyTheLabelIsRegisteredAsALayoutChild)
+	{
+		ecs::ComponentRegistry registry;
+		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, false,
+								 "check", "Dark mode");
+
+		toggle->update();
+
+		const auto &layoutChildren =
+			registry.getComponent<components::Layout>(toggle->getIdentifier())
+				.getChildren();
+
+		// The label is arranged by the container; the thumb and its icon are
+		// positioned manually and must stay out of the layout list.
+		EXPECT_EQ(layoutChildren.size(), 1u);
+		EXPECT_GT(toggle->getEntities().size(), layoutChildren.size());
 	}
 
 	TEST_F(TestSwitch, VariantRoundTrip)

@@ -24,4 +24,30 @@
 
 namespace guillaume::components::tests
 {
+	TEST_F(TestBound, SettingSizeMarksTheComponentChanged)
+	{
+		Bound bound;
+
+		EXPECT_FALSE(bound.hasChanged());
+
+		bound.setWidth(10.0f);
+		EXPECT_TRUE(bound.hasChanged());
+		EXPECT_FLOAT_EQ(bound.getWidth(), 10.0f);
+
+		bound.setHasChanged(false);
+		bound.setHeight(4.0f);
+		EXPECT_TRUE(bound.hasChanged());
+		EXPECT_FLOAT_EQ(bound.getHeight(), 4.0f);
+	}
+
+	TEST_F(TestBound, SettingTheSameSizeDoesNotFlagAChange)
+	{
+		Bound bound;
+		bound.setWidth(10.0f);
+		bound.setHeight(4.0f);
+		bound.setHasChanged(false);
+
+		bound.setWidth(10.0f).setHeight(4.0f);
+		EXPECT_FALSE(bound.hasChanged());
+	}
 }	 // namespace guillaume::components::tests

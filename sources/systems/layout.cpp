@@ -76,21 +76,19 @@ namespace guillaume::systems
 			return;
 		}
 
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		std::uint32_t layer = 0;
+		const auto &layout = getComponent<components::Layout>(entityIdentifier);
 
-		for (const auto &entity:
-			 getEntityRegistry().getEntitiesBreadthFirst()) {
-			const auto parent = entity->getParent();
-			if (parent == nullptr
-				|| parent->getIdentifier() != entityIdentifier) {
-				continue;
-			}
-			layer = static_cast<std::uint32_t>(parent->getLayer());
-			childIdentifiers.push_back(entity->getIdentifier());
+		std::uint32_t layer = 0;
+		const auto entity =
+			getEntityRegistry().getEntity<ecs::Entity>(entityIdentifier);
+		if (entity != nullptr) {
+			layer = static_cast<std::uint32_t>(entity->getLayer());
 		}
 
-		apply(getComponentRegistry(), entityIdentifier, childIdentifiers,
+		// Only the container's registered layout children are arranged; any
+		// child the container positions manually (a switch thumb, a slider
+		// fill, ...) is deliberately absent from the list and keeps its pose.
+		apply(getComponentRegistry(), entityIdentifier, layout.getChildren(),
 			  layer);
 	}
 

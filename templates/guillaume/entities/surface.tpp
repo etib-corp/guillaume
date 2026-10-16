@@ -135,11 +135,22 @@ namespace guillaume::entities
 	{
 		_children = children;
 
+		std::vector<ecs::Entity::Identifier> childIdentifiers;
+		childIdentifiers.reserve(_children.size());
+
 		for (const auto &child: _children) {
-			if (child != nullptr) {
+			if (child != nullptr
+				&& child->getIdentifier() != ecs::Entity::InvalidIdentifier) {
 				child->setParent(this->shared_from_this());
+				childIdentifiers.push_back(child->getIdentifier());
 			}
 		}
+
+		// Record the layout children on the component so `systems::Layout`
+		// arranges exactly these, leaving manually positioned children alone.
+		this->getComponentRegistry()
+			.template getComponent<components::Layout>(this->getIdentifier())
+			.setChildren(childIdentifiers);
 
 		applyGeometry();
 

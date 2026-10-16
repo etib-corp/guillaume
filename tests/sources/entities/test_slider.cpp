@@ -29,6 +29,7 @@
 #include <guillaume/components/value.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/ecs/level_order_traveler.hpp>
 #include <guillaume/systems/layout.hpp>
 
 #include <utility/graphic/pose.hpp>
@@ -111,6 +112,35 @@ namespace guillaume::entities::tests
 			EXPECT_FLOAT_EQ(
 				position.getZ(),
 				static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
+	}
+
+	TEST_F(TestSlider, LayoutSystemKeepsManualChildPositions)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		Slider::Builder builder(registry, entityRegistry);
+		Slider::Director director;
+
+		auto slider = director.makeSlider(
+			builder, nullptr, Slider::Variant::Continuous, 0.0f, 100.0f, 25.0f);
+		slider->update();
+
+		const auto before = directChildPositions(registry, slider);
+
+		systems::Layout layoutSystem;
+		ecs::LevelOrderTraveler traveler;
+		layoutSystem.routine(registry, entityRegistry, traveler);
+
+		const auto after = directChildPositions(registry, slider);
+
+		// The slider positions its track/fill/thumb manually and registers no
+		// layout children, so running the Layout system must not move them.
+		ASSERT_EQ(before.size(), after.size());
+		for (std::size_t index = 0; index < before.size(); ++index) {
+			EXPECT_FLOAT_EQ(after[index].getX(), before[index].getX());
+			EXPECT_FLOAT_EQ(after[index].getY(), before[index].getY());
+			EXPECT_FLOAT_EQ(after[index].getZ(), before[index].getZ());
 		}
 	}
 

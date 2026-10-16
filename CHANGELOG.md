@@ -118,6 +118,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shape/image renderers that already bake world coordinates. Previously the
   local-space glyph mesh relied on the engine applying
   `Renderable::getModelMatrix()`, so text collapsed to the origin.
+- `systems::Layout` now arranges only the container's registered layout
+  children (`components::Layout::getChildren()`, populated by
+  `SurfaceBase::setChildren` and `entities::Layout::setEntities`) instead of
+  rediscovering every child from the entity hierarchy. Manually positioned
+  children (a switch thumb, a slider track/fill/thumb, a radio dot, clock
+  markers, ...) keep their own placement again, so containers no longer
+  compact or mis-position their contents.
+- `components::Bound` now marks itself changed when its width or height is
+  set, so a measured size written by `systems::MeasureText`/`MeasureGlyph`
+  propagates to the parent and containers re-hug their text.
 
 ## [1.0.0] - 2025-08-25
 

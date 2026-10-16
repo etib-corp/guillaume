@@ -340,11 +340,20 @@ namespace guillaume::entities
 	{
 		_entities = entities;
 
+		std::vector<ecs::Entity::Identifier> childIdentifiers;
+		childIdentifiers.reserve(_entities.size());
+
 		for (const auto &entity: _entities) {
-			if (entity != nullptr) {
+			if (entity != nullptr
+				&& entity->getIdentifier() != ecs::Entity::InvalidIdentifier) {
 				entity->setParent(shared_from_this());
+				childIdentifiers.push_back(entity->getIdentifier());
 			}
 		}
+
+		getComponentRegistry()
+			.getComponent<components::Layout>(getIdentifier())
+			.setChildren(childIdentifiers);
 
 		applyGeometry();
 

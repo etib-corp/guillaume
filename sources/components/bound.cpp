@@ -29,4 +29,22 @@ namespace guillaume::components
 		, utility::graphic::SizeF()
 	{
 	}
+
+	Bound &Bound::setWidth(float width) noexcept
+	{
+		if (getWidth() != width) {
+			utility::graphic::SizeF::setWidth(width);
+			setHasChanged(true);
+		}
+		return *this;
+	}
+
+	Bound &Bound::setHeight(float height) noexcept
+	{
+		if (getHeight() != height) {
+			utility::graphic::SizeF::setHeight(height);
+			setHasChanged(true);
+		}
+		return *this;
+	}
 }	 // namespace guillaume::components

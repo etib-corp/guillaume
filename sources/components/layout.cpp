@@ -162,4 +162,37 @@ namespace guillaume::components
 		setHasChanged(true);
 		return *this;
 	}
+
+	const std::vector<ecs::Entity::Identifier> &Layout::getChildren(void) const
+	{
+		return _children;
+	}
+
+	Layout &Layout::setChildren(
+		const std::vector<ecs::Entity::Identifier> &children)
+	{
+		if (_children == children) {
+			return *this;
+		}
+		_children = children;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Layout &Layout::addChild(ecs::Entity::Identifier child)
+	{
+		_children.push_back(child);
+		setHasChanged(true);
+		return *this;
+	}
+
+	Layout &Layout::clearChildren(void)
+	{
+		if (_children.empty()) {
+			return *this;
+		}
+		_children.clear();
+		setHasChanged(true);
+		return *this;
+	}
 }	 // namespace guillaume::components
