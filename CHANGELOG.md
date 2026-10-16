@@ -111,6 +111,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   used to reposition and re-orient every root entity when the view turned
   more than 90 degrees; entities are now placed once per scene entry and left
   untouched afterwards.
+- Text and glyphs now render at their entity position regardless of the
+  renderer's model-matrix handling. `systems::TextRender`/`GlyphRender` emit a
+  new `guillaume::TextRenderable` (a `utility::graphic::Text` whose glyph
+  vertices are baked into world space with an identity pose), matching the
+  shape/image renderers that already bake world coordinates. Previously the
+  local-space glyph mesh relied on the engine applying
+  `Renderable::getModelMatrix()`, so text collapsed to the origin.
 
 ## [1.0.0] - 2025-08-25
 

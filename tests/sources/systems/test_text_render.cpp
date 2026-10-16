@@ -223,3 +223,46 @@ TEST_F(TextRenderFixture, AnchorsGlyphBoxTopLeftOnPosition)
 	EXPECT_NEAR(posePosition[0] + minX, anchor[0], 1e-3f);
 	EXPECT_NEAR(posePosition[1] + maxY, anchor[1], 1e-3f);
 }
+
+TEST_F(TextRenderFixture, BakesWorldSpaceGlyphsWithIdentityPose)
+{
+	const utility::graphic::PositionF anchor(100.0f, 50.0f, 0.0f);
+	componentRegistry
+		.getComponent<guillaume::components::Transform>(entityIdentifier)
+		.setPose(
+			utility::graphic::PoseF(anchor, utility::graphic::OrientationF()));
+
+	textRenderSystem.update(entityIdentifier);
+
+	auto renderable = std::dynamic_pointer_cast<utility::graphic::Text>(
+		enginePtr->lastCreated());
+	ASSERT_NE(renderable, nullptr);
+
+	// The pose is reset to identity: the glyphs are already in world space,
+	// so the renderable must not rely on the renderer applying a matrix.
+	const auto &posePosition = renderable->getPose().getPosition();
+	EXPECT_FLOAT_EQ(posePosition[0], 0.0f);
+	EXPECT_FLOAT_EQ(posePosition[1], 0.0f);
+	EXPECT_FLOAT_EQ(posePosition[2], 0.0f);
+
+	const auto meshes = renderable->getMeshes();
+	ASSERT_FALSE(meshes.empty());
+	ASSERT_NE(meshes.front(), nullptr);
+	const auto &vertices = meshes.front()->getVertices();
+	ASSERT_FALSE(vertices.empty());
+
+	float minX = std::numeric_limits<float>::max();
+	float maxX = std::numeric_limits<float>::lowest();
+	float maxY = std::numeric_limits<float>::lowest();
+	for (const auto &vertex: vertices) {
+		const auto &position = vertex.getPosition();
+		minX				 = std::min(minX, position[0]);
+		maxX				 = std::max(maxX, position[0]);
+		maxY				 = std::max(maxY, position[1]);
+	}
+
+	// Baked into world space: top-left on the entity position, extending right.
+	EXPECT_NEAR(minX, anchor[0], 1e-3f);
+	EXPECT_NEAR(maxY, anchor[1], 1e-3f);
+	EXPECT_GT(maxX, anchor[0]);
+}
