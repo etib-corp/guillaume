@@ -1,0 +1,97 @@
+/*
+ Copyright (c) 2026 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+*/
+
+#pragma once
+
+#include <utility/ressource_provider.hpp>
+
+#include <utility/engine.hpp>
+
+#include "guillaume/ecs/system_filler.hpp"
+
+#include "guillaume/components/mesh.hpp"
+#include "guillaume/components/transform.hpp"
+#include "guillaume/components/bound.hpp"
+
+#include "guillaume/systems/render_handle_map.hpp"
+
+namespace guillaume::systems
+{
+	/**
+	 * @brief System handling model rendering from ECS components.
+	 * @see components::Transform
+	 * @see components::Mesh
+	 * @see components::Bound
+	 */
+	class MeshRender:
+		public RenderHandleMap,
+		public ecs::SystemFiller<components::Transform, components::Bound,
+								 components::Mesh>
+	{
+		private:
+		std::shared_ptr<utility::RessourceProvider>
+			_ressourceProvider;	   //< Shared resource provider for loading
+								   // fonts and models
+		std::unique_ptr<utility::Engine>
+			&_engine;	 ///< utility::Engine instance
+
+		public:
+		/**
+		 * @brief Construct a model rendering system.
+		 * @param ressourceProvider Shared resource provider for loading fonts
+		 * and models.
+		 * @param engine The engine used to draw model.
+		 */
+		MeshRender(
+			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
+			std::unique_ptr<utility::Engine> &engine);
+
+		/**
+		 * @brief Default destructor.
+		 */
+		~MeshRender(void);
+
+		/**
+		 * @brief Prepare the MeshRender system for rendering.
+		 *
+		 * This function is called before call update on all entities and can be
+		 * used to set up any necessary state or resources.
+		 */
+		void prepare(void) override;
+
+		/**
+		 * @brief Clean up the MeshRender system after rendering.
+		 *
+		 * This function is called after call update on all entities and can be
+		 * used to release any resources or reset state.
+		 */
+		void cleanup(void) override;
+
+		/**
+		 * @brief Update the MeshRender system for one entity.
+		 * @param entityIdentifier The target entity identifier.
+		 */
+		virtual void
+			update(const ecs::Entity::Identifier &entityIdentifier) override;
+	};
+
+}	 // namespace guillaume::systems

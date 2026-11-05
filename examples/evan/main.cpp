@@ -38,8 +38,8 @@
 
 #include <guillaume/components/bound.hpp>
 #include <guillaume/entities/button.hpp>
-#include <guillaume/entities/layout.hpp>
-#include <guillaume/entities/model.hpp>
+#include <guillaume/entities/view.hpp>
+#include <guillaume/entities/mesh.hpp>
 
 #include <utility/graphic/color.hpp>
 #include <utility/graphic/pose.hpp>
@@ -52,7 +52,7 @@ namespace
 	using utility::graphic::PoseF;
 
 	/**
-	 * @brief Scene displaying a colored rectangle, a button and a 3D model.
+	 * @brief Scene displaying a colored rectangle, a button and a 3D mesh.
 	 *
 	 * The three entities are registered as root entities so the scene places
 	 * them side by side in front of the camera.
@@ -66,12 +66,12 @@ namespace
 		{
 			auto &containerBuilder =
 				getBuilderManager()
-					.getBuilder<guillaume::entities::Layout::Builder>();
+					.getBuilder<guillaume::entities::View::Builder>();
 			auto &containerDirector =
 				getDirectorManager()
-					.getDirector<guillaume::entities::Layout::Director>();
+					.getDirector<guillaume::entities::View::Director>();
 
-			auto container = containerDirector.makeColorLayout(
+			auto container = containerDirector.makeColorView(
 				containerBuilder, nullptr, PoseF(),
 				Color32Bit(64, 144, 240, 255), {});
 			container->setBorderRadius(24.0f);
@@ -96,17 +96,17 @@ namespace
 
 			addRootEntity("button", button);
 
-			auto &modelBuilder =
+			auto &meshBuilder =
 				getBuilderManager()
-					.getBuilder<guillaume::entities::Model::Builder>();
-			auto &modelDirector =
+					.getBuilder<guillaume::entities::Mesh::Builder>();
+			auto &meshDirector =
 				getDirectorManager()
-					.getDirector<guillaume::entities::Model::Director>();
+					.getDirector<guillaume::entities::Mesh::Director>();
 
-			auto model = modelDirector.makeModel(modelBuilder, nullptr,
-												 "models/teapot.obj", "");
+			auto mesh = meshDirector.makeMesh(meshBuilder, nullptr,
+											  "models/teapot.obj", "");
 
-			addRootEntity("model", model);
+			addRootEntity("mesh", mesh);
 		}
 	};
 

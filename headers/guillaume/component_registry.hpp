@@ -43,6 +43,7 @@
 #include "guillaume/components/hand_trigger_interaction.hpp"
 #include "guillaume/components/image.hpp"
 #include "guillaume/components/layout.hpp"
+#include "guillaume/components/mesh.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/overlay.hpp"
@@ -77,8 +78,8 @@ namespace guillaume
 			components::HandThumbStickInteraction,
 			components::HandTriggerInteraction, components::Text,
 			components::Transform, components::Color, components::Borders,
-			components::Image, components::Layout, components::Value,
-			components::Range, components::Scrollable,
+			components::Image, components::Mesh, components::Layout,
+			components::Value, components::Range, components::Scrollable,
 			components::DragInteraction, components::Selectable,
 			components::SelectionGroup, components::Animation,
 			components::Overlay, components::TextField, components::Ellipse,

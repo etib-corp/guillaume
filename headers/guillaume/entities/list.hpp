@@ -34,7 +34,7 @@
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 
-#include "guillaume/entities/layout.hpp"
+#include "guillaume/entities/view.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
 
@@ -45,7 +45,7 @@ namespace guillaume::entities
 	 * @brief List entity: a vertical container of list items.
 	 *
 	 * A `List` is a vertical `SurfaceBase` that arranges a stack of row
-	 * entities. Each row is an `entities::Layout` holding an optional leading
+	 * entities. Each row is an `entities::View` holding an optional leading
 	 * icon, a headline text, an optional supporting text and an optional
 	 * trailing icon. The M3 variants describe the row height:
 	 * - `SingleLine`: height 48.
@@ -53,7 +53,7 @@ namespace guillaume::entities
 	 * - `ThreeLine`: height 88.
 	 *
 	 * @see SurfaceBase
-	 * @see entities::Layout
+	 * @see entities::View
 	 */
 	class List: public SurfaceBase<>
 	{
@@ -153,9 +153,9 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::SingleLine };		  ///< List variant.
-		std::vector<Item> _items {};					  ///< List items.
-		std::vector<std::shared_ptr<Layout>> _rows {};	  ///< Row entities.
+		Variant _variant { Variant::SingleLine };		///< List variant.
+		std::vector<Item> _items {};					///< List items.
+		std::vector<std::shared_ptr<View>> _rows {};	///< Row entities.
 		bool _rowsDirty { true };	 ///< Whether rows must rebuild.
 
 		private:
@@ -180,7 +180,7 @@ namespace guillaume::entities
 		 * @param item The item to build a row for.
 		 * @return The newly created row entity.
 		 */
-		std::shared_ptr<Layout> buildRow(const Item &item);
+		std::shared_ptr<View> buildRow(const Item &item);
 
 		public:
 		/**

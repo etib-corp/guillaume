@@ -32,9 +32,8 @@ namespace guillaume::components
 	/**
 	 * @brief Component holding a low/high interval within a range.
 	 *
-	 * Reusable by Slider (range variant), TimePicker and Carousel. The interval
-	 * is kept ordered and within `[min, max]`, and snapped to `step` when
-	 * `step` is strictly positive.
+	 * Reusable by ranged controls. The interval is kept ordered and within
+	 * `[min, max]`, and snapped to `step` when `step` is strictly positive.
 	 */
 	class Range: public ecs::Component
 	{
