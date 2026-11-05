@@ -28,7 +28,7 @@ set(GUILLAUME_SOURCES
     sources/components/image.cpp
     sources/components/layout.cpp
     sources/components/line.cpp
-    sources/components/model.cpp
+    sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
@@ -69,23 +69,17 @@ set(GUILLAUME_SOURCES
     sources/entities/builder_base.cpp
     sources/entities/app_bar.cpp
     sources/entities/badge.cpp
-    sources/entities/bottom_sheet.cpp
     sources/entities/card.cpp
-    sources/entities/carousel.cpp
     sources/entities/checkbox.cpp
     sources/entities/chip.cpp
-    sources/entities/date_picker.cpp
     sources/entities/dialog.cpp
     sources/entities/divider.cpp
     sources/entities/loading_indicator.cpp
     sources/entities/menu.cpp
     sources/entities/navigation_bar.cpp
     sources/entities/navigation_drawer.cpp
-    sources/entities/navigation_rail.cpp
     sources/entities/progress_indicator.cpp
     sources/entities/search.cpp
-    sources/entities/side_sheet.cpp
-    sources/entities/slider.cpp
     sources/entities/segmented_button.cpp
     sources/entities/extended_floating_action_button.cpp
     sources/entities/floating_action_button.cpp
@@ -94,19 +88,14 @@ set(GUILLAUME_SOURCES
     sources/entities/icon_button.cpp
     sources/entities/image.cpp
     sources/entities/list.cpp
-    sources/entities/model.cpp
-    sources/entities/layout.cpp
+    sources/entities/mesh.cpp
+    sources/entities/view.cpp
     sources/entities/radio_button.cpp
     sources/entities/snackbar.cpp
-    sources/entities/split_button.cpp
-    sources/entities/standard_button_group.cpp
     sources/entities/surface.cpp
     sources/entities/switch.cpp
-    sources/entities/tabs.cpp
     sources/entities/text.cpp
     sources/entities/text_field.cpp
-    sources/entities/time_picker.cpp
-    sources/entities/toolbar.cpp
     sources/entities/tooltip.cpp
     sources/event/event_bus.cpp
     sources/event/event_manager.cpp
@@ -141,9 +130,9 @@ set(GUILLAUME_SOURCES
     sources/systems/layout.cpp
     sources/systems/line_render.cpp
     sources/systems/measure_glyph.cpp
-    sources/systems/measure_model.cpp
+    sources/systems/measure_mesh.cpp
     sources/systems/measure_text.cpp
-    sources/systems/model_render.cpp
+    sources/systems/mesh_render.cpp
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
     sources/systems/overlay.cpp

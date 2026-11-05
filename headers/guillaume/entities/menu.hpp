@@ -36,7 +36,7 @@
 
 #include "guillaume/components/overlay.hpp"
 
-#include "guillaume/entities/layout.hpp"
+#include "guillaume/entities/view.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
 
@@ -48,7 +48,7 @@ namespace guillaume::entities
 	 *
 	 * Menus reuse `SurfaceBase` for the layout, geometry and background surface
 	 * and `components::Overlay` for the transient overlay behaviour. Each item
-	 * is an `entities::Layout` row holding an optional leading icon and a
+	 * is an `entities::View` row holding an optional leading icon and a
 	 * label. The Material Design variants are:
 	 * - `Dropdown`: an anchored menu opened under a trigger.
 	 * - `Context`: a menu opened at the pointer position.
@@ -56,7 +56,7 @@ namespace guillaume::entities
 	 *
 	 * @see SurfaceBase
 	 * @see components::Overlay
-	 * @see entities::Layout
+	 * @see entities::View
 	 */
 	class Menu: public SurfaceBase<components::Overlay>
 	{
@@ -149,10 +149,10 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::Dropdown };			  ///< Menu variant.
-		std::vector<Item> _items {};					  ///< Menu items.
-		std::vector<std::shared_ptr<Layout>> _rows {};	  ///< Item rows.
-		bool _rowsDirty { true };	 ///< Rows must rebuild.
+		Variant _variant { Variant::Dropdown };			///< Menu variant.
+		std::vector<Item> _items {};					///< Menu items.
+		std::vector<std::shared_ptr<View>> _rows {};	///< Item rows.
+		bool _rowsDirty { true };						///< Rows must rebuild.
 
 		private:
 		/**
@@ -175,7 +175,7 @@ namespace guillaume::entities
 		 * @param item The item to build a row for.
 		 * @return The newly created row entity.
 		 */
-		std::shared_ptr<Layout> buildRow(const Item &item);
+		std::shared_ptr<View> buildRow(const Item &item);
 
 		public:
 		/**
