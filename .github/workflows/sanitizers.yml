@@ -92,10 +92,12 @@ jobs:
           lcov
           --capture
           --directory ${{ github.workspace }}/build
+          --base-directory ${{ github.workspace }}
           --output-file coverage.info
           --no-external
           --ignore-errors unused
           --exclude '*/_deps/*'
+          --exclude '*/third_party/*'
           --exclude '*/tests/*'
           --exclude '*/googletest*'
 
