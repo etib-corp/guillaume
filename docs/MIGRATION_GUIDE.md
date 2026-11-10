@@ -143,3 +143,13 @@ Several defaults changed to match react-native-paper v5. See
   the accessibility label lives in `components::Accessibility`.
 - **Snackbar** auto-dismisses after `MotionScale::SnackbarDuration` (7 s, the
   Paper default) instead of 4 s.
+- **Family defaults:** `Button` defaults to the `Text` style (Paper
+  `mode="text"`); `Chip` defaults to the flat (secondary container) mode;
+  `AppBar` heights are 64/112/152 dp with 4 dp padding; `Badge` defaults to
+  the 20 dp variant; `LoadingIndicator` defaults to circular; `Search`
+  `FullScreen` is a 72 dp inline field; `TextField` width follows its content
+  (minimum 100 dp); `Divider` defaults to a hairline; `View` no longer fills
+  white.
+- **Checkbox / RadioButton / Switch** are pressable; their labels sit beside
+  the control instead of inside it, and `Variant::Disabled` routes through
+  `components::StyleState`.
