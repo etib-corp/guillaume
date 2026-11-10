@@ -88,6 +88,25 @@ section lists everything released since 1.0.0.
 ### Changed
 
 - Replaced `file(GLOB)` with explicit source lists for reproducible builds.
+- Core systems are registered by `systems::registerCoreSystems()`
+  (`guillaume/systems/core_systems.hpp`); `guillaume/application.hpp` no longer
+  includes every system header, so include the system headers you use.
+- The hand input systems share `systems::HandEventSystem` /
+  `systems::HandRaySystem` instead of six copies of the same wiring.
+- Button, icon button and FAB styles resolve through lookup tables
+  (`entities/button_style.hpp`, `entities/fab_style.hpp`) instead of `switch`
+  blocks; the default Material 3 theme data moved to
+  `sources/theme/default_theme.cpp`.
+- Added `getActiveColor(role)`; removed the unused `SystemNotFoundException`.
+- **Breaking:** `Application` takes the engine in its constructor and
+  `setEngine()` is removed; the default scene is the first template argument
+  and is no longer repeated (`Application<MyScene>`).
+- **Breaking:** removed `Application::pollEvents/update/clear/present`;
+  engine-backed systems and `SceneManager` take `utility::Engine &`.
+- **Breaking:** entity `Director` classes are folded into their `Builder`
+  (`builder.makeXxx(parent, ...)`); the director manager is removed.
+- `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
+- Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 - Moved include paths onto the `guillaume` target (target-scoped includes).
 - `Entity::getNextIdentifier` is now atomic (thread-safe identifier generation).
 - `EventBus::subscribe` now takes its listener by value.
