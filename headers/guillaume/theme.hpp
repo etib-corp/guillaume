@@ -86,6 +86,9 @@ namespace guillaume
 		SurfaceContainer,
 		SurfaceContainerHigh,
 		SurfaceContainerHighest,
+		SurfaceDisabled,	  ///< Disabled container (onSurface at 12%)
+		OnSurfaceDisabled,	  ///< Disabled content (onSurface at 38%)
+		Backdrop,			  ///< Modal backdrop behind dialogs and drawers
 		Count
 	};
 
