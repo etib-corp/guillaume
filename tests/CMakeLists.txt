@@ -17,6 +17,7 @@ set(TEST_SOURCES
     sources/ecs/test_system.cpp
     sources/ecs/test_system_filler.cpp
     sources/ecs/test_system_registry.cpp
+    sources/ecs/test_travelers.cpp
     sources/entities/test_button.cpp
     sources/entities/test_app_bar.cpp
     sources/entities/test_badge.cpp
@@ -64,7 +65,7 @@ set(TEST_SOURCES
     sources/systems/test_text_input.cpp
     sources/systems/test_text_render.cpp
     sources/systems/test_value_interactions.cpp
-    sources/systems/text_glyph_render.cpp
+    sources/systems/test_glyph_render.cpp
     sources/test_application.cpp
     sources/test_ecs.cpp
     sources/test_engine.cpp

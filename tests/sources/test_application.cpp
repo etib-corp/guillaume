@@ -22,6 +22,10 @@
 
 #include "test_application.hpp"
 
+#include <stdexcept>
+#include <string>
+#include <vector>
+
 #include <cmath>
 #include <memory>
 #include <utility>
@@ -83,6 +87,55 @@ namespace guillaume::tests
 				addEntity(entity);
 			}
 		};
+
+		/// Lifecycle calls recorded by the transition scenes, in order.
+		std::vector<std::string> lifecycleLog;
+
+		class SecondScene;
+
+		/**
+		 * @brief Default scene of the transition tests; records its
+		 * lifecycle and exposes itself so a test can request a switch.
+		 */
+		class FirstScene: public guillaume::Scene
+		{
+			public:
+			static FirstScene *instance;
+
+			using guillaume::Scene::Scene;
+
+			void onEnter(void) override
+			{
+				instance = this;
+				lifecycleLog.push_back("first.enter");
+			}
+
+			void onExit(void) override
+			{
+				lifecycleLog.push_back("first.exit");
+			}
+		};
+
+		/**
+		 * @brief Target scene of the transition tests.
+		 */
+		class SecondScene: public guillaume::Scene
+		{
+			public:
+			using guillaume::Scene::Scene;
+
+			void onEnter(void) override
+			{
+				lifecycleLog.push_back("second.enter");
+			}
+
+			void onExit(void) override
+			{
+				lifecycleLog.push_back("second.exit");
+			}
+		};
+
+		FirstScene *FirstScene::instance = nullptr;
 
 		PlacementRecordingScene *PlacementRecordingScene::instance = nullptr;
 		ecs::Entity::Identifier PlacementRecordingScene::entityIdentifier =
@@ -239,4 +292,79 @@ namespace guillaume::tests
 		EXPECT_FLOAT_EQ(pose.getPosition()[2], placedPose.getPosition()[2]);
 		EXPECT_EQ(pose.getOrientation(), placedPose.getOrientation());
 	}
+	TEST_F(TestApplication, EntersOnlyTheDefaultSceneOnConstruction)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+		lifecycleLog.clear();
+
+		guillaume::Application<FirstScene, SecondScene> application(
+			ressourceProvider, std::make_unique<EngineMock>());
+
+		EXPECT_EQ(lifecycleLog, std::vector<std::string> { "first.enter" });
+	}
+
+	TEST_F(TestApplication, FrameWithoutRequestDoesNotReenterTheScene)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+		lifecycleLog.clear();
+
+		guillaume::Application<FirstScene, SecondScene> application(
+			ressourceProvider, std::make_unique<EngineMock>());
+		application.routine();
+
+		EXPECT_EQ(lifecycleLog, std::vector<std::string> { "first.enter" });
+	}
+
+	TEST_F(TestApplication, SceneTransitionExitsThenEntersAtEndOfFrame)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+		lifecycleLog.clear();
+
+		guillaume::Application<FirstScene, SecondScene> application(
+			ressourceProvider, std::make_unique<EngineMock>());
+		ASSERT_NE(FirstScene::instance, nullptr);
+
+		FirstScene::instance->goToScene<SecondScene>();
+
+		// The request is only honored by the next frame.
+		EXPECT_EQ(lifecycleLog, std::vector<std::string> { "first.enter" });
+
+		application.routine();
+
+		EXPECT_EQ(lifecycleLog,
+				  (std::vector<std::string> { "first.enter", "first.exit",
+											  "second.enter" }));
+
+		// The request is consumed: later frames do not transition again.
+		application.routine();
+
+		EXPECT_EQ(lifecycleLog.size(), 3U);
+	}
+
+	TEST_F(TestApplication, TransitionToUnregisteredSceneFailsOnce)
+	{
+		utility::DefaultSystemIO systemIo;
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+		lifecycleLog.clear();
+
+		guillaume::Application<FirstScene, SecondScene> application(
+			ressourceProvider, std::make_unique<EngineMock>());
+		ASSERT_NE(FirstScene::instance, nullptr);
+
+		FirstScene::instance->goToScene<StubScene>();
+
+		EXPECT_THROW(application.routine(), std::runtime_error);
+
+		// The failed request is dropped and the scene was never exited.
+		EXPECT_NO_THROW(application.routine());
+		EXPECT_EQ(lifecycleLog, std::vector<std::string> { "first.enter" });
+	}
+
 }	 // namespace guillaume::tests

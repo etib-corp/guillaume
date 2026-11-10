@@ -49,6 +49,13 @@ namespace guillaume::systems
 			getLogger().error()
 				<< "Failed to load glyph code asset: " << _glyphCodePath;
 		}
+
+		_hasFont = _ressourceProvider->loadFont(_defaultFontPath) != nullptr;
+		if (!_hasFont) {
+			getLogger().error()
+				<< "Failed to load glyph font: " << _defaultFontPath
+				<< ". Icons will not be rendered.";
+		}
 	}
 
 	GlyphRender::~GlyphRender(void)
@@ -77,6 +84,12 @@ namespace guillaume::systems
 			return;
 		}
 
+		// Without the icon font there is nothing to draw; building the text
+		// renderable would dereference the missing font.
+		if (!_hasFont) {
+			return;
+		}
+
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
 		const auto &glyphComponent =
@@ -87,7 +100,10 @@ namespace guillaume::systems
 		getLogger().debug() << "Rendering glyph '" << glyphComponent.getName()
 							<< "' for entity " << entityIdentifier;
 
-		uint32_t glyphCode = _codePoints->getCode(glyphComponent.getName());
+		// The code point table can be missing (asset not found); fall back
+		// to the placeholder glyph instead of dereferencing a null table.
+		uint32_t glyphCode =
+			_codePoints ? _codePoints->getCode(glyphComponent.getName()) : 0;
 
 		if (glyphCode == 0) {
 			glyphCode = '?';
