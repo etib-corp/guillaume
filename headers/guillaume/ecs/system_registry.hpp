@@ -53,7 +53,8 @@ namespace guillaume::ecs
 	{
 		public:
 		private:
-		std::array<std::vector<std::unique_ptr<System>>, Phase::Count>
+		std::array<std::vector<std::unique_ptr<System>>,
+				   static_cast<std::size_t>(Phase::Count)>
 			_systems;	 ///< Array of registered systems
 
 		public:

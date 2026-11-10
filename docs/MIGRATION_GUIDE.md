@@ -25,6 +25,14 @@ auto button = director.makeButton(builder, parent, "Save", onClick);
 auto button = builder.makeButton(parent, "Save", onClick);
 ```
 
+## `ecs::Phase` is a scoped enum
+
+**Before:** `enum Phase : size_t`, implicitly convertible to an integer.
+
+**After:** `enum class Phase : std::size_t`. `ecs::Phase::Event` and the other
+enumerators are spelled the same; code that used a phase as an array index or
+printed it needs `static_cast<std::size_t>(phase)`.
+
 ## `Application` takes its engine in the constructor
 
 **Before:** `Application<MyScene, MyScene> app(resources);` followed by
