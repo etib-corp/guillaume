@@ -30,7 +30,7 @@ namespace guillaume::systems
 
 	MeasureGlyph::MeasureGlyph(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Glyph, components::Bound,
 							components::Transform, components::Color>(
 			  ecs::Phase::Measure)
@@ -118,7 +118,7 @@ namespace guillaume::systems
 			_defaultFontPath);
 		text.setColor(utility::graphic::Color32Bit());
 
-		auto textSize = _engine->measureText(text);
+		auto textSize = _engine.measureText(text);
 
 		getComponent<components::Bound>(entityIdentifier)
 			.setWidth(textSize.getWidth())

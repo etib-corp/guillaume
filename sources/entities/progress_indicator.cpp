@@ -239,12 +239,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<ProgressIndicator>
-		ProgressIndicator::Director::makeProgressIndicator(
-			Builder &builder, std::shared_ptr<ecs::Entity> parent,
-			Variant variant, float value)
+		ProgressIndicator::Builder::makeProgressIndicator(
+			std::shared_ptr<ecs::Entity> parent, Variant variant, float value)
 	{
-		return builder.withVariant(variant).withValue(value).registerEntity(
-			parent);
+		return withVariant(variant).withValue(value).registerEntity(parent);
 	}
 
 	ProgressIndicator::ProgressIndicator(ecs::ComponentRegistry &registry,

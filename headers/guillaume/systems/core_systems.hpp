@@ -20,15 +20,32 @@
  SOFTWARE.
  */
 
-#include "guillaume/ecs/entity_director_manager.hpp"
+#pragma once
 
-namespace guillaume::ecs
+#include <memory>
+
+#include <utility/engine.hpp>
+#include <utility/ressource_provider.hpp>
+
+#include "guillaume/ecs/system_registry.hpp"
+#include "guillaume/event/event_bus.hpp"
+
+namespace guillaume::systems
 {
-	EntityDirectorManager::EntityDirectorManager(void)
-	{
-	}
+	/**
+	 * @brief Register every built-in system into a registry.
+	 *
+	 * This is the single place that lists the core systems: adding a built-in
+	 * system means adding it here, not editing Application.
+	 * @param systemRegistry Registry receiving the systems.
+	 * @param eventBus Event bus the input systems subscribe to.
+	 * @param engine Engine handle used by the measuring and rendering systems.
+	 * It must outlive the registered systems.
+	 * @param ressourceProvider Provider used to load fonts, images and meshes.
+	 */
+	void registerCoreSystems(
+		ecs::SystemRegistry &systemRegistry, event::EventBus &eventBus,
+		utility::Engine &engine,
+		std::shared_ptr<utility::RessourceProvider> ressourceProvider);
 
-	EntityDirectorManager::~EntityDirectorManager(void)
-	{
-	}
-}	 // namespace guillaume::ecs
+}	 // namespace guillaume::systems

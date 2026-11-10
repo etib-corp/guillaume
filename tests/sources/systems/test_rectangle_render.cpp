@@ -119,7 +119,7 @@ namespace guillaume::systems::tests
 		const auto entity = createRectangle();
 		_componentRegistry.addComponent<components::StyleState>(entity);
 
-		FocusRingRender ring(_engine);
+		FocusRingRender ring(*_engine);
 		ring.bindComponentRegistry(_componentRegistry);
 
 		ring.prepare();

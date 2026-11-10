@@ -26,6 +26,7 @@
 #include <utility>
 
 #include "guillaume/entities/button.hpp"
+#include "guillaume/entities/button_style.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme.hpp"
@@ -140,12 +141,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Button> Button::Director::makeButton(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &labelContent, std::function<void(void)> onClick,
-		Color colorStyle, Shape shape, Size size, bool isMorph)
+	std::shared_ptr<Button> Button::Builder::makeButton(
+		std::shared_ptr<Entity> parent, const std::string &labelContent,
+		std::function<void(void)> onClick, Color colorStyle, Shape shape,
+		Size size, bool isMorph)
 	{
-		return builder.withLabel(labelContent)
+		return withLabel(labelContent)
 			.withOnClick(onClick)
 			.withColorStyle(colorStyle)
 			.withShape(shape)
@@ -154,14 +155,14 @@ namespace guillaume::entities
 			.registerEntity(parent);
 	}
 
-	std::shared_ptr<Button> Button::Director::makeIconButton(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &labelContent, const std::string &iconGlyphName,
+	std::shared_ptr<Button> Button::Builder::makeIconButton(
+		std::shared_ptr<Entity> parent, const std::string &labelContent,
+		const std::string &iconGlyphName,
 		const components::Glyph::Style &iconStyle,
 		std::function<void(void)> onClick, Color colorStyle, Shape shape,
 		Size size, bool isMorph)
 	{
-		return builder.withIcon(iconGlyphName)
+		return withIcon(iconGlyphName)
 			.withIconStyle(iconStyle)
 			.withLabel(labelContent)
 			.withOnClick(onClick)
@@ -201,374 +202,15 @@ namespace guillaume::entities
 	{
 	}
 
-	static float getHeightPadding(Button::Size size)
-	{
-		switch (size) {
-			case Button::Size::ExtraSmall:
-				return 6.0f;
-			case Button::Size::Small:
-				return 8.0f;
-			case Button::Size::Medium:
-				return 12.0f;
-			case Button::Size::Large:
-				return 24.0f;
-			case Button::Size::ExtraLarge:
-				return 32.0f;
-			default:
-				throw std::runtime_error("Invalid button size");
-		}
-	}
-
-	static float getBorderRadius(Button::Size size, Button::Shape shape,
-								 bool isButtonPressed)
-	{
-		if (isButtonPressed) {
-			switch (size) {
-				case Button::Size::ExtraSmall:
-				case Button::Size::Small:
-					return getShapeRadius(theme::ShapeRole::Small);
-				case Button::Size::Medium:
-					return getShapeRadius(theme::ShapeRole::Medium);
-				case Button::Size::Large:
-				case Button::Size::ExtraLarge:
-					return getShapeRadius(theme::ShapeRole::Large);
-				default:
-					throw std::runtime_error("Invalid button size");
-			}
-		}
-
-		if (shape == Button::Shape::Round) {
-			return getShapeRadius(theme::ShapeRole::Full);
-		}
-
-		switch (size) {
-			case Button::Size::ExtraSmall:
-			case Button::Size::Small:
-				return getShapeRadius(theme::ShapeRole::Medium);
-			case Button::Size::Medium:
-				return getShapeRadius(theme::ShapeRole::Large);
-			case Button::Size::Large:
-			case Button::Size::ExtraLarge:
-				return getShapeRadius(theme::ShapeRole::ExtraLarge);
-			default:
-				throw std::runtime_error("Invalid button size");
-		}
-	}
-
-	static Button::Shape getRestingShape(Button::Shape baseShape, bool isToggle,
-										 bool isSelected, bool isMorph)
-	{
-		if (!isMorph || !isToggle || !isSelected) {
-			return baseShape;
-		}
-
-		return (baseShape == Button::Shape::Round) ? Button::Shape::Square
-												   : Button::Shape::Round;
-	}
-
 	float Button::getIconFontSize(void) const
 	{
-		switch (_size) {
-			case Button::Size::ExtraSmall:
-				return 15.0f;
-			case Button::Size::Small:
-				return 18.0f;
-			case Button::Size::Medium:
-				return 18.0f;
-			case Button::Size::Large:
-				return 24.0f;
-			case Button::Size::ExtraLarge:
-				return 30.0f;
-			default:
-				throw std::runtime_error("Invalid button size");
-		}
-	}
-
-	static float getBaseWidthPadding(Button::Size size)
-	{
-		switch (size) {
-			case Button::Size::ExtraSmall:
-				return 12.0f;
-			case Button::Size::Small:
-				return 16.0f;
-			case Button::Size::Medium:
-				return 24.0f;
-			case Button::Size::Large:
-				return 48.0f;
-			case Button::Size::ExtraLarge:
-				return 64.0f;
-			default:
-				throw std::runtime_error("Invalid button size");
-		}
-	}
-
-	static float getWidthPadding(Button::Size size, bool compact = false)
-	{
-		// Paper compact buttons halve the horizontal label margin.
-		return compact ? getBaseWidthPadding(size) / 2.0f
-					   : getBaseWidthPadding(size);
-	}
-
-	static float getSpaceBetweenIconAndLabel(Button::Size size)
-	{
-		switch (size) {
-			case Button::Size::ExtraSmall:
-				return 4.0f;
-			case Button::Size::Small:
-				return 8.0f;
-			case Button::Size::Medium:
-				return 8.0f;
-			case Button::Size::Large:
-				return 12.0f;
-			case Button::Size::ExtraLarge:
-				return 16.0f;
-			default:
-				throw std::runtime_error("Invalid button size");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getDefaultContainerColor(Button::Color style)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (style) {
-			case Button::Color::Elevated:
-				return scheme.getColor(SchemeColorRole::SurfaceContainerLow)
-					.getColor();
-
-			case Button::Color::Filled:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-
-			case Button::Color::Tonal:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-
-			case Button::Color::Outlined:
-			case Button::Color::Text:
-			case Button::Color::Segmented:
-				return utility::graphic::Color32Bit(0, 0, 0, 0);
-
-			default:
-				throw std::runtime_error("Invalid button color style");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getToggleUnselectedContainerColor(Button::Color style)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (style) {
-			case Button::Color::Elevated:
-				return scheme.getColor(SchemeColorRole::SurfaceContainerLow)
-					.getColor();
-
-			case Button::Color::Filled:
-				return scheme.getColor(SchemeColorRole::SurfaceContainer)
-					.getColor();
-
-			case Button::Color::Tonal:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-
-			case Button::Color::Outlined:
-			case Button::Color::Text:
-			case Button::Color::Segmented:
-				return utility::graphic::Color32Bit(0, 0, 0, 0);
-
-			default:
-				throw std::runtime_error("Invalid button color style");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getToggleSelectedContainerColor(Button::Color style)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (style) {
-			case Button::Color::Elevated:
-			case Button::Color::Filled:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-
-			case Button::Color::Tonal:
-				return scheme.getColor(SchemeColorRole::Secondary).getColor();
-
-			case Button::Color::Outlined:
-			case Button::Color::Segmented:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-
-			case Button::Color::Text:
-				return utility::graphic::Color32Bit(0, 0, 0, 0);
-
-			default:
-				throw std::runtime_error("Invalid button color style");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getContentColor(Button::Color style, bool isToggle, bool isSelected);
-
-	static utility::graphic::Color32Bit
-		getBaseContainerColor(Button::Color style, bool isToggle,
-							  bool isSelected)
-	{
-		if (!isToggle) {
-			return getDefaultContainerColor(style);
-		}
-
-		if (isSelected) {
-			return getToggleSelectedContainerColor(style);
-		}
-
-		return getToggleUnselectedContainerColor(style);
-	}
-
-	static utility::graphic::Color32Bit
-		getPressedContainerColor(Button::Color style, bool isToggle,
-								 bool isSelected)
-	{
-		return ButtonBase::applyStateLayer(
-			getBaseContainerColor(style, isToggle, isSelected),
-			getContentColor(style, isToggle, isSelected),
-			getStateLayerAlpha(theme::StateLayer::Pressed));
-	}
-
-	static utility::graphic::Color32Bit
-		getHoverContainerColor(Button::Color style, bool isToggle,
-							   bool isSelected)
-	{
-		return ButtonBase::applyStateLayer(
-			getBaseContainerColor(style, isToggle, isSelected),
-			getContentColor(style, isToggle, isSelected),
-			getStateLayerAlpha(theme::StateLayer::Hovered));
-	}
-
-	static utility::graphic::Color32Bit
-		getContainerColor(Button::Color style, bool isToggle, bool isSelected,
-						  bool isHovered, bool isButtonPressed)
-	{
-		if (isButtonPressed) {
-			return getPressedContainerColor(style, isToggle, isSelected);
-		}
-
-		if (isHovered) {
-			return getHoverContainerColor(style, isToggle, isSelected);
-		}
-
-		if (!isToggle) {
-			return getDefaultContainerColor(style);
-		}
-
-		if (isSelected) {
-			return getToggleSelectedContainerColor(style);
-		}
-
-		return getToggleUnselectedContainerColor(style);
-	}
-
-	static utility::graphic::Color32Bit
-		getContentColor(Button::Color style, bool isToggle, bool isSelected)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		if (!isToggle) {
-			switch (style) {
-				case Button::Color::Elevated:
-					return scheme.getColor(SchemeColorRole::Primary).getColor();
-				case Button::Color::Filled:
-					return scheme.getColor(SchemeColorRole::OnPrimary)
-						.getColor();
-				case Button::Color::Tonal:
-					return scheme
-						.getColor(SchemeColorRole::OnSecondaryContainer)
-						.getColor();
-				case Button::Color::Outlined:
-					return scheme.getColor(SchemeColorRole::Primary).getColor();
-				case Button::Color::Text:
-					return scheme.getColor(SchemeColorRole::Primary).getColor();
-				case Button::Color::Segmented:
-					return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-						.getColor();
-				default:
-					throw std::runtime_error("Invalid button color style");
-			}
-		}
-
-		if (!isSelected) {
-			switch (style) {
-				case Button::Color::Elevated:
-					return scheme.getColor(SchemeColorRole::Primary).getColor();
-
-				case Button::Color::Filled:
-					return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-						.getColor();
-
-				case Button::Color::Outlined:
-					return scheme.getColor(SchemeColorRole::Primary).getColor();
-
-				case Button::Color::Tonal:
-					return scheme
-						.getColor(SchemeColorRole::OnSecondaryContainer)
-						.getColor();
-
-				case Button::Color::Text:
-					return scheme.getColor(SchemeColorRole::Primary).getColor();
-
-				case Button::Color::Segmented:
-					return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-						.getColor();
-
-				default:
-					throw std::runtime_error("Invalid button color style");
-			}
-		}
-
-		switch (style) {
-			case Button::Color::Elevated:
-			case Button::Color::Filled:
-				return scheme.getColor(SchemeColorRole::OnPrimary).getColor();
-
-			case Button::Color::Tonal:
-				return scheme.getColor(SchemeColorRole::OnSecondary).getColor();
-
-			case Button::Color::Outlined:
-			case Button::Color::Segmented:
-				return scheme.getColor(SchemeColorRole::OnSecondaryContainer)
-					.getColor();
-
-			case Button::Color::Text:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-
-			default:
-				throw std::runtime_error("Invalid button color style");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getBorderColor(Button::Color style, bool isToggle, bool isSelected)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		if (style != Button::Color::Outlined
-			&& style != Button::Color::Segmented) {
-			return utility::graphic::Color32Bit(0, 0, 0, 0);
-		}
-
-		// Segmented buttons keep their outline when selected (Paper
-		// SegmentedButtons); outlined toggles drop it.
-		if (style == Button::Color::Segmented || !isToggle || !isSelected) {
-			return scheme.getColor(SchemeColorRole::Outline).getColor();
-		}
-
-		return utility::graphic::Color32Bit(0, 0, 0, 0);
+		return button_style::getIconFontSize(_size);
 	}
 
 	utility::graphic::Color32Bit Button::getInitialContentColor(void) const
 	{
-		return getContentColor(_colorStyle, _isToggle, _isSelected);
+		return button_style::getContentColor(_colorStyle, _isToggle,
+											 _isSelected);
 	}
 
 	void Button::applyStyleState(void)
@@ -608,30 +250,33 @@ namespace guillaume::entities
 
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
-			.setColor(resolveContainerColor(
-				getContainerColor(_colorStyle, _isToggle, _isSelected,
-								  isHovered(), isPressed())));
+			.setColor(resolveContainerColor(button_style::getContainerColor(
+				_colorStyle, _isToggle, _isSelected, isHovered(),
+				isPressed())));
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
-			.setColor(getBorderColor(_colorStyle, _isToggle, _isSelected))
+			.setColor(button_style::getBorderColor(_colorStyle, _isToggle,
+												   _isSelected))
 			.setWidth(1.0f);
 
 		if (_icon) {
-			_icon->setColor(resolveContentColor(
-				getContentColor(_colorStyle, _isToggle, _isSelected)));
+			_icon->setColor(resolveContentColor(button_style::getContentColor(
+				_colorStyle, _isToggle, _isSelected)));
 		}
 
 		if (_label) {
-			_label->setColor(resolveContentColor(
-				getContentColor(_colorStyle, _isToggle, _isSelected)));
+			_label->setColor(resolveContentColor(button_style::getContentColor(
+				_colorStyle, _isToggle, _isSelected)));
 		}
 	}
 
 	void Button::applyGeometry(void)
 	{
-		const float radius = getBorderRadius(
-			_size, getRestingShape(_shape, _isToggle, _isSelected, _isMorph),
+		const float radius = button_style::getBorderRadius(
+			_size,
+			button_style::getRestingShape(_shape, _isToggle, _isSelected,
+										  _isMorph),
 			isPressed());
 
 		getComponentRegistry()
@@ -691,7 +336,7 @@ namespace guillaume::entities
 			: 0.0f;
 
 		const float gap = (!_iconGlyphName.empty() && !_labelContent.empty())
-			? getSpaceBetweenIconAndLabel(_size)
+			? button_style::getSpaceBetweenIconAndLabel(_size)
 			: 0.0f;
 		const float contentWidth  = iconWidth + gap + labelWidth;
 		const float contentHeight = std::max(iconHeight, labelHeight);
@@ -699,11 +344,13 @@ namespace guillaume::entities
 		// The label typography (labelLarge) is independent of the icon size;
 		// the container grows to the larger child and to the M3 minimums.
 		const float minHeight = (_size == Size::ExtraSmall) ? 0.0f : MinHeight;
-		const float buttonWidth =
-			std::max({ contentWidth + getWidthPadding(_size, _isCompact) * 2.0f,
-					   MinWidth, _minWidth });
-		const float buttonHeight =
-			std::max(contentHeight + getHeightPadding(_size) * 2.0f, minHeight);
+		const float buttonWidth = std::max(
+			{ contentWidth
+				  + button_style::getWidthPadding(_size, _isCompact) * 2.0f,
+			  MinWidth, _minWidth });
+		const float buttonHeight = std::max(
+			contentHeight + button_style::getHeightPadding(_size) * 2.0f,
+			minHeight);
 
 		const auto place = [&](const std::shared_ptr<ecs::Entity> &child,
 							   float x, float childHeight) {

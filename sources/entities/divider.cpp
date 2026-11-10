@@ -46,10 +46,8 @@ namespace guillaume::entities
 
 	void Divider::Builder::reset(void)
 	{
-		_pose  = utility::graphic::PoseF();
-		_color = guillaume::getActiveScheme()
-					 .getColor(SchemeColorRole::OutlineVariant)
-					 .getColor();
+		_pose	   = utility::graphic::PoseF();
+		_color	   = getActiveColor(SchemeColorRole::OutlineVariant);
 		_length	   = 100.0f;
 		_thickness = HairlineThickness;
 		_inset	   = 16.0f;
@@ -95,12 +93,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<Divider>
-		Divider::Director::makeDivider(Builder &builder,
-									   std::shared_ptr<Entity> parent,
-									   float length, Variant variant)
+		Divider::Builder::makeDivider(std::shared_ptr<Entity> parent,
+									  float length, Variant variant)
 	{
-		return builder.withLength(length).withVariant(variant).registerEntity(
-			parent);
+		return withLength(length).withVariant(variant).registerEntity(parent);
 	}
 
 	Divider::Divider(ecs::ComponentRegistry &registry,

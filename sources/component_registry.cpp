@@ -25,26 +25,6 @@
 namespace guillaume
 {
 	ComponentRegistry::ComponentRegistry(void)
-		: ecs::ComponentRegistryFiller<
-			  components::Bound, components::Focus,
-			  components::MouseHoverInteraction,
-			  components::MouseButtonInteraction,
-			  components::HandHoverInteraction,
-			  components::HandButtonInteraction,
-			  components::HandPinchInteraction, components::HandPokeInteraction,
-			  components::HandSqueezeInteraction,
-			  components::HandThumbRestInteraction,
-			  components::HandThumbStickInteraction,
-			  components::HandTriggerInteraction, components::Text,
-			  components::Transform, components::Color, components::Borders,
-			  components::Image, components::Mesh, components::Layout,
-			  components::Value, components::Range, components::Scrollable,
-			  components::DragInteraction, components::Selectable,
-			  components::SelectionGroup, components::Animation,
-			  components::Overlay, components::TextField, components::Ellipse,
-			  components::Ring, components::Arc, components::Line,
-			  components::Elevation, components::Scrim, components::Clip,
-			  components::StyleState, components::Accessibility>()
 	{
 	}
 }	 // namespace guillaume

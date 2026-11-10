@@ -48,9 +48,8 @@ namespace guillaume::entities
 	{
 		_glyphName.clear();
 		_fontSize = 24.0f;
-		_color =
-			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
-		_style = components::Glyph::Style::Outlined;
+		_color	  = getActiveColor(SchemeColorRole::OnSurface);
+		_style	  = components::Glyph::Style::Outlined;
 	}
 
 	Icon::Builder &Icon::Builder::withGlyphName(const std::string &glyphName)
@@ -79,13 +78,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Icon> Icon::Director::makeIcon(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &glyphName, const float &fontSize,
-		const utility::graphic::Color32Bit &color,
+	std::shared_ptr<Icon> Icon::Builder::makeIcon(
+		std::shared_ptr<Entity> parent, const std::string &glyphName,
+		const float &fontSize, const utility::graphic::Color32Bit &color,
 		const components::Glyph::Style &style)
 	{
-		return builder.withGlyphName(glyphName)
+		return withGlyphName(glyphName)
 			.withFontSize(fontSize)
 			.withColor(color)
 			.withStyle(style)

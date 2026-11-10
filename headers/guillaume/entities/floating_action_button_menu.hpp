@@ -30,7 +30,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/parent_entity_filler.hpp"
 
@@ -132,25 +131,16 @@ namespace guillaume::entities
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `FloatingActionButtonMenu`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a FAB menu using the builder.
-			 * @param builder The builder used to configure and create the menu.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param iconGlyphName The trigger icon glyph name.
 			 * @return A shared pointer to the newly created menu entity.
 			 */
 			std::shared_ptr<FloatingActionButtonMenu>
-				makeFloatingActionButtonMenu(Builder &builder,
-											 std::shared_ptr<Entity> parent,
+				makeFloatingActionButtonMenu(std::shared_ptr<Entity> parent,
 											 const std::string &iconGlyphName);
 		};
 

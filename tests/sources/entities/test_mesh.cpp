@@ -109,16 +109,14 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(component.getTexturePath(), "skin.png");
 	}
 
-	TEST_F(TestMesh, DirectorBuildsAndRegistersModel)
+	TEST_F(TestMesh, BuilderPresetBuildsAndRegistersModel)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 
 		entities::Mesh::Builder builder(registry, entityRegistry);
-		entities::Mesh::Director director;
 
-		auto model =
-			director.makeMesh(builder, nullptr, "teapot.obj", "skin.png");
+		auto model = builder.makeMesh(nullptr, "teapot.obj", "skin.png");
 
 		ASSERT_NE(model, nullptr);
 		EXPECT_NE(
@@ -143,7 +141,8 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::MeasureMesh measureModel(ressourceProvider, engine);
+		guillaume::systems::MeasureMesh measureModel(ressourceProvider,
+													 *engine);
 
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
@@ -173,7 +172,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::MeshRender modelRender(ressourceProvider, engine);
+		guillaume::systems::MeshRender modelRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
@@ -196,7 +195,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::MeshRender modelRender(ressourceProvider, engine);
+		guillaume::systems::MeshRender modelRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto model = std::make_shared<entities::Mesh>(registry, "missing.obj");

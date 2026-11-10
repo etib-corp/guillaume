@@ -25,28 +25,10 @@
 namespace guillaume::systems
 {
 	HandTrigger::HandTrigger(event::EventBus &eventBus)
-		: ecs::SystemFiller<components::HandTriggerInteraction,
-							components::Transform, components::Bound>(
-			  ecs::Phase::Event)
-		, event::EventManager<utility::event::HandTriggerEvent>(eventBus)
+		: HandEventSystem<components::HandTriggerInteraction,
+						  utility::event::HandTriggerEvent>(eventBus)
 	{
 	}
 
-	HandTrigger::~HandTrigger(void)
-	{
-	}
-
-	void HandTrigger::prepare(void)
-	{
-		consumeNextEvent();
-	}
-
-	void HandTrigger::cleanup(void)
-	{
-	}
-
-	void HandTrigger::update(const ecs::Entity::Identifier &entityIdentifier)
-	{
-	}
-
+	HandTrigger::~HandTrigger(void) = default;
 }	 // namespace guillaume::systems

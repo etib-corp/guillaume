@@ -32,7 +32,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/icon.hpp"
@@ -179,24 +178,15 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withFixedWidth(float width);
-		};
 
-		/**
-		 * @brief Director that orchestrates `AppBar::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create an app bar using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The app bar variant.
 			 * @return The newly created app bar.
 			 */
 			std::shared_ptr<AppBar>
-				makeAppBar(Builder &builder,
-						   std::shared_ptr<ecs::Entity> parent,
+				makeAppBar(std::shared_ptr<ecs::Entity> parent,
 						   Variant variant);
 		};
 

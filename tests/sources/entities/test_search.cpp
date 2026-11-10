@@ -66,10 +66,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Search::Builder builder(registry, entityRegistry);
-			Search::Director director;
 
-			return director.makeSearch(builder, nullptr, variant, "Search",
-									   text);
+			return builder.makeSearch(nullptr, variant, "Search", text);
 		}
 	}	 // namespace
 
@@ -170,17 +168,16 @@ namespace guillaume::entities::tests
 		EXPECT_FALSE(search->isOpen());
 	}
 
-	TEST_F(TestSearch, DirectorBuildsAndRegisters)
+	TEST_F(TestSearch, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Search::Builder builder(registry, entityRegistry);
-		Search::Director director;
 
-		auto search = director.makeSearch(
-			builder, parent, Search::Variant::FullScreen, "Search", "query");
+		auto search = builder.makeSearch(parent, Search::Variant::FullScreen,
+										 "Search", "query");
 
 		ASSERT_NE(search, nullptr);
 		EXPECT_EQ(search->getParent(), parent);

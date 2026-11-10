@@ -33,7 +33,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/icon.hpp"
@@ -153,24 +152,15 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withFixedWidth(float width);
-		};
 
-		/**
-		 * @brief Director building lists.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a list.
-			 * @param builder List builder.
 			 * @param parent Parent entity.
 			 * @param variant List variant.
 			 * @param items List entries.
 			 * @return The registered list.
 			 */
-			std::shared_ptr<List> makeList(Builder &builder,
-										   std::shared_ptr<ecs::Entity> parent,
+			std::shared_ptr<List> makeList(std::shared_ptr<ecs::Entity> parent,
 										   Variant variant,
 										   const std::vector<Item> &items);
 		};
@@ -325,6 +315,33 @@ namespace guillaume::entities
 		 */
 		Row buildRow(const Item &item, std::vector<std::size_t> path,
 					 float inset);
+
+		/**
+		 * @brief Build a subheader row: a title text with the Header role.
+		 * @param item Entry.
+		 * @return The subheader entity, or nullptr when it has no text.
+		 */
+		std::shared_ptr<ecs::Entity> buildSubheader(const Item &item);
+
+		/**
+		 * @brief Build the leading group of a row: the nesting inset, the
+		 * leading image or icon, and the headline/supporting column.
+		 * @param row Row receiving the created entities.
+		 * @param item Entry.
+		 * @param inset Leading inset for nested rows.
+		 * @return The leading group view.
+		 */
+		std::shared_ptr<View> buildRowLead(Row &row, const Item &item,
+										   float inset);
+
+		/**
+		 * @brief Wire the press handler, accessibility and enabled state.
+		 * @param row Row to make interactive.
+		 * @param item Entry.
+		 * @param path Index path used by the press handlers.
+		 */
+		void makeRowInteractive(Row &row, const Item &item,
+								const std::vector<std::size_t> &path);
 
 		/**
 		 * @brief Restyle a row from its interaction state.

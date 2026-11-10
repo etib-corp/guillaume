@@ -21,63 +21,20 @@
  */
 
 #include "guillaume/systems/hand_poke.hpp"
-#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
 	HandPoke::HandPoke(event::EventBus &eventBus)
-		: ecs::SystemFiller<components::HandPokeInteraction,
-							components::Transform, components::Bound>(
-			  ecs::Phase::Event)
-		, event::EventManager<utility::event::HandPokeEvent>(eventBus)
+		: HandRaySystem<components::HandPokeInteraction,
+						utility::event::HandPokeEvent>(eventBus)
 	{
 	}
 
-	HandPoke::~HandPoke(void)
+	HandPoke::~HandPoke(void) = default;
+
+	void HandPoke::setEngaged(components::HandPokeInteraction &interaction,
+							  bool engaged)
 	{
+		interaction.setPoking(engaged);
 	}
-
-	void HandPoke::prepare(void)
-	{
-		consumeNextEvent();
-	}
-
-	void HandPoke::cleanup(void)
-	{
-	}
-
-	void HandPoke::update(const ecs::Entity::Identifier &entityIdentifier)
-	{
-		auto pokeEvent = this->getLastEvent();
-		if (!pokeEvent)
-			return;
-
-		auto &transform = this->template getComponent<components::Transform>(
-			entityIdentifier);
-		auto &bound =
-			this->template getComponent<components::Bound>(entityIdentifier);
-		auto &interaction =
-			this->template getComponent<components::HandPokeInteraction>(
-				entityIdentifier);
-
-		const auto ray = utility::graphic::RayF(
-			utility::graphic::PositionF(pokeEvent->getPose().getPosition()),
-			pokeEvent->getPose().getOrientation().getForward());
-		const bool isIntersecting =
-			isInteractive(this->getComponentRegistry(), entityIdentifier)
-			&& hitTest(
-				ray, transform.getPose(), bound,
-				hitMargin(this->getComponentRegistry(), entityIdentifier));
-
-		if (isIntersecting) {
-			interaction.setPoking(true);
-			const auto &handler = interaction.getOnEventHandler();
-			if (handler) {
-				handler();
-			}
-		} else {
-			interaction.setPoking(false);
-		}
-	}
-
 }	 // namespace guillaume::systems

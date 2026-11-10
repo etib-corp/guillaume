@@ -29,7 +29,7 @@ namespace guillaume::systems
 {
 	ImageRender::ImageRender(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Image>(ecs::Phase::Render)
 		, _ressourceProvider(ressourceProvider)
@@ -49,7 +49,7 @@ namespace guillaume::systems
 
 	void ImageRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void ImageRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -132,12 +132,12 @@ namespace guillaume::systems
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
-			size_t objectId = _engine->createObject(renderable);
+			size_t objectId = _engine.createObject(renderable);
 			insert(entityIdentifier,
 				   RenderHandle { objectId, renderable, true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

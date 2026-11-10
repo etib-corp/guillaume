@@ -57,14 +57,14 @@ namespace guillaume::systems
 								 components::Clip>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< Engine instance.
+		utility::Engine &_engine;	 ///< Engine instance.
 
 		public:
 		/**
 		 * @brief Construct a clip system running in the Layout phase.
 		 * @param engine The engine receiving the scissor rectangle.
 		 */
-		Clip(std::unique_ptr<utility::Engine> &engine);
+		Clip(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

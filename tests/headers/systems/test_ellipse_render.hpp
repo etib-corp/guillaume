@@ -68,7 +68,7 @@ namespace guillaume::systems::tests
 			_engine = std::make_unique<guillaume::tests::EngineMock>();
 			_engineStub =
 				static_cast<guillaume::tests::EngineMock *>(_engine.get());
-			_ellipseSystem = std::make_unique<EllipseRender>(_engine);
+			_ellipseSystem = std::make_unique<EllipseRender>(*_engine);
 			_ellipseSystem->bindComponentRegistry(_componentRegistry);
 		}
 

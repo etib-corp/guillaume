@@ -56,10 +56,9 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Chip::Builder builder(registry, entityRegistry);
-			Chip::Director director;
 
-			return director.makeChip(builder, nullptr, variant, label,
-									 iconGlyph, selected);
+			return builder.makeChip(nullptr, variant, label, iconGlyph,
+									selected);
 		}
 	}	 // namespace
 
@@ -132,17 +131,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(chip->getChildren().size(), 2U);
 	}
 
-	TEST_F(TestChip, DirectorBuildsAndRegisters)
+	TEST_F(TestChip, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Chip::Builder builder(registry, entityRegistry);
-		Chip::Director director;
 
-		auto chip = director.makeChip(builder, parent, Chip::Variant::Filter,
-									  "Tag", "check", true);
+		auto chip = builder.makeChip(parent, Chip::Variant::Filter, "Tag",
+									 "check", true);
 
 		ASSERT_NE(chip, nullptr);
 		EXPECT_EQ(chip->getParent(), parent);

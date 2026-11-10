@@ -30,7 +30,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/animation.hpp"
@@ -118,24 +117,15 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withSize(float size);
-		};
 
-		/**
-		 * @brief Director that orchestrates `LoadingIndicator::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a loading indicator using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The loading indicator variant.
 			 * @return The newly created loading indicator.
 			 */
 			std::shared_ptr<LoadingIndicator>
-				makeLoadingIndicator(Builder &builder,
-									 std::shared_ptr<ecs::Entity> parent,
+				makeLoadingIndicator(std::shared_ptr<ecs::Entity> parent,
 									 Variant variant);
 		};
 

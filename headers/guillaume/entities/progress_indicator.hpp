@@ -30,7 +30,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/animation.hpp"
@@ -141,25 +140,16 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withSize(float size);
-		};
 
-		/**
-		 * @brief Director that orchestrates `ProgressIndicator::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a progress indicator using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The progress indicator variant.
 			 * @param value The initial normalized value, in `[0, 1]`.
 			 * @return The newly created progress indicator.
 			 */
 			std::shared_ptr<ProgressIndicator>
-				makeProgressIndicator(Builder &builder,
-									  std::shared_ptr<ecs::Entity> parent,
+				makeProgressIndicator(std::shared_ptr<ecs::Entity> parent,
 									  Variant variant, float value);
 		};
 

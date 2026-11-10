@@ -32,7 +32,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/selection.hpp"
@@ -130,17 +129,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Checkbox::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a checkbox using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param state The checkbox state.
 			 * @param variant The checkbox variant.
@@ -148,8 +139,7 @@ namespace guillaume::entities
 			 * @return The newly created checkbox.
 			 */
 			std::shared_ptr<Checkbox>
-				makeCheckbox(Builder &builder,
-							 std::shared_ptr<ecs::Entity> parent, State state,
+				makeCheckbox(std::shared_ptr<ecs::Entity> parent, State state,
 							 Variant variant, const std::string &label);
 		};
 

@@ -99,7 +99,7 @@ namespace guillaume::systems
 		std::shared_ptr<utility::RessourceProvider>
 			_ressourceProvider;	   ///< Shared resource provider for loading
 								   ///< fonts and models
-		std::unique_ptr<utility::Engine>
+		utility::Engine
 			&_engine;	 ///< utility::Engine instance for text measurement
 
 		public:
@@ -111,7 +111,7 @@ namespace guillaume::systems
 		 */
 		MeasureMesh(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<utility::Engine> &engine);
+			utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

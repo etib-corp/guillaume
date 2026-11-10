@@ -34,7 +34,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/selection.hpp"
@@ -170,25 +169,16 @@ namespace guillaume::entities
 			 */
 			Builder &withOnIndexChange(
 				std::function<void(std::size_t)> onIndexChange);
-		};
 
-		/**
-		 * @brief Director building drawers from (icon, label) pairs.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a drawer.
-			 * @param builder Drawer builder.
 			 * @param parent Parent entity.
 			 * @param variant Drawer variant.
 			 * @param destinations Destination (icon, label) pairs.
 			 * @return The registered drawer.
 			 */
 			std::shared_ptr<NavigationDrawer> makeNavigationDrawer(
-				Builder &builder, std::shared_ptr<ecs::Entity> parent,
-				Variant variant,
+				std::shared_ptr<ecs::Entity> parent, Variant variant,
 				const std::vector<std::pair<std::string, std::string>>
 					&destinations);
 		};

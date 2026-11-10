@@ -22,14 +22,9 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include "guillaume/systems/hand_event_system.hpp"
 
-#include "guillaume/event/event_manager.hpp"
-#include "guillaume/event/event_bus.hpp"
-
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/hand_thumb_rest_interaction.hpp"
-#include "guillaume/components/transform.hpp"
 
 #include <utility/event/hand_thumb_rest_event.hpp>
 
@@ -39,40 +34,21 @@ namespace guillaume::systems
 	 * @brief System handling hand thumb-rest interactions.
 	 */
 	class HandThumbRest:
-		public ecs::SystemFiller<components::HandThumbRestInteraction,
-								 components::Transform, components::Bound>,
-		public event::EventManager<utility::event::HandThumbRestEvent>
+		public HandEventSystem<components::HandThumbRestInteraction,
+							   utility::event::HandThumbRestEvent>
 	{
 		public:
 		/**
-		 * @brief Construct a new HandThumbRest system.
+		 * @brief Construct the HandThumbRest system and subscribe to hand
+		 * thumb-rest events.
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 */
-		HandThumbRest(event::EventBus &eventBus);
+		explicit HandThumbRest(event::EventBus &eventBus);
 
 		/**
-		 * @brief Destructor for the HandThumbRest system.
+		 * @brief Default destructor for the HandThumbRest system.
 		 */
-		~HandThumbRest(void);
-
-		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
-		 */
-		void prepare(void) override;
-
-		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
-		 */
-		void cleanup(void) override;
-
-		/**
-		 * @brief Update the system for a given entity identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
-		 */
-		virtual void
-			update(const ecs::Entity::Identifier &entityIdentifier) override;
+		~HandThumbRest(void) override;
 	};
 
 }	 // namespace guillaume::systems

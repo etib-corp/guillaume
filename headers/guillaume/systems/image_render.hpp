@@ -49,10 +49,9 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   //< Shared resource provider for loading
-								   // image materials
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< utility::Engine instance
+			_ressourceProvider;		 //< Shared resource provider for loading
+									 // image materials
+		utility::Engine &_engine;	 ///< utility::Engine instance
 
 		public:
 		/**
@@ -63,7 +62,7 @@ namespace guillaume::systems
 		 */
 		ImageRender(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<utility::Engine> &engine);
+			utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

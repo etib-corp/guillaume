@@ -124,7 +124,7 @@ namespace guillaume::systems
 		std::shared_ptr<utility::RessourceProvider>
 			_ressourceProvider;	   ///< Shared resource provider for loading
 								   ///< fonts and glyphs
-		std::unique_ptr<utility::Engine>
+		utility::Engine
 			&_engine;	 ///< utility::Engine instance for text measurement
 		std::string
 			_defaultFontPath;	 ///< Default font used for text measurement
@@ -140,7 +140,7 @@ namespace guillaume::systems
 		 */
 		MeasureGlyph(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<utility::Engine> &engine);
+			utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

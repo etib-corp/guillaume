@@ -44,9 +44,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Surface::Builder builder(registry, entityRegistry);
-			Surface::Director director;
 
-			return director.makeSurface(builder, nullptr, level, mode);
+			return builder.makeSurface(nullptr, level, mode);
 		}
 	}	 // namespace
 
@@ -152,16 +151,15 @@ namespace guillaume::entities::tests
 			getShapeRadius(theme::ShapeRole::Large));
 	}
 
-	TEST_F(TestSurface, DirectorBuildsAndRegisters)
+	TEST_F(TestSurface, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 		Surface::Builder builder(registry, entityRegistry);
-		Surface::Director director;
 
-		auto surface = director.makeSurface(builder, parent,
-											theme::ElevationLevel::Level2);
+		auto surface =
+			builder.makeSurface(parent, theme::ElevationLevel::Level2);
 		ASSERT_NE(surface, nullptr);
 		EXPECT_EQ(surface->getParent(), parent);
 		EXPECT_EQ(surface->getElevation(), theme::ElevationLevel::Level2);

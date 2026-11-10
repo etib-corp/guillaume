@@ -60,10 +60,8 @@ namespace guillaume::entities
 		}
 
 		Icon::Builder builder(registry, entityRegistry);
-		Icon::Director director;
 
-		return director.makeIcon(builder, parent, glyphName, fontSize, color,
-								 style);
+		return builder.makeIcon(parent, glyphName, fontSize, color, style);
 	}
 
 	/**
@@ -85,9 +83,8 @@ namespace guillaume::entities
 		}
 
 		Text::Builder builder(registry, entityRegistry);
-		Text::Director director;
 
-		return director.makeText(builder, parent, content, fontSize, color);
+		return builder.makeText(parent, content, fontSize, color);
 	}
 
 	/**
@@ -110,9 +107,8 @@ namespace guillaume::entities
 		}
 
 		Text::Builder builder(registry, entityRegistry);
-		Text::Director director;
 
-		return director.makeText(builder, parent, content, role, color);
+		return builder.makeText(parent, content, role, color);
 	}
 
 }	 // namespace guillaume::entities

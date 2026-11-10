@@ -66,7 +66,7 @@ namespace guillaume::entities
 	 */
 	inline utility::graphic::Color32Bit schemeColor(SchemeColorRole role)
 	{
-		return guillaume::getActiveScheme().getColor(role).getColor();
+		return guillaume::getActiveColor(role);
 	}
 
 	/**

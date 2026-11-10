@@ -87,12 +87,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<Badge>
-		Badge::Director::makeBadge(Builder &builder,
-								   std::shared_ptr<ecs::Entity> parent,
-								   const std::string &label, Variant variant)
+		Badge::Builder::makeBadge(std::shared_ptr<ecs::Entity> parent,
+								  const std::string &label, Variant variant)
 	{
-		return builder.withLabel(label).withVariant(variant).registerEntity(
-			parent);
+		return withLabel(label).withVariant(variant).registerEntity(parent);
 	}
 
 	Badge::Badge(ecs::ComponentRegistry &registry, const SurfaceConfig &config,

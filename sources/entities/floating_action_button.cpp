@@ -27,6 +27,7 @@
 
 #include "guillaume/entities/floating_action_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/fab_style.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
@@ -130,117 +131,26 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<FloatingActionButton>
-		FloatingActionButton::Director::makeFloatingActionButton(
-			Builder &builder, std::shared_ptr<Entity> parent,
-			const std::string &iconGlyphName, std::function<void(void)> onClick,
-			Variant variant, Size size)
+		FloatingActionButton::Builder::makeFloatingActionButton(
+			std::shared_ptr<Entity> parent, const std::string &iconGlyphName,
+			std::function<void(void)> onClick, Variant variant, Size size)
 	{
-		return builder.withIcon(iconGlyphName)
+		return withIcon(iconGlyphName)
 			.withOnClick(onClick)
 			.withVariant(variant)
 			.withSize(size)
 			.registerEntity(parent);
 	}
 
-	static float getContainerSize(FloatingActionButton::Size size)
-	{
-		switch (size) {
-			case FloatingActionButton::Size::Small:
-				return 40.0f;
-			case FloatingActionButton::Size::Medium:
-				return 56.0f;
-			case FloatingActionButton::Size::Large:
-				return 96.0f;
-			default:
-				throw std::runtime_error("Invalid FAB size");
-		}
-	}
-
-	static float getIconFontSize(FloatingActionButton::Size size)
-	{
-		switch (size) {
-			case FloatingActionButton::Size::Small:
-				return 24.0f;
-			case FloatingActionButton::Size::Medium:
-				return 24.0f;
-			case FloatingActionButton::Size::Large:
-				return 36.0f;
-			default:
-				throw std::runtime_error("Invalid FAB size");
-		}
-	}
-
-	static float getBorderRadius(FloatingActionButton::Size size)
-	{
-		switch (size) {
-			case FloatingActionButton::Size::Small:
-				return getShapeRadius(theme::ShapeRole::Medium);
-			case FloatingActionButton::Size::Medium:
-				return getShapeRadius(theme::ShapeRole::Large);
-			case FloatingActionButton::Size::Large:
-				return getShapeRadius(theme::ShapeRole::ExtraLarge);
-			default:
-				throw std::runtime_error("Invalid FAB size");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getContainerColor(FloatingActionButton::Variant variant, bool lowered)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (variant) {
-			case FloatingActionButton::Variant::Surface:
-				// Paper's surface FAB uses the tonal elevation.level3 color
-				// (level1 when lowered).
-				return getElevatedSurfaceColor(
-					lowered ? theme::ElevationLevel::Level1
-							: theme::ElevationLevel::Level3);
-			case FloatingActionButton::Variant::Primary:
-				return scheme.getColor(SchemeColorRole::PrimaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Secondary:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Tertiary:
-				return scheme.getColor(SchemeColorRole::TertiaryContainer)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid FAB variant");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getContentColor(FloatingActionButton::Variant variant)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (variant) {
-			case FloatingActionButton::Variant::Surface:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-			case FloatingActionButton::Variant::Primary:
-				return scheme.getColor(SchemeColorRole::OnPrimaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Secondary:
-				return scheme.getColor(SchemeColorRole::OnSecondaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Tertiary:
-				return scheme.getColor(SchemeColorRole::OnTertiaryContainer)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid FAB variant");
-		}
-	}
-
 	utility::graphic::Color32Bit
 		FloatingActionButton::getInitialContentColor(void) const
 	{
-		return resolveContentColor(getContentColor(_variant));
+		return resolveContentColor(fab_style::getContentColor(_variant));
 	}
 
 	float FloatingActionButton::getIconFontSize(void) const
 	{
-		return ::guillaume::entities::getIconFontSize(_size);
+		return fab_style::getIconFontSize(_size);
 	}
 
 	void FloatingActionButton::applyElevation(void)
@@ -293,10 +203,10 @@ namespace guillaume::entities
 			return;
 		}
 
-		const auto baseContainerColor =
-			resolveContainerColor(getContainerColor(_variant, _lowered));
+		const auto baseContainerColor = resolveContainerColor(
+			fab_style::getContainerColor(_variant, _lowered));
 		const auto contentColor =
-			resolveContentColor(getContentColor(_variant));
+			resolveContentColor(fab_style::getContentColor(_variant));
 
 		utility::graphic::Color32Bit containerColor = baseContainerColor;
 
@@ -324,7 +234,7 @@ namespace guillaume::entities
 	void FloatingActionButton::applyGeometry(void)
 	{
 		const float containerSize =
-			_customSize.value_or(getContainerSize(_size));
+			_customSize.value_or(fab_style::getContainerSize(_size));
 		const float fontHeight = getIconFontSize();
 
 		getComponentRegistry()
@@ -338,7 +248,7 @@ namespace guillaume::entities
 			.setBorderRadius(_customSize.has_value()
 								 // Paper: customSize / 3.5 (16 dp at 56 dp).
 								 ? *_customSize / 3.5f
-								 : getBorderRadius(_size));
+								 : fab_style::getBorderRadius(_size));
 
 		if (_icon) {
 			_icon->setFontSize(fontHeight);

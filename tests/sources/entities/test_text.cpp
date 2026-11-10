@@ -70,9 +70,9 @@ namespace guillaume::entities::tests
 				ressourceProvider =
 					std::make_shared<utility::RessourceProvider>(systemIo);
 				measureText = std::make_unique<guillaume::systems::MeasureText>(
-					ressourceProvider, engine);
+					ressourceProvider, *engine);
 				textRender = std::make_unique<guillaume::systems::TextRender>(
-					ressourceProvider, engine);
+					ressourceProvider, *engine);
 
 				text = std::make_shared<entities::Text>(
 					componentRegistry, "Hello", 24.0f,
@@ -137,18 +137,17 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(colorComponent.getColor(), color);
 	}
 
-	TEST_F(TestText, DirectorBuildsAndRegistersText)
+	TEST_F(TestText, BuilderPresetBuildsAndRegistersText)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		entities::Text::Builder builder(registry, entityRegistry);
-		entities::Text::Director director;
 
 		auto text =
-			director.makeText(builder, parent, "Hello", 18.0f,
-							  utility::graphic::Color32Bit(255, 255, 255, 255));
+			builder.makeText(parent, "Hello", 18.0f,
+							 utility::graphic::Color32Bit(255, 255, 255, 255));
 		text->update();
 
 		ASSERT_NE(text, nullptr);
@@ -188,10 +187,9 @@ namespace guillaume::entities::tests
 		auto parent = std::make_shared<ecs::Entity>();
 
 		entities::Text::Builder builder(registry, entityRegistry);
-		entities::Text::Director director;
-		auto text = director.makeText(
-			builder, parent, "Save", theme::TypeRole::LabelLarge,
-			utility::graphic::Color32Bit(0, 0, 0, 255));
+		auto text =
+			builder.makeText(parent, "Save", theme::TypeRole::LabelLarge,
+							 utility::graphic::Color32Bit(0, 0, 0, 255));
 		text->update();
 
 		const auto &component =

@@ -99,11 +99,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Tooltip> Tooltip::Director::makeTooltip(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
-		const std::string &text, const std::string &title)
+	std::shared_ptr<Tooltip>
+		Tooltip::Builder::makeTooltip(std::shared_ptr<ecs::Entity> parent,
+									  Variant variant, const std::string &text,
+									  const std::string &title)
 	{
-		return builder.withVariant(variant)
+		return withVariant(variant)
 			.withText(text)
 			.withTitle(title)
 			.registerEntity(parent);

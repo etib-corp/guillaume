@@ -47,14 +47,14 @@ namespace guillaume::systems
 								 components::Color, components::Ring>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
+		utility::Engine &_engine;	 ///< utility::Engine.
 
 		public:
 		/**
 		 * @brief Construct a ring rendering system.
 		 * @param engine The engine used to draw rings.
 		 */
-		RingRender(std::unique_ptr<utility::Engine> &engine);
+		RingRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

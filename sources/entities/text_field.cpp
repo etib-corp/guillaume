@@ -173,13 +173,13 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<TextField> TextField::Director::makeTextField(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	std::shared_ptr<TextField> TextField::Builder::makeTextField(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::string &placeholder, const std::string &leadingIcon,
 		const std::string &trailingIcon, const std::string &supportingText,
 		bool error, const std::string &text)
 	{
-		return builder.withVariant(variant)
+		return withVariant(variant)
 			.withPlaceholder(placeholder)
 			.withLeadingIcon(leadingIcon)
 			.withTrailingIcon(trailingIcon)
@@ -370,17 +370,26 @@ namespace guillaume::entities
 
 	void TextField::buildContent(void)
 	{
-		auto &registry = this->getComponentRegistry();
-		const auto &component =
-			registry.getComponent<components::TextField>(this->getIdentifier());
-		const bool disabled = isDisabled();
-		const bool floating = isLabelFloating();
-
+		const bool disabled		= isDisabled();
 		const auto content		= disabled ? disabledContentColor()
 										   : schemeColor(SchemeColorRole::OnSurface);
 		const auto variantColor = disabled
 			? disabledContentColor()
 			: schemeColor(SchemeColorRole::OnSurfaceVariant);
+
+		createChildren(content, variantColor);
+		applyContentColors(content, variantColor);
+		arrangeChildren();
+		placeManualChildren();
+	}
+
+	void TextField::createChildren(
+		const utility::graphic::Color32Bit &content,
+		const utility::graphic::Color32Bit &variantColor)
+	{
+		auto &registry = this->getComponentRegistry();
+		const auto &component =
+			registry.getComponent<components::TextField>(this->getIdentifier());
 
 		if (_leadingIconEntity == nullptr && !_leadingIcon.empty()) {
 			_leadingIconEntity =
@@ -402,10 +411,8 @@ namespace guillaume::entities
 
 		if (_inputColumn == nullptr) {
 			View::Builder builder(registry, *this);
-			View::Director director;
-			_inputColumn =
-				director.makeDefaultView(builder, this->shared_from_this(),
-										 utility::graphic::PoseF(), {});
+			_inputColumn = builder.makeDefaultView(
+				this->shared_from_this(), utility::graphic::PoseF(), {});
 			_inputColumn->setColor(transparentColor());
 			_inputColumn->setAxis(components::Layout::Axis::Vertical);
 			_inputColumn->setMainAxisAlignment(
@@ -419,19 +426,16 @@ namespace guillaume::entities
 		if (_textEntity == nullptr) {
 			// Built even when empty so the text-input systems can edit it.
 			Text::Builder builder(registry, *_inputColumn);
-			Text::Director director;
-			_textEntity =
-				director.makeText(builder, _inputColumn, _text,
-								  theme::TypeRole::BodyLarge, content);
+			_textEntity = builder.makeText(_inputColumn, _text,
+										   theme::TypeRole::BodyLarge, content);
 			_textEntity->setContent(_text);
 		}
 
 		if (_labelEntity == nullptr && !_placeholder.empty()) {
 			Text::Builder builder(registry, *_inputColumn);
-			Text::Director director;
 			_labelEntity =
-				director.makeText(builder, _inputColumn, _placeholder,
-								  theme::TypeRole::BodyLarge, variantColor);
+				builder.makeText(_inputColumn, _placeholder,
+								 theme::TypeRole::BodyLarge, variantColor);
 			_labelEntity->setContent(_placeholder);
 		}
 
@@ -458,8 +462,15 @@ namespace guillaume::entities
 		} else if (_supportingEntity != nullptr) {
 			_supportingEntity->setContent(support);
 		}
+	}
 
-		// Colors.
+	void TextField::applyContentColors(
+		const utility::graphic::Color32Bit &content,
+		const utility::graphic::Color32Bit &variantColor)
+	{
+		const bool disabled = isDisabled();
+		const bool floating = isLabelFloating();
+
 		_textEntity->setColor(content);
 		if (_labelEntity != nullptr) {
 			_labelEntity->setTypeRole(floating ? theme::TypeRole::BodySmall
@@ -489,6 +500,12 @@ namespace guillaume::entities
 				_error && !disabled ? schemeColor(SchemeColorRole::Error)
 									: variantColor);
 		}
+	}
+
+	void TextField::arrangeChildren(void)
+	{
+		auto &registry		= this->getComponentRegistry();
+		const bool floating = isLabelFloating();
 
 		// Input column: the filled label floats above the input, the
 		// outlined label floats on the outline (placed manually).
@@ -541,7 +558,6 @@ namespace guillaume::entities
 		setSurfaceConfig(config);
 
 		setChildren(children);
-		placeManualChildren();
 	}
 
 	void TextField::placeManualChildren(void)

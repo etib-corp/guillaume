@@ -63,11 +63,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Mesh> Mesh::Director::makeMesh(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &meshPath, const std::string &texturePath)
+	std::shared_ptr<Mesh>
+		Mesh::Builder::makeMesh(std::shared_ptr<Entity> parent,
+								const std::string &meshPath,
+								const std::string &texturePath)
 	{
-		return builder.withMeshPath(meshPath)
+		return withMeshPath(meshPath)
 			.withTexturePath(texturePath)
 			.registerEntity(parent);
 	}

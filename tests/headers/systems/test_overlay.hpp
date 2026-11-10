@@ -58,7 +58,7 @@ namespace guillaume::systems::tests
 		void SetUp(void) override
 		{
 			_engine		   = std::make_unique<guillaume::tests::EngineMock>();
-			_overlaySystem = std::make_unique<Overlay>(_eventBus, _engine);
+			_overlaySystem = std::make_unique<Overlay>(_eventBus, *_engine);
 			_overlaySystem->bindComponentRegistry(_componentRegistry);
 		}
 

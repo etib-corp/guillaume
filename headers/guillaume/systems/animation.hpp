@@ -47,7 +47,7 @@ namespace guillaume::systems
 	class Animation: public ecs::SystemFiller<components::Animation>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< Engine instance.
+		utility::Engine &_engine;	 ///< Engine instance.
 		std::chrono::steady_clock::time_point
 			_lastTime;	  ///< Last frame time for the fallback clock.
 		float _deltaTime { 0.0f };	  ///< Delta time for the current frame.
@@ -57,7 +57,7 @@ namespace guillaume::systems
 		 * @brief Construct an animation system running in the Event phase.
 		 * @param engine The engine providing the frame delta time.
 		 */
-		Animation(std::unique_ptr<utility::Engine> &engine);
+		Animation(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

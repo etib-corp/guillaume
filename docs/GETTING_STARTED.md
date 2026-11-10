@@ -63,11 +63,15 @@ Wire the application together and call `run()`:
 
 int main() {
     auto resources = std::make_shared<utility::RessourceProvider>(...);
-    guillaume::Application<MyScene> app(resources);
-    app.setEngine(std::make_unique<MyEngine>());
+    guillaume::Application<MyScene> app(resources,
+                                        std::make_unique<MyEngine>());
     return app.run();
 }
 ```
+
+The first template argument is the scene shown at start-up; list any other
+scenes after it (`Application<HomeScene, SettingsScene>`). The application
+takes ownership of the engine and enters the first scene in its constructor.
 
 `Application::run()` drives the frame loop: it polls events, clears, updates,
 runs the system phases, processes scene transitions, and presents.

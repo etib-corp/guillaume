@@ -76,10 +76,9 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Switch::Builder builder(registry, entityRegistry);
-			Switch::Director director;
 
-			return director.makeSwitch(builder, nullptr, variant, checked,
-									   iconGlyph, label);
+			return builder.makeSwitch(nullptr, variant, checked, iconGlyph,
+									  label);
 		}
 	}	 // namespace
 
@@ -207,17 +206,16 @@ namespace guillaume::entities::tests
 				  "Wifi");
 	}
 
-	TEST_F(TestSwitch, DirectorBuildsAndRegisters)
+	TEST_F(TestSwitch, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Switch::Builder builder(registry, entityRegistry);
-		Switch::Director director;
 
-		auto toggle = director.makeSwitch(
-			builder, parent, Switch::Variant::WithIcon, true, "check", "On");
+		auto toggle = builder.makeSwitch(parent, Switch::Variant::WithIcon,
+										 true, "check", "On");
 
 		ASSERT_NE(toggle, nullptr);
 		EXPECT_EQ(toggle->getParent(), parent);

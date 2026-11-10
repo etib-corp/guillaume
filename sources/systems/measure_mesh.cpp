@@ -29,7 +29,7 @@ namespace guillaume::systems
 {
 	MeasureMesh::MeasureMesh(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Mesh, components::Bound,
 							components::Transform>(ecs::Phase::Measure)
 		, _ressourceProvider(ressourceProvider)

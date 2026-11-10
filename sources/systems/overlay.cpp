@@ -26,8 +26,7 @@
 
 namespace guillaume::systems
 {
-	Overlay::Overlay(event::EventBus &eventBus,
-					 std::unique_ptr<utility::Engine> &engine)
+	Overlay::Overlay(event::EventBus &eventBus, utility::Engine &engine)
 		: ecs::SystemFiller<components::Overlay, components::Transform,
 							components::Bound>(ecs::Phase::Event)
 		, event::EventManager<utility::event::KeyboardEvent>(eventBus)
@@ -64,7 +63,7 @@ namespace guillaume::systems
 
 		if (overlay.isVisible() && !isOpen(entityIdentifier)) {
 			_stack.push_back(entityIdentifier);
-			_engine->setShouldCaptureViewportInput(false);
+			_engine.setShouldCaptureViewportInput(false);
 		} else if (!overlay.isVisible() && isOpen(entityIdentifier)) {
 			dismiss(entityIdentifier);
 		}
@@ -83,7 +82,7 @@ namespace guillaume::systems
 				.setVisible(true);
 		}
 
-		_engine->setShouldCaptureViewportInput(false);
+		_engine.setShouldCaptureViewportInput(false);
 	}
 
 	void Overlay::dismiss(void)
@@ -105,7 +104,7 @@ namespace guillaume::systems
 		}
 
 		if (_stack.empty()) {
-			_engine->setShouldCaptureViewportInput(true);
+			_engine.setShouldCaptureViewportInput(true);
 		}
 	}
 
@@ -128,7 +127,7 @@ namespace guillaume::systems
 		}
 
 		if (_stack.empty()) {
-			_engine->setShouldCaptureViewportInput(true);
+			_engine.setShouldCaptureViewportInput(true);
 		}
 	}
 

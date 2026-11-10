@@ -67,13 +67,9 @@ namespace
 			auto &containerBuilder =
 				getBuilderManager()
 					.getBuilder<guillaume::entities::View::Builder>();
-			auto &containerDirector =
-				getDirectorManager()
-					.getDirector<guillaume::entities::View::Director>();
 
-			auto container = containerDirector.makeColorView(
-				containerBuilder, nullptr, PoseF(),
-				Color32Bit(64, 144, 240, 255), {});
+			auto container = containerBuilder.makeColorView(
+				nullptr, PoseF(), Color32Bit(64, 144, 240, 255), {});
 			container->setBorderRadius(24.0f);
 			container->setFixedWidth(260.0f).setFixedHeight(140.0f);
 
@@ -82,12 +78,9 @@ namespace
 			auto &buttonBuilder =
 				getBuilderManager()
 					.getBuilder<guillaume::entities::Button::Builder>();
-			auto &buttonDirector =
-				getDirectorManager()
-					.getDirector<guillaume::entities::Button::Director>();
 
-			auto button = buttonDirector.makeButton(
-				buttonBuilder, nullptr, "Click me",
+			auto button = buttonBuilder.makeButton(
+				nullptr, "Click me",
 				[]() {
 				},
 				guillaume::entities::Button::Color::Filled,
@@ -99,12 +92,8 @@ namespace
 			auto &meshBuilder =
 				getBuilderManager()
 					.getBuilder<guillaume::entities::Mesh::Builder>();
-			auto &meshDirector =
-				getDirectorManager()
-					.getDirector<guillaume::entities::Mesh::Director>();
 
-			auto mesh = meshDirector.makeMesh(meshBuilder, nullptr,
-											  "models/teapot.obj", "");
+			auto mesh = meshBuilder.makeMesh(nullptr, "models/teapot.obj", "");
 
 			addRootEntity("mesh", mesh);
 		}
@@ -142,8 +131,7 @@ int main(void)
 	auto engine =
 		std::make_unique<evan::Engine>(resources, std::move(platform));
 
-	guillaume::Application<DemoScene, DemoScene> app(resources);
-	app.setEngine(std::move(engine));
+	guillaume::Application<DemoScene> app(resources, std::move(engine));
 
 	return app.run();
 }

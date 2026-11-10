@@ -22,14 +22,9 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include "guillaume/systems/hand_event_system.hpp"
 
-#include "guillaume/event/event_manager.hpp"
-#include "guillaume/event/event_bus.hpp"
-
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/hand_thumb_stick_interaction.hpp"
-#include "guillaume/components/transform.hpp"
 
 #include <utility/event/hand_thumb_stick_event.hpp>
 
@@ -39,40 +34,21 @@ namespace guillaume::systems
 	 * @brief System handling hand thumb-stick interactions.
 	 */
 	class HandThumbStick:
-		public ecs::SystemFiller<components::HandThumbStickInteraction,
-								 components::Transform, components::Bound>,
-		public event::EventManager<utility::event::HandThumbStickEvent>
+		public HandEventSystem<components::HandThumbStickInteraction,
+							   utility::event::HandThumbStickEvent>
 	{
 		public:
 		/**
-		 * @brief Construct a new HandThumbStick system.
+		 * @brief Construct the HandThumbStick system and subscribe to hand
+		 * thumb-stick events.
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 */
-		HandThumbStick(event::EventBus &eventBus);
+		explicit HandThumbStick(event::EventBus &eventBus);
 
 		/**
-		 * @brief Destructor for the HandThumbStick system.
+		 * @brief Default destructor for the HandThumbStick system.
 		 */
-		~HandThumbStick(void);
-
-		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
-		 */
-		void prepare(void) override;
-
-		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
-		 */
-		void cleanup(void) override;
-
-		/**
-		 * @brief Update the system for a given entity identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
-		 */
-		virtual void
-			update(const ecs::Entity::Identifier &entityIdentifier) override;
+		~HandThumbStick(void) override;
 	};
 
 }	 // namespace guillaume::systems

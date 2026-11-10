@@ -56,7 +56,7 @@ namespace guillaume::systems
 		public event::EventManager<utility::event::KeyboardEvent>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;		///< Engine instance.
+		utility::Engine &_engine;						///< Engine instance.
 		std::vector<ecs::Entity::Identifier> _stack;	///< Overlay stack.
 		std::chrono::steady_clock::time_point
 			_lastTime;	  ///< Last frame time for the fallback clock.
@@ -67,8 +67,7 @@ namespace guillaume::systems
 		 * @param eventBus The event bus to subscribe to.
 		 * @param engine The engine used to capture viewport input.
 		 */
-		Overlay(event::EventBus &eventBus,
-				std::unique_ptr<utility::Engine> &engine);
+		Overlay(event::EventBus &eventBus, utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

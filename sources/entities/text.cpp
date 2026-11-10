@@ -49,8 +49,7 @@ namespace guillaume::entities
 		_content.clear();
 		_typeRole = theme::TypeRole::BodyMedium;
 		_fontSize.reset();
-		_color =
-			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
+		_color = getActiveColor(SchemeColorRole::OnSurface);
 	}
 
 	Text::Builder &Text::Builder::withContent(const std::string &content)
@@ -79,23 +78,21 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Text> Text::Director::makeText(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &content, const float &fontSize,
-		const utility::graphic::Color32Bit &color)
+	std::shared_ptr<Text> Text::Builder::makeText(
+		std::shared_ptr<Entity> parent, const std::string &content,
+		const float &fontSize, const utility::graphic::Color32Bit &color)
 	{
-		return builder.withContent(content)
+		return withContent(content)
 			.withFontSize(fontSize)
 			.withColor(color)
 			.registerEntity(parent);
 	}
 
-	std::shared_ptr<Text> Text::Director::makeText(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &content, theme::TypeRole role,
-		const utility::graphic::Color32Bit &color)
+	std::shared_ptr<Text> Text::Builder::makeText(
+		std::shared_ptr<Entity> parent, const std::string &content,
+		theme::TypeRole role, const utility::graphic::Color32Bit &color)
 	{
-		return builder.withContent(content)
+		return withContent(content)
 			.withTypeRole(role)
 			.withColor(color)
 			.registerEntity(parent);

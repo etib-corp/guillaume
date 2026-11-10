@@ -48,10 +48,9 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   ///< Shared resource provider for loading
-								   ///< fonts and glyphs
-		std::unique_ptr<utility::Engine>
-			&_engine;					 ///< utility::Engine instance
+			_ressourceProvider;		 ///< Shared resource provider for loading
+									 ///< fonts and glyphs
+		utility::Engine &_engine;	 ///< utility::Engine instance
 		std::string _defaultFontPath;	 ///< Default font for text rendering
 
 		public:
@@ -63,7 +62,7 @@ namespace guillaume::systems
 		 */
 		TextRender(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<utility::Engine> &engine);
+			utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

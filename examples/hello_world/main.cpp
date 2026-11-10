@@ -96,20 +96,6 @@ namespace
 		}
 	};
 
-	/**
-	 * @brief A second scene used to satisfy the Application template constraint
-	 * (the default scene must be one of the registered scene types).
-	 */
-	class SecondaryScene: public guillaume::Scene
-	{
-		public:
-		using guillaume::Scene::Scene;
-
-		void onEnter(void) override
-		{
-		}
-	};
-
 }	 // namespace
 
 int main(void)
@@ -117,9 +103,8 @@ int main(void)
 	utility::DefaultSystemIO systemIo;
 	auto resources = std::make_shared<utility::RessourceProvider>(systemIo);
 
-	guillaume::Application<HelloWorldScene, HelloWorldScene, SecondaryScene>
-		app(resources);
-	app.setEngine(std::make_unique<NoopEngine>());
+	guillaume::Application<HelloWorldScene> app(resources,
+												std::make_unique<NoopEngine>());
 
 	return app.run();
 }

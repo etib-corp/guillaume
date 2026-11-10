@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include "guillaume/entities/navigation_drawer_destination.hpp"
 #include "guillaume/entities/navigation_drawer.hpp"
 
 #include <cstdint>
@@ -53,10 +54,7 @@ namespace guillaume::entities
 {
 	namespace
 	{
-		/**
-		 * @brief M3 drawer destination height.
-		 */
-		constexpr float DrawerDestinationHeight = 56.0f;
+		using detail::DrawerDestination;
 
 		/**
 		 * @brief M3 standard/modal drawer width.
@@ -69,16 +67,6 @@ namespace guillaume::entities
 		constexpr float CollapsedWidth = 80.0f;
 
 		/**
-		 * @brief Collapsed item indicator width.
-		 */
-		constexpr float CollapsedIndicatorWidth = 56.0f;
-
-		/**
-		 * @brief Collapsed item indicator height.
-		 */
-		constexpr float CollapsedIndicatorHeight = 32.0f;
-
-		/**
 		 * @brief Drawer padding.
 		 */
 		constexpr float DrawerPadding = theme::SpacingScale::get(3);
@@ -87,316 +75,6 @@ namespace guillaume::entities
 		 * @brief Drawer height.
 		 */
 		constexpr float DrawerHeight = 640.0f;
-
-		/**
-		 * @brief Make a transparent nested layout view.
-		 */
-		std::shared_ptr<View> makeGroup(ecs::ComponentRegistry &registry,
-										ecs::EntityRegistry &entityRegistry,
-										std::shared_ptr<ecs::Entity> parent,
-										components::Layout::Axis axis)
-		{
-			View::Builder builder(registry, entityRegistry);
-			View::Director director;
-			auto view = director.makeDefaultView(builder, parent,
-												 utility::graphic::PoseF(), {});
-			view->setColor(transparentColor());
-			view->setAxis(axis);
-			view->setMainAxisAlignment(
-				components::Layout::MainAxisAlignment::Center);
-			view->setCrossAxisAlignment(
-				components::Layout::CrossAxisAlignment::Center);
-			view->setPadding(0.0f);
-			view->setSpacing(theme::SpacingScale::get(3));
-			return view;
-		}
-
-		/**
-		 * @brief Internal drawer destination (Paper `Drawer.Item` or
-		 * `Drawer.CollapsedItem`).
-		 */
-		class DrawerDestination:
-			public std::enable_shared_from_this<DrawerDestination>,
-			public ecs::ParentEntityFiller<
-				components::Layout, components::Transform, components::Bound,
-				components::Color, components::Borders, components::Selectable>
-		{
-			private:
-			NavigationDrawer::Entry _entry {};	  ///< Destination data.
-			bool _collapsed { false };		   ///< Collapsed (rail) rendering.
-			std::shared_ptr<View> _lead {};	   ///< Icon+label group / pill.
-			std::shared_ptr<Icon> _icon {};	   ///< Icon child.
-			std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
-			std::shared_ptr<Text> _rightEntity {};	  ///< Trailing text.
-			std::function<void(void)> _onPress {};	  ///< Press handler.
-
-			public:
-			/**
-			 * @brief Construct a drawer destination.
-			 * @param registry The component registry.
-			 * @param entry The destination data.
-			 * @param collapsed Whether to render a collapsed item.
-			 * @param width Destination width.
-			 */
-			DrawerDestination(ecs::ComponentRegistry &registry,
-							  const NavigationDrawer::Entry &entry,
-							  bool collapsed, float width)
-				: ecs::ParentEntityFiller<
-					  components::Layout, components::Transform,
-					  components::Bound, components::Color, components::Borders,
-					  components::Selectable>(registry)
-				, _entry(entry)
-				, _collapsed(collapsed)
-			{
-				auto &layout =
-					getComponentRegistry().getComponent<components::Layout>(
-						getIdentifier());
-				if (_collapsed) {
-					layout.setAxis(components::Layout::Axis::Vertical)
-						.setMainAxisAlignment(
-							components::Layout::MainAxisAlignment::Center)
-						.setCrossAxisAlignment(
-							components::Layout::CrossAxisAlignment::Center)
-						.setSpacing(theme::SpacingScale::get(1))
-						.setPadding(0.0f)
-						.setFixedWidth(width)
-						.setFixedHeight(DrawerDestinationHeight
-										+ theme::SpacingScale::get(2));
-				} else {
-					layout.setAxis(components::Layout::Axis::Horizontal)
-						.setMainAxisAlignment(
-							entry.right.empty()
-								? components::Layout::MainAxisAlignment::Start
-								: components::Layout::MainAxisAlignment::
-									  SpaceBetween)
-						.setCrossAxisAlignment(
-							components::Layout::CrossAxisAlignment::Center)
-						.setSpacing(theme::SpacingScale::get(3))
-						.setPadding(theme::SpacingScale::get(4))
-						.setFixedWidth(width)
-						.setFixedHeight(DrawerDestinationHeight);
-				}
-
-				getComponentRegistry()
-					.getComponent<components::Color>(getIdentifier())
-					.setColor(transparentColor());
-
-				getComponentRegistry()
-					.getComponent<components::Borders>(getIdentifier())
-					.setBorderRadius(getShapeRadius(theme::ShapeRole::Full))
-					.setColor(transparentColor());
-
-				makeInteractive(
-					getComponentRegistry(), getIdentifier(),
-					components::AccessibilityRole::Button,
-					[this]() {
-						if (_onPress) {
-							_onPress();
-						}
-					},
-					[this]() {
-						applySelectionColor(isSelected());
-					});
-				getComponentRegistry()
-					.getComponent<components::Accessibility>(getIdentifier())
-					.setLabel(_entry.label);
-				setEnabled(getComponentRegistry(), getIdentifier(),
-						   !_entry.disabled);
-			}
-
-			/**
-			 * @brief Default destructor.
-			 */
-			~DrawerDestination(void) override = default;
-
-			/**
-			 * @brief Build the icon, label and trailing children.
-			 */
-			void initialize(void) override
-			{
-				if (_collapsed) {
-					_lead = makeGroup(getComponentRegistry(), *this,
-									  shared_from_this(),
-									  components::Layout::Axis::Horizontal);
-					_lead->setBorderRadius(
-						getShapeRadius(theme::ShapeRole::Full));
-					_lead->setFixedWidth(CollapsedIndicatorWidth);
-					_lead->setFixedHeight(CollapsedIndicatorHeight);
-					_icon = buildIcon(
-						getComponentRegistry(), *_lead, _lead, _entry.icon,
-						24.0f, schemeColor(SchemeColorRole::OnSurfaceVariant));
-					if (_icon != nullptr) {
-						_lead->setEntities({ _icon });
-					}
-					if (!_entry.label.empty()) {
-						_labelEntity = buildText(
-							getComponentRegistry(), *this, shared_from_this(),
-							_entry.label, theme::TypeRole::LabelMedium,
-							schemeColor(SchemeColorRole::OnSurfaceVariant));
-					}
-				} else {
-					_lead = makeGroup(getComponentRegistry(), *this,
-									  shared_from_this(),
-									  components::Layout::Axis::Horizontal);
-					std::vector<std::shared_ptr<ecs::Entity>> lead;
-					_icon = buildIcon(
-						getComponentRegistry(), *_lead, _lead, _entry.icon,
-						24.0f, schemeColor(SchemeColorRole::OnSurfaceVariant));
-					if (_icon != nullptr) {
-						lead.push_back(_icon);
-					}
-					if (!_entry.label.empty()) {
-						_labelEntity = buildText(
-							getComponentRegistry(), *_lead, _lead, _entry.label,
-							theme::TypeRole::LabelLarge,
-							schemeColor(SchemeColorRole::OnSurfaceVariant));
-						if (_labelEntity != nullptr) {
-							lead.push_back(_labelEntity);
-						}
-					}
-					_lead->setEntities(lead);
-
-					if (!_entry.right.empty()) {
-						_rightEntity = buildText(
-							getComponentRegistry(), *this, shared_from_this(),
-							_entry.right, theme::TypeRole::LabelLarge,
-							schemeColor(SchemeColorRole::OnSurfaceVariant));
-					}
-				}
-
-				applyGeometry();
-			}
-
-			/**
-			 * @brief Set the press handler.
-			 * @param onPress Press handler.
-			 */
-			void setOnPress(std::function<void(void)> onPress)
-			{
-				_onPress = std::move(onPress);
-			}
-
-			/**
-			 * @brief Enable or disable the destination.
-			 * @param disabled Whether the destination is disabled.
-			 */
-			void setDisabled(bool disabled)
-			{
-				_entry.disabled = disabled;
-				setEnabled(getComponentRegistry(), getIdentifier(), !disabled);
-				applySelectionColor(isSelected());
-			}
-
-			/**
-			 * @brief Check whether the destination is disabled.
-			 * @return True when disabled.
-			 */
-			bool isDisabled(void) const
-			{
-				return !isEnabled(getComponentRegistry(), getIdentifier());
-			}
-
-			/**
-			 * @brief Set the selection change handler.
-			 * @param handler The handler to invoke on selection change.
-			 */
-			void setOnSelectionChanged(
-				const components::Selectable::Handler &handler)
-			{
-				getComponentRegistry()
-					.getComponent<components::Selectable>(getIdentifier())
-					.setOnSelectionChangedHandler(handler);
-			}
-
-			/**
-			 * @brief Whether the destination is selected.
-			 * @return True when selected.
-			 */
-			bool isSelected(void)
-			{
-				return getComponentRegistry()
-					.getComponent<components::Selectable>(getIdentifier())
-					.isSelected();
-			}
-
-			/**
-			 * @brief Apply the active pill, content colors and semantics.
-			 * @param selected Whether the destination is selected.
-			 */
-			void applySelectionColor(bool selected)
-			{
-				const bool disabled = isDisabled();
-				const auto pill		= selected && !disabled
-						? schemeColor(SchemeColorRole::SecondaryContainer)
-						: transparentColor();
-				auto content		= selected
-						   ? schemeColor(SchemeColorRole::OnSecondaryContainer)
-						   : schemeColor(SchemeColorRole::OnSurfaceVariant);
-				if (disabled) {
-					content = disabledContentColor();
-				}
-
-				const auto pillColor = stateLayerColor(
-					getComponentRegistry(), getIdentifier(), pill, content);
-				if (_collapsed) {
-					if (_lead != nullptr) {
-						_lead->setColor(pillColor);
-					}
-				} else {
-					getComponentRegistry()
-						.getComponent<components::Color>(getIdentifier())
-						.setColor(pillColor);
-				}
-
-				if (_icon != nullptr) {
-					_icon->setColor(content);
-				}
-				if (_labelEntity != nullptr) {
-					_labelEntity->setColor(content);
-				}
-				if (_rightEntity != nullptr) {
-					_rightEntity->setColor(content);
-				}
-
-				getComponentRegistry()
-					.getComponent<components::Accessibility>(getIdentifier())
-					.setSelected(selected);
-			}
-
-			/**
-			 * @brief Arrange the destination content.
-			 */
-			void applyGeometry(void)
-			{
-				std::vector<ecs::Entity::Identifier> children;
-
-				if (_lead != nullptr) {
-					children.push_back(_lead->getIdentifier());
-				}
-
-				if (_collapsed && _labelEntity != nullptr) {
-					children.push_back(_labelEntity->getIdentifier());
-				}
-
-				if (_rightEntity != nullptr) {
-					children.push_back(_rightEntity->getIdentifier());
-				}
-
-				systems::Layout::apply(getComponentRegistry(), getIdentifier(),
-									   children,
-									   static_cast<std::uint32_t>(getLayer()));
-			}
-
-			/**
-			 * @brief Get the trailing text identifier.
-			 * @return The identifier, or InvalidIdentifier.
-			 */
-			ecs::Entity::Identifier getRightIdentifier(void) const
-			{
-				return _rightEntity != nullptr ? _rightEntity->getIdentifier()
-											   : ecs::Entity::InvalidIdentifier;
-			}
-		};
 
 		std::vector<NavigationDrawer::Entry> toEntries(
 			const std::vector<std::pair<std::string, std::string>> &pairs)
@@ -502,19 +180,18 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<NavigationDrawer>
-		NavigationDrawer::Director::makeNavigationDrawer(
-			Builder &builder, std::shared_ptr<ecs::Entity> parent,
-			Variant variant,
+		NavigationDrawer::Builder::makeNavigationDrawer(
+			std::shared_ptr<ecs::Entity> parent, Variant variant,
 			const std::vector<std::pair<std::string, std::string>>
 				&destinations)
 	{
-		builder.withVariant(variant);
+		withVariant(variant);
 
 		for (const auto &destination: destinations) {
-			builder.addDestination(destination.first, destination.second);
+			addDestination(destination.first, destination.second);
 		}
 
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	NavigationDrawer::NavigationDrawer(
@@ -599,10 +276,9 @@ namespace guillaume::entities
 				}
 				case EntryKind::Divider: {
 					Divider::Builder builder(getComponentRegistry(), *this);
-					Divider::Director director;
-					auto divider = director.makeDivider(
-						builder, shared_from_this(), itemWidth,
-						Divider::Variant::FullWidth);
+					auto divider =
+						builder.makeDivider(shared_from_this(), itemWidth,
+											Divider::Variant::FullWidth);
 					if (divider != nullptr) {
 						_dividerEntities.push_back(divider);
 						children.push_back(divider);

@@ -76,28 +76,9 @@ namespace guillaume
 				  entities::ProgressIndicator::Builder,
 				  entities::LoadingIndicator::Builder>>(_componentRegistry,
 														*this))
-		, _entityDirectorManager(
-			  std::make_unique<ecs::EntityDirectorManagerFiller<
-				  entities::View::Director, entities::Text::Director,
-				  entities::Button::Director, entities::Icon::Director,
-				  entities::Mesh::Director, entities::Image::Director,
-				  entities::Divider::Director, entities::Card::Director,
-				  entities::Surface::Director, entities::Badge::Director,
-				  entities::AppBar::Director, entities::Tooltip::Director,
-				  entities::Snackbar::Director, entities::List::Director,
-				  entities::Checkbox::Director, entities::RadioButton::Director,
-				  entities::Switch::Director, entities::Chip::Director,
-				  entities::Dialog::Director, entities::Menu::Director,
-				  entities::NavigationBar::Director,
-				  entities::NavigationDrawer::Director,
-				  entities::Search::Director, entities::TextField::Director,
-				  entities::ProgressIndicator::Director,
-				  entities::LoadingIndicator::Director>>())
 		, _nextSceneType(typeid(void))
 	{
-		getLogger().info()
-			<< "Scene initialized with default entity builders and "
-			   "directors";
+		getLogger().info() << "Scene initialized with default entity builders";
 	}
 
 	Scene::~Scene(void)
@@ -116,11 +97,6 @@ namespace guillaume
 	ecs::EntityBuilderManager &Scene::getBuilderManager(void)
 	{
 		return *_entityBuilderManager;
-	}
-
-	ecs::EntityDirectorManager &Scene::getDirectorManager(void)
-	{
-		return *_entityDirectorManager;
 	}
 
 	ecs::ComponentRegistry &Scene::getComponentRegistry(void)

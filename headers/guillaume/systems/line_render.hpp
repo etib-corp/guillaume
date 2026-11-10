@@ -47,7 +47,7 @@ namespace guillaume::systems
 								 components::Color, components::Line>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
+		utility::Engine &_engine;	 ///< utility::Engine.
 
 		public:
 		/**
@@ -60,7 +60,7 @@ namespace guillaume::systems
 		 * @brief Construct a line rendering system.
 		 * @param engine The engine used to draw lines.
 		 */
-		LineRender(std::unique_ptr<utility::Engine> &engine);
+		LineRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

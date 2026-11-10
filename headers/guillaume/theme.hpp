@@ -556,10 +556,35 @@ namespace guillaume
 	extern const Theme defaultTheme;
 
 	/**
+	 * @brief Get the theme every entity and system reads its tokens from.
+	 *
+	 * It starts as a copy of defaultTheme.
+	 * @return Immutable reference to the active theme.
+	 */
+	const Theme &getActiveTheme(void);
+
+	/**
+	 * @brief Replace the active theme.
+	 *
+	 * Call it before building a scene: entities resolve their tokens when
+	 * they are built or restyled, so existing entities keep the colors they
+	 * already resolved until their next update.
+	 * @param theme The theme to copy and activate.
+	 */
+	void setActiveTheme(const Theme &theme);
+
+	/**
 	 * @brief Get the currently active color scheme.
 	 * @return Immutable reference to the active scheme.
 	 */
 	const Scheme &getActiveScheme(void);
+
+	/**
+	 * @brief Get a color role from the active scheme.
+	 * @param role The scheme color role.
+	 * @return The role color.
+	 */
+	utility::graphic::Color32Bit getActiveColor(SchemeColorRole role);
 
 	/**
 	 * @brief Set the currently active color scheme.

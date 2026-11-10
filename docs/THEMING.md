@@ -23,8 +23,23 @@ roles derived from `OnSurface`:
 
 ```cpp
 setActiveScheme(ThemeSchemeRole::Dark);
-auto surface = getActiveScheme().getColor(SchemeColorRole::Surface).getColor();
+auto surface = getActiveColor(SchemeColorRole::Surface);
 ```
+
+## Replacing the theme
+
+Every accessor below reads `getActiveTheme()`, which starts as a copy of
+`defaultTheme`. To ship your own tokens, copy a theme, change it and activate
+it before building a scene:
+
+```cpp
+Theme custom = defaultTheme;
+custom.getShapes().setRoundness(8.0f);
+setActiveTheme(custom);
+```
+
+The active theme is process-wide: there is one per application, not one per
+scene.
 
 ## Typescale (`guillaume/theme/typescale.hpp`)
 
@@ -38,8 +53,8 @@ to the role line height.
 restyles existing texts:
 
 ```cpp
-director.makeText(builder, parent, "Title", theme::TypeRole::TitleLarge,
-                  schemeColor(SchemeColorRole::OnSurface));
+builder.makeText(parent, "Title", theme::TypeRole::TitleLarge,
+                 schemeColor(SchemeColorRole::OnSurface));
 text->setTypeRole(theme::TypeRole::LabelLarge);   // explicit sizes still win
 ```
 

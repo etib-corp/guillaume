@@ -24,7 +24,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
@@ -124,19 +123,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withColor(const utility::graphic::Color32Bit &color);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Text::Builder` to create
-		 * preconfigured text entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a default Text entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the default text entity.
 			 * @param parent The parent entity to which the new text entity will
 			 * be attached.
 			 * @param content The text content for the default Text entity.
@@ -145,13 +134,12 @@ namespace guillaume::entities
 			 * @return The entity identifier of the newly created text entity.
 			 */
 			std::shared_ptr<Text>
-				makeText(Builder &builder, std::shared_ptr<Entity> parent,
+				makeText(std::shared_ptr<Entity> parent,
 						 const std::string &content, const float &fontSize,
 						 const utility::graphic::Color32Bit &color);
 
 			/**
 			 * @brief Build a text styled by a typescale role.
-			 * @param builder Text builder.
 			 * @param parent Parent entity.
 			 * @param content Text content.
 			 * @param role Typescale role.
@@ -159,7 +147,7 @@ namespace guillaume::entities
 			 * @return The registered text entity.
 			 */
 			std::shared_ptr<Text>
-				makeText(Builder &builder, std::shared_ptr<Entity> parent,
+				makeText(std::shared_ptr<Entity> parent,
 						 const std::string &content, theme::TypeRole role,
 						 const utility::graphic::Color32Bit &color);
 		};

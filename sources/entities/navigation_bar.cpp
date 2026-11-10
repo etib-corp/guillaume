@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include "guillaume/entities/navigation_bar_destination.hpp"
 #include "guillaume/entities/navigation_bar.hpp"
 
 #include <cstdint>
@@ -53,313 +54,12 @@ namespace guillaume::entities
 {
 	namespace
 	{
+		using detail::BarDestination;
+
 		/**
 		 * @brief M3 navigation bar height.
 		 */
 		constexpr float NavigationBarHeight = 80.0f;
-
-		/**
-		 * @brief M3 active indicator width.
-		 */
-		constexpr float IndicatorWidth = 64.0f;
-
-		/**
-		 * @brief M3 active indicator height.
-		 */
-		constexpr float IndicatorHeight = 32.0f;
-
-		/**
-		 * @brief Horizontal badge offset from the indicator origin, so the
-		 * badge sits on the icon's top-right corner.
-		 */
-		constexpr float BadgeOffsetX = 36.0f;
-
-		/**
-		 * @brief Vertical badge offset from the indicator origin.
-		 */
-		constexpr float BadgeOffsetY = 2.0f;
-
-		/**
-		 * @brief Internal navigation destination: a pressable vertical layout
-		 * holding the active-indicator pill (wrapping the icon) and a label.
-		 */
-		class BarDestination:
-			public std::enable_shared_from_this<BarDestination>,
-			public ecs::ParentEntityFiller<
-				components::Layout, components::Transform, components::Bound,
-				components::Color, components::Borders, components::Selectable>
-		{
-			private:
-			NavigationBar::Destination _spec {};	///< Destination data.
-			bool _showLabel { true };		   ///< Whether the label is shown.
-			std::shared_ptr<View> _pill {};	   ///< Active indicator.
-			std::shared_ptr<Icon> _icon {};	   ///< Icon child.
-			std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
-			std::shared_ptr<Badge> _badge {};		  ///< Badge child.
-			std::function<void(void)> _onPress {};	  ///< Press handler.
-
-			public:
-			/**
-			 * @brief Construct a navigation destination.
-			 * @param registry The component registry.
-			 * @param spec The destination data.
-			 */
-			BarDestination(ecs::ComponentRegistry &registry,
-						   const NavigationBar::Destination &spec)
-				: ecs::ParentEntityFiller<
-					  components::Layout, components::Transform,
-					  components::Bound, components::Color, components::Borders,
-					  components::Selectable>(registry)
-				, _spec(spec)
-			{
-				getComponentRegistry()
-					.getComponent<components::Layout>(getIdentifier())
-					.setAxis(components::Layout::Axis::Vertical)
-					.setMainAxisAlignment(
-						components::Layout::MainAxisAlignment::Center)
-					.setCrossAxisAlignment(
-						components::Layout::CrossAxisAlignment::Center)
-					.setSpacing(theme::SpacingScale::get(1))
-					.setPadding(0.0f);
-
-				getComponentRegistry()
-					.getComponent<components::Color>(getIdentifier())
-					.setColor(transparentColor());
-
-				getComponentRegistry()
-					.getComponent<components::Borders>(getIdentifier())
-					.setBorderRadius(getShapeRadius(theme::ShapeRole::None))
-					.setColor(transparentColor());
-
-				makeInteractive(
-					getComponentRegistry(), getIdentifier(),
-					components::AccessibilityRole::Tab,
-					[this]() {
-						if (_onPress) {
-							_onPress();
-						}
-					},
-					[this]() {
-						applySelectionColor(isSelected());
-					});
-				getComponentRegistry()
-					.getComponent<components::Accessibility>(getIdentifier())
-					.setLabel(_spec.label);
-			}
-
-			/**
-			 * @brief Default destructor.
-			 */
-			~BarDestination(void) override = default;
-
-			/**
-			 * @brief Build the indicator, icon, label and badge children.
-			 */
-			void initialize(void) override
-			{
-				View::Builder pillBuilder(getComponentRegistry(), *this);
-				View::Director pillDirector;
-				_pill = pillDirector.makeDefaultView(
-					pillBuilder, shared_from_this(), utility::graphic::PoseF(),
-					{});
-				_pill->setColor(transparentColor());
-				_pill->setBorderRadius(getShapeRadius(theme::ShapeRole::Full));
-				_pill->setAxis(components::Layout::Axis::Horizontal);
-				_pill->setMainAxisAlignment(
-					components::Layout::MainAxisAlignment::Center);
-				_pill->setCrossAxisAlignment(
-					components::Layout::CrossAxisAlignment::Center);
-				_pill->setPadding(0.0f);
-				_pill->setFixedWidth(IndicatorWidth);
-				_pill->setFixedHeight(IndicatorHeight);
-
-				_icon = buildIcon(
-					getComponentRegistry(), *_pill, _pill, _spec.icon, 24.0f,
-					schemeColor(SchemeColorRole::OnSurfaceVariant));
-				if (_icon != nullptr) {
-					_pill->setEntities({ _icon });
-				}
-
-				if (!_spec.label.empty()) {
-					_labelEntity = buildText(
-						getComponentRegistry(), *this, shared_from_this(),
-						_spec.label, theme::TypeRole::LabelMedium,
-						schemeColor(SchemeColorRole::OnSurfaceVariant));
-				}
-
-				setBadge(_spec.badge);
-				applyGeometry();
-			}
-
-			/**
-			 * @brief Set the press handler.
-			 * @param onPress Press handler.
-			 */
-			void setOnPress(std::function<void(void)> onPress)
-			{
-				_onPress = std::move(onPress);
-			}
-
-			/**
-			 * @brief Set or update the badge label.
-			 * @param badge Badge label ("" keeps no badge, or shows a dot on
-			 * an existing badge).
-			 */
-			void setBadge(const std::string &badge)
-			{
-				_spec.badge = badge;
-				if (_badge == nullptr && !badge.empty() && _pill != nullptr) {
-					Badge::Builder builder(getComponentRegistry(), *_pill);
-					_badge = builder.withVariant(Badge::Variant::Large)
-								 .withLabel(badge)
-								 .registerEntity(_pill);
-				} else if (_badge != nullptr) {
-					_badge->setVariant(badge.empty() ? Badge::Variant::Dot
-													 : Badge::Variant::Large);
-					_badge->setLabel(badge);
-				}
-				applyGeometry();
-			}
-
-			/**
-			 * @brief Set whether the label is shown.
-			 * @param show Whether to show the label.
-			 */
-			void setShowLabel(bool show)
-			{
-				_showLabel = show;
-			}
-
-			/**
-			 * @brief Set the selection change handler.
-			 * @param handler The handler to invoke on selection change.
-			 */
-			void setOnSelectionChanged(
-				const components::Selectable::Handler &handler)
-			{
-				getComponentRegistry()
-					.getComponent<components::Selectable>(getIdentifier())
-					.setOnSelectionChangedHandler(handler);
-			}
-
-			/**
-			 * @brief Whether the destination is selected.
-			 * @return True when selected.
-			 */
-			bool isSelected(void)
-			{
-				return getComponentRegistry()
-					.getComponent<components::Selectable>(getIdentifier())
-					.isSelected();
-			}
-
-			/**
-			 * @brief Apply the selection colors, glyph and semantics.
-			 * @param selected Whether the destination is selected.
-			 */
-			void applySelectionColor(bool selected)
-			{
-				const auto pillColor  = selected
-					 ? schemeColor(SchemeColorRole::SecondaryContainer)
-					 : transparentColor();
-				const auto iconColor  = selected
-					 ? schemeColor(SchemeColorRole::OnSecondaryContainer)
-					 : schemeColor(SchemeColorRole::OnSurfaceVariant);
-				const auto labelColor = selected
-					? schemeColor(SchemeColorRole::OnSurface)
-					: schemeColor(SchemeColorRole::OnSurfaceVariant);
-
-				if (_pill != nullptr) {
-					_pill->setColor(stateLayerColor(getComponentRegistry(),
-													getIdentifier(), pillColor,
-													iconColor));
-				}
-
-				if (_icon != nullptr) {
-					_icon->setGlyphName(selected && !_spec.focusedIcon.empty()
-											? _spec.focusedIcon
-											: _spec.icon);
-					_icon->setColor(iconColor);
-				}
-
-				if (_labelEntity != nullptr) {
-					_labelEntity->setColor(_showLabel ? labelColor
-													  : transparentColor());
-				}
-
-				getComponentRegistry()
-					.getComponent<components::Accessibility>(getIdentifier())
-					.setSelected(selected);
-			}
-
-			/**
-			 * @brief Arrange the destination content.
-			 */
-			void applyGeometry(void)
-			{
-				std::vector<ecs::Entity::Identifier> children;
-
-				if (_pill != nullptr) {
-					children.push_back(_pill->getIdentifier());
-				}
-
-				if (_labelEntity != nullptr) {
-					children.push_back(_labelEntity->getIdentifier());
-				}
-
-				systems::Layout::apply(getComponentRegistry(), getIdentifier(),
-									   children,
-									   static_cast<std::uint32_t>(getLayer()));
-
-				if (_badge != nullptr && _pill != nullptr) {
-					placeChild(getComponentRegistry(), _pill->getIdentifier(),
-							   _badge->getIdentifier(),
-							   utility::graphic::PositionF(BadgeOffsetX,
-														   BadgeOffsetY, 0.0f),
-							   static_cast<std::uint32_t>(_pill->getLayer()));
-				}
-			}
-
-			/**
-			 * @brief Get the indicator identifier.
-			 * @return The identifier, or InvalidIdentifier.
-			 */
-			ecs::Entity::Identifier getIndicatorIdentifier(void) const
-			{
-				return _pill != nullptr ? _pill->getIdentifier()
-										: ecs::Entity::InvalidIdentifier;
-			}
-
-			/**
-			 * @brief Get the icon identifier.
-			 * @return The identifier, or InvalidIdentifier.
-			 */
-			ecs::Entity::Identifier getIconIdentifier(void) const
-			{
-				return _icon != nullptr ? _icon->getIdentifier()
-										: ecs::Entity::InvalidIdentifier;
-			}
-
-			/**
-			 * @brief Get the label identifier.
-			 * @return The identifier, or InvalidIdentifier.
-			 */
-			ecs::Entity::Identifier getLabelIdentifier(void) const
-			{
-				return _labelEntity != nullptr ? _labelEntity->getIdentifier()
-											   : ecs::Entity::InvalidIdentifier;
-			}
-
-			/**
-			 * @brief Get the badge identifier.
-			 * @return The identifier, or InvalidIdentifier.
-			 */
-			ecs::Entity::Identifier getBadgeIdentifier(void) const
-			{
-				return _badge != nullptr ? _badge->getIdentifier()
-										 : ecs::Entity::InvalidIdentifier;
-			}
-		};
 
 		std::vector<NavigationBar::Destination> toDestinations(
 			const std::vector<std::pair<std::string, std::string>> &pairs)
@@ -438,17 +138,17 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<NavigationBar> NavigationBar::Director::makeNavigationBar(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	std::shared_ptr<NavigationBar> NavigationBar::Builder::makeNavigationBar(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::vector<std::pair<std::string, std::string>> &destinations)
 	{
-		builder.withVariant(variant);
+		withVariant(variant);
 
 		for (const auto &destination: destinations) {
-			builder.addDestination(destination.first, destination.second);
+			addDestination(destination.first, destination.second);
 		}
 
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	NavigationBar::NavigationBar(

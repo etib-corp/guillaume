@@ -82,10 +82,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Checkbox::Builder builder(registry, entityRegistry);
-			Checkbox::Director director;
 
-			return director.makeCheckbox(builder, nullptr, state, variant,
-										 label);
+			return builder.makeCheckbox(nullptr, state, variant, label);
 		}
 	}	 // namespace
 
@@ -255,18 +253,16 @@ namespace guillaume::entities::tests
 			custom);
 	}
 
-	TEST_F(TestCheckbox, DirectorBuildsAndRegisters)
+	TEST_F(TestCheckbox, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Checkbox::Builder builder(registry, entityRegistry);
-		Checkbox::Director director;
 
-		auto checkbox =
-			director.makeCheckbox(builder, parent, Checkbox::State::Checked,
-								  Checkbox::Variant::Error, "Terms");
+		auto checkbox = builder.makeCheckbox(parent, Checkbox::State::Checked,
+											 Checkbox::Variant::Error, "Terms");
 
 		ASSERT_NE(checkbox, nullptr);
 		EXPECT_EQ(checkbox->getParent(), parent);

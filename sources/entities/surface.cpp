@@ -170,12 +170,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Surface> Surface::Director::makeSurface(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent,
-		theme::ElevationLevel elevation, Mode mode)
+	std::shared_ptr<Surface>
+		Surface::Builder::makeSurface(std::shared_ptr<ecs::Entity> parent,
+									  theme::ElevationLevel elevation,
+									  Mode mode)
 	{
-		return builder.withElevation(elevation).withMode(mode).registerEntity(
-			parent);
+		return withElevation(elevation).withMode(mode).registerEntity(parent);
 	}
 
 	Surface::Surface(ecs::ComponentRegistry &registry,

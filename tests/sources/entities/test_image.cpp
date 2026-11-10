@@ -97,15 +97,14 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(component.getTexturePath(), "texture.png");
 	}
 
-	TEST_F(TestImage, DirectorBuildsAndRegistersImage)
+	TEST_F(TestImage, BuilderPresetBuildsAndRegistersImage)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 
 		entities::Image::Builder builder(registry, entityRegistry);
-		entities::Image::Director director;
 
-		auto image = director.makeImage(builder, nullptr, "menu.png");
+		auto image = builder.makeImage(nullptr, "menu.png");
 
 		ASSERT_NE(image, nullptr);
 		EXPECT_NE(
@@ -129,7 +128,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::ImageRender imageRender(ressourceProvider, engine);
+		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "texture.png");
@@ -155,7 +154,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::ImageRender imageRender(ressourceProvider, engine);
+		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "missing.png");

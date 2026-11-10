@@ -55,10 +55,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Snackbar::Builder builder(registry, entityRegistry);
-			Snackbar::Director director;
 
-			return director.makeSnackbar(builder, nullptr, variant, message,
-										 action);
+			return builder.makeSnackbar(nullptr, variant, message, action);
 		}
 	}	 // namespace
 
@@ -143,17 +141,16 @@ namespace guillaume::entities::tests
 		EXPECT_FLOAT_EQ(bound.getHeight(), 68.0f);
 	}
 
-	TEST_F(TestSnackbar, DirectorBuildsAndRegisters)
+	TEST_F(TestSnackbar, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Snackbar::Builder builder(registry, entityRegistry);
-		Snackbar::Director director;
 
-		auto snackbar = director.makeSnackbar(
-			builder, parent, Snackbar::Variant::WithAction, "Message", "Undo");
+		auto snackbar = builder.makeSnackbar(
+			parent, Snackbar::Variant::WithAction, "Message", "Undo");
 
 		ASSERT_NE(snackbar, nullptr);
 		EXPECT_EQ(snackbar->getParent(), parent);

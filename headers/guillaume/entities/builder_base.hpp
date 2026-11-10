@@ -26,7 +26,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
 
 namespace guillaume::entities
@@ -77,27 +76,6 @@ namespace guillaume::entities
 		 * @return The newly constructed entity.
 		 */
 		virtual std::shared_ptr<EntityType> buildEntity(void) = 0;
-	};
-
-	/**
-	 * @brief Reusable base for entity directors.
-	 *
-	 * Directors orchestrate a matching builder with a preset configuration.
-	 * The base only provides a shared destructor so concrete directors do not
-	 * repeat the trivial constructor/destructor pair.
-	 */
-	class EntityDirectorBase: public ecs::EntityDirector
-	{
-		public:
-		/**
-		 * @brief Construct a director.
-		 */
-		EntityDirectorBase(void);
-
-		/**
-		 * @brief Default destructor.
-		 */
-		~EntityDirectorBase(void) override = default;
 	};
 
 }	 // namespace guillaume::entities

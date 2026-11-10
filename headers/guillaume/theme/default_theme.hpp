@@ -22,31 +22,17 @@
 
 #pragma once
 
-#include "guillaume/ecs/entity_director_manager.hpp"
+#include "guillaume/theme.hpp"
 
-namespace guillaume::ecs
+namespace guillaume
 {
-
 	/**
-	 * @brief Manager class for handling multiple entity directors.
+	 * @brief Build the default Material Design 3 theme.
+	 *
+	 * Fills the six color schemes (light and dark, each with medium and high
+	 * contrast variants) and the tonal palettes from material-theme.json.
+	 * @return The populated theme.
 	 */
-	template<InheritFromEntityDirector... DirectorTypes>
-	class EntityDirectorManagerFiller: public EntityDirectorManager
-	{
-		public:
-		/**
-		 * @brief Default constructor.
-		 */
-		EntityDirectorManagerFiller(void);
+	Theme initializeDefaultTheme(void);
 
-		/**
-		 * @brief Default destructor for the Entity Director Manager Filler
-		 * class.
-		 */
-		virtual ~EntityDirectorManagerFiller(void) = default;
-	};
-
-}	 // namespace guillaume::ecs
-
-// Include the implementation of the EntityDirectorManagerFiller template class
-#include "guillaume/ecs/entity_director_manager_filler.tpp"
+}	 // namespace guillaume

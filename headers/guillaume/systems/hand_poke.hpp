@@ -22,14 +22,9 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include "guillaume/systems/hand_event_system.hpp"
 
-#include "guillaume/event/event_manager.hpp"
-#include "guillaume/event/event_bus.hpp"
-
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/hand_poke_interaction.hpp"
-#include "guillaume/components/transform.hpp"
 
 #include <utility/event/hand_poke_event.hpp>
 
@@ -39,43 +34,30 @@ namespace guillaume::systems
 	 * @brief System handling hand poke interactions.
 	 */
 	class HandPoke:
-		public ecs::SystemFiller<components::HandPokeInteraction,
-								 components::Transform, components::Bound>,
-		public event::EventManager<utility::event::HandPokeEvent>
+		public HandRaySystem<components::HandPokeInteraction,
+							 utility::event::HandPokeEvent>
 	{
 		public:
 		/**
-		 * @brief Construct the HandPoke system and subscribe to hand motion
-		 * events.
+		 * @brief Construct the HandPoke system and subscribe to hand
+		 * poke events.
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 */
-		HandPoke(event::EventBus &eventBus);
+		explicit HandPoke(event::EventBus &eventBus);
 
 		/**
 		 * @brief Default destructor for the HandPoke system.
 		 */
-		~HandPoke(void);
+		~HandPoke(void) override;
 
+		protected:
 		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
+		 * @brief Store the poke state on the interaction component.
+		 * @param interaction Interaction component of the entity.
+		 * @param engaged True when the hand ray hits the entity.
 		 */
-		void prepare(void) override;
-
-		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
-		 */
-		void cleanup(void) override;
-
-		/**
-		 * @brief Update method called for each entity with the relevant
-		 * components. Processes hand motion events and updates interaction
-		 * states accordingly.
-		 * @param entityIdentifier Identifier of the entity being updated.
-		 */
-		virtual void
-			update(const ecs::Entity::Identifier &entityIdentifier) override;
+		void setEngaged(components::HandPokeInteraction &interaction,
+						bool engaged) override;
 	};
 
 }	 // namespace guillaume::systems

@@ -27,7 +27,7 @@
 
 namespace guillaume::systems
 {
-	Animation::Animation(std::unique_ptr<utility::Engine> &engine)
+	Animation::Animation(utility::Engine &engine)
 		: ecs::SystemFiller<components::Animation>(ecs::Phase::Event)
 		, _engine(engine)
 		, _lastTime(std::chrono::steady_clock::now())
@@ -37,7 +37,7 @@ namespace guillaume::systems
 
 	void Animation::prepare(void)
 	{
-		const float engineDelta = _engine ? _engine->getDeltaTime() : 0.0f;
+		const float engineDelta = _engine.getDeltaTime();
 
 		if (engineDelta > 0.0f) {
 			_deltaTime = engineDelta;

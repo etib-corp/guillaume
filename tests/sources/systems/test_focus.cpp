@@ -37,7 +37,7 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestFocusSystem, Constructor)
 	{
-		EXPECT_NO_THROW({ auto focusSystem = Focus(*_eventBus, _engine); });
+		EXPECT_NO_THROW({ auto focusSystem = Focus(*_eventBus, *_engine); });
 	}
 
 	TEST_F(TestFocusSystem, InitialFocusState)
