@@ -196,11 +196,13 @@ namespace guillaume::entities::tests
 
 		const auto &component =
 			registry.getComponent<components::Text>(text->getIdentifier());
-		EXPECT_FLOAT_EQ(component.getFontSize(), 14.0f);
+		EXPECT_FLOAT_EQ(component.getFontSize(),
+						getTypeToken(theme::TypeRole::LabelLarge).fontSize);
 		EXPECT_EQ(component.getFontWeight(), theme::FontWeight::Medium);
 
 		text->setTypeRole(theme::TypeRole::HeadlineSmall);
-		EXPECT_FLOAT_EQ(component.getFontSize(), 24.0f);
+		EXPECT_FLOAT_EQ(component.getFontSize(),
+						getTypeToken(theme::TypeRole::HeadlineSmall).fontSize);
 		EXPECT_EQ(component.getFontWeight(), theme::FontWeight::Regular);
 	}
 

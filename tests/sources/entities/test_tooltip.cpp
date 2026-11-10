@@ -70,7 +70,8 @@ namespace guillaume::entities::tests
 
 		const auto &borders = registry.getComponent<components::Borders>(
 			tooltip->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 4.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::ExtraSmall));
 	}
 
 	TEST_F(TestTooltip, RichUsesRadiusTwelve)
@@ -83,7 +84,8 @@ namespace guillaume::entities::tests
 
 		const auto &borders = registry.getComponent<components::Borders>(
 			tooltip->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 12.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::Medium));
 	}
 
 	TEST_F(TestTooltip, PlainUsesInverseSurfaceColor)
@@ -130,7 +132,8 @@ namespace guillaume::entities::tests
 
 		const auto &borders = registry.getComponent<components::Borders>(
 			tooltip->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 12.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::Medium));
 	}
 
 	TEST_F(TestTooltip, DirectorBuildsAndRegisters)

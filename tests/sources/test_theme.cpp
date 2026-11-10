@@ -141,9 +141,11 @@ namespace guillaume::tests
 				current.getColor(SchemeColorRole::OnSurfaceDisabled)
 					.getColor();
 			EXPECT_EQ(container.getRed(), onSurface.getRed());
-			EXPECT_EQ(container.getAlpha(), 31);
+			EXPECT_EQ(container.getAlpha(),
+					  getStateLayerAlpha(theme::StateLayer::DisabledContainer));
 			EXPECT_EQ(content.getBlue(), onSurface.getBlue());
-			EXPECT_EQ(content.getAlpha(), 97);
+			EXPECT_EQ(content.getAlpha(),
+					  getStateLayerAlpha(theme::StateLayer::DisabledContent));
 			EXPECT_EQ(current.getColor(SchemeColorRole::Backdrop)
 						  .getColor()
 						  .getAlpha(),

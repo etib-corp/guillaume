@@ -112,7 +112,8 @@ namespace guillaume::entities::tests
 		const auto &borders =
 			registry.getComponent<components::Borders>(drawer->getIdentifier());
 		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 0.0f);
-		EXPECT_FLOAT_EQ(borders.getTopRightRadius(), 16.0f);
+		EXPECT_FLOAT_EQ(borders.getTopRightRadius(),
+						getShapeRadius(theme::ShapeRole::Large));
 	}
 
 	TEST_F(TestNavigationDrawer, DestinationCountMatchesInput)

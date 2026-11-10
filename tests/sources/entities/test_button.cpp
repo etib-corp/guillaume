@@ -331,7 +331,8 @@ namespace guillaume::entities::tests
 
 		const auto &color =
 			registry.getComponent<components::Color>(button->getIdentifier());
-		EXPECT_EQ(color.getColor().getAlpha(), 31);
+		EXPECT_EQ(color.getColor().getAlpha(),
+				  getStateLayerAlpha(theme::StateLayer::DisabledContainer));
 	}
 
 	TEST_F(TestButton, TrailingIconPlacesIconAfterLabel)

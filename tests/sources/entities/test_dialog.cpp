@@ -82,7 +82,8 @@ namespace guillaume::entities::tests
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(dialog->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 28.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::ExtraLarge));
 	}
 
 	TEST_F(TestDialog, FullScreenIsUnrounded)
