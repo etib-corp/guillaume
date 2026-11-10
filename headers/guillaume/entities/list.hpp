@@ -33,7 +33,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/icon.hpp"
@@ -153,24 +152,15 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withFixedWidth(float width);
-		};
 
-		/**
-		 * @brief Director building lists.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a list.
-			 * @param builder List builder.
 			 * @param parent Parent entity.
 			 * @param variant List variant.
 			 * @param items List entries.
 			 * @return The registered list.
 			 */
-			std::shared_ptr<List> makeList(Builder &builder,
-										   std::shared_ptr<ecs::Entity> parent,
+			std::shared_ptr<List> makeList(std::shared_ptr<ecs::Entity> parent,
 										   Variant variant,
 										   const std::vector<Item> &items);
 		};

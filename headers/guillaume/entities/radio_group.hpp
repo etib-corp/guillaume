@@ -33,7 +33,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/radio_button.hpp"
@@ -114,24 +113,15 @@ namespace guillaume::entities
 			 */
 			Builder &withOnValueChange(
 				std::function<void(std::size_t)> onValueChange);
-		};
 
-		/**
-		 * @brief Director for RadioGroup entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a group of labelled options.
-			 * @param builder Group builder.
 			 * @param parent Parent entity.
 			 * @param options Option labels.
 			 * @return The registered group.
 			 */
 			std::shared_ptr<RadioGroup>
-				makeRadioGroup(Builder &builder,
-							   std::shared_ptr<ecs::Entity> parent,
+				makeRadioGroup(std::shared_ptr<ecs::Entity> parent,
 							   const std::vector<std::string> &options);
 		};
 

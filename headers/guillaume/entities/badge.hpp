@@ -31,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/animation.hpp"
 
@@ -99,24 +98,16 @@ namespace guillaume::entities
 
 			/** @brief Set the label. @param label Label. @return *this. */
 			Builder &withLabel(const std::string &label);
-		};
 
-		/**
-		 * @brief Director for Badge entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a badge.
-			 * @param builder Builder.
 			 * @param parent Parent entity.
 			 * @param label Label.
 			 * @param variant Variant.
 			 * @return The badge.
 			 */
 			std::shared_ptr<Badge>
-				makeBadge(Builder &builder, std::shared_ptr<ecs::Entity> parent,
+				makeBadge(std::shared_ptr<ecs::Entity> parent,
 						  const std::string &label, Variant variant);
 		};
 

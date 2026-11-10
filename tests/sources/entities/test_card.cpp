@@ -60,9 +60,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Card::Builder builder(registry, entityRegistry);
-			Card::Director director;
 
-			return director.makeCard(builder, nullptr, variant);
+			return builder.makeCard(nullptr, variant);
 		}
 	}	 // namespace
 
@@ -149,16 +148,15 @@ namespace guillaume::entities::tests
 			getActiveScheme().getColor(SchemeColorRole::Surface).getColor());
 	}
 
-	TEST_F(TestCard, DirectorBuildsAndRegisters)
+	TEST_F(TestCard, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Card::Builder builder(registry, entityRegistry);
-		Card::Director director;
 
-		auto card = director.makeCard(builder, parent, Card::Variant::Filled);
+		auto card = builder.makeCard(parent, Card::Variant::Filled);
 
 		ASSERT_NE(card, nullptr);
 		EXPECT_EQ(card->getParent(), parent);

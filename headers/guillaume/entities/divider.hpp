@@ -30,7 +30,6 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
@@ -151,24 +150,15 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withVariant(Variant variant);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Divider::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a divider using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param length The divider length.
 			 * @param variant The divider variant.
 			 * @return The newly created divider.
 			 */
-			std::shared_ptr<Divider> makeDivider(Builder &builder,
-												 std::shared_ptr<Entity> parent,
+			std::shared_ptr<Divider> makeDivider(std::shared_ptr<Entity> parent,
 												 float length, Variant variant);
 		};
 

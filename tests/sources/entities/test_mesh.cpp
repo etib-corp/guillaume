@@ -109,16 +109,14 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(component.getTexturePath(), "skin.png");
 	}
 
-	TEST_F(TestMesh, DirectorBuildsAndRegistersModel)
+	TEST_F(TestMesh, BuilderPresetBuildsAndRegistersModel)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 
 		entities::Mesh::Builder builder(registry, entityRegistry);
-		entities::Mesh::Director director;
 
-		auto model =
-			director.makeMesh(builder, nullptr, "teapot.obj", "skin.png");
+		auto model = builder.makeMesh(nullptr, "teapot.obj", "skin.png");
 
 		ASSERT_NE(model, nullptr);
 		EXPECT_NE(

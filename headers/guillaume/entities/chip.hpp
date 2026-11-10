@@ -31,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/selection.hpp"
@@ -138,17 +137,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withSelected(bool selected);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Chip::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a chip using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The chip variant.
 			 * @param label The chip label.
@@ -156,10 +147,11 @@ namespace guillaume::entities
 			 * @param selected The selected state.
 			 * @return The newly created chip.
 			 */
-			std::shared_ptr<Chip>
-				makeChip(Builder &builder, std::shared_ptr<ecs::Entity> parent,
-						 Variant variant, const std::string &label,
-						 const std::string &iconGlyph, bool selected);
+			std::shared_ptr<Chip> makeChip(std::shared_ptr<ecs::Entity> parent,
+										   Variant variant,
+										   const std::string &label,
+										   const std::string &iconGlyph,
+										   bool selected);
 		};
 
 		private:

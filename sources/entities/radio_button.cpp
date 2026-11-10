@@ -133,12 +133,11 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<RadioButton> RadioButton::Director::makeRadioButton(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	std::shared_ptr<RadioButton> RadioButton::Builder::makeRadioButton(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::string &label)
 	{
-		return builder.withVariant(variant).withLabel(label).registerEntity(
-			parent);
+		return withVariant(variant).withLabel(label).registerEntity(parent);
 	}
 
 	RadioButton::RadioButton(ecs::ComponentRegistry &registry,

@@ -28,7 +28,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/entities/button_base.hpp"
@@ -155,18 +154,9 @@ namespace guillaume::entities
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `IconButton::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create an icon button entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the icon button.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param iconGlyphName The icon glyph name to attach.
@@ -176,7 +166,7 @@ namespace guillaume::entities
 			 * @return A shared pointer to the newly created icon button entity.
 			 */
 			std::shared_ptr<IconButton>
-				makeIconButton(Builder &builder, std::shared_ptr<Entity> parent,
+				makeIconButton(std::shared_ptr<Entity> parent,
 							   const std::string &iconGlyphName,
 							   std::function<void(void)> onClick,
 							   Variant variant, Size size);

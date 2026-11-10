@@ -31,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/elevation.hpp"
@@ -172,17 +171,9 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withOnAction(std::function<void(void)> onAction);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Snackbar::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a snackbar using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The snackbar variant.
 			 * @param message The snackbar message.
@@ -190,8 +181,7 @@ namespace guillaume::entities
 			 * @return The newly created snackbar.
 			 */
 			std::shared_ptr<Snackbar>
-				makeSnackbar(Builder &builder,
-							 std::shared_ptr<ecs::Entity> parent,
+				makeSnackbar(std::shared_ptr<ecs::Entity> parent,
 							 Variant variant, const std::string &message,
 							 const std::string &action = "");
 		};

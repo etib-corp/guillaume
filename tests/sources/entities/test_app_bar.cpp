@@ -58,9 +58,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			AppBar::Builder builder(registry, entityRegistry);
-			AppBar::Director director;
 
-			return director.makeAppBar(builder, nullptr, variant);
+			return builder.makeAppBar(nullptr, variant);
 		}
 	}	 // namespace
 
@@ -148,10 +147,8 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer entityRegistry;
 
 		AppBar::Builder builder(registry, entityRegistry);
-		AppBar::Director director;
 
-		auto appBar =
-			director.makeAppBar(builder, nullptr, AppBar::Variant::Small);
+		auto appBar = builder.makeAppBar(nullptr, AppBar::Variant::Small);
 		appBar->setTitle("Title");
 		appBar->initialize();
 		appBar->update();
@@ -197,17 +194,15 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(color.getColor(), schemeColor(SchemeColorRole::Surface));
 	}
 
-	TEST_F(TestAppBar, DirectorBuildsAndRegisters)
+	TEST_F(TestAppBar, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		AppBar::Builder builder(registry, entityRegistry);
-		AppBar::Director director;
 
-		auto appBar =
-			director.makeAppBar(builder, parent, AppBar::Variant::Medium);
+		auto appBar = builder.makeAppBar(parent, AppBar::Variant::Medium);
 
 		ASSERT_NE(appBar, nullptr);
 		EXPECT_EQ(appBar->getParent(), parent);

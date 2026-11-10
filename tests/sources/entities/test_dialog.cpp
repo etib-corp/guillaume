@@ -61,10 +61,9 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Dialog::Builder builder(registry, entityRegistry);
-			Dialog::Director director;
 
-			return director.makeDialog(builder, nullptr, variant, "Title",
-									   "Message", { "OK", "Cancel" });
+			return builder.makeDialog(nullptr, variant, "Title", "Message",
+									  { "OK", "Cancel" });
 		}
 	}	 // namespace
 
@@ -155,18 +154,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(dialog->getVariant(), Dialog::Variant::Confirmation);
 	}
 
-	TEST_F(TestDialog, DirectorBuildsAndRegisters)
+	TEST_F(TestDialog, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Dialog::Builder builder(registry, entityRegistry);
-		Dialog::Director director;
 
-		auto dialog =
-			director.makeDialog(builder, parent, Dialog::Variant::Simple,
-								"Title", "Message", { "One" });
+		auto dialog = builder.makeDialog(parent, Dialog::Variant::Simple,
+										 "Title", "Message", { "One" });
 
 		ASSERT_NE(dialog, nullptr);
 		EXPECT_EQ(dialog->getParent(), parent);

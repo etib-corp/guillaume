@@ -46,9 +46,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Divider::Builder builder(registry, entityRegistry);
-			Divider::Director director;
 
-			return director.makeDivider(builder, nullptr, length, variant);
+			return builder.makeDivider(nullptr, length, variant);
 		}
 	}	 // namespace
 
@@ -132,17 +131,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(color.getColor().getAlpha(), 255);
 	}
 
-	TEST_F(TestDivider, DirectorBuildsAndRegisters)
+	TEST_F(TestDivider, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Divider::Builder builder(registry, entityRegistry);
-		Divider::Director director;
 
-		auto divider = director.makeDivider(builder, parent, 80.0f,
-											Divider::Variant::Middle);
+		auto divider =
+			builder.makeDivider(parent, 80.0f, Divider::Variant::Middle);
 
 		ASSERT_NE(divider, nullptr);
 		EXPECT_EQ(divider->getParent(), parent);

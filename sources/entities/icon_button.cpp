@@ -120,12 +120,11 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<IconButton> IconButton::Director::makeIconButton(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &iconGlyphName, std::function<void(void)> onClick,
-		Variant variant, Size size)
+	std::shared_ptr<IconButton> IconButton::Builder::makeIconButton(
+		std::shared_ptr<Entity> parent, const std::string &iconGlyphName,
+		std::function<void(void)> onClick, Variant variant, Size size)
 	{
-		return builder.withIcon(iconGlyphName)
+		return withIcon(iconGlyphName)
 			.withOnClick(onClick)
 			.withVariant(variant)
 			.withSize(size)

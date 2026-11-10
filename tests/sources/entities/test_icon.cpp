@@ -159,19 +159,18 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(colorComponent.getColor(), color);
 	}
 
-	TEST_F(TestIcon, DirectorBuildsAndRegistersIcon)
+	TEST_F(TestIcon, BuilderPresetBuildsAndRegistersIcon)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		entities::Icon::Builder builder(registry, entityRegistry);
-		entities::Icon::Director director;
 
 		auto icon =
-			director.makeIcon(builder, parent, "home", 32.0f,
-							  utility::graphic::Color32Bit(255, 255, 255, 255),
-							  components::Glyph::Style::Outlined);
+			builder.makeIcon(parent, "home", 32.0f,
+							 utility::graphic::Color32Bit(255, 255, 255, 255),
+							 components::Glyph::Style::Outlined);
 		icon->update();
 
 		ASSERT_NE(icon, nullptr);

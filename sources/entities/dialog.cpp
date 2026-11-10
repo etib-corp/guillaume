@@ -144,18 +144,19 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Dialog> Dialog::Director::makeDialog(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
-		const std::string &title, const std::string &message,
-		const std::vector<std::string> &actions)
+	std::shared_ptr<Dialog>
+		Dialog::Builder::makeDialog(std::shared_ptr<ecs::Entity> parent,
+									Variant variant, const std::string &title,
+									const std::string &message,
+									const std::vector<std::string> &actions)
 	{
-		builder.withVariant(variant).withTitle(title).withMessage(message);
+		withVariant(variant).withTitle(title).withMessage(message);
 
 		for (const auto &action: actions) {
-			builder.addAction(action);
+			addAction(action);
 		}
 
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	Dialog::Dialog(ecs::ComponentRegistry &registry,
@@ -318,10 +319,8 @@ namespace guillaume::entities
 
 		if (_actionRow == nullptr && !_actions.empty()) {
 			View::Builder rowBuilder(this->getComponentRegistry(), *this);
-			View::Director rowDirector;
-			_actionRow = rowDirector.makeDefaultView(
-				rowBuilder, this->shared_from_this(), utility::graphic::PoseF(),
-				{});
+			_actionRow = rowBuilder.makeDefaultView(
+				this->shared_from_this(), utility::graphic::PoseF(), {});
 			_actionRow->setColor(transparentColor());
 			_actionRow->setAxis(components::Layout::Axis::Horizontal);
 			_actionRow->setMainAxisAlignment(

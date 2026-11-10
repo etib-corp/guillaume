@@ -150,17 +150,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(fab->getAccessibilityLabel(), "Edit comment");
 	}
 
-	TEST_F(TestFloatingActionButton, DirectorBuildsAndRegistersFab)
+	TEST_F(TestFloatingActionButton, BuilderPresetBuildsAndRegistersFab)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		FloatingActionButton::Builder builder(registry, entityRegistry);
-		FloatingActionButton::Director director;
 
-		auto fab = director.makeFloatingActionButton(
-			builder, parent, "edit", std::function<void(void)>(),
+		auto fab = builder.makeFloatingActionButton(
+			parent, "edit", std::function<void(void)>(),
 			FloatingActionButton::Variant::Secondary,
 			FloatingActionButton::Size::Large);
 

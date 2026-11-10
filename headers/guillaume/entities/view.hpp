@@ -31,7 +31,6 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/parent_entity_filler.hpp"
 
@@ -188,30 +187,21 @@ namespace guillaume::entities
 			 */
 			Builder &withEntities(
 				const std::vector<std::shared_ptr<ecs::Entity>> &entities);
-		};
 
-		/**
-		 * @brief Director that orchestrates `View::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a default view entity.
-			 * @param builder The builder used to configure the entity.
 			 * @param parent The parent entity to attach the container to.
 			 * @param pose The pose to set for the container.
 			 * @param entities The entities to attach to the container.
 			 * @return A shared pointer to the newly created container entity.
 			 */
 			std::shared_ptr<View> makeDefaultView(
-				Builder &builder, std::shared_ptr<Entity> parent,
+				std::shared_ptr<Entity> parent,
 				const utility::graphic::PoseF &pose,
 				const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 
 			/**
 			 * @brief Create a colored view entity.
-			 * @param builder The builder used to configure the entity.
 			 * @param parent The parent entity to attach the container to.
 			 * @param pose The pose to set for the container.
 			 * @param color The surface color to set.
@@ -219,7 +209,7 @@ namespace guillaume::entities
 			 * @return A shared pointer to the newly created container entity.
 			 */
 			std::shared_ptr<View> makeColorView(
-				Builder &builder, std::shared_ptr<Entity> parent,
+				std::shared_ptr<Entity> parent,
 				const utility::graphic::PoseF &pose,
 				const utility::graphic::Color32Bit &color,
 				const std::vector<std::shared_ptr<ecs::Entity>> &entities);

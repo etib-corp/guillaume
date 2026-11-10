@@ -26,7 +26,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
@@ -112,19 +111,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withStyle(const components::Glyph::Style &style);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Icon::Builder` to create
-		 * preconfigured icon entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a default icon entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the default icon.
 			 * @param parent The parent entity to which the new icon entity will
 			 * be attached.
 			 * @param iconName The icon name to assign to the created entity.
@@ -137,7 +126,7 @@ namespace guillaume::entities
 			 * @return A shared pointer to the newly created icon entity.
 			 */
 			std::shared_ptr<Icon>
-				makeIcon(Builder &builder, std::shared_ptr<Entity> parent,
+				makeIcon(std::shared_ptr<Entity> parent,
 						 const std::string &iconName, const float &fontSize,
 						 const utility::graphic::Color32Bit &color,
 						 const components::Glyph::Style &style);

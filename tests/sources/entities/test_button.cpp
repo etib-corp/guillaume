@@ -446,19 +446,17 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(button->getSize(), Button::Size::Large);
 	}
 
-	TEST_F(TestButton, DirectorBuildsAndRegistersButton)
+	TEST_F(TestButton, BuilderPresetBuildsAndRegistersButton)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Button::Builder builder(registry, entityRegistry);
-		Button::Director director;
 
-		auto button = director.makeButton(
-			builder, parent, "Save", std::function<void(void)>(),
-			Button::Color::Filled, Button::Shape::Round, Button::Size::Large,
-			false);
+		auto button = builder.makeButton(
+			parent, "Save", std::function<void(void)>(), Button::Color::Filled,
+			Button::Shape::Round, Button::Size::Large, false);
 
 		ASSERT_NE(button, nullptr);
 		EXPECT_EQ(button->getParent(), parent);

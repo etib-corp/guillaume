@@ -125,11 +125,11 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Search> Search::Director::makeSearch(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	std::shared_ptr<Search> Search::Builder::makeSearch(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::string &placeholder, const std::string &text)
 	{
-		return builder.withVariant(variant)
+		return withVariant(variant)
 			.withPlaceholder(placeholder)
 			.withText(text)
 			.registerEntity(parent);
@@ -277,11 +277,9 @@ namespace guillaume::entities
 		if (_textEntity == nullptr) {
 			// Built even when empty so the text-input systems can edit it.
 			Text::Builder builder(this->getComponentRegistry(), *this);
-			Text::Director director;
-			_textEntity =
-				director.makeText(builder, this->shared_from_this(), _text,
-								  theme::TypeRole::BodyLarge,
-								  schemeColor(SchemeColorRole::OnSurface));
+			_textEntity = builder.makeText(
+				this->shared_from_this(), _text, theme::TypeRole::BodyLarge,
+				schemeColor(SchemeColorRole::OnSurface));
 			_textEntity->setContent(_text);
 			this->getComponentRegistry().addComponent<components::Focus>(
 				_textEntity->getIdentifier());

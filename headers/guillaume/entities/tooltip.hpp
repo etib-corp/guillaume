@@ -31,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/animation.hpp"
@@ -143,17 +142,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withFixedWidth(float width);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Tooltip::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a tooltip using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The tooltip variant.
 			 * @param text The tooltip body text.
@@ -161,8 +152,7 @@ namespace guillaume::entities
 			 * @return The newly created tooltip.
 			 */
 			std::shared_ptr<Tooltip>
-				makeTooltip(Builder &builder,
-							std::shared_ptr<ecs::Entity> parent,
+				makeTooltip(std::shared_ptr<ecs::Entity> parent,
 							Variant variant, const std::string &text,
 							const std::string &title = "");
 		};

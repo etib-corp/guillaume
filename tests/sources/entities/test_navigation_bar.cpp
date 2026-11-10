@@ -73,10 +73,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			NavigationBar::Builder builder(registry, entityRegistry);
-			NavigationBar::Director director;
 
-			return director.makeNavigationBar(builder, nullptr, variant,
-											  destinations);
+			return builder.makeNavigationBar(nullptr, variant, destinations);
 		}
 	}	 // namespace
 
@@ -141,18 +139,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(bar->getVariant(), NavigationBar::Variant::WithoutLabels);
 	}
 
-	TEST_F(TestNavigationBar, DirectorBuildsAndRegisters)
+	TEST_F(TestNavigationBar, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		NavigationBar::Builder builder(registry, entityRegistry);
-		NavigationBar::Director director;
 
-		auto bar = director.makeNavigationBar(
-			builder, parent, NavigationBar::Variant::WithoutLabels,
-			makeDestinations(4));
+		auto bar = builder.makeNavigationBar(
+			parent, NavigationBar::Variant::WithoutLabels, makeDestinations(4));
 
 		ASSERT_NE(bar, nullptr);
 		EXPECT_EQ(bar->getParent(), parent);

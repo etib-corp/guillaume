@@ -24,7 +24,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
@@ -101,27 +100,16 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withSize(float width, float height);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Image::Builder` to create
-		 * preconfigured image entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a default image entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the default image.
 			 * @param parent The parent entity to which the new image entity
 			 * will be attached.
 			 * @param texturePath The texture name to assign to the created
 			 * entity.
 			 * @return A shared pointer to the newly created image entity.
 			 */
-			std::shared_ptr<Image> makeImage(Builder &builder,
-											 std::shared_ptr<Entity> parent,
+			std::shared_ptr<Image> makeImage(std::shared_ptr<Entity> parent,
 											 const std::string &texturePath);
 		};
 

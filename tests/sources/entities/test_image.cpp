@@ -97,15 +97,14 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(component.getTexturePath(), "texture.png");
 	}
 
-	TEST_F(TestImage, DirectorBuildsAndRegistersImage)
+	TEST_F(TestImage, BuilderPresetBuildsAndRegistersImage)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 
 		entities::Image::Builder builder(registry, entityRegistry);
-		entities::Image::Director director;
 
-		auto image = director.makeImage(builder, nullptr, "menu.png");
+		auto image = builder.makeImage(nullptr, "menu.png");
 
 		ASSERT_NE(image, nullptr);
 		EXPECT_NE(

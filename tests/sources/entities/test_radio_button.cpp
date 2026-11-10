@@ -83,9 +83,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			RadioButton::Builder builder(registry, entityRegistry);
-			RadioButton::Director director;
 
-			return director.makeRadioButton(builder, nullptr, variant, label);
+			return builder.makeRadioButton(nullptr, variant, label);
 		}
 	}	 // namespace
 
@@ -298,17 +297,16 @@ namespace guillaume::entities::tests
 		EXPECT_THROW(group->setValue(5), std::out_of_range);
 	}
 
-	TEST_F(TestRadioButton, DirectorBuildsAndRegisters)
+	TEST_F(TestRadioButton, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		RadioButton::Builder builder(registry, entityRegistry);
-		RadioButton::Director director;
 
-		auto radio = director.makeRadioButton(
-			builder, parent, RadioButton::Variant::Error, "Option");
+		auto radio = builder.makeRadioButton(
+			parent, RadioButton::Variant::Error, "Option");
 
 		ASSERT_NE(radio, nullptr);
 		EXPECT_EQ(radio->getParent(), parent);

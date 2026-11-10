@@ -54,9 +54,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Tooltip::Builder builder(registry, entityRegistry);
-			Tooltip::Director director;
 
-			return director.makeTooltip(builder, nullptr, variant, text, "");
+			return builder.makeTooltip(nullptr, variant, text, "");
 		}
 	}	 // namespace
 
@@ -136,17 +135,16 @@ namespace guillaume::entities::tests
 						getShapeRadius(theme::ShapeRole::Medium));
 	}
 
-	TEST_F(TestTooltip, DirectorBuildsAndRegisters)
+	TEST_F(TestTooltip, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Tooltip::Builder builder(registry, entityRegistry);
-		Tooltip::Director director;
 
-		auto tooltip = director.makeTooltip(
-			builder, parent, Tooltip::Variant::Rich, "Text", "Title");
+		auto tooltip = builder.makeTooltip(parent, Tooltip::Variant::Rich,
+										   "Text", "Title");
 
 		ASSERT_NE(tooltip, nullptr);
 		EXPECT_EQ(tooltip->getParent(), parent);

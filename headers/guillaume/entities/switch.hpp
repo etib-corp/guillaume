@@ -31,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/hand_button_interaction.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
@@ -133,17 +132,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Switch::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a switch using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The switch variant.
 			 * @param checked The initial checked state.
@@ -152,8 +143,7 @@ namespace guillaume::entities
 			 * @return The newly created switch.
 			 */
 			std::shared_ptr<Switch>
-				makeSwitch(Builder &builder,
-						   std::shared_ptr<ecs::Entity> parent, Variant variant,
+				makeSwitch(std::shared_ptr<ecs::Entity> parent, Variant variant,
 						   bool checked, const std::string &iconGlyph,
 						   const std::string &label);
 		};

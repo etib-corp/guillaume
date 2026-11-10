@@ -90,11 +90,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<FloatingActionButtonMenu>
-		FloatingActionButtonMenu::Director::makeFloatingActionButtonMenu(
-			Builder &builder, std::shared_ptr<Entity> parent,
-			const std::string &iconGlyphName)
+		FloatingActionButtonMenu::Builder::makeFloatingActionButtonMenu(
+			std::shared_ptr<Entity> parent, const std::string &iconGlyphName)
 	{
-		return builder.withIcon(iconGlyphName).registerEntity(parent);
+		return withIcon(iconGlyphName).registerEntity(parent);
 	}
 
 	FloatingActionButtonMenu::FloatingActionButtonMenu(
@@ -232,10 +231,9 @@ namespace guillaume::entities
 	{
 		FloatingActionButton::Builder triggerBuilder(getComponentRegistry(),
 													 *this);
-		FloatingActionButton::Director triggerDirector;
 
-		_trigger = triggerDirector.makeFloatingActionButton(
-			triggerBuilder, shared_from_this(), _iconGlyphName,
+		_trigger = triggerBuilder.makeFloatingActionButton(
+			shared_from_this(), _iconGlyphName,
 			std::bind(&FloatingActionButtonMenu::triggerHandler, this),
 			FloatingActionButton::Variant::Primary,
 			FloatingActionButton::Size::Medium);
@@ -246,7 +244,6 @@ namespace guillaume::entities
 
 		FloatingActionButton::Builder actionBuilder(getComponentRegistry(),
 													*this);
-		FloatingActionButton::Director actionDirector;
 		ExtendedFloatingActionButton::Builder labelledBuilder(
 			getComponentRegistry(), *this);
 
@@ -254,9 +251,9 @@ namespace guillaume::entities
 			std::shared_ptr<ButtonBase> button;
 
 			if (action.label.empty()) {
-				button = actionDirector.makeFloatingActionButton(
-					actionBuilder, shared_from_this(), action.iconGlyphName,
-					action.onClick, FloatingActionButton::Variant::Surface,
+				button = actionBuilder.makeFloatingActionButton(
+					shared_from_this(), action.iconGlyphName, action.onClick,
+					FloatingActionButton::Variant::Surface,
 					FloatingActionButton::Size::Small);
 			} else {
 				// A labelled action shows its label beside the icon.

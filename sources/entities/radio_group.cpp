@@ -86,14 +86,14 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<RadioGroup> RadioGroup::Director::makeRadioGroup(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent,
+	std::shared_ptr<RadioGroup> RadioGroup::Builder::makeRadioGroup(
+		std::shared_ptr<ecs::Entity> parent,
 		const std::vector<std::string> &options)
 	{
 		for (const auto &option: options) {
-			builder.addOption(option);
+			addOption(option);
 		}
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	RadioGroup::RadioGroup(ecs::ComponentRegistry &registry,

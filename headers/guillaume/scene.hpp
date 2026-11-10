@@ -36,7 +36,6 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry.hpp"
 #include "guillaume/ecs/entity_builder_manager_filler.hpp"
-#include "guillaume/ecs/entity_director_manager_filler.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 
 #include "guillaume/local_storage.hpp"
@@ -63,9 +62,7 @@ namespace guillaume
 		ecs::ComponentRegistry
 			_componentRegistry;	   ///< Component registry for the scene
 		std::unique_ptr<ecs::EntityBuilderManager>
-			_entityBuilderManager;	  ///< Manager for entity builders
-		std::unique_ptr<ecs::EntityDirectorManager>
-			_entityDirectorManager;		   ///< Manager for entity directors
+			_entityBuilderManager;		   ///< Manager for entity builders
 		std::type_index _nextSceneType;	   ///< Type of the next scene to switch
 										   ///< to at end of frame
 		std::map<std::string, std::shared_ptr<ecs::Entity>>
@@ -83,12 +80,6 @@ namespace guillaume
 		 * @return Reference to the entity builder manager.
 		 */
 		ecs::EntityBuilderManager &getBuilderManager(void);
-
-		/**
-		 * @brief Get the entity director manager for this scene.
-		 * @return Reference to the entity director manager.
-		 */
-		ecs::EntityDirectorManager &getDirectorManager(void);
 
 		/**
 		 * @brief Add a root entity to the scene.

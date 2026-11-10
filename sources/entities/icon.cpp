@@ -79,13 +79,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Icon> Icon::Director::makeIcon(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &glyphName, const float &fontSize,
-		const utility::graphic::Color32Bit &color,
+	std::shared_ptr<Icon> Icon::Builder::makeIcon(
+		std::shared_ptr<Entity> parent, const std::string &glyphName,
+		const float &fontSize, const utility::graphic::Color32Bit &color,
 		const components::Glyph::Style &style)
 	{
-		return builder.withGlyphName(glyphName)
+		return withGlyphName(glyphName)
 			.withFontSize(fontSize)
 			.withColor(color)
 			.withStyle(style)

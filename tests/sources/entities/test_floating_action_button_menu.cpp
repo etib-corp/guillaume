@@ -93,17 +93,15 @@ namespace guillaume::entities::tests
 		EXPECT_FALSE(menu->isOpen());
 	}
 
-	TEST_F(TestFloatingActionButtonMenu, DirectorBuildsAndRegistersMenu)
+	TEST_F(TestFloatingActionButtonMenu, BuilderPresetBuildsAndRegistersMenu)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		FloatingActionButtonMenu::Builder builder(registry, entityRegistry);
-		FloatingActionButtonMenu::Director director;
 
-		auto menu =
-			director.makeFloatingActionButtonMenu(builder, parent, "add");
+		auto menu = builder.makeFloatingActionButtonMenu(parent, "add");
 
 		ASSERT_NE(menu, nullptr);
 		EXPECT_EQ(menu->getParent(), parent);

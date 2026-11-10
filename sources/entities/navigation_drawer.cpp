@@ -97,9 +97,8 @@ namespace guillaume::entities
 										components::Layout::Axis axis)
 		{
 			View::Builder builder(registry, entityRegistry);
-			View::Director director;
-			auto view = director.makeDefaultView(builder, parent,
-												 utility::graphic::PoseF(), {});
+			auto view =
+				builder.makeDefaultView(parent, utility::graphic::PoseF(), {});
 			view->setColor(transparentColor());
 			view->setAxis(axis);
 			view->setMainAxisAlignment(
@@ -502,19 +501,18 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<NavigationDrawer>
-		NavigationDrawer::Director::makeNavigationDrawer(
-			Builder &builder, std::shared_ptr<ecs::Entity> parent,
-			Variant variant,
+		NavigationDrawer::Builder::makeNavigationDrawer(
+			std::shared_ptr<ecs::Entity> parent, Variant variant,
 			const std::vector<std::pair<std::string, std::string>>
 				&destinations)
 	{
-		builder.withVariant(variant);
+		withVariant(variant);
 
 		for (const auto &destination: destinations) {
-			builder.addDestination(destination.first, destination.second);
+			addDestination(destination.first, destination.second);
 		}
 
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	NavigationDrawer::NavigationDrawer(
@@ -599,10 +597,9 @@ namespace guillaume::entities
 				}
 				case EntryKind::Divider: {
 					Divider::Builder builder(getComponentRegistry(), *this);
-					Divider::Director director;
-					auto divider = director.makeDivider(
-						builder, shared_from_this(), itemWidth,
-						Divider::Variant::FullWidth);
+					auto divider =
+						builder.makeDivider(shared_from_this(), itemWidth,
+											Divider::Variant::FullWidth);
 					if (divider != nullptr) {
 						_dividerEntities.push_back(divider);
 						children.push_back(divider);

@@ -28,7 +28,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/entities/button_base.hpp"
@@ -189,19 +188,9 @@ namespace guillaume::entities
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Button::Builder` to create
-		 * preconfigured button entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a text button entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the text button.
 			 * @param parent The parent entity to which the new button entity
 			 * will be attached.
 			 * @param labelContent The label content to attach to the button.
@@ -214,15 +203,13 @@ namespace guillaume::entities
 			 * entity.
 			 */
 			std::shared_ptr<Button>
-				makeButton(Builder &builder, std::shared_ptr<Entity> parent,
+				makeButton(std::shared_ptr<Entity> parent,
 						   const std::string &labelContent,
 						   std::function<void(void)> onClick, Color colorStyle,
 						   Shape shape, Size size, bool isMorph);
 
 			/**
 			 * @brief Create an icon button entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the icon button.
 			 * @param parent The parent entity to which the new button entity
 			 * will be attached.
 			 * @param labelContent The label content to attach to the button.
@@ -236,14 +223,12 @@ namespace guillaume::entities
 			 * @return A shared pointer to the newly created icon button
 			 * entity.
 			 */
-			std::shared_ptr<Button>
-				makeIconButton(Builder &builder, std::shared_ptr<Entity> parent,
-							   const std::string &labelContent,
-							   const std::string &iconGlyphName,
-							   const components::Glyph::Style &iconStyle,
-							   std::function<void(void)> onClick,
-							   Color colorStyle, Shape shape, Size size,
-							   bool isMorph);
+			std::shared_ptr<Button> makeIconButton(
+				std::shared_ptr<Entity> parent, const std::string &labelContent,
+				const std::string &iconGlyphName,
+				const components::Glyph::Style &iconStyle,
+				std::function<void(void)> onClick, Color colorStyle,
+				Shape shape, Size size, bool isMorph);
 		};
 
 		private:
