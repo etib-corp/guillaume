@@ -164,7 +164,36 @@ namespace guillaume::systems
 			createVertex(const utility::graphic::PositionF &position,
 						 const utility::graphic::Color32Bit &color) const;
 
+		/**
+		 * @brief Build an inset stroke following a rounded rectangle.
+		 *
+		 * The stroke is a closed band between the outer rounded outline and
+		 * an outline inset by @p width, with the inner radius reduced by the
+		 * same amount so the band keeps a constant thickness.
+		 *
+		 * @param mesh Mesh receiving the vertices and indices.
+		 * @param center World center of the rectangle.
+		 * @param orientation World orientation.
+		 * @param halfWidth Outer half width.
+		 * @param halfHeight Outer half height.
+		 * @param radius Outer corner radius.
+		 * @param width Stroke width.
+		 * @param arcSegments Segments per corner.
+		 * @param color Stroke color.
+		 */
+		void buildStrokeMesh(utility::graphic::Mesh &mesh,
+							 const utility::graphic::PositionF &center,
+							 const utility::graphic::OrientationF &orientation,
+							 float halfWidth, float halfHeight, float radius,
+							 float width, int arcSegments,
+							 const utility::graphic::Color32Bit &color) const;
+
 		public:
+		/**
+		 * @brief Depth lift, in layer steps, of the stroke above the fill.
+		 */
+		static constexpr float StrokeLift = 0.5f;
+
 		/**
 		 * @brief Construct a rectangle rendering system.
 		 * @param engine The engine used to draw rectangles.

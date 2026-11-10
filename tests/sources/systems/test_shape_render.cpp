@@ -22,6 +22,8 @@
 
 #include "systems/test_shape_render.hpp"
 
+#include <algorithm>
+
 namespace guillaume::systems::tests
 {
 
@@ -159,6 +161,50 @@ namespace guillaume::systems::tests
 
 		EXPECT_EQ(_engineMock->createObjectCallCount, 1u);
 		EXPECT_EQ(_engineMock->updateObjectCallCount, 1u);
+	}
+
+	TEST_F(TestShapeRender, LineColorOverridesFill)
+	{
+		const auto entity = createShapeEntity<components::Line>(
+			utility::graphic::PoseF(), 100.0f, 50.0f,
+			utility::graphic::Color32Bit(10, 10, 10, 255));
+		_componentRegistry.getComponent<components::Line>(entity).setColor(
+			utility::graphic::Color32Bit(200, 0, 0, 255));
+
+		_lineSystem->update(entity);
+
+		const auto renderable =
+			std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+				_engineMock->lastCreated());
+		ASSERT_NE(renderable, nullptr);
+		const auto vertices = renderable->getMeshes().front()->getVertices();
+		ASSERT_FALSE(vertices.empty());
+		EXPECT_EQ(vertices.front().getColor().getRed(), 200);
+	}
+
+	TEST_F(TestShapeRender, BottomPlacementHugsBottomEdge)
+	{
+		const auto entity = createShapeEntity<components::Line>(
+			utility::graphic::PoseF(), 100.0f, 56.0f);
+		_componentRegistry.getComponent<components::Line>(entity)
+			.setThickness(1.0f)
+			.setPlacement(components::Line::Placement::Bottom);
+
+		_lineSystem->update(entity);
+
+		const auto renderable =
+			std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+				_engineMock->lastCreated());
+		ASSERT_NE(renderable, nullptr);
+		float minY = 1e9f;
+		float maxY = -1e9f;
+		for (const auto &vertex:
+			 renderable->getMeshes().front()->getVertices()) {
+			minY = std::min(minY, vertex.getPosition()[1]);
+			maxY = std::max(maxY, vertex.getPosition()[1]);
+		}
+		EXPECT_NEAR(minY, 55.0f, 1e-4f);
+		EXPECT_NEAR(maxY, 56.0f, 1e-4f);
 	}
 
 }	 // namespace guillaume::systems::tests

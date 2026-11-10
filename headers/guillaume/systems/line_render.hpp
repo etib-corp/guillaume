@@ -51,6 +51,12 @@ namespace guillaume::systems
 
 		public:
 		/**
+		 * @brief Depth lift, in layer steps, of edge-placed strokes so they
+		 * draw over the fill of the entity carrying them.
+		 */
+		static constexpr float StrokeLift = 0.5f;
+
+		/**
 		 * @brief Construct a line rendering system.
 		 * @param engine The engine used to draw lines.
 		 */

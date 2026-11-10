@@ -117,20 +117,21 @@ namespace guillaume::entities
 		switch (_variant) {
 			case Variant::Elevated: {
 				setColor(schemeColor(SchemeColorRole::SurfaceContainerLow));
-				borders.setColor(transparentColor());
+				borders.setColor(transparentColor()).setWidth(0.0f);
 				elevation.setLevel(1.0f).setSpread(6.0f);
 				break;
 			}
 			case Variant::Filled: {
 				setColor(schemeColor(SchemeColorRole::SurfaceContainerHighest));
-				borders.setColor(transparentColor());
+				borders.setColor(transparentColor()).setWidth(0.0f);
 				elevation.setLevel(0.0f).setSpread(0.0f);
 				break;
 			}
 			case Variant::Outlined:
 			default: {
 				setColor(transparentColor());
-				borders.setColor(schemeColor(SchemeColorRole::OutlineVariant));
+				borders.setColor(schemeColor(SchemeColorRole::OutlineVariant))
+					.setWidth(1.0f);
 				elevation.setLevel(0.0f).setSpread(0.0f);
 				break;
 			}

@@ -558,7 +558,8 @@ namespace guillaume::entities
 
 			getComponentRegistry()
 				.getComponent<components::Borders>(getIdentifier())
-				.setColor(getDisabledBorderColor());
+				.setColor(getDisabledBorderColor())
+				.setWidth(1.0f);
 
 			if (_icon) {
 				_icon->setColor(getDisabledContentColor());
@@ -578,7 +579,8 @@ namespace guillaume::entities
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
-			.setColor(getBorderColor(_colorStyle, _isToggle, _isSelected));
+			.setColor(getBorderColor(_colorStyle, _isToggle, _isSelected))
+			.setWidth(1.0f);
 
 		if (_icon) {
 			_icon->setColor(

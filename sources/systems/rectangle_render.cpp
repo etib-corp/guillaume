@@ -227,6 +227,70 @@ namespace guillaume::systems
 		return vertex;
 	}
 
+	void RectangleRender::buildStrokeMesh(
+		utility::graphic::Mesh &mesh, const utility::graphic::PositionF &center,
+		const utility::graphic::OrientationF &orientation,
+		const float halfWidth, const float halfHeight, const float radius,
+		const float width, int arcSegments,
+		const utility::graphic::Color32Bit &color) const
+	{
+		const float pi = std::acos(-1.0f);
+		if (arcSegments <= 0) {
+			arcSegments = 1;
+		}
+
+		const float stroke = (std::min)({ width, halfWidth, halfHeight });
+		const float outerRadius =
+			std::max(0.0f, (std::min)({ radius, halfWidth, halfHeight }));
+		const float innerHalfWidth	= halfWidth - stroke;
+		const float innerHalfHeight = halfHeight - stroke;
+		const float innerRadius		= std::max(0.0f, outerRadius - stroke);
+
+		// Both loops always sample every corner arc (a zero radius collapses
+		// an arc onto its corner), so outer and inner vertices pair up 1:1.
+		const auto buildLoop = [&](float hw, float hh, float r) {
+			std::vector<utility::math::Vector2F> loop;
+			loop.reserve(static_cast<std::size_t>(4 * (arcSegments + 1)));
+			appendRoundedCornerArc(loop,
+								   utility::math::Vector2F({ hw - r, -hh + r }),
+								   -pi / 2.0f, 0.0f, r, arcSegments);
+			appendRoundedCornerArc(loop,
+								   utility::math::Vector2F({ hw - r, hh - r }),
+								   0.0f, pi / 2.0f, r, arcSegments);
+			appendRoundedCornerArc(loop,
+								   utility::math::Vector2F({ -hw + r, hh - r }),
+								   pi / 2.0f, pi, r, arcSegments);
+			appendRoundedCornerArc(
+				loop, utility::math::Vector2F({ -hw + r, -hh + r }), pi,
+				3.0f * pi / 2.0f, r, arcSegments);
+			return transformToWorldVertices(loop, center, orientation);
+		};
+
+		const auto outer = buildLoop(halfWidth, halfHeight, outerRadius);
+		const auto inner =
+			buildLoop(innerHalfWidth, innerHalfHeight, innerRadius);
+
+		for (std::size_t i = 0; i < outer.size(); ++i) {
+			mesh.addVertex(createVertex(outer[i], color));
+			mesh.addVertex(createVertex(inner[i], color));
+		}
+
+		const auto count = static_cast<std::uint32_t>(outer.size());
+		for (std::uint32_t i = 0; i < count; ++i) {
+			const std::uint32_t next		= (i + 1) % count;
+			const std::uint32_t outerIndex	= i * 2;
+			const std::uint32_t innerIndex	= i * 2 + 1;
+			const std::uint32_t outerNext	= next * 2;
+			const std::uint32_t innerNext	= next * 2 + 1;
+			mesh.addIndex(outerIndex);
+			mesh.addIndex(innerIndex);
+			mesh.addIndex(outerNext);
+			mesh.addIndex(outerNext);
+			mesh.addIndex(innerIndex);
+			mesh.addIndex(innerNext);
+		}
+	}
+
 	RectangleRender::RectangleRender(std::unique_ptr<utility::Engine> &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Color, components::Borders>(
@@ -294,8 +358,28 @@ namespace guillaume::systems
 									std::vector<uint32_t> {});
 		buildTriangleFanVertices(mesh, center, roundedVertices, color);
 
-		auto renderable = std::make_shared<MeshRenderable>(
-			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");
+		std::vector<utility::graphic::Mesh> meshes { mesh };
+
+		if (bordersComponent.hasStroke()) {
+			const utility::graphic::PositionF strokeCenter(
+				-pose.getOrientation().getForward() * StrokeLift);
+			utility::graphic::Mesh stroke(
+				std::vector<utility::graphic::VertexF> {},
+				std::vector<uint32_t> {});
+			buildStrokeMesh(
+				stroke,
+				utility::graphic::PositionF(center[0] + strokeCenter[0],
+											center[1] + strokeCenter[1],
+											center[2] + strokeCenter[2]),
+				pose.getOrientation(), boundComponent.getWidth() / 2.0f,
+				boundComponent.getHeight() / 2.0f,
+				extractAverageRadius(bordersComponent),
+				bordersComponent.getWidth(), 16, bordersComponent.getColor());
+			meshes.push_back(stroke);
+		}
+
+		auto renderable =
+			std::make_shared<MeshRenderable>(meshes, "mesh_material");
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {

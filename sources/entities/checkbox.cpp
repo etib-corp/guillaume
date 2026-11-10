@@ -142,6 +142,9 @@ namespace guillaume::entities
 
 		const auto onColorRole =
 			errored ? SchemeColorRole::OnError : SchemeColorRole::OnPrimary;
+		// The indeterminate dash shares the box entity, so it must carry its
+		// own color instead of the container fill.
+		line.setColor(schemeColor(onColorRole));
 		const auto containerRole =
 			errored ? SchemeColorRole::Error : SchemeColorRole::Primary;
 
@@ -153,12 +156,13 @@ namespace guillaume::entities
 				} else {
 					setColor(schemeColor(containerRole));
 				}
-				borders.setColor(transparentColor());
+				borders.setColor(transparentColor()).setWidth(0.0f);
 				break;
 			}
 			case State::Unchecked:
 			default: {
 				setColor(transparentColor());
+				borders.setWidth(2.0f);
 				if (disabled) {
 					borders.setColor(withAlpha(
 						schemeColor(SchemeColorRole::OnSurface), 97U));

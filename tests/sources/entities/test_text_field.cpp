@@ -26,6 +26,7 @@
 #include <string>
 
 #include <guillaume/components/borders.hpp>
+#include <guillaume/theme.hpp>
 #include <guillaume/components/bound.hpp>
 #include <guillaume/components/color.hpp>
 #include <guillaume/components/line.hpp>
@@ -77,6 +78,12 @@ namespace guillaume::entities::tests
 		const auto &line =
 			registry.getComponent<components::Line>(field->getIdentifier());
 		EXPECT_FLOAT_EQ(line.getThickness(), 1.0f);
+		EXPECT_EQ(line.getPlacement(), components::Line::Placement::Bottom);
+		ASSERT_TRUE(line.hasColor());
+		EXPECT_EQ(line.getColor(),
+				  getActiveScheme()
+					  .getColor(SchemeColorRole::OnSurfaceVariant)
+					  .getColor());
 
 		const auto &color =
 			registry.getComponent<components::Color>(field->getIdentifier());
@@ -97,7 +104,11 @@ namespace guillaume::entities::tests
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(field->getIdentifier());
-		EXPECT_GT(borders.getColor().getAlpha(), 0);
+		EXPECT_TRUE(borders.hasStroke());
+		EXPECT_FLOAT_EQ(borders.getWidth(), 1.0f);
+		EXPECT_EQ(
+			borders.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Outline).getColor());
 	}
 
 	TEST_F(TestTextField, TextFieldComponentCarriesState)

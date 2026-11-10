@@ -203,14 +203,22 @@ namespace guillaume::entities
 			? schemeColor(SchemeColorRole::Error)
 			: schemeColor(SchemeColorRole::Outline);
 
+		const auto underlineColor = _error
+			? schemeColor(SchemeColorRole::Error)
+			: schemeColor(SchemeColorRole::OnSurfaceVariant);
+
 		if (_variant == Variant::Outlined) {
 			setColor(transparentColor());
-			borders.setBorderRadius(4.0f).setColor(outlineColor);
-			line.setThickness(0.0f);
+			borders.setBorderRadius(4.0f).setColor(outlineColor).setWidth(1.0f);
+			line.setThickness(0.0f).clearColor();
 		} else {
 			setColor(schemeColor(SchemeColorRole::SurfaceVariant));
-			borders.setBorderRadius(0.0f).setColor(transparentColor());
-			line.setThickness(1.0f);
+			borders.setBorderRadius(0.0f)
+				.setColor(transparentColor())
+				.setWidth(0.0f);
+			line.setThickness(1.0f)
+				.setPlacement(components::Line::Placement::Bottom)
+				.setColor(underlineColor);
 		}
 	}
 

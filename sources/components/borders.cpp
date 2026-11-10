@@ -22,6 +22,8 @@
 
 #include "guillaume/components/borders.hpp"
 
+#include <stdexcept>
+
 namespace guillaume::components
 {
 	Borders::Borders(void)
@@ -29,6 +31,8 @@ namespace guillaume::components
 		, _topRightRadius(0.0f)
 		, _bottomRightRadius(0.0f)
 		, _bottomLeftRadius(0.0f)
+		, _color(0, 0, 0, 0)
+		, _width(0.0f)
 	{
 	}
 
@@ -115,6 +119,29 @@ namespace guillaume::components
 		return _color;
 	}
 
+	Borders &Borders::setWidth(float width)
+	{
+		if (width < 0.0f) {
+			throw std::invalid_argument("Border width must be non-negative");
+		}
+		if (_width == width) {
+			return *this;
+		}
+		_width = width;
+		setHasChanged(true);
+		return *this;
+	}
+
+	float Borders::getWidth(void) const
+	{
+		return _width;
+	}
+
+	bool Borders::hasStroke(void) const
+	{
+		return _width > 0.0f && _color.getAlpha() > 0;
+	}
+
 	bool Borders::operator==(const Borders &other) const
 	{
 		if (_topLeftRadius != other._topLeftRadius) {
@@ -130,6 +157,9 @@ namespace guillaume::components
 			return false;
 		}
 		if (_color != other._color) {
+			return false;
+		}
+		if (_width != other._width) {
 			return false;
 		}
 		return true;

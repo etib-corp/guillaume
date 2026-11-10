@@ -51,6 +51,7 @@ namespace guillaume::components
 		BorderRadius
 			_bottomLeftRadius;	  ///< Borders radius for the bottom-left corner
 		utility::graphic::Color32Bit _color;	///< Color of the border
+		float _width;	 ///< Stroke width of the border; 0 paints no stroke
 
 		public:
 		/**
@@ -134,6 +135,30 @@ namespace guillaume::components
 		 * @return The color of the border (RGBA).
 		 */
 		utility::graphic::Color32Bit getColor(void) const;
+
+		/**
+		 * @brief Set the stroke width painted by `systems::RectangleRender`.
+		 *
+		 * The stroke is drawn inside the bound, following the corner radii.
+		 * A width of 0 (the default) disables the stroke.
+		 *
+		 * @param width Stroke width, must be non-negative.
+		 * @return Reference to this Borders component for chaining.
+		 * @throws std::invalid_argument If @p width is negative.
+		 */
+		Borders &setWidth(float width);
+
+		/**
+		 * @brief Get the stroke width.
+		 * @return The stroke width (0 when no stroke is painted).
+		 */
+		float getWidth(void) const;
+
+		/**
+		 * @brief Check whether a visible stroke must be painted.
+		 * @return True when the width and the color alpha are both non-zero.
+		 */
+		bool hasStroke(void) const;
 
 		/**
 		 * @brief Equality operator for Borders component.

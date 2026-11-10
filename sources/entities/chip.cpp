@@ -147,11 +147,12 @@ namespace guillaume::entities
 
 		if (_variant == Variant::Filter && selected) {
 			setColor(schemeColor(SchemeColorRole::SecondaryContainer));
-			borders.setColor(transparentColor());
+			borders.setColor(transparentColor()).setWidth(0.0f);
 			contentColor = schemeColor(SchemeColorRole::OnSecondaryContainer);
 		} else {
 			setColor(transparentColor());
-			borders.setColor(schemeColor(SchemeColorRole::Outline));
+			borders.setColor(schemeColor(SchemeColorRole::Outline))
+				.setWidth(1.0f);
 			contentColor = schemeColor(SchemeColorRole::OnSurfaceVariant);
 		}
 

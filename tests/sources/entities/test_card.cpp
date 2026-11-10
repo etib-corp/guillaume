@@ -25,6 +25,7 @@
 #include <memory>
 
 #include <guillaume/components/borders.hpp>
+#include <guillaume/theme.hpp>
 #include <guillaume/components/bound.hpp>
 #include <guillaume/components/color.hpp>
 #include <guillaume/components/elevation.hpp>
@@ -106,7 +107,12 @@ namespace guillaume::entities::tests
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(card->getIdentifier());
-		EXPECT_GT(borders.getColor().getAlpha(), 0);
+		EXPECT_TRUE(borders.hasStroke());
+		EXPECT_FLOAT_EQ(borders.getWidth(), 1.0f);
+		EXPECT_EQ(borders.getColor(),
+				  getActiveScheme()
+					  .getColor(SchemeColorRole::OutlineVariant)
+					  .getColor());
 	}
 
 	TEST_F(TestCard, VariantSwitchUpdatesStyle)
