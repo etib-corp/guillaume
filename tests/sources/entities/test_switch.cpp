@@ -22,6 +22,12 @@
 
 #include "entities/test_switch.hpp"
 
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <memory>
 
 #include <guillaume/components/borders.hpp>
@@ -183,6 +189,58 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(toggle->getParent(), parent);
 		EXPECT_EQ(toggle->getVariant(), Switch::Variant::WithIcon);
 		EXPECT_TRUE(toggle->isChecked());
+	}
+
+	TEST_F(TestSwitch, DisabledSwitchDoesNotToggle)
+	{
+		ecs::ComponentRegistry registry;
+		auto toggle = makeSwitch(registry, Switch::Variant::Disabled);
+		toggle->initialize();
+
+		int changes = 0;
+		toggle->setOnValueChange([&changes](bool) {
+			++changes;
+		});
+
+		toggle->toggle();
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				toggle->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_FALSE(toggle->isChecked());
+		EXPECT_EQ(changes, 0);
+		EXPECT_TRUE(toggle->isDisabled());
+		EXPECT_FALSE(
+			registry.getComponent<components::StyleState>(toggle->getIdentifier())
+				.isEnabled());
+	}
+
+	TEST_F(TestSwitch, ReleaseTogglesAndReportsValue)
+	{
+		ecs::ComponentRegistry registry;
+		auto toggle = makeSwitch(registry);
+		toggle->initialize();
+
+		bool reported = false;
+		toggle->setOnValueChange([&reported](bool value) {
+			reported = value;
+		});
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				toggle->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_TRUE(toggle->isChecked());
+		EXPECT_TRUE(reported);
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				toggle->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Switch);
+		EXPECT_EQ(accessibility.getChecked(), components::CheckedState::Checked);
 	}
 
 }	 // namespace guillaume::entities::tests

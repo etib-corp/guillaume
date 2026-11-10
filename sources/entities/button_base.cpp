@@ -43,7 +43,9 @@ namespace guillaume::entities
 								  components::HandButtonInteraction,
 								  components::HandHoverInteraction,
 								  components::MouseHoverInteraction,
-								  components::MouseButtonInteraction>(registry)
+								  components::MouseButtonInteraction,
+								  components::StyleState,
+								  components::Accessibility>(registry)
 		, _iconGlyphName(iconGlyphName)
 		, _iconStyle(iconStyle)
 		, _labelContent(labelContent)
@@ -52,11 +54,17 @@ namespace guillaume::entities
 		, _isToggle(isToggle)
 		, _isSelected(false)
 		, _isMorph(isMorph)
-		, _isDisabled(isDisabled)
 		, _isTrailingIcon(isTrailingIcon)
-		, _accessibilityLabel(accessibilityLabel)
 		, _onClick(std::move(onClick))
 	{
+		getComponentRegistry()
+			.getComponent<components::StyleState>(getIdentifier())
+			.setEnabled(!isDisabled);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::Button)
+			.setLabel(accessibilityLabel.empty() ? labelContent
+												 : accessibilityLabel);
 	}
 
 	ButtonBase &ButtonBase::setIconGlyphName(const std::string &iconGlyphName)
@@ -93,6 +101,13 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	void ButtonBase::syncAccessibilityState(void)
+	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setSelected(_isToggle && _isSelected);
+	}
+
 	ButtonBase &ButtonBase::setIsToggle(const bool &isToggle)
 	{
 		_isToggle = isToggle;
@@ -116,6 +131,7 @@ namespace guillaume::entities
 		}
 
 		_isSelected = selected;
+		syncAccessibilityState();
 
 		if (_icon && !_selectedIconGlyphName.empty()) {
 			_icon->setGlyphName(getActiveIconGlyphName());
@@ -160,7 +176,9 @@ namespace guillaume::entities
 
 	ButtonBase &ButtonBase::setDisabled(const bool &isDisabled)
 	{
-		_isDisabled = isDisabled;
+		getComponentRegistry()
+			.getComponent<components::StyleState>(getIdentifier())
+			.setEnabled(!isDisabled);
 
 		applyStyleState();
 		applyGeometry();
@@ -170,19 +188,41 @@ namespace guillaume::entities
 
 	bool ButtonBase::isDisabled(void) const
 	{
-		return _isDisabled;
+		return !getComponentRegistry()
+					.getComponent<components::StyleState>(getIdentifier())
+					.isEnabled();
 	}
 
 	ButtonBase &
 		ButtonBase::setAccessibilityLabel(const std::string &accessibilityLabel)
 	{
-		_accessibilityLabel = accessibilityLabel;
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setLabel(accessibilityLabel);
 		return *this;
 	}
 
 	const std::string &ButtonBase::getAccessibilityLabel(void) const
 	{
-		return _accessibilityLabel;
+		return getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.getLabel();
+	}
+
+	ButtonBase &
+		ButtonBase::setAccessibilityHint(const std::string &accessibilityHint)
+	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setHint(accessibilityHint);
+		return *this;
+	}
+
+	const std::string &ButtonBase::getAccessibilityHint(void) const
+	{
+		return getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.getHint();
 	}
 
 	ButtonBase &ButtonBase::setOnClick(std::function<void(void)> onClick)
@@ -324,7 +364,7 @@ namespace guillaume::entities
 
 	void ButtonBase::hoverHandler(void)
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -333,7 +373,7 @@ namespace guillaume::entities
 
 	void ButtonBase::unHoverHandler(void)
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -342,7 +382,7 @@ namespace guillaume::entities
 
 	void ButtonBase::buttonPressHandler()
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -351,13 +391,14 @@ namespace guillaume::entities
 
 	void ButtonBase::buttonReleaseHandler()
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			return;
 		}
 
 		if (_isToggle) {
 			_isSelected = !_isSelected;
 		}
+		syncAccessibilityState();
 
 		if (_icon && !_selectedIconGlyphName.empty()) {
 			_icon->setGlyphName(getActiveIconGlyphName());
@@ -427,10 +468,8 @@ namespace guillaume::entities
 		setLabelContent(_labelContent);
 		setIsToggle(_isToggle);
 		setMorph(_isMorph);
-		setDisabled(_isDisabled);
 		setTrailingIcon(_isTrailingIcon);
 		setSelectedIconGlyphName(_selectedIconGlyphName);
-		setAccessibilityLabel(_accessibilityLabel);
 		setOnClick(_onClick);
 
 		applyStyleState();

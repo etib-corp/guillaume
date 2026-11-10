@@ -7,6 +7,7 @@
 set(GUILLAUME_SOURCES
     sources/application.cpp
     sources/component_registry.cpp
+    sources/components/accessibility.cpp
     sources/components/animation.cpp
     sources/components/arc.cpp
     sources/components/borders.cpp
@@ -37,6 +38,7 @@ set(GUILLAUME_SOURCES
     sources/components/scrim.cpp
     sources/components/scrollable.cpp
     sources/components/selection.cpp
+    sources/components/style_state.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
     sources/components/transform.cpp
@@ -87,6 +89,7 @@ set(GUILLAUME_SOURCES
     sources/entities/icon.cpp
     sources/entities/icon_button.cpp
     sources/entities/image.cpp
+    sources/entities/interaction_helpers.cpp
     sources/entities/list.cpp
     sources/entities/mesh.cpp
     sources/entities/view.cpp
@@ -116,6 +119,7 @@ set(GUILLAUME_SOURCES
     sources/systems/ellipse_render.cpp
     sources/systems/elevation_render.cpp
     sources/systems/focus.cpp
+    sources/systems/focus_ring_render.cpp
     sources/systems/glyph_render.cpp
     sources/systems/hand_button.cpp
     sources/systems/hand_motion.cpp
@@ -142,6 +146,7 @@ set(GUILLAUME_SOURCES
     sources/systems/selection.cpp
     sources/systems/scrim_render.cpp
     sources/systems/shape_mesh.cpp
+    sources/systems/style_state.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp

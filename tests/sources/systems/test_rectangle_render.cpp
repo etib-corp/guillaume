@@ -24,6 +24,10 @@
 
 #include <cmath>
 
+#include "guillaume/components/style_state.hpp"
+#include "guillaume/systems/focus_ring_render.hpp"
+#include "guillaume/theme.hpp"
+
 namespace guillaume::systems::tests
 {
 
@@ -108,6 +112,42 @@ namespace guillaume::systems::tests
 	{
 		components::Borders borders;
 		EXPECT_THROW(borders.setWidth(-1.0f), std::invalid_argument);
+	}
+
+	TEST_F(TestRectangleRender, FocusRingDrawsOnlyWhileFocused)
+	{
+		const auto entity = createRectangle();
+		_componentRegistry.addComponent<components::StyleState>(entity);
+
+		FocusRingRender ring(_engine);
+		ring.bindComponentRegistry(_componentRegistry);
+
+		ring.prepare();
+		ring.update(entity);
+		ring.cleanup();
+		EXPECT_EQ(_engineMock->createObjectCallCount, 0u);
+
+		_componentRegistry.getComponent<components::StyleState>(entity)
+			.setFocused(true);
+		ring.prepare();
+		ring.update(entity);
+		ring.cleanup();
+		EXPECT_EQ(_engineMock->createObjectCallCount, 1u);
+		const auto stroke = lastRenderable()->getMeshes().front();
+		const auto vertices = stroke->getVertices();
+		ASSERT_FALSE(vertices.empty());
+		EXPECT_EQ(vertices.front().getColor(),
+				  getActiveScheme()
+					  .getColor(SchemeColorRole::Secondary)
+					  .getColor());
+
+		_componentRegistry.getComponent<components::StyleState>(entity)
+			.setFocused(false);
+		ring.prepare();
+		ring.update(entity);
+		ring.cleanup();
+		EXPECT_EQ(_engineMock->removeObjectCallCount, 1u);
+		ring.unbindComponentRegistry();
 	}
 
 }	 // namespace guillaume::systems::tests

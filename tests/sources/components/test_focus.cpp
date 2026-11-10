@@ -22,6 +22,12 @@
 
 #include "components/test_focus.hpp"
 
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
+#include <stdexcept>
+
 namespace guillaume::components::tests
 {
 	TEST_F(TestFocus, Constructor)
@@ -101,4 +107,68 @@ namespace guillaume::components::tests
 		EXPECT_FALSE(gainedHandler);
 		EXPECT_FALSE(lostHandler);
 	}
+	TEST(TestStyleState, DisablingClearsTransientFlags)
+	{
+		components::StyleState state;
+		state.setHovered(true).setPressed(true).setFocused(true);
+		EXPECT_EQ(state.getActiveLayer(), theme::StateLayer::Pressed);
+
+		state.setEnabled(false);
+		EXPECT_FALSE(state.isHovered());
+		EXPECT_FALSE(state.isPressed());
+		EXPECT_FALSE(state.isFocused());
+		EXPECT_FALSE(state.getActiveLayer().has_value());
+
+		state.setHovered(true);
+		EXPECT_FALSE(state.isHovered());
+	}
+
+	TEST(TestStyleState, LayerPriorityFollowsMaterial)
+	{
+		components::StyleState state;
+		EXPECT_FALSE(state.getActiveLayer().has_value());
+		state.setHovered(true);
+		EXPECT_EQ(state.getActiveLayer(), theme::StateLayer::Hovered);
+		state.setFocused(true);
+		EXPECT_EQ(state.getActiveLayer(), theme::StateLayer::Focused);
+		state.setPressed(true);
+		EXPECT_EQ(state.getActiveLayer(), theme::StateLayer::Pressed);
+		state.setDragged(true);
+		EXPECT_EQ(state.getActiveLayer(), theme::StateLayer::Dragged);
+	}
+
+	TEST(TestAccessibility, StoresSemantics)
+	{
+		components::Accessibility accessibility;
+		accessibility.setRole(components::AccessibilityRole::Checkbox)
+			.setLabel("Accept")
+			.setHint("Accepts the terms")
+			.setChecked(components::CheckedState::Mixed)
+			.setExpanded(false)
+			.setLiveRegion(components::LiveRegion::Polite);
+
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Checkbox);
+		EXPECT_EQ(accessibility.getLabel(), "Accept");
+		EXPECT_EQ(accessibility.getHint(), "Accepts the terms");
+		EXPECT_EQ(accessibility.getChecked(), components::CheckedState::Mixed);
+		EXPECT_EQ(accessibility.getExpanded(), false);
+		EXPECT_EQ(accessibility.getLiveRegion(), components::LiveRegion::Polite);
+		EXPECT_TRUE(accessibility.isFocusable());
+	}
+
+	TEST(TestAccessibility, ValidatesValueAndFocusOrder)
+	{
+		components::Accessibility accessibility;
+		accessibility.setValue(components::AccessibilityValue { 0.0f, 100.0f,
+																 40.0f });
+		ASSERT_TRUE(accessibility.getValue().has_value());
+		EXPECT_FLOAT_EQ(accessibility.getValue()->now, 40.0f);
+
+		EXPECT_THROW(accessibility.setValue(components::AccessibilityValue {
+						 0.0f, 1.0f, 2.0f }),
+					 std::invalid_argument);
+		EXPECT_THROW(accessibility.setFocusOrder(-1), std::invalid_argument);
+	}
+
 }	 // namespace guillaume::components::tests

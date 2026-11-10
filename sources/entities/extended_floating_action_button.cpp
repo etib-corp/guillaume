@@ -249,7 +249,7 @@ namespace guillaume::entities
 		// and flat when disabled.
 		auto level = _lowered ? theme::ElevationLevel::Level1
 							  : theme::ElevationLevel::Level3;
-		if (_isDisabled) {
+		if (isDisabled()) {
 			level = theme::ElevationLevel::Level0;
 		} else if (isHovered() && !isPressed()) {
 			level = static_cast<theme::ElevationLevel>(
@@ -264,7 +264,7 @@ namespace guillaume::entities
 	{
 		applyElevation();
 
-		if (_isDisabled) {
+		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
 				.setColor(getDisabledContainerColor());

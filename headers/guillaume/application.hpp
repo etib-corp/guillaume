@@ -86,6 +86,8 @@
 #include "guillaume/systems/text_render.hpp"
 #include "guillaume/systems/glyph_render.hpp"
 #include "guillaume/systems/focus.hpp"
+#include "guillaume/systems/focus_ring_render.hpp"
+#include "guillaume/systems/style_state.hpp"
 #include "guillaume/systems/image_render.hpp"
 
 namespace guillaume

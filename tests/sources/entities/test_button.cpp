@@ -22,6 +22,10 @@
 
 #include "entities/test_button.hpp"
 
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <guillaume/theme.hpp>
 
 #include <functional>
@@ -444,4 +448,32 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(button->getColorStyle(), Button::Color::Filled);
 		EXPECT_EQ(button->getSize(), Button::Size::Large);
 	}
+	TEST_F(TestButton, DisabledStateAndSemanticsLiveInComponents)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, true, false, "", std::function<void(void)>());
+		button->initialize();
+		button->update();
+
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				button->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Button);
+		EXPECT_EQ(accessibility.getLabel(), "Save");
+
+		auto &state =
+			registry.getComponent<components::StyleState>(button->getIdentifier());
+		EXPECT_FALSE(state.isEnabled());
+		EXPECT_TRUE(button->isDisabled());
+
+		button->setDisabled(false);
+		EXPECT_TRUE(state.isEnabled());
+
+		button->setAccessibilityHint("Saves the draft");
+		EXPECT_EQ(accessibility.getHint(), "Saves the draft");
+	}
+
 }	 // namespace guillaume::entities::tests

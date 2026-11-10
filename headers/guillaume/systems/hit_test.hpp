@@ -29,11 +29,30 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/hand_hover_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
+#include "guillaume/components/style_state.hpp"
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::systems
 {
+
+	/**
+	 * @brief Check whether an entity accepts interaction.
+	 *
+	 * Entities without a `StyleState` are always interactive; entities with
+	 * one follow its enabled flag.
+	 *
+	 * @param registry Component registry.
+	 * @param entityIdentifier Entity identifier.
+	 * @return False when the entity is disabled.
+	 */
+	inline bool isInteractive(const ecs::ComponentRegistry &registry,
+							  const ecs::Entity::Identifier &entityIdentifier)
+	{
+		return !registry.hasComponent<components::StyleState>(entityIdentifier)
+			|| registry.getComponent<components::StyleState>(entityIdentifier)
+				   .isEnabled();
+	}
 
 	/**
 	 * @brief Get the accessibility hit margin of an entity.

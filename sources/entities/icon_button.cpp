@@ -285,7 +285,7 @@ namespace guillaume::entities
 
 	void IconButton::applyStyleState(void)
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
 				.setColor(getDisabledContainerColor());

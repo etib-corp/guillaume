@@ -551,7 +551,7 @@ namespace guillaume::entities
 
 	void Button::applyStyleState(void)
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
 				.setColor(getDisabledContainerColor());

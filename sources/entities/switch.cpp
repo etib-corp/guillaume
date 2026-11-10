@@ -21,6 +21,7 @@
  */
 
 #include "guillaume/entities/switch.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
 
 #include <functional>
 #include <memory>
@@ -177,6 +178,16 @@ namespace guillaume::entities
 		, _icon()
 		, _labelEntity()
 	{
+		makeInteractive(
+			getComponentRegistry(), getIdentifier(),
+			components::AccessibilityRole::Switch,
+			[this]() {
+				toggle();
+			},
+			[this]() {
+				applyVariant();
+			});
+
 		auto &value = getComponentRegistry().getComponent<components::Value>(
 			getIdentifier());
 		value.setMin(0.0f).setMax(1.0f).setStep(1.0f);
@@ -194,7 +205,15 @@ namespace guillaume::entities
 
 	void Switch::applyVariant(void)
 	{
-		const bool disabled = (_variant == Variant::Disabled);
+		setEnabled(getComponentRegistry(), getIdentifier(),
+				   _variant != Variant::Disabled);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setChecked(isChecked() ? components::CheckedState::Checked
+									: components::CheckedState::Unchecked)
+			.setLabel(_label);
+
+		const bool disabled = isDisabled();
 		const bool on		= isChecked();
 
 		if (disabled) {
@@ -290,7 +309,27 @@ namespace guillaume::entities
 
 	Switch &Switch::toggle(void)
 	{
-		return setChecked(!isChecked());
+		if (isDisabled()) {
+			return *this;
+		}
+
+		setChecked(!isChecked());
+		if (_onValueChange) {
+			_onValueChange(isChecked());
+		}
+		return *this;
+	}
+
+	Switch &Switch::setOnValueChange(std::function<void(bool)> onValueChange)
+	{
+		_onValueChange = std::move(onValueChange);
+		return *this;
+	}
+
+	bool Switch::isDisabled(void) const
+	{
+		return _variant == Variant::Disabled
+			|| !isEnabled(getComponentRegistry(), getIdentifier());
 	}
 
 	Switch &Switch::setLabel(const std::string &label)
@@ -333,18 +372,6 @@ namespace guillaume::entities
 			children.push_back(_labelEntity);
 		}
 		setChildren(children);
-
-		getComponentRegistry()
-			.getComponent<components::MouseButtonInteraction>(getIdentifier())
-			.setOnButtonReleaseHandler(
-				utility::event::MouseButtonEvent::Button::Left,
-				std::bind(&Switch::toggle, this));
-
-		getComponentRegistry()
-			.getComponent<components::HandButtonInteraction>(getIdentifier())
-			.setOnButtonReleaseHandler(
-				utility::event::HandButtonEvent::Button::A,
-				std::bind(&Switch::toggle, this));
 
 		applyState();
 	}

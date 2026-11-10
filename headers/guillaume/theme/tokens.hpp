@@ -358,4 +358,22 @@ namespace guillaume::theme
 		}
 	};
 
+	/**
+	 * @brief Material 3 focus indicator token.
+	 *
+	 * The ring is painted outside the focused entity, `offset` away from its
+	 * bound, `width` thick, in the scheme's secondary color.
+	 */
+	struct FocusRing {
+		/**
+		 * @brief Ring thickness, in dp.
+		 */
+		static constexpr float Width = 3.0f;
+
+		/**
+		 * @brief Gap between the bound and the ring, in dp.
+		 */
+		static constexpr float Offset = 2.0f;
+	};
+
 }	 // namespace guillaume::theme

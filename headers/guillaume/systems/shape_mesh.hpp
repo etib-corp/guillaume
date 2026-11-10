@@ -128,4 +128,28 @@ namespace guillaume::systems::shape
 					   float dashLength, float gapLength,
 					   const utility::graphic::Color32Bit &color);
 
+	/**
+	 * @brief Build a constant-width band following a rounded rectangle.
+	 *
+	 * The band lies between the outline of half extents
+	 * (@p halfWidth, @p halfHeight) and corner radius @p radius, and the same
+	 * outline inset by @p width (inner radius reduced by @p width).
+	 *
+	 * @param mesh Mesh receiving the vertices and indices.
+	 * @param center World center of the rectangle.
+	 * @param orientation World orientation.
+	 * @param halfWidth Outer half width.
+	 * @param halfHeight Outer half height.
+	 * @param radius Outer corner radius.
+	 * @param width Band width.
+	 * @param arcSegments Segments per corner.
+	 * @param color Vertex color.
+	 */
+	void buildRoundedStrokeMesh(utility::graphic::Mesh &mesh,
+								const utility::graphic::PositionF &center,
+								const utility::graphic::OrientationF &orientation,
+								float halfWidth, float halfHeight, float radius,
+								float width, int arcSegments,
+								const utility::graphic::Color32Bit &color);
+
 }	 // namespace guillaume::systems::shape

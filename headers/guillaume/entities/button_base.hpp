@@ -33,12 +33,14 @@
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/bound.hpp"
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/hand_button_interaction.hpp"
 #include "guillaume/components/hand_hover_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
+#include "guillaume/components/style_state.hpp"
 
 #include "guillaume/entities/icon.hpp"
 #include "guillaume/entities/text.hpp"
@@ -66,7 +68,8 @@ namespace guillaume::entities
 			components::Borders, components::Focus,
 			components::HandButtonInteraction, components::HandHoverInteraction,
 			components::MouseHoverInteraction,
-			components::MouseButtonInteraction>
+			components::MouseButtonInteraction, components::StyleState,
+			components::Accessibility>
 	{
 		public:
 		/**
@@ -165,6 +168,19 @@ namespace guillaume::entities
 		 * @return The accessibility label.
 		 */
 		const std::string &getAccessibilityLabel(void) const;
+
+		/**
+		 * @brief Set the accessibility hint (result of activation).
+		 * @param accessibilityHint New hint.
+		 * @return Reference to this button for chaining.
+		 */
+		ButtonBase &setAccessibilityHint(const std::string &accessibilityHint);
+
+		/**
+		 * @brief Get the accessibility hint.
+		 * @return The hint.
+		 */
+		const std::string &getAccessibilityHint(void) const;
 
 		/**
 		 * @brief Set the click event handler.
@@ -366,6 +382,11 @@ namespace guillaume::entities
 		 */
 		void applyTouchTarget(float width, float height);
 
+		/**
+		 * @brief Mirror the toggle selection on the Accessibility component.
+		 */
+		void syncAccessibilityState(void);
+
 		std::string _iconGlyphName {};	  ///< Icon glyph name to attach.
 		components::Glyph::Style _iconStyle {
 			components::Glyph::Style::Outlined
@@ -378,11 +399,9 @@ namespace guillaume::entities
 		bool _isToggle { false };	 ///< Whether the button is a toggle button
 		bool _isSelected { false };	   ///< Whether the button is selected
 		bool _isMorph { false };	///< Whether the button morphs when selected
-		bool _isDisabled { false };	   ///< Whether the button is disabled
 		bool _isTrailingIcon {
 			false
 		};	  ///< Whether the icon trails the label
-		std::string _accessibilityLabel {};		  ///< Accessibility label
 		std::function<void(void)> _onClick {};	  ///< Click event handler
 		static constexpr float _layerDepthStep {
 			1.0f

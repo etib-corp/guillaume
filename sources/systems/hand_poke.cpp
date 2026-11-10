@@ -64,7 +64,8 @@ namespace guillaume::systems
 			utility::graphic::PositionF(pokeEvent->getPose().getPosition()),
 			pokeEvent->getPose().getOrientation().getForward());
 		const bool isIntersecting =
-			hitTest(ray, transform.getPose(), bound,
+			isInteractive(this->getComponentRegistry(), entityIdentifier)
+			&& hitTest(ray, transform.getPose(), bound,
 					hitMargin(this->getComponentRegistry(), entityIdentifier));
 
 		if (isIntersecting) {
