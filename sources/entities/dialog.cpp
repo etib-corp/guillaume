@@ -64,7 +64,7 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Start;
 		_config.padding		 = 24.0f;
 		_config.spacing		 = 16.0f;
-		_config.borderRadius = 28.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::ExtraLarge);
 		_config.setFixedWidth(320.0f);
 	}
 
@@ -117,7 +117,7 @@ namespace guillaume::entities
 				   const SurfaceConfig &config, Variant variant,
 				   const std::string &title, const std::string &message,
 				   const std::vector<std::string> &actions)
-		: SurfaceBase<components::Overlay>(registry, config)
+		: SurfaceBase<components::Overlay, components::Elevation>(registry, config)
 		, _variant(variant)
 		, _title(title)
 		, _message(message)
@@ -127,6 +127,9 @@ namespace guillaume::entities
 		, _messageEntity()
 		, _actionEntities()
 	{
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(theme::ElevationLevel::Level3);
 		applyVariant();
 		applyOverlay();
 	}
@@ -151,7 +154,7 @@ namespace guillaume::entities
 			}
 			case Variant::FullScreen:
 			default: {
-				config.borderRadius	  = 0.0f;
+				config.borderRadius	  = getShapeRadius(theme::ShapeRole::None);
 				config.hasFixedWidth  = false;
 				config.fixedWidth	  = 0.0f;
 				config.hasFixedHeight = true;

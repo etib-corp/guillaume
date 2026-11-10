@@ -69,7 +69,7 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Start;
 		_config.padding		 = 0.0f;
 		_config.spacing		 = 0.0f;
-		_config.borderRadius = 4.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::ExtraSmall);
 		_config.setFixedWidth(200.0f);
 	}
 
@@ -110,12 +110,15 @@ namespace guillaume::entities
 
 	Menu::Menu(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::vector<Item> &items)
-		: SurfaceBase<components::Overlay>(registry, config)
+		: SurfaceBase<components::Overlay, components::Elevation>(registry, config)
 		, _variant(variant)
 		, _items(items)
 		, _rows()
 		, _rowsDirty(true)
 	{
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(theme::ElevationLevel::Level2);
 		applyVariant();
 		applyOverlay();
 	}
@@ -134,7 +137,7 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Start;
 		config.padding		 = 0.0f;
 		config.spacing		 = 0.0f;
-		config.borderRadius	 = 4.0f;
+		config.borderRadius	 = getShapeRadius(theme::ShapeRole::ExtraSmall);
 		config.hasFixedWidth = true;
 		config.fixedWidth	 = 200.0f;
 

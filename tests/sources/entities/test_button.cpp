@@ -22,6 +22,8 @@
 
 #include "entities/test_button.hpp"
 
+#include <guillaume/theme.hpp>
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -241,11 +243,13 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Borders>(button->getIdentifier());
 
 		button->setSelected(true);
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 100.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::Full));
 
 		button->setMorph(true);
 		button->setSelected(true);
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 16.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::Large));
 	}
 
 	TEST_F(TestButton, IconOnlyButtonHasNoLabelSpacing)

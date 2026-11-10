@@ -25,6 +25,7 @@
 #include <utility/graphic/color.hpp>
 
 #include "guillaume/ecs/component.hpp"
+#include "guillaume/theme/tokens.hpp"
 
 namespace guillaume::components
 {
@@ -44,16 +45,22 @@ namespace guillaume::components
 		private:
 		float _level { 1.0f };	   ///< Elevation level driving the shadow size.
 		int _layers { 4 };		   ///< Number of fading shadow layers.
-		float _spread { 4.0f };	   ///< Expansion per elevation level.
+		float _spread { 0.0f };	   ///< Expansion per elevation level.
 		utility::graphic::Color32Bit _color {
-			0, 0, 0, 64
+			0, 0, 0, 0
 		};	  ///< Shadow color (including opacity).
+		theme::ElevationLevel _elevationLevel {
+			theme::ElevationLevel::Level1
+		};	  ///< M3 level the shadow was resolved from.
 
 		public:
 		/**
 		 * @brief Default constructor for the Elevation component.
 		 */
-		Elevation(void) = default;
+		/**
+		 * @brief Construct an elevation resolved from the M3 level 1 token.
+		 */
+		Elevation(void);
 
 		/**
 		 * @brief Default destructor for the Elevation component.
@@ -111,6 +118,29 @@ namespace guillaume::components
 		 * @return Reference to this Elevation for chaining.
 		 */
 		Elevation &setColor(const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Resolve the shadow from an M3 elevation level token.
+		 *
+		 * Level 0 paints no shadow; levels 1-5 read the spread and opacity
+		 * of the active theme's elevation scale.
+		 *
+		 * @param level M3 elevation level.
+		 * @return Reference to this Elevation component for chaining.
+		 */
+		Elevation &setElevationLevel(theme::ElevationLevel level);
+
+		/**
+		 * @brief Get the M3 level last applied with setElevationLevel().
+		 * @return The elevation level.
+		 */
+		theme::ElevationLevel getElevationLevel(void) const;
+
+		/**
+		 * @brief Check whether a visible shadow must be painted.
+		 * @return True when the level and the shadow alpha are non-zero.
+		 */
+		bool hasShadow(void) const;
 	};
 
 }	 // namespace guillaume::components

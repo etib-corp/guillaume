@@ -209,11 +209,11 @@ namespace guillaume::entities
 
 		if (_variant == Variant::Outlined) {
 			setColor(transparentColor());
-			borders.setBorderRadius(4.0f).setColor(outlineColor).setWidth(1.0f);
+			borders.setBorderRadius(getShapeRadius(theme::ShapeRole::ExtraSmall)).setColor(outlineColor).setWidth(1.0f);
 			line.setThickness(0.0f).clearColor();
 		} else {
 			setColor(schemeColor(SchemeColorRole::SurfaceVariant));
-			borders.setBorderRadius(0.0f)
+			borders.setBorderRadius(getShapeRadius(theme::ShapeRole::None))
 				.setColor(transparentColor())
 				.setWidth(0.0f);
 			line.setThickness(1.0f)

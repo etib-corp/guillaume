@@ -106,7 +106,7 @@ namespace guillaume::entities
 	Tooltip::Tooltip(ecs::ComponentRegistry &registry,
 					 const SurfaceConfig &config, Variant variant,
 					 const std::string &text, const std::string &title)
-		: SurfaceBase<components::Overlay>(registry, config)
+		: SurfaceBase<components::Overlay, components::Elevation>(registry, config)
 		, _variant(variant)
 		, _text(text)
 		, _title(title)
@@ -143,7 +143,14 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Start;
 		config.padding		  = 8.0f;
 		config.spacing		  = 2.0f;
-		config.borderRadius	  = (_variant == Variant::Rich) ? 12.0f : 4.0f;
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(_variant == Variant::Rich
+								   ? theme::ElevationLevel::Level2
+								   : theme::ElevationLevel::Level0);
+		config.borderRadius	  = (_variant == Variant::Rich)
+			? getShapeRadius(theme::ShapeRole::Medium)
+			: getShapeRadius(theme::ShapeRole::ExtraSmall);
 		config.hasFixedHeight = true;
 		config.fixedHeight	  = getVariantHeight();
 

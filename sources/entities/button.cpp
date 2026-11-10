@@ -215,30 +215,30 @@ namespace guillaume::entities
 			switch (size) {
 				case Button::Size::ExtraSmall:
 				case Button::Size::Small:
-					return 8.0f;
+					return getShapeRadius(theme::ShapeRole::Small);
 				case Button::Size::Medium:
-					return 12.0f;
+					return getShapeRadius(theme::ShapeRole::Medium);
 				case Button::Size::Large:
 				case Button::Size::ExtraLarge:
-					return 16.0f;
+					return getShapeRadius(theme::ShapeRole::Large);
 				default:
 					throw std::runtime_error("Invalid button size");
 			}
 		}
 
 		if (shape == Button::Shape::Round) {
-			return 100.0f;
+			return getShapeRadius(theme::ShapeRole::Full);
 		}
 
 		switch (size) {
 			case Button::Size::ExtraSmall:
 			case Button::Size::Small:
-				return 12.0f;
+				return getShapeRadius(theme::ShapeRole::Medium);
 			case Button::Size::Medium:
-				return 16.0f;
+				return getShapeRadius(theme::ShapeRole::Large);
 			case Button::Size::Large:
 			case Button::Size::ExtraLarge:
-				return 28.0f;
+				return getShapeRadius(theme::ShapeRole::ExtraLarge);
 			default:
 				throw std::runtime_error("Invalid button size");
 		}
@@ -414,7 +414,7 @@ namespace guillaume::entities
 	{
 		return ButtonBase::applyStateLayer(
 			getBaseContainerColor(style, isToggle, isSelected),
-			getContentColor(style, isToggle, isSelected), 31U);
+			getContentColor(style, isToggle, isSelected), getStateLayerAlpha(theme::StateLayer::Pressed));
 	}
 
 	static utility::graphic::Color32Bit
@@ -423,7 +423,7 @@ namespace guillaume::entities
 	{
 		return ButtonBase::applyStateLayer(
 			getBaseContainerColor(style, isToggle, isSelected),
-			getContentColor(style, isToggle, isSelected), 20U);
+			getContentColor(style, isToggle, isSelected), getStateLayerAlpha(theme::StateLayer::Hovered));
 	}
 
 	static utility::graphic::Color32Bit

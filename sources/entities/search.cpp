@@ -67,7 +67,7 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Center;
 		_config.spacing		 = 8.0f;
 		_config.padding		 = 12.0f;
-		_config.borderRadius = 28.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::ExtraLarge);
 		_config.setFixedWidth(360.0f);
 		_config.setFixedHeight(56.0f);
 	}
@@ -148,11 +148,11 @@ namespace guillaume::entities
 		config.fixedWidth	 = 360.0f;
 
 		if (_variant == Variant::FullScreen) {
-			config.borderRadius	  = 0.0f;
+			config.borderRadius	  = getShapeRadius(theme::ShapeRole::None);
 			config.hasFixedHeight = true;
 			config.fixedHeight	  = 640.0f;
 		} else {
-			config.borderRadius	  = 28.0f;
+			config.borderRadius	  = getShapeRadius(theme::ShapeRole::ExtraLarge);
 			config.hasFixedHeight = true;
 			config.fixedHeight	  = 56.0f;
 		}

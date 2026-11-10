@@ -152,7 +152,7 @@ namespace guillaume::entities
 			case State::Checked:
 			case State::Indeterminate: {
 				if (disabled) {
-					setColor(withAlpha(schemeColor(containerRole), 97U));
+					setColor(disabledContentColor());
 				} else {
 					setColor(schemeColor(containerRole));
 				}
@@ -164,8 +164,7 @@ namespace guillaume::entities
 				setColor(transparentColor());
 				borders.setWidth(2.0f);
 				if (disabled) {
-					borders.setColor(withAlpha(
-						schemeColor(SchemeColorRole::OnSurface), 97U));
+					borders.setColor(disabledContentColor());
 				} else {
 					borders.setColor(
 						schemeColor(SchemeColorRole::OnSurfaceVariant));
@@ -183,7 +182,7 @@ namespace guillaume::entities
 		if (_labelEntity != nullptr) {
 			if (disabled) {
 				_labelEntity->setColor(
-					withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U));
+					disabledContentColor());
 			} else if (errored) {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::Error));
 			} else {

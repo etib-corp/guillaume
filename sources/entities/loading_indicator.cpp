@@ -45,7 +45,7 @@ namespace guillaume::entities
 	{
 		constexpr float LinearHeight = 4.0f;
 		constexpr float LinearWidth	 = 200.0f;
-		constexpr float LinearRadius = 2.0f;
+		const float LinearRadius = getShapeRadius(theme::ShapeRole::Full);
 		constexpr float CircularSize = 48.0f;
 		constexpr float ArcThickness = 4.0f;
 		constexpr float TwoPi		 = 6.28318530717958647692f;
@@ -256,7 +256,7 @@ namespace guillaume::entities
 		auto &animation =
 			getComponentRegistry().getComponent<components::Animation>(
 				_animation->getIdentifier());
-		animation.setDuration(1.5f)
+		animation.setDuration(theme::MotionScale::IndeterminateCycle)
 			.setEasing(motion::Easing::Standard)
 			.setLooping(true)
 			.setOnSampleHandler([this](float progress) {

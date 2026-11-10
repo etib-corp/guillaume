@@ -22,6 +22,8 @@
 
 #include "entities/test_chip.hpp"
 
+#include <guillaume/theme.hpp>
+
 #include <memory>
 
 #include <guillaume/components/borders.hpp>
@@ -51,7 +53,7 @@ namespace guillaume::entities::tests
 		}
 	}	 // namespace
 
-	TEST_F(TestChip, DefaultGeometryIsPill)
+	TEST_F(TestChip, DefaultGeometryUsesSmallShape)
 	{
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry);
@@ -65,7 +67,8 @@ namespace guillaume::entities::tests
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(chip->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 16.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::Small));
 	}
 
 	TEST_F(TestChip, VariantRoundTrip)

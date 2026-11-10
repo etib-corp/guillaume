@@ -25,6 +25,7 @@
 
 #include "guillaume/entities/extended_floating_action_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/components/elevation.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -173,11 +174,11 @@ namespace guillaume::entities
 	{
 		switch (size) {
 			case ExtendedFloatingActionButton::Size::Small:
-				return 20.0f;
+				return getShapeRadius(theme::ShapeRole::Medium);
 			case ExtendedFloatingActionButton::Size::Medium:
-				return 28.0f;
+				return getShapeRadius(theme::ShapeRole::Large);
 			case ExtendedFloatingActionButton::Size::Large:
-				return 48.0f;
+				return getShapeRadius(theme::ShapeRole::ExtraLarge);
 			default:
 				throw std::runtime_error("Invalid extended FAB size");
 		}
@@ -242,8 +243,27 @@ namespace guillaume::entities
 		return ::guillaume::entities::getFontSize(_size);
 	}
 
+	void ExtendedFloatingActionButton::applyElevation(void)
+	{
+		// M3 FAB: level 3 at rest (1 when lowered), one level up on hover,
+		// and flat when disabled.
+		auto level = _lowered ? theme::ElevationLevel::Level1
+							  : theme::ElevationLevel::Level3;
+		if (_isDisabled) {
+			level = theme::ElevationLevel::Level0;
+		} else if (isHovered() && !isPressed()) {
+			level = static_cast<theme::ElevationLevel>(
+				static_cast<std::size_t>(level) + 1);
+		}
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(level);
+	}
+
 	void ExtendedFloatingActionButton::applyStyleState(void)
 	{
+		applyElevation();
+
 		if (_isDisabled) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
@@ -270,14 +290,14 @@ namespace guillaume::entities
 				guillaume::getActiveScheme()
 					.getColor(SchemeColorRole::OnPrimaryContainer)
 					.getColor(),
-				31U);
+				getStateLayerAlpha(theme::StateLayer::Pressed));
 		} else if (isHovered()) {
 			containerColor = ButtonBase::applyStateLayer(
 				baseContainerColor,
 				guillaume::getActiveScheme()
 					.getColor(SchemeColorRole::OnPrimaryContainer)
 					.getColor(),
-				20U);
+				getStateLayerAlpha(theme::StateLayer::Hovered));
 		}
 
 		getComponentRegistry()
@@ -388,6 +408,11 @@ namespace guillaume::entities
 		, _size(size)
 		, _lowered(lowered)
 	{
+		if (!getComponentRegistry().hasComponent<components::Elevation>(
+				getIdentifier())) {
+			getComponentRegistry().addComponent<components::Elevation>(
+				getIdentifier());
+		}
 	}
 
 	ExtendedFloatingActionButton::~ExtendedFloatingActionButton(void)

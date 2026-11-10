@@ -106,7 +106,8 @@ namespace guillaume::entities::tests
 			snackbar->getIdentifier());
 		EXPECT_FALSE(overlay.isModal());
 		EXPECT_TRUE(overlay.hasAutoDismiss());
-		EXPECT_FLOAT_EQ(overlay.getAutoDismiss(), 4.0f);
+		EXPECT_FLOAT_EQ(overlay.getAutoDismiss(),
+						theme::MotionScale::SnackbarDuration);
 	}
 
 	TEST_F(TestSnackbar, WithActionBuildsTwoChildren)

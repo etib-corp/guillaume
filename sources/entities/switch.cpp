@@ -198,7 +198,7 @@ namespace guillaume::entities
 		const bool on		= isChecked();
 
 		if (disabled) {
-			setColor(withAlpha(schemeColor(SchemeColorRole::OnSurface), 31U));
+			setColor(disabledContainerColor());
 		} else if (on) {
 			setColor(schemeColor(SchemeColorRole::Primary));
 		} else {
@@ -213,7 +213,7 @@ namespace guillaume::entities
 		if (_icon != nullptr) {
 			_icon->setColor(
 				disabled
-					? withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U)
+					? disabledContentColor()
 					: schemeColor(on ? SchemeColorRole::OnPrimary
 									 : SchemeColorRole::OnSurfaceVariant));
 		}
@@ -221,7 +221,7 @@ namespace guillaume::entities
 		if (_labelEntity != nullptr) {
 			if (disabled) {
 				_labelEntity->setColor(
-					withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U));
+					disabledContentColor());
 			} else {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::OnSurface));
 			}
@@ -242,7 +242,7 @@ namespace guillaume::entities
 							ThumbInset, static_cast<std::uint32_t>(getLayer()));
 
 			const auto thumbColor = disabled
-				? withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U)
+				? disabledContentColor()
 				: schemeColor(on ? SchemeColorRole::OnPrimary
 								 : SchemeColorRole::Outline);
 

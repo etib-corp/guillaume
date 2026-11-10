@@ -354,6 +354,18 @@ namespace guillaume::entities
 		void buttonReleaseHandler(void);
 
 		protected:
+		/**
+		 * @brief Grow the hit area of a small control to the M3 touch target.
+		 *
+		 * Sets the hover accessibility margins (consumed by the hit test of
+		 * every pointer and hand system) so the interactive area is at least
+		 * `theme::SpacingScale::MinTouchTarget` on both axes.
+		 *
+		 * @param width Visual width of the control.
+		 * @param height Visual height of the control.
+		 */
+		void applyTouchTarget(float width, float height);
+
 		std::string _iconGlyphName {};	  ///< Icon glyph name to attach.
 		components::Glyph::Style _iconStyle {
 			components::Glyph::Style::Outlined

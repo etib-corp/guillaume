@@ -163,11 +163,10 @@ namespace guillaume::entities
 	{
 		switch (size) {
 			case IconButton::Size::Small:
-				return 8.0f;
 			case IconButton::Size::Medium:
-				return 12.0f;
 			case IconButton::Size::Large:
-				return 16.0f;
+				// Paper/M3 icon buttons are circular at every size.
+				return getShapeRadius(theme::ShapeRole::Full);
 			default:
 				throw std::runtime_error("Invalid icon button size");
 		}
@@ -312,11 +311,11 @@ namespace guillaume::entities
 		if (isPressed()) {
 			containerColor = ButtonBase::applyStateLayer(
 				baseContainerColor, getContentColor(_variant, _isSelected),
-				31U);
+				getStateLayerAlpha(theme::StateLayer::Pressed));
 		} else if (isHovered()) {
 			containerColor = ButtonBase::applyStateLayer(
 				baseContainerColor, getContentColor(_variant, _isSelected),
-				20U);
+				getStateLayerAlpha(theme::StateLayer::Hovered));
 		}
 
 		getComponentRegistry()
@@ -341,6 +340,7 @@ namespace guillaume::entities
 			.getComponent<components::Bound>(getIdentifier())
 			.setWidth(containerSize)
 			.setHeight(containerSize);
+		applyTouchTarget(containerSize, containerSize);
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())

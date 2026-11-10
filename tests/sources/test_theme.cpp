@@ -22,6 +22,8 @@
 
 #include "test_theme.hpp"
 
+#include <guillaume/motion/easing.hpp>
+
 #include <cstddef>
 #include <iterator>
 #include <stdexcept>
@@ -220,6 +222,108 @@ namespace guillaume::tests
 				  "fonts/Roboto-Regular.ttf");
 		EXPECT_EQ(theme::fontPath(theme::FontWeight::Medium),
 				  "fonts/Roboto-Medium.ttf");
+	}
+
+	TEST_F(TestTheme, ShapeScaleMatchesMaterialBaseline)
+	{
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::None), 0.0f);
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::ExtraSmall), 4.0f);
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::Small), 8.0f);
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::Medium), 12.0f);
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::Large), 16.0f);
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::ExtraLarge), 28.0f);
+		EXPECT_GE(getShapeRadius(theme::ShapeRole::Full), 1000.0f);
+	}
+
+	TEST_F(TestTheme, RoundnessScalesShapeRoles)
+	{
+		theme::ShapeScale shapes;
+		shapes.setRoundness(8.0f);
+		EXPECT_FLOAT_EQ(shapes.getRadius(theme::ShapeRole::Medium), 24.0f);
+		EXPECT_FLOAT_EQ(shapes.getRadius(theme::ShapeRole::None), 0.0f);
+		EXPECT_FLOAT_EQ(shapes.getRadius(theme::ShapeRole::Full),
+						theme::ShapeScale::FullRadius);
+		EXPECT_THROW(shapes.setRoundness(-1.0f), std::invalid_argument);
+		EXPECT_THROW(shapes.getRadius(theme::ShapeRole::Count),
+					 std::out_of_range);
+	}
+
+	TEST_F(TestTheme, StateLayersMatchPaperOpacities)
+	{
+		const auto &layers = defaultTheme.getStateLayers();
+		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::Hovered), 0.08f);
+		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::Focused), 0.12f);
+		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::Pressed), 0.12f);
+		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::Dragged), 0.16f);
+		EXPECT_FLOAT_EQ(
+			layers.getOpacity(theme::StateLayer::DisabledContent), 0.38f);
+		EXPECT_FLOAT_EQ(
+			layers.getOpacity(theme::StateLayer::DisabledContainer), 0.12f);
+		EXPECT_EQ(getStateLayerAlpha(theme::StateLayer::Hovered), 20);
+		EXPECT_EQ(getStateLayerAlpha(theme::StateLayer::Pressed), 31);
+		EXPECT_EQ(getStateLayerAlpha(theme::StateLayer::DisabledContent), 97);
+
+		theme::StateLayerScale custom;
+		EXPECT_THROW(custom.setOpacity(theme::StateLayer::Hovered, 1.5f),
+					 std::invalid_argument);
+	}
+
+	TEST_F(TestTheme, ElevationTintsSurfaceProgressively)
+	{
+		const float expected[] = { 0.0f, 0.05f, 0.08f, 0.11f, 0.12f, 0.14f };
+		for (std::size_t level = 0; level < std::size(expected); ++level) {
+			EXPECT_FLOAT_EQ(
+				getElevationToken(static_cast<theme::ElevationLevel>(level))
+					.tintOpacity,
+				expected[level]);
+		}
+
+		const auto surface = getActiveScheme()
+								 .getColor(SchemeColorRole::Surface)
+								 .getColor();
+		EXPECT_TRUE(sameColor(
+			getElevatedSurfaceColor(theme::ElevationLevel::Level0), surface));
+		EXPECT_FALSE(sameColor(
+			getElevatedSurfaceColor(theme::ElevationLevel::Level3), surface));
+		EXPECT_EQ(getElevationToken(theme::ElevationLevel::Level0).shadowAlpha,
+				  0);
+		EXPECT_GT(getElevationToken(theme::ElevationLevel::Level5).shadowSpread,
+				  getElevationToken(theme::ElevationLevel::Level1).shadowSpread);
+	}
+
+	TEST_F(TestTheme, MotionDurationsFollowMaterialTokens)
+	{
+		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Short1), 0.05f);
+		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Short4), 0.2f);
+		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Medium2), 0.3f);
+		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Long2), 0.5f);
+		EXPECT_FLOAT_EQ(
+			getMotionDuration(theme::MotionDuration::ExtraLong4), 1.0f);
+		EXPECT_EQ(theme::MotionScale::enter(),
+				  motion::Easing::EmphasizedDecelerate);
+		EXPECT_EQ(theme::MotionScale::exit(),
+				  motion::Easing::EmphasizedAccelerate);
+	}
+
+	TEST_F(TestTheme, EmphasizedEasingsHitEndpoints)
+	{
+		for (motion::Easing easing : { motion::Easing::EmphasizedDecelerate,
+									   motion::Easing::EmphasizedAccelerate }) {
+			EXPECT_NEAR(motion::applyEasing(easing, 0.0f), 0.0f, 1e-4f);
+			EXPECT_NEAR(motion::applyEasing(easing, 1.0f), 1.0f, 1e-4f);
+		}
+		// Accelerate starts slow, decelerate starts fast.
+		EXPECT_LT(
+			motion::applyEasing(motion::Easing::EmphasizedAccelerate, 0.5f),
+			motion::applyEasing(motion::Easing::EmphasizedDecelerate, 0.5f));
+	}
+
+	TEST_F(TestTheme, SpacingAndTouchTarget)
+	{
+		EXPECT_FLOAT_EQ(theme::SpacingScale::get(4), 16.0f);
+		EXPECT_FLOAT_EQ(theme::SpacingScale::MinTouchTarget, 48.0f);
+		EXPECT_FLOAT_EQ(theme::SpacingScale::touchMargin(40.0f), 4.0f);
+		EXPECT_FLOAT_EQ(theme::SpacingScale::touchMargin(56.0f), 0.0f);
 	}
 
 }	 // namespace guillaume::tests

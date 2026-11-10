@@ -48,7 +48,7 @@ namespace guillaume::entities
 	{
 		_config				 = SurfaceConfig();
 		_variant			 = Variant::Elevated;
-		_config.borderRadius = 12.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::Medium);
 		_config.padding		 = 16.0f;
 		_config.spacing		 = 8.0f;
 		_config.axis		 = components::Layout::Axis::Vertical;
@@ -116,15 +116,15 @@ namespace guillaume::entities
 
 		switch (_variant) {
 			case Variant::Elevated: {
-				setColor(schemeColor(SchemeColorRole::SurfaceContainerLow));
+				setColor(getElevatedSurfaceColor(theme::ElevationLevel::Level1));
 				borders.setColor(transparentColor()).setWidth(0.0f);
-				elevation.setLevel(1.0f).setSpread(6.0f);
+				elevation.setElevationLevel(theme::ElevationLevel::Level1);
 				break;
 			}
 			case Variant::Filled: {
 				setColor(schemeColor(SchemeColorRole::SurfaceContainerHighest));
 				borders.setColor(transparentColor()).setWidth(0.0f);
-				elevation.setLevel(0.0f).setSpread(0.0f);
+				elevation.setElevationLevel(theme::ElevationLevel::Level0);
 				break;
 			}
 			case Variant::Outlined:
@@ -132,7 +132,7 @@ namespace guillaume::entities
 				setColor(transparentColor());
 				borders.setColor(schemeColor(SchemeColorRole::OutlineVariant))
 					.setWidth(1.0f);
-				elevation.setLevel(0.0f).setSpread(0.0f);
+				elevation.setElevationLevel(theme::ElevationLevel::Level0);
 				break;
 			}
 		}

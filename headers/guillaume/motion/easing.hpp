@@ -33,7 +33,11 @@ namespace guillaume::motion
 		Standard,	   ///< M3 standard curve, cubic-bezier(0.2, 0, 0, 1).
 		Decelerate,	   ///< M3 decelerate curve, cubic-bezier(0, 0, 0, 1).
 		Accelerate,	   ///< M3 accelerate curve, cubic-bezier(0.3, 0, 1, 1).
-		Emphasized	  ///< M3 emphasized curve, cubic-bezier(0.05, 0.7, 0.1, 1).
+		Emphasized,	   ///< M3 emphasized curve, cubic-bezier(0.05, 0.7, 0.1, 1).
+		EmphasizedDecelerate,	 ///< M3 emphasized decelerate,
+								 ///< cubic-bezier(0.05, 0.7, 0.1, 1).
+		EmphasizedAccelerate	///< M3 emphasized accelerate,
+								///< cubic-bezier(0.3, 0, 0.8, 0.15).
 	};
 
 	/**

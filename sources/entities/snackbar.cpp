@@ -101,13 +101,16 @@ namespace guillaume::entities
 	Snackbar::Snackbar(ecs::ComponentRegistry &registry,
 					   const SurfaceConfig &config, Variant variant,
 					   const std::string &message, const std::string &action)
-		: SurfaceBase<components::Overlay>(registry, config)
+		: SurfaceBase<components::Overlay, components::Elevation>(registry, config)
 		, _variant(variant)
 		, _message(message)
 		, _action(action)
 		, _messageEntity()
 		, _actionEntity()
 	{
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(theme::ElevationLevel::Level3);
 		applyVariant();
 		applyOverlay();
 	}
@@ -139,7 +142,7 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Center;
 		config.padding		  = 16.0f;
 		config.spacing		  = 8.0f;
-		config.borderRadius	  = 4.0f;
+		config.borderRadius	  = getShapeRadius(theme::ShapeRole::ExtraSmall);
 		config.hasFixedHeight = true;
 		config.fixedHeight	  = getVariantHeight();
 
@@ -155,7 +158,7 @@ namespace guillaume::entities
 
 		overlay.setModal(false);
 		overlay.setDismissOnOutsideClick(false);
-		overlay.setAutoDismiss(4.0f);
+		overlay.setAutoDismiss(theme::MotionScale::SnackbarDuration);
 	}
 
 	void Snackbar::buildContent(void)

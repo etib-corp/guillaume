@@ -22,8 +22,37 @@
 
 #include "guillaume/components/elevation.hpp"
 
+#include "guillaume/theme.hpp"
+
 namespace guillaume::components
 {
+	Elevation::Elevation(void)
+	{
+		setElevationLevel(theme::ElevationLevel::Level1);
+		setHasChanged(false);
+	}
+
+	Elevation &Elevation::setElevationLevel(theme::ElevationLevel level)
+	{
+		const auto &token = getElevationToken(level);
+		_elevationLevel	  = level;
+		_level	= (level == theme::ElevationLevel::Level0) ? 0.0f : 1.0f;
+		_spread = token.shadowSpread;
+		_color	= utility::graphic::Color32Bit(0, 0, 0, token.shadowAlpha);
+		setHasChanged(true);
+		return *this;
+	}
+
+	theme::ElevationLevel Elevation::getElevationLevel(void) const
+	{
+		return _elevationLevel;
+	}
+
+	bool Elevation::hasShadow(void) const
+	{
+		return _level > 0.0f && _color.getAlpha() > 0;
+	}
+
 	float Elevation::getLevel(void) const
 	{
 		return _level;

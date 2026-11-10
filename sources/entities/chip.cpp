@@ -55,7 +55,7 @@ namespace guillaume::entities
 		_iconGlyph.clear();
 		_selected = false;
 
-		_config.borderRadius = 16.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::Small);
 		_config.axis		 = components::Layout::Axis::Horizontal;
 		_config.mainAxisAlignment =
 			components::Layout::MainAxisAlignment::Center;

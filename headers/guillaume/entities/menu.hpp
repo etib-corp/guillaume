@@ -34,6 +34,7 @@
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
 
 #include "guillaume/entities/view.hpp"
@@ -58,7 +59,7 @@ namespace guillaume::entities
 	 * @see components::Overlay
 	 * @see entities::View
 	 */
-	class Menu: public SurfaceBase<components::Overlay>
+	class Menu: public SurfaceBase<components::Overlay, components::Elevation>
 	{
 		public:
 		/**

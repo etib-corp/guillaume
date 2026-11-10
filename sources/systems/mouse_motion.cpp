@@ -21,6 +21,7 @@
  */
 
 #include "guillaume/systems/mouse_motion.hpp"
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
@@ -72,10 +73,9 @@ namespace guillaume::systems
 		auto &mouseHoverInteraction =
 			getComponent<components::MouseHoverInteraction>(entityIdentifier);
 
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
 		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
+			hitTest(ray, transform.getPose(), bound,
+					hitMargin(this->getComponentRegistry(), entityIdentifier));
 
 		if (isIntersecting) {
 			if (!mouseHoverInteraction.isHovered()) {

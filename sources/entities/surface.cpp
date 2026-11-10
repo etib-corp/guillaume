@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include "guillaume/theme.hpp"
 #include "guillaume/entities/surface.hpp"
 
 namespace guillaume::entities
@@ -102,7 +103,7 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Center;
 		config.spacing		 = spacing;
 		config.padding		 = 24.0f;
-		config.borderRadius	 = 28.0f;
+		config.borderRadius	 = getShapeRadius(theme::ShapeRole::ExtraLarge);
 		config.hasFixedWidth = true;
 		config.fixedWidth	 = width;
 

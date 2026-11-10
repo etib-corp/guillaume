@@ -98,7 +98,7 @@ namespace guillaume::entities
 		_variant = Variant::Enabled;
 		_label.clear();
 
-		_config.borderRadius = 10.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::Full);
 		_config.axis		 = components::Layout::Axis::Horizontal;
 		_config.mainAxisAlignment =
 			components::Layout::MainAxisAlignment::Start;
@@ -176,7 +176,7 @@ namespace guillaume::entities
 				.isSelected();
 
 		if (disabled) {
-			setColor(withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U));
+			setColor(disabledContentColor());
 		} else if (errored) {
 			setColor(schemeColor(SchemeColorRole::Error));
 		} else if (selected) {
@@ -199,7 +199,7 @@ namespace guillaume::entities
 		const bool errored	= (_variant == Variant::Error);
 
 		const auto dotColor = disabled
-			? withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U)
+			? disabledContentColor()
 			: (errored ? schemeColor(SchemeColorRole::Error)
 					   : schemeColor(SchemeColorRole::Primary));
 
@@ -226,7 +226,7 @@ namespace guillaume::entities
 		if (_labelEntity != nullptr) {
 			if (disabled) {
 				_labelEntity->setColor(
-					withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U));
+					disabledContentColor());
 			} else if (errored) {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::Error));
 			} else {

@@ -22,6 +22,10 @@
 
 #include "entities/test_floating_action_button.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
 #include <functional>
 #include <memory>
 
@@ -155,4 +159,45 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(fab->getVariant(), FloatingActionButton::Variant::Secondary);
 		EXPECT_EQ(fab->getSize(), FloatingActionButton::Size::Large);
 	}
+	TEST_F(TestFloatingActionButton, ElevationFollowsLoweredAndDisabled)
+	{
+		ecs::ComponentRegistry registry;
+		auto fab = std::make_shared<FloatingActionButton>(
+			registry, "edit", components::Glyph::Style::Outlined, "",
+			FloatingActionButton::Variant::Primary,
+			FloatingActionButton::Size::Medium, false, false, "",
+			std::function<void(void)>());
+		fab->initialize();
+		fab->update();
+
+		auto &elevation =
+			registry.getComponent<components::Elevation>(fab->getIdentifier());
+		EXPECT_EQ(elevation.getElevationLevel(), theme::ElevationLevel::Level3);
+
+		auto lowered = std::make_shared<FloatingActionButton>(
+			registry, "edit", components::Glyph::Style::Outlined, "",
+			FloatingActionButton::Variant::Primary,
+			FloatingActionButton::Size::Medium, true, false, "",
+			std::function<void(void)>());
+		lowered->initialize();
+		lowered->update();
+		EXPECT_EQ(registry
+					  .getComponent<components::Elevation>(
+						  lowered->getIdentifier())
+					  .getElevationLevel(),
+				  theme::ElevationLevel::Level1);
+
+		auto disabled = std::make_shared<FloatingActionButton>(
+			registry, "edit", components::Glyph::Style::Outlined, "",
+			FloatingActionButton::Variant::Primary,
+			FloatingActionButton::Size::Medium, false, true, "",
+			std::function<void(void)>());
+		disabled->initialize();
+		disabled->update();
+		EXPECT_FALSE(registry
+						 .getComponent<components::Elevation>(
+							 disabled->getIdentifier())
+						 .hasShadow());
+	}
+
 }	 // namespace guillaume::entities::tests

@@ -22,6 +22,14 @@
 
 #include "entities/test_icon_button.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/bound.hpp>
+
+#include <guillaume/components/borders.hpp>
+
 #include <functional>
 #include <memory>
 
@@ -185,4 +193,30 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(button->getVariant(), IconButton::Variant::Filled);
 		EXPECT_EQ(button->getSize(), IconButton::Size::Large);
 	}
+	TEST_F(TestIconButton, SmallIconButtonReachesTouchTarget)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<IconButton>(
+			registry, "favorite", "", components::Glyph::Style::Outlined,
+			false, IconButton::Variant::Standard, IconButton::Size::Small,
+			false, "", std::function<void(void)>());
+
+		button->initialize();
+		button->update();
+
+		const auto &bound =
+			registry.getComponent<components::Bound>(button->getIdentifier());
+		const auto margin =
+			registry
+				.getComponent<components::MouseHoverInteraction>(
+					button->getIdentifier())
+				.getAccessibilityMargin();
+		EXPECT_GE(bound.getWidth() + 2.0f * margin.getWidth(),
+				  theme::SpacingScale::MinTouchTarget);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Borders>(button->getIdentifier())
+				.getTopLeftRadius(),
+			getShapeRadius(theme::ShapeRole::Full));
+	}
+
 }	 // namespace guillaume::entities::tests

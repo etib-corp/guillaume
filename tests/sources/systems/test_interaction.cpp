@@ -22,6 +22,41 @@
 
 #include "systems/test_interaction.hpp"
 
+#include <guillaume/systems/hit_test.hpp>
+
 namespace guillaume::systems::tests
 {
+	TEST_F(TestInteraction, HitTestHonoursAccessibilityMargin)
+	{
+		components::Bound bound;
+		bound.setWidth(32.0f).setHeight(32.0f);
+		const utility::graphic::PoseF pose;
+
+		// A ray 4 dp left of the control, vertically centred.
+		const utility::graphic::RayF ray(
+			utility::math::Vector<float, 3>({ -4.0f, 16.0f, -10.0f }),
+			utility::math::Vector<float, 3>({ 0.0f, 0.0f, 1.0f }));
+
+		EXPECT_FALSE(
+			hitTest(ray, pose, bound, utility::math::Vector2F({ 0.0f, 0.0f })));
+		EXPECT_TRUE(
+			hitTest(ray, pose, bound, utility::math::Vector2F({ 8.0f, 8.0f })));
+	}
+
+	TEST_F(TestInteraction, HitMarginReadsHoverComponent)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::Entity entity;
+		registry.registerComponentsForEntity<
+			components::MouseHoverInteraction>(entity.getIdentifier());
+		registry
+			.getComponent<components::MouseHoverInteraction>(
+				entity.getIdentifier())
+			.setAccessibilityMargin(utility::graphic::SizeUI(8, 4));
+
+		const auto margin = hitMargin(registry, entity.getIdentifier());
+		EXPECT_FLOAT_EQ(margin[0], 8.0f);
+		EXPECT_FLOAT_EQ(margin[1], 4.0f);
+	}
+
 }	 // namespace guillaume::systems::tests

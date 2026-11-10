@@ -277,6 +277,46 @@ namespace guillaume
 		_typescale = typescale;
 	}
 
+	const theme::ShapeScale &Theme::getShapes(void) const
+	{
+		return _shapes;
+	}
+
+	theme::ShapeScale &Theme::getShapes(void)
+	{
+		return _shapes;
+	}
+
+	const theme::ElevationScale &Theme::getElevations(void) const
+	{
+		return _elevations;
+	}
+
+	theme::ElevationScale &Theme::getElevations(void)
+	{
+		return _elevations;
+	}
+
+	const theme::StateLayerScale &Theme::getStateLayers(void) const
+	{
+		return _stateLayers;
+	}
+
+	theme::StateLayerScale &Theme::getStateLayers(void)
+	{
+		return _stateLayers;
+	}
+
+	const theme::MotionScale &Theme::getMotion(void) const
+	{
+		return _motion;
+	}
+
+	theme::MotionScale &Theme::getMotion(void)
+	{
+		return _motion;
+	}
+
 	namespace
 	{
 		/**
@@ -1497,6 +1537,35 @@ namespace guillaume
 	const theme::TypeToken &getTypeToken(theme::TypeRole role)
 	{
 		return getActiveTypescale().get(role);
+	}
+
+	float getShapeRadius(theme::ShapeRole role)
+	{
+		return defaultTheme.getShapes().getRadius(role);
+	}
+
+	std::uint8_t getStateLayerAlpha(theme::StateLayer layer)
+	{
+		return defaultTheme.getStateLayers().getAlpha(layer);
+	}
+
+	const theme::ElevationToken &getElevationToken(theme::ElevationLevel level)
+	{
+		return defaultTheme.getElevations().get(level);
+	}
+
+	utility::graphic::Color32Bit
+		getElevatedSurfaceColor(theme::ElevationLevel level)
+	{
+		const auto &scheme = getActiveScheme();
+		return defaultTheme.getElevations().tint(
+			scheme.getColor(SchemeColorRole::Surface).getColor(),
+			scheme.getColor(SchemeColorRole::SurfaceTint).getColor(), level);
+	}
+
+	float getMotionDuration(theme::MotionDuration duration)
+	{
+		return defaultTheme.getMotion().getDuration(duration);
 	}
 
 }	 // namespace guillaume

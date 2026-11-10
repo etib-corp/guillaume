@@ -188,6 +188,11 @@ namespace guillaume::entities
 
 		protected:
 		/**
+		 * @brief Resolve the M3 elevation level from the current state.
+		 */
+		void applyElevation(void);
+
+		/**
 		 * @brief Re-apply the visual state (colors, borders, radius) from the
 		 * current interaction/selected state.
 		 */

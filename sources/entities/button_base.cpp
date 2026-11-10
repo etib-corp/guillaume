@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include <cmath>
 #include <utility>
 
 #include "guillaume/entities/button_base.hpp"
@@ -278,12 +279,29 @@ namespace guillaume::entities
 		return stateLayer(base, overlay, alpha);
 	}
 
+	void ButtonBase::applyTouchTarget(float width, float height)
+	{
+		const utility::graphic::SizeUI margin(
+			static_cast<unsigned int>(
+				std::ceil(theme::SpacingScale::touchMargin(width))),
+			static_cast<unsigned int>(
+				std::ceil(theme::SpacingScale::touchMargin(height))));
+
+		getComponentRegistry()
+			.getComponent<components::MouseHoverInteraction>(getIdentifier())
+			.setAccessibilityMargin(margin);
+		getComponentRegistry()
+			.getComponent<components::HandHoverInteraction>(getIdentifier())
+			.setAccessibilityMargin(margin);
+	}
+
 	utility::graphic::Color32Bit ButtonBase::getDisabledContainerColor(void)
 	{
 		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
-			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 31U);
+			scheme.getColor(SchemeColorRole::OnSurface).getColor(),
+			getStateLayerAlpha(theme::StateLayer::DisabledContainer));
 	}
 
 	utility::graphic::Color32Bit ButtonBase::getDisabledContentColor(void)
@@ -291,7 +309,8 @@ namespace guillaume::entities
 		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
-			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 97U);
+			scheme.getColor(SchemeColorRole::OnSurface).getColor(),
+			getStateLayerAlpha(theme::StateLayer::DisabledContent));
 	}
 
 	utility::graphic::Color32Bit ButtonBase::getDisabledBorderColor(void)
@@ -299,7 +318,8 @@ namespace guillaume::entities
 		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
-			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 31U);
+			scheme.getColor(SchemeColorRole::OnSurface).getColor(),
+			getStateLayerAlpha(theme::StateLayer::DisabledContainer));
 	}
 
 	void ButtonBase::hoverHandler(void)

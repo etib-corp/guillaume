@@ -107,7 +107,7 @@ namespace guillaume::entities
 
 				getComponentRegistry()
 					.getComponent<components::Borders>(getIdentifier())
-					.setBorderRadius(DrawerDestinationHeight / 2.0f)
+					.setBorderRadius(getShapeRadius(theme::ShapeRole::Full))
 					.setColor(transparentColor());
 			}
 
@@ -373,8 +373,8 @@ namespace guillaume::entities
 				this->getIdentifier());
 		borders.setTopLeftRadius(0.0f)
 			.setBottomLeftRadius(0.0f)
-			.setTopRightRadius(16.0f)
-			.setBottomRightRadius(16.0f);
+			.setTopRightRadius(getShapeRadius(theme::ShapeRole::Large))
+			.setBottomRightRadius(getShapeRadius(theme::ShapeRole::Large));
 
 		if (_variant == Variant::Modal) {
 			setColor(schemeColor(SchemeColorRole::SurfaceContainerLow));
