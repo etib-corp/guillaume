@@ -22,6 +22,10 @@
 
 #include "entities/test_switch.hpp"
 
+#include <guillaume/components/transform.hpp>
+
+#include <guillaume/components/text.hpp>
+
 #include <guillaume/components/style_state.hpp>
 
 #include <guillaume/components/mouse_button_interaction.hpp>
@@ -40,6 +44,27 @@
 
 namespace guillaume::entities::tests
 {
+
+	namespace
+	{
+		template<typename Parent>
+		float labelOffsetX(ecs::ComponentRegistry &registry,
+						   const std::shared_ptr<Parent> &parent)
+		{
+			for (const auto &child: parent->getEntities()) {
+				if (registry.hasComponent<components::Text>(
+						child->getIdentifier())) {
+					return registry
+						.getComponent<components::Transform>(
+							child->getIdentifier())
+						.getPose()
+						.getPosition()
+						.getX();
+				}
+			}
+			return -1.0f;
+		}
+	}	 // namespace
 	namespace
 	{
 		std::shared_ptr<Switch>
@@ -131,7 +156,7 @@ namespace guillaume::entities::tests
 		}
 	}
 
-	TEST_F(TestSwitch, OnlyTheLabelIsRegisteredAsALayoutChild)
+	TEST_F(TestSwitch, NoChildIsRegisteredAsALayoutChild)
 	{
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, false,
@@ -143,9 +168,9 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Layout>(toggle->getIdentifier())
 				.getChildren();
 
-		// The label is arranged by the container; the thumb and its icon are
-		// positioned manually and must stay out of the layout list.
-		EXPECT_EQ(layoutChildren.size(), 1u);
+		// The thumb, its icon and the label are positioned manually and stay
+		// out of the layout list, so nothing is squeezed into the track.
+		EXPECT_EQ(layoutChildren.size(), 0u);
 		EXPECT_GT(toggle->getEntities().size(), layoutChildren.size());
 	}
 
@@ -161,7 +186,7 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(toggle->getVariant(), Switch::Variant::WithIcon);
 	}
 
-	TEST_F(TestSwitch, LabelAddsChildContent)
+	TEST_F(TestSwitch, LabelSitsOutsideTheTrack)
 	{
 		ecs::ComponentRegistry registry;
 		auto toggle =
@@ -170,7 +195,16 @@ namespace guillaume::entities::tests
 		toggle->initialize();
 		toggle->update();
 
-		EXPECT_EQ(toggle->getChildren().size(), 1U);
+		const float trackWidth =
+			registry.getComponent<components::Bound>(toggle->getIdentifier())
+				.getWidth();
+		EXPECT_GE(labelOffsetX(registry, toggle),
+				  trackWidth + Switch::LabelGap);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  toggle->getIdentifier())
+					  .getLabel(),
+				  "Wifi");
 	}
 
 	TEST_F(TestSwitch, DirectorBuildsAndRegisters)

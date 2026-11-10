@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <chrono>
+#include <optional>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -175,6 +177,85 @@ namespace guillaume::entities
 		 * @return Reference to this button for chaining.
 		 */
 		ButtonBase &setAccessibilityHint(const std::string &accessibilityHint);
+
+		/**
+		 * @brief Override the semantic role (default Button).
+		 * @param role New role.
+		 * @return Reference to this button for chaining.
+		 */
+		ButtonBase &setAccessibilityRole(components::AccessibilityRole role);
+
+		/**
+		 * @brief Set the long-press handler (Paper `onLongPress`).
+		 *
+		 * A press held for at least `LongPressDuration` calls this handler
+		 * instead of the click handler.
+		 *
+		 * @param onLongPress Handler (empty to disable long press).
+		 * @return Reference to this button for chaining.
+		 */
+		ButtonBase &setOnLongPress(std::function<void(void)> onLongPress);
+
+		/**
+		 * @brief Show or hide the loading state (Paper `loading`).
+		 *
+		 * While loading the icon shows the progress glyph.
+		 *
+		 * @param loading New loading state.
+		 * @return Reference to this button for chaining.
+		 */
+		ButtonBase &setLoading(bool loading);
+
+		/**
+		 * @brief Show or hide the button (Paper `visible`).
+		 *
+		 * A hidden button paints nothing, ignores activation and is skipped by
+		 * keyboard traversal; its enabled state is preserved.
+		 *
+		 * @param visible New visibility.
+		 * @return Reference to this button for chaining.
+		 */
+		ButtonBase &setVisible(bool visible);
+
+		/**
+		 * @brief Check the visibility.
+		 * @return True when shown.
+		 */
+		bool isVisible(void) const;
+
+		/**
+		 * @brief Check the loading state.
+		 * @return True while loading.
+		 */
+		bool isLoading(void) const;
+
+		/**
+		 * @brief Override the theme container color (Paper `buttonColor` /
+		 * `containerColor`).
+		 * @param color Custom color, or none to restore the theme color.
+		 * @return Reference to this button for chaining.
+		 */
+		ButtonBase &setContainerColorOverride(
+			std::optional<utility::graphic::Color32Bit> color);
+
+		/**
+		 * @brief Override the theme content color (Paper `textColor` /
+		 * `iconColor`).
+		 * @param color Custom color, or none to restore the theme color.
+		 * @return Reference to this button for chaining.
+		 */
+		ButtonBase &setContentColorOverride(
+			std::optional<utility::graphic::Color32Bit> color);
+
+		/**
+		 * @brief Glyph shown by the icon while loading.
+		 */
+		static constexpr const char *LoadingGlyph = "progress_activity";
+
+		/**
+		 * @brief Minimum press duration that counts as a long press.
+		 */
+		static constexpr std::chrono::milliseconds LongPressDuration { 500 };
 
 		/**
 		 * @brief Get the accessibility hint.
@@ -403,6 +484,32 @@ namespace guillaume::entities
 			false
 		};	  ///< Whether the icon trails the label
 		std::function<void(void)> _onClick {};	  ///< Click event handler
+		std::function<void(void)>
+			_onLongPress {};	///< Long-press handler (replaces the click)
+		std::chrono::steady_clock::time_point
+			_pressStart {};		 ///< When the current press started
+		bool _isLoading { false };	  ///< Whether a progress glyph is shown
+		bool _isVisible { true };	 ///< Whether the button is shown
+		std::optional<utility::graphic::Color32Bit>
+			_containerColorOverride {};	   ///< Custom container color
+		std::optional<utility::graphic::Color32Bit>
+			_contentColorOverride {};	 ///< Custom content color
+
+		/**
+		 * @brief Resolve the container color, honouring the override.
+		 * @param color Theme-derived container color.
+		 * @return The override when set, otherwise @p color.
+		 */
+		utility::graphic::Color32Bit
+			resolveContainerColor(const utility::graphic::Color32Bit &color) const;
+
+		/**
+		 * @brief Resolve the content color, honouring the override.
+		 * @param color Theme-derived content color.
+		 * @return The override when set, otherwise @p color.
+		 */
+		utility::graphic::Color32Bit
+			resolveContentColor(const utility::graphic::Color32Bit &color) const;
 		static constexpr float _layerDepthStep {
 			1.0f
 		};	  ///< Distance pushed toward the camera per layer.

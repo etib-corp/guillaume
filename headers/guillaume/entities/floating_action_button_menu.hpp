@@ -115,6 +115,17 @@ namespace guillaume::entities
 							   std::function<void(void)> onClick);
 
 			/**
+			 * @brief Add a labelled action (Paper FAB.Group `label`).
+			 * @param iconGlyphName Action icon glyph.
+			 * @param label Visible and accessible label.
+			 * @param onClick Action handler.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &addAction(const std::string &iconGlyphName,
+							   const std::string &label,
+							   std::function<void(void)> onClick);
+
+			/**
 			 * @brief Set the trigger accessibility label.
 			 * @param accessibilityLabel The trigger accessibility label.
 			 * @return Reference to the builder for chaining.
@@ -148,6 +159,8 @@ namespace guillaume::entities
 		std::vector<Action> _actions {};	   ///< Menu actions.
 		std::string _accessibilityLabel {};	   ///< Trigger accessibility label.
 		bool _isOpen { false };	   ///< Whether the menu is expanded.
+		std::function<void(bool)>
+			_onStateChange {};	  ///< Called with the new open state.
 		std::shared_ptr<ButtonBase> _trigger;	 ///< Trigger child entity
 		std::vector<std::shared_ptr<ButtonBase>>
 			_actionButtons;	   ///< Action child entities
@@ -162,6 +175,12 @@ namespace guillaume::entities
 		 * @brief Lay out the trigger and (when open) the action column.
 		 */
 		void layoutMenu(void);
+
+		/**
+		 * @brief Apply the open state: show/enable open actions, hide closed
+		 * ones, and publish the expanded state on the trigger.
+		 */
+		void applyOpenState(void);
 
 		public:
 		/**
@@ -204,6 +223,15 @@ namespace guillaume::entities
 		 * @return True when open, false otherwise.
 		 */
 		bool isOpen(void) const;
+
+		/**
+		 * @brief Set the handler called when the menu opens or closes (Paper
+		 * `onStateChange`).
+		 * @param onStateChange Handler receiving the new open state.
+		 * @return Reference to this menu for chaining.
+		 */
+		FloatingActionButtonMenu &
+			setOnStateChange(std::function<void(bool)> onStateChange);
 
 		/**
 		 * @brief Get the number of actions.

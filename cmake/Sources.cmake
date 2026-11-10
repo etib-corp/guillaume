@@ -94,6 +94,7 @@ set(GUILLAUME_SOURCES
     sources/entities/mesh.cpp
     sources/entities/view.cpp
     sources/entities/radio_button.cpp
+    sources/entities/radio_group.cpp
     sources/entities/snackbar.cpp
     sources/entities/surface.cpp
     sources/entities/switch.cpp

@@ -23,6 +23,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 #include <memory>
 #include <string>
 
@@ -50,6 +51,11 @@ namespace guillaume::entities
 		/**
 		 * @brief Size of the FAB.
 		 */
+		/**
+		 * @brief Shadow mode (Paper `mode`): elevated or flat.
+		 */
+		enum class Mode { Elevated, Flat };
+
 		enum class Size { Small, Medium, Large };
 
 		/**
@@ -184,6 +190,8 @@ namespace guillaume::entities
 		private:
 		Variant _variant { Variant::Primary };	  ///< Color variant
 		Size _size { Size::Medium };			  ///< Size
+		Mode _mode { Mode::Elevated };	  ///< Shadow mode
+		std::optional<float> _customSize {};	///< Custom container size
 		bool _lowered { false };	///< Whether the FAB is lowered
 
 		protected:
@@ -265,6 +273,27 @@ namespace guillaume::entities
 		 * @return Reference to this FAB for chaining.
 		 */
 		FloatingActionButton &setSize(const Size &size);
+
+		/**
+		 * @brief Set the shadow mode; Flat paints no shadow.
+		 * @param mode New mode.
+		 * @return Reference to this FAB for chaining.
+		 */
+		FloatingActionButton &setMode(Mode mode);
+
+		/**
+		 * @brief Get the shadow mode.
+		 * @return The mode.
+		 */
+		Mode getMode(void) const;
+
+		/**
+		 * @brief Override the container height (Paper `customSize`).
+		 * @param size Custom size, or none for the size preset.
+		 * @return Reference to this FAB for chaining.
+		 * @throws std::invalid_argument If @p size is not positive.
+		 */
+		FloatingActionButton &setCustomSize(std::optional<float> size);
 
 		/**
 		 * @brief Set if the FAB is lowered.

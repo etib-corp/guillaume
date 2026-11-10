@@ -22,6 +22,16 @@
 
 #include "entities/test_chip.hpp"
 
+#include <guillaume/entities/style_helpers.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <guillaume/theme.hpp>
 
 #include <memory>
@@ -138,6 +148,132 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(chip->getParent(), parent);
 		EXPECT_EQ(chip->getVariant(), Chip::Variant::Filter);
 		EXPECT_TRUE(chip->isSelected());
+	}
+
+	TEST_F(TestChip, DefaultsToFlatSecondaryContainer)
+	{
+		ecs::ComponentRegistry registry;
+		auto chip = makeChip(registry);
+		chip->initialize();
+		chip->update();
+
+		EXPECT_EQ(chip->getMode(), Chip::Mode::Flat);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(chip->getIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::SecondaryContainer));
+		EXPECT_FALSE(
+			registry.getComponent<components::Borders>(chip->getIdentifier())
+				.hasStroke());
+
+		chip->setMode(Chip::Mode::Outlined);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(chip->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
+		EXPECT_EQ(
+			registry.getComponent<components::Borders>(chip->getIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::Outline));
+	}
+
+	TEST_F(TestChip, FilterCheckOnlyWhenSelected)
+	{
+		ecs::ComponentRegistry registry;
+		auto chip = makeChip(registry, Chip::Variant::Filter, "Tag");
+		chip->initialize();
+		chip->update();
+
+		// Unselected filter chip: label only.
+		EXPECT_EQ(chip->getChildren().size(), 1U);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(chip->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_TRUE(chip->isSelected());
+		EXPECT_EQ(chip->getChildren().size(), 2U);
+		EXPECT_TRUE(registry
+						.getComponent<components::Accessibility>(
+							chip->getIdentifier())
+						.isSelected());
+	}
+
+	TEST_F(TestChip, PressCloseAndDisabled)
+	{
+		ecs::ComponentRegistry registry;
+		auto chip = makeChip(registry, Chip::Variant::Input, "Email");
+		int presses = 0;
+		int closes	= 0;
+		chip->setOnPress([&presses]() {
+			++presses;
+		});
+		chip->setOnClose([&closes]() {
+			++closes;
+		});
+		chip->initialize();
+		chip->update();
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(chip->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(presses, 1);
+		ASSERT_NE(chip->getCloseIconIdentifier(),
+				  ecs::Entity::InvalidIdentifier);
+		registry
+			.getComponent<components::MouseButtonInteraction>(chip->getCloseIconIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(closes, 1);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  chip->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::Button);
+
+		chip->setDisabled(true);
+		registry
+			.getComponent<components::MouseButtonInteraction>(chip->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		registry
+			.getComponent<components::MouseButtonInteraction>(chip->getCloseIconIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(presses, 1);
+		EXPECT_EQ(closes, 1);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(chip->getIdentifier())
+				.getColor(),
+			disabledContainerColor());
+	}
+
+	TEST_F(TestChip, HoverAddsStateLayerAndElevatedCastsShadow)
+	{
+		ecs::ComponentRegistry registry;
+		auto chip = makeChip(registry);
+		chip->initialize();
+		chip->update();
+
+		const auto rest =
+			registry.getComponent<components::Color>(chip->getIdentifier())
+				.getColor();
+		registry
+			.getComponent<components::MouseHoverInteraction>(
+				chip->getIdentifier())
+			.setHovered(true);
+		chip->update();
+		EXPECT_NE(
+			registry.getComponent<components::Color>(chip->getIdentifier())
+				.getColor(),
+			rest);
+
+		chip->setElevated(true);
+		EXPECT_TRUE(
+			registry.getComponent<components::Elevation>(chip->getIdentifier())
+				.hasShadow());
 	}
 
 }	 // namespace guillaume::entities::tests

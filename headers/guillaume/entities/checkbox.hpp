@@ -22,7 +22,9 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <utility/graphic/color.hpp>
@@ -157,6 +159,22 @@ namespace guillaume::entities
 		std::string _label {};					  ///< Label content.
 		std::shared_ptr<Icon> _checkIcon;		  ///< Check glyph child.
 		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
+		std::function<void(State)>
+			_onValueChange {};	  ///< Called when the user toggles the box.
+		std::optional<utility::graphic::Color32Bit>
+			_checkedColor {};	 ///< Paper `color` override.
+		std::optional<utility::graphic::Color32Bit>
+			_uncheckedColor {};	   ///< Paper `uncheckedColor` override.
+
+		/**
+		 * @brief Place the label beside the box, outside its 18 dp surface.
+		 */
+		void placeLabel(void);
+
+		/**
+		 * @brief Handle a user activation.
+		 */
+		void pressHandler(void);
 
 		private:
 		/**
@@ -220,6 +238,53 @@ namespace guillaume::entities
 		 * @return True when checked.
 		 */
 		bool isChecked(void) const;
+
+		/**
+		 * @brief Toggle as a user activation would (indeterminate and
+		 * unchecked become checked). Ignored while disabled.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &toggle(void);
+
+		/**
+		 * @brief Check whether the checkbox is disabled.
+		 * @return True for `Variant::Disabled`.
+		 */
+		bool isDisabled(void) const;
+
+		/**
+		 * @brief Set the handler called when the user toggles the box.
+		 * @param onValueChange Handler receiving the new state.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &setOnValueChange(std::function<void(State)> onValueChange);
+
+		/**
+		 * @brief Override the checked container color (Paper `color`).
+		 * @param color Custom color, or none for the theme color.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &setCheckedColor(
+			std::optional<utility::graphic::Color32Bit> color);
+
+		/**
+		 * @brief Override the unchecked outline color (Paper
+		 * `uncheckedColor`).
+		 * @param color Custom color, or none for the theme color.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &setUncheckedColor(
+			std::optional<utility::graphic::Color32Bit> color);
+
+		/**
+		 * @brief Side of the square interactive target (Paper: 36-40 dp).
+		 */
+		static constexpr float TouchTarget = 40.0f;
+
+		/**
+		 * @brief Gap between the target and the label.
+		 */
+		static constexpr float LabelGap = 4.0f;
 
 		/**
 		 * @brief Initialize the checkbox derived state and children.

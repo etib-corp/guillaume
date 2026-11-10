@@ -22,6 +22,16 @@
 
 #include "entities/test_floating_action_button.hpp"
 
+#include <guillaume/components/text.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <guillaume/components/bound.hpp>
+
+#include <stdexcept>
+
 #include <guillaume/theme.hpp>
 
 #include <guillaume/components/elevation.hpp>
@@ -198,6 +208,74 @@ namespace guillaume::entities::tests
 						 .getComponent<components::Elevation>(
 							 disabled->getIdentifier())
 						 .hasShadow());
+	}
+
+	TEST_F(TestFloatingActionButton, ModeVisibilityAndCustomSize)
+	{
+		ecs::ComponentRegistry registry;
+		int clicks = 0;
+		auto fab   = std::make_shared<FloatingActionButton>(
+			  registry, "add", components::Glyph::Style::Outlined, "",
+			  FloatingActionButton::Variant::Surface,
+			  FloatingActionButton::Size::Medium, false, false, "Add",
+			  [&clicks]() {
+				  ++clicks;
+			  });
+		fab->initialize();
+		fab->update();
+
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(fab->getIdentifier())
+				.getColor(),
+			getElevatedSurfaceColor(theme::ElevationLevel::Level3));
+
+		fab->setMode(FloatingActionButton::Mode::Flat);
+		EXPECT_FALSE(
+			registry.getComponent<components::Elevation>(fab->getIdentifier())
+				.hasShadow());
+
+		fab->setCustomSize(72.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(fab->getIdentifier())
+				.getWidth(),
+			72.0f);
+		EXPECT_THROW(fab->setCustomSize(0.0f), std::invalid_argument);
+
+		fab->setVisible(false);
+		registry
+			.getComponent<components::MouseButtonInteraction>(fab->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(clicks, 0);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(fab->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
+		fab->setVisible(true);
+		registry
+			.getComponent<components::MouseButtonInteraction>(fab->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(clicks, 1);
+	}
+
+	TEST_F(TestFloatingActionButton, LabelUsesLabelLarge)
+	{
+		ecs::ComponentRegistry registry;
+		auto fab = std::make_shared<FloatingActionButton>(
+			registry, "edit", components::Glyph::Style::Outlined, "Edit",
+			FloatingActionButton::Variant::Primary,
+			FloatingActionButton::Size::Medium, false, false, "",
+			std::function<void(void)>());
+		fab->initialize();
+		fab->update();
+
+		EXPECT_FLOAT_EQ(registry
+							.getComponent<components::Text>(
+								fab->getLabelIdentifier())
+							.getFontSize(),
+						getTypeToken(theme::TypeRole::LabelLarge).fontSize);
 	}
 
 }	 // namespace guillaume::entities::tests

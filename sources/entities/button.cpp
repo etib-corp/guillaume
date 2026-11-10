@@ -20,10 +20,13 @@
  SOFTWARE.
  */
 
+#include <algorithm>
+#include <cctype>
 #include <memory>
 #include <utility>
 
 #include "guillaume/entities/button.hpp"
+#include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme.hpp"
 
@@ -51,7 +54,7 @@ namespace guillaume::entities
 		_iconStyle = components::Glyph::Style::Outlined;
 		_labelContent.clear();
 		_isToggle		= false;
-		_colorStyle		= Color::Filled;
+		_colorStyle		= Color::Text;
 		_shape			= Shape::Round;
 		_size			= Size::Small;
 		_isMorph		= false;
@@ -184,6 +187,14 @@ namespace guillaume::entities
 		, _shape(shape)
 		, _size(size)
 	{
+		if (!getComponentRegistry().hasComponent<components::Elevation>(
+				getIdentifier())) {
+			getComponentRegistry().addComponent<components::Elevation>(
+				getIdentifier());
+		}
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(theme::ElevationLevel::Level0);
 	}
 
 	Button::~Button(void)
@@ -261,7 +272,7 @@ namespace guillaume::entities
 			case Button::Size::ExtraSmall:
 				return 15.0f;
 			case Button::Size::Small:
-				return 15.0f;
+				return 18.0f;
 			case Button::Size::Medium:
 				return 18.0f;
 			case Button::Size::Large:
@@ -273,7 +284,7 @@ namespace guillaume::entities
 		}
 	}
 
-	static float getWidthPadding(Button::Size size)
+	static float getBaseWidthPadding(Button::Size size)
 	{
 		switch (size) {
 			case Button::Size::ExtraSmall:
@@ -289,6 +300,13 @@ namespace guillaume::entities
 			default:
 				throw std::runtime_error("Invalid button size");
 		}
+	}
+
+	static float getWidthPadding(Button::Size size, bool compact = false)
+	{
+		// Paper compact buttons halve the horizontal label margin.
+		return compact ? getBaseWidthPadding(size) / 2.0f
+					   : getBaseWidthPadding(size);
 	}
 
 	static float getSpaceBetweenIconAndLabel(Button::Size size)
@@ -537,7 +555,9 @@ namespace guillaume::entities
 			return utility::graphic::Color32Bit(0, 0, 0, 0);
 		}
 
-		if (!isToggle || !isSelected) {
+		// Segmented buttons keep their outline when selected (Paper
+		// SegmentedButtons); outlined toggles drop it.
+		if (style == Button::Color::Segmented || !isToggle || !isSelected) {
 			return scheme.getColor(SchemeColorRole::Outline).getColor();
 		}
 
@@ -551,6 +571,18 @@ namespace guillaume::entities
 
 	void Button::applyStyleState(void)
 	{
+		// M3 elevated buttons rest at level 1 and lift to level 2 on hover;
+		// every other style, and any disabled button, is flat.
+		auto level = theme::ElevationLevel::Level0;
+		if (_colorStyle == Color::Elevated && !isDisabled()) {
+			level = (isHovered() && !isPressed())
+				? theme::ElevationLevel::Level2
+				: theme::ElevationLevel::Level1;
+		}
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(level);
+
 		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
@@ -574,8 +606,9 @@ namespace guillaume::entities
 
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
-			.setColor(getContainerColor(_colorStyle, _isToggle, _isSelected,
-										isHovered(), isPressed()));
+			.setColor(resolveContainerColor(
+				getContainerColor(_colorStyle, _isToggle, _isSelected,
+								  isHovered(), isPressed())));
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
@@ -583,81 +616,14 @@ namespace guillaume::entities
 			.setWidth(1.0f);
 
 		if (_icon) {
-			_icon->setColor(
-				getContentColor(_colorStyle, _isToggle, _isSelected));
+			_icon->setColor(resolveContentColor(
+				getContentColor(_colorStyle, _isToggle, _isSelected)));
 		}
 
 		if (_label) {
-			_label->setColor(
-				getContentColor(_colorStyle, _isToggle, _isSelected));
+			_label->setColor(resolveContentColor(
+				getContentColor(_colorStyle, _isToggle, _isSelected)));
 		}
-	}
-
-	static const utility::graphic::PoseF
-		getIconPose(const utility::graphic::PoseF &buttonPose,
-					const Button::Size &size, const std::uint32_t &buttonLayer)
-	{
-		const float widthPadding  = getWidthPadding(size);
-		const float heightPadding = getHeightPadding(size);
-
-		const float iconX = buttonPose.getPosition().x + widthPadding;
-		const float iconY = buttonPose.getPosition().y + heightPadding;
-		const float iconZ = buttonPose.getPosition().z;
-
-		const utility::graphic::PositionF iconPosition(iconX, iconY, iconZ);
-
-		const utility::graphic::OrientationF iconOrientation =
-			buttonPose.getOrientation();
-
-		return ButtonBase::applyLayerToPosition(iconPosition, iconOrientation,
-												buttonLayer);
-	}
-
-	static const utility::graphic::PoseF
-		getLabelPose(const utility::graphic::PoseF &buttonPose,
-					 const Button::Size &size, const std::uint32_t &buttonLayer,
-					 const float &iconWidth)
-	{
-		const float widthPadding = getWidthPadding(size);
-		const float spaceBetweenIconAndLabel =
-			getSpaceBetweenIconAndLabel(size);
-		const float heightPadding = getHeightPadding(size);
-
-		const float labelX = buttonPose.getPosition().x + widthPadding
-			+ iconWidth + spaceBetweenIconAndLabel;
-		const float labelY = buttonPose.getPosition().y + heightPadding;
-		const float labelZ = buttonPose.getPosition().z;
-
-		const utility::graphic::PositionF labelPosition(labelX, labelY, labelZ);
-
-		const utility::graphic::OrientationF labelOrientation =
-			buttonPose.getOrientation();
-
-		return ButtonBase::applyLayerToPosition(labelPosition, labelOrientation,
-												buttonLayer);
-	}
-
-	static const utility::graphic::PoseF getTrailingIconPose(
-		const utility::graphic::PoseF &buttonPose, const Button::Size &size,
-		const std::uint32_t &buttonLayer, const float &labelWidth)
-	{
-		const float widthPadding = getWidthPadding(size);
-		const float spaceBetweenIconAndLabel =
-			getSpaceBetweenIconAndLabel(size);
-		const float heightPadding = getHeightPadding(size);
-
-		const float iconX = buttonPose.getPosition().x + widthPadding
-			+ labelWidth + spaceBetweenIconAndLabel;
-		const float iconY = buttonPose.getPosition().y + heightPadding;
-		const float iconZ = buttonPose.getPosition().z;
-
-		const utility::graphic::PositionF iconPosition(iconX, iconY, iconZ);
-
-		const utility::graphic::OrientationF iconOrientation =
-			buttonPose.getOrientation();
-
-		return ButtonBase::applyLayerToPosition(iconPosition, iconOrientation,
-												buttonLayer);
 	}
 
 	void Button::applyGeometry(void)
@@ -682,6 +648,15 @@ namespace guillaume::entities
 
 		if (_label) {
 			_label->setTypeRole(theme::TypeRole::LabelLarge);
+			std::string content = _labelContent;
+			if (_isUppercase) {
+				std::transform(content.begin(), content.end(), content.begin(),
+							   [](unsigned char character) {
+								   return static_cast<char>(
+									   std::toupper(character));
+							   });
+			}
+			_label->setContent(content);
 		}
 
 		const auto &buttonPose =
@@ -689,74 +664,115 @@ namespace guillaume::entities
 				.getComponent<components::Transform>(getIdentifier())
 				.getPose();
 
-		const auto &iconBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				_icon->getIdentifier());
+		const bool hasIcon	= _icon != nullptr;
+		const bool hasLabel = _label != nullptr;
 
-		const auto &labelBound =
-			getComponentRegistry().getComponent<components::Bound>(
-				_label->getIdentifier());
+		const float iconWidth = hasIcon
+			? getComponentRegistry()
+				  .getComponent<components::Bound>(_icon->getIdentifier())
+				  .getWidth()
+			: 0.0f;
+		const float iconHeight = hasIcon
+			? getComponentRegistry()
+				  .getComponent<components::Bound>(_icon->getIdentifier())
+				  .getHeight()
+			: 0.0f;
+		const float labelWidth = hasLabel
+			? getComponentRegistry()
+				  .getComponent<components::Bound>(_label->getIdentifier())
+				  .getWidth()
+			: 0.0f;
+		const float labelHeight = hasLabel
+			? getComponentRegistry()
+				  .getComponent<components::Bound>(_label->getIdentifier())
+				  .getHeight()
+			: 0.0f;
 
+		const float gap = (!_iconGlyphName.empty() && !_labelContent.empty())
+			? getSpaceBetweenIconAndLabel(_size)
+			: 0.0f;
+		const float contentWidth = iconWidth + gap + labelWidth;
+		const float contentHeight = std::max(iconHeight, labelHeight);
+
+		// The label typography (labelLarge) is independent of the icon size;
+		// the container grows to the larger child and to the M3 minimums.
+		const float minHeight =
+			(_size == Size::ExtraSmall) ? 0.0f : MinHeight;
+		const float buttonWidth =
+			std::max({ contentWidth + getWidthPadding(_size, _isCompact) * 2.0f,
+					   MinWidth, _minWidth });
+		const float buttonHeight = std::max(
+			contentHeight + getHeightPadding(_size) * 2.0f, minHeight);
+
+		const auto place = [&](const std::shared_ptr<ecs::Entity> &child,
+							   float x, float childHeight) {
+			const float y = (buttonHeight - childHeight) / 2.0f;
+			getComponentRegistry()
+				.getComponent<components::Transform>(child->getIdentifier())
+				.setPose(ButtonBase::applyLayerToPosition(
+					utility::graphic::PositionF(
+						buttonPose.getPosition().x + x,
+						buttonPose.getPosition().y + y,
+						buttonPose.getPosition().z),
+					buttonPose.getOrientation(),
+					static_cast<std::uint32_t>(getLayer())));
+		};
+
+		float cursor = (buttonWidth - contentWidth) / 2.0f;
 		if (_isTrailingIcon) {
-			auto labelPose = getLabelPose(buttonPose, _size, getLayer(), 0.0f);
-
-			getComponentRegistry()
-				.getComponent<components::Transform>(_label->getIdentifier())
-				.setPose(labelPose);
-
-			auto iconPose = getTrailingIconPose(buttonPose, _size, getLayer(),
-												labelBound.getWidth());
-
-			getComponentRegistry()
-				.getComponent<components::Transform>(_icon->getIdentifier())
-				.setPose(iconPose);
+			if (hasLabel) {
+				place(_label, cursor, labelHeight);
+				cursor += labelWidth + gap;
+			}
+			if (hasIcon) {
+				place(_icon, cursor, iconHeight);
+			}
 		} else {
-			auto iconPose = getIconPose(buttonPose, _size, getLayer());
-
-			getComponentRegistry()
-				.getComponent<components::Transform>(_icon->getIdentifier())
-				.setPose(iconPose);
-
-			auto labelPose = getLabelPose(buttonPose, _size, getLayer(),
-										  iconBound.getWidth());
-
-			getComponentRegistry()
-				.getComponent<components::Transform>(_label->getIdentifier())
-				.setPose(labelPose);
+			if (hasIcon) {
+				place(_icon, cursor, iconHeight);
+				cursor += iconWidth + gap;
+			}
+			if (hasLabel) {
+				place(_label, cursor, labelHeight);
+			}
 		}
-
-		const bool hasIcon	= !_iconGlyphName.empty();
-		const bool hasLabel = !_labelContent.empty();
-
-		auto buttonWidth = getWidthPadding(_size) * 2.0f;
-
-		if (hasIcon) {
-			buttonWidth += iconBound.getWidth();
-		}
-
-		if (hasIcon && hasLabel) {
-			buttonWidth += getSpaceBetweenIconAndLabel(_size);
-		}
-
-		if (hasLabel) {
-			buttonWidth += labelBound.getWidth();
-		}
-
-		auto buttonHeight = 0.0f;
-
-		buttonHeight = iconBound.getHeight() > buttonHeight
-			? iconBound.getHeight()
-			: buttonHeight;
-		buttonHeight = labelBound.getHeight() > buttonHeight
-			? labelBound.getHeight()
-			: buttonHeight;
-
-		buttonHeight += getHeightPadding(_size) * 2.0f;
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(getIdentifier())
 			.setWidth(buttonWidth)
 			.setHeight(buttonHeight);
+		applyTouchTarget(buttonWidth, buttonHeight);
+	}
+
+	Button &Button::setMinWidth(float minWidth)
+	{
+		_minWidth = minWidth;
+		applyGeometry();
+		return *this;
+	}
+
+	Button &Button::setCompact(bool compact)
+	{
+		_isCompact = compact;
+		applyGeometry();
+		return *this;
+	}
+
+	bool Button::isCompact(void) const
+	{
+		return _isCompact;
+	}
+
+	Button &Button::setUppercase(bool uppercase)
+	{
+		_isUppercase = uppercase;
+		applyGeometry();
+		return *this;
+	}
+
+	bool Button::isUppercase(void) const
+	{
+		return _isUppercase;
 	}
 
 	Button &Button::setColorStyle(const Color &colorStyle)

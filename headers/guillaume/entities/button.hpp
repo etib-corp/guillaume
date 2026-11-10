@@ -247,7 +247,10 @@ namespace guillaume::entities
 		};
 
 		private:
-		Color _colorStyle { Color::Filled };	///< Color style of the button
+		Color _colorStyle { Color::Text };
+		bool _isCompact { false };	  ///< Compact horizontal padding.
+		float _minWidth { 0.0f };	  ///< Extra minimum width (segments).
+		bool _isUppercase { false };	///< Upper-case label.	///< Color style of the button
 		Shape _shape { Shape::Round };			///< Shape of the button
 		Size _size { Size::Small };				///< Size of the button
 
@@ -321,6 +324,50 @@ namespace guillaume::entities
 		 * @param colorStyle The new color style to set.
 		 * @return Reference to this Button for chaining.
 		 */
+		/**
+		 * @brief Use the compact horizontal padding (Paper `compact`).
+		 * @param compact New compact flag.
+		 * @return Reference to this button for chaining.
+		 */
+		Button &setCompact(bool compact);
+
+		/**
+		 * @brief Raise the minimum container width above the M3 64 dp (used
+		 * to equalize segmented buttons).
+		 * @param minWidth Minimum width.
+		 * @return Reference to this button for chaining.
+		 */
+		Button &setMinWidth(float minWidth);
+
+		/**
+		 * @brief Check the compact flag.
+		 * @return True when compact.
+		 */
+		bool isCompact(void) const;
+
+		/**
+		 * @brief Render the label in upper case (Paper `uppercase`).
+		 * @param uppercase New uppercase flag.
+		 * @return Reference to this button for chaining.
+		 */
+		Button &setUppercase(bool uppercase);
+
+		/**
+		 * @brief Check the uppercase flag.
+		 * @return True when the label is rendered in upper case.
+		 */
+		bool isUppercase(void) const;
+
+		/**
+		 * @brief Minimum container width (M3: 64 dp).
+		 */
+		static constexpr float MinWidth = 64.0f;
+
+		/**
+		 * @brief Minimum container height (M3: 40 dp, ExtraSmall excepted).
+		 */
+		static constexpr float MinHeight = 40.0f;
+
 		Button &setColorStyle(const Color &colorStyle);
 
 		/**

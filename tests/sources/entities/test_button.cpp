@@ -22,6 +22,22 @@
 
 #include "entities/test_button.hpp"
 
+#include <guillaume/entities/style_helpers.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
+#include <guillaume/components/text.hpp>
+
+#include <guillaume/components/bound.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <thread>
+
+#include <chrono>
+
 #include <guillaume/components/style_state.hpp>
 
 #include <guillaume/components/accessibility.hpp>
@@ -474,6 +490,166 @@ namespace guillaume::entities::tests
 
 		button->setAccessibilityHint("Saves the draft");
 		EXPECT_EQ(accessibility.getHint(), "Saves the draft");
+	}
+
+	TEST_F(TestButton, BuilderDefaultsToTextStyle)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		Button::Builder builder(registry, entityRegistry);
+		auto button = builder.withLabel("Ok").registerEntity(nullptr);
+		button->update();
+
+		EXPECT_EQ(button->getColorStyle(), Button::Color::Text);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(button->getLabelIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::Primary));
+	}
+
+	TEST_F(TestButton, EnforcesMinimumSizeAndLabelTypography)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Ok", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
+			false, false, false, "", std::function<void(void)>());
+		button->initialize();
+		button->update();
+
+		const auto &bound =
+			registry.getComponent<components::Bound>(button->getIdentifier());
+		EXPECT_GE(bound.getWidth(), Button::MinWidth);
+		EXPECT_GE(bound.getHeight(), Button::MinHeight);
+
+		const auto &label = registry.getComponent<components::Text>(
+			button->getLabelIdentifier());
+		EXPECT_FLOAT_EQ(label.getFontSize(),
+						getTypeToken(theme::TypeRole::LabelLarge).fontSize);
+		EXPECT_EQ(label.getFontWeight(), theme::FontWeight::Medium);
+	}
+
+	TEST_F(TestButton, UppercaseCompactAndOverrides)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Save", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
+			false, false, false, "", std::function<void(void)>());
+		button->initialize();
+		button->update();
+
+		button->setUppercase(true);
+		EXPECT_EQ(registry
+					  .getComponent<components::Text>(button->getLabelIdentifier())
+					  .getContent(),
+				  "SAVE");
+		button->setCompact(true);
+		EXPECT_TRUE(button->isCompact());
+
+		const utility::graphic::Color32Bit container(1, 2, 3, 255);
+		const utility::graphic::Color32Bit content(4, 5, 6, 255);
+		button->setContainerColorOverride(container);
+		button->setContentColorOverride(content);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(button->getIdentifier())
+				.getColor(),
+			container);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(button->getLabelIdentifier())
+				.getColor(),
+			content);
+	}
+
+	TEST_F(TestButton, ElevatedStyleCastsShadow)
+	{
+		ecs::ComponentRegistry registry;
+		auto elevated = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Go", false,
+			Button::Color::Elevated, Button::Shape::Round, Button::Size::Small,
+			false, false, false, "", std::function<void(void)>());
+		elevated->initialize();
+		elevated->update();
+		EXPECT_EQ(registry
+					  .getComponent<components::Elevation>(
+						  elevated->getIdentifier())
+					  .getElevationLevel(),
+				  theme::ElevationLevel::Level1);
+
+		auto filled = std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Go", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
+			false, false, false, "", std::function<void(void)>());
+		filled->initialize();
+		filled->update();
+		EXPECT_FALSE(
+			registry.getComponent<components::Elevation>(filled->getIdentifier())
+				.hasShadow());
+	}
+
+	TEST_F(TestButton, LoadingShowsProgressGlyphAndRoleIsOverridable)
+	{
+		ecs::ComponentRegistry registry;
+		auto button = std::make_shared<Button>(
+			registry, "send", components::Glyph::Style::Outlined, "Send", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
+			false, false, false, "", std::function<void(void)>());
+		button->initialize();
+		button->update();
+
+		button->setLoading(true);
+		EXPECT_TRUE(button->isLoading());
+		EXPECT_EQ(registry
+					  .getComponent<components::Glyph>(button->getIconIdentifier())
+					  .getName(),
+				  ButtonBase::LoadingGlyph);
+		button->setLoading(false);
+		EXPECT_EQ(registry
+					  .getComponent<components::Glyph>(button->getIconIdentifier())
+					  .getName(),
+				  "send");
+
+		button->setAccessibilityRole(components::AccessibilityRole::Tab);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  button->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::Tab);
+	}
+
+	TEST_F(TestButton, LongPressReplacesClick)
+	{
+		ecs::ComponentRegistry registry;
+		int clicks		= 0;
+		int longPresses = 0;
+		auto button		= std::make_shared<Button>(
+			registry, "", components::Glyph::Style::Outlined, "Hold", false,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
+			false, false, false, "", [&clicks]() {
+				++clicks;
+			});
+		button->initialize();
+		button->setOnLongPress([&longPresses]() {
+			++longPresses;
+		});
+
+		auto &mouse = registry.getComponent<components::MouseButtonInteraction>(
+			button->getIdentifier());
+		mouse.getOnButtonPressHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+		mouse.getOnButtonReleaseHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(clicks, 1);
+		EXPECT_EQ(longPresses, 0);
+
+		mouse.getOnButtonPressHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+		std::this_thread::sleep_for(ButtonBase::LongPressDuration
+									+ std::chrono::milliseconds(20));
+		mouse.getOnButtonReleaseHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(clicks, 1);
+		EXPECT_EQ(longPresses, 1);
 	}
 
 }	 // namespace guillaume::entities::tests

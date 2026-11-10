@@ -225,6 +225,79 @@ namespace guillaume::entities
 			.getHint();
 	}
 
+	ButtonBase &
+		ButtonBase::setAccessibilityRole(components::AccessibilityRole role)
+	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(role);
+		return *this;
+	}
+
+	ButtonBase &
+		ButtonBase::setOnLongPress(std::function<void(void)> onLongPress)
+	{
+		_onLongPress = std::move(onLongPress);
+		return *this;
+	}
+
+	ButtonBase &ButtonBase::setLoading(bool loading)
+	{
+		_isLoading = loading;
+		if (_icon) {
+			_icon->setGlyphName(getActiveIconGlyphName());
+		}
+		return *this;
+	}
+
+	bool ButtonBase::isLoading(void) const
+	{
+		return _isLoading;
+	}
+
+	ButtonBase &ButtonBase::setVisible(bool visible)
+	{
+		_isVisible = visible;
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setFocusable(visible);
+		applyStyleState();
+		return *this;
+	}
+
+	bool ButtonBase::isVisible(void) const
+	{
+		return _isVisible;
+	}
+
+	ButtonBase &ButtonBase::setContainerColorOverride(
+		std::optional<utility::graphic::Color32Bit> color)
+	{
+		_containerColorOverride = color;
+		applyStyleState();
+		return *this;
+	}
+
+	ButtonBase &ButtonBase::setContentColorOverride(
+		std::optional<utility::graphic::Color32Bit> color)
+	{
+		_contentColorOverride = color;
+		applyStyleState();
+		return *this;
+	}
+
+	utility::graphic::Color32Bit ButtonBase::resolveContainerColor(
+		const utility::graphic::Color32Bit &color) const
+	{
+		return _containerColorOverride.value_or(color);
+	}
+
+	utility::graphic::Color32Bit ButtonBase::resolveContentColor(
+		const utility::graphic::Color32Bit &color) const
+	{
+		return _contentColorOverride.value_or(color);
+	}
+
 	ButtonBase &ButtonBase::setOnClick(std::function<void(void)> onClick)
 	{
 		_onClick = std::move(onClick);
@@ -289,6 +362,11 @@ namespace guillaume::entities
 
 	const std::string &ButtonBase::getActiveIconGlyphName(void) const
 	{
+		static const std::string loadingGlyph(LoadingGlyph);
+		if (_isLoading) {
+			return loadingGlyph;
+		}
+
 		if (_isSelected && !_selectedIconGlyphName.empty()) {
 			return _selectedIconGlyphName;
 		}
@@ -382,16 +460,18 @@ namespace guillaume::entities
 
 	void ButtonBase::buttonPressHandler()
 	{
-		if (isDisabled()) {
+		if (isDisabled() || !_isVisible) {
 			return;
 		}
+
+		_pressStart = std::chrono::steady_clock::now();
 
 		applyStyleState();
 	}
 
 	void ButtonBase::buttonReleaseHandler()
 	{
-		if (isDisabled()) {
+		if (isDisabled() || !_isVisible) {
 			return;
 		}
 
@@ -407,7 +487,15 @@ namespace guillaume::entities
 		applyStyleState();
 		applyGeometry();
 
-		if (_onClick) {
+		const bool longPress = _onLongPress
+			&& _pressStart != std::chrono::steady_clock::time_point {}
+			&& std::chrono::steady_clock::now() - _pressStart
+				>= LongPressDuration;
+		_pressStart = {};
+
+		if (longPress) {
+			_onLongPress();
+		} else if (_onClick) {
 			_onClick();
 		}
 	}

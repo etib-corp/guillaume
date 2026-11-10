@@ -22,6 +22,10 @@
 
 #include "entities/test_floating_action_button_menu.hpp"
 
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -105,4 +109,64 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(menu->getParent(), parent);
 		EXPECT_NE(menu->getTriggerIdentifier(), ecs::Entity::InvalidIdentifier);
 	}
+	TEST_F(TestFloatingActionButtonMenu, ClosedActionsAreHiddenAndInert)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		int edits = 0;
+		std::vector<bool> states;
+		FloatingActionButtonMenu::Builder builder(registry, entityRegistry);
+		auto menu = builder.withIcon("add")
+						.withAccessibilityLabel("Create")
+						.addAction("edit", "Edit",
+								   [&edits]() {
+									   ++edits;
+								   })
+						.registerEntity(nullptr);
+		menu->setOnStateChange([&states](bool open) {
+			states.push_back(open);
+		});
+		menu->update();
+
+		const auto action  = menu->getActionIdentifier(0);
+		const auto trigger = menu->getTriggerIdentifier();
+		registry
+			.getComponent<components::MouseButtonInteraction>(action)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(edits, 0);
+
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(trigger);
+		EXPECT_EQ(accessibility.getLabel(), "Create");
+		EXPECT_EQ(accessibility.getExpanded(), false);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(trigger)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_TRUE(menu->isOpen());
+		EXPECT_EQ(accessibility.getExpanded(), true);
+		ASSERT_EQ(states.size(), 1u);
+		EXPECT_TRUE(states[0]);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(action)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(edits, 1);
+
+		// The labelled action renders its label.
+		bool hasLabel = false;
+		for (const auto &child: menu->getEntities()) {
+			if (child->getIdentifier() == action) {
+				hasLabel = true;
+			}
+		}
+		EXPECT_TRUE(hasLabel);
+		EXPECT_EQ(registry.getComponent<components::Accessibility>(action)
+					  .getLabel(),
+				  "Edit");
+	}
+
 }	 // namespace guillaume::entities::tests
