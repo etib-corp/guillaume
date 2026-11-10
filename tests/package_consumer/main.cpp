@@ -105,8 +105,8 @@ int main(void)
 
 	// Constructing the application links against every part of the library;
 	// the frame loop is not run because the stub engine never sends a quit.
-	guillaume::Application<HelloWorldScene> app(
-		resources, std::make_unique<NoopEngine>());
+	guillaume::Application<HelloWorldScene> app(resources,
+												std::make_unique<NoopEngine>());
 	app.routine();
 
 	return 0;
