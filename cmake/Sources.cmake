@@ -14,6 +14,7 @@ set(GUILLAUME_SOURCES
     sources/components/bound.cpp
     sources/components/clip.cpp
     sources/components/color.cpp
+    sources/components/divider.cpp
     sources/components/drag_interaction.cpp
     sources/components/elevation.cpp
     sources/components/ellipse.cpp
@@ -118,6 +119,7 @@ set(GUILLAUME_SOURCES
     sources/systems/arc_render.cpp
     sources/systems/clip.cpp
     sources/systems/core_systems.cpp
+    sources/systems/divider.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/elevation_render.cpp

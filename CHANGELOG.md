@@ -33,6 +33,9 @@ Versions follow the calendar scheme described in
 - `LocalStorage` logs an error and reports `isPersistent() == false` when it
   falls back to in-memory storage; a parent directory that cannot be created
   now takes the same fallback instead of throwing.
+- `Divider` is the first widget migrated to a strict ECS: its state lives in
+  `components::Divider`, its behavior in `systems::Divider`, and
+  `entities::Divider` is a facade without fields or an `update()` override.
 - `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
 - Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 

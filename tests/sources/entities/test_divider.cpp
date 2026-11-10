@@ -56,9 +56,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto divider = makeDivider(registry, 120.0f);
 
-		divider->initialize();
-		divider->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(divider->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 120.0f);
@@ -71,9 +68,6 @@ namespace guillaume::entities::tests
 			std::make_unique<ecs::ComponentRegistry>();
 		auto divider = makeDivider(*registry, 120.0f, Divider::Variant::Inset);
 		divider->setInset(16.0f);
-
-		divider->initialize();
-		divider->update();
 
 		const auto &bound =
 			registry->getComponent<components::Bound>(divider->getIdentifier());
@@ -92,9 +86,6 @@ namespace guillaume::entities::tests
 		auto divider = makeDivider(registry, 120.0f, Divider::Variant::Middle);
 		divider->setInset(16.0f);
 
-		divider->initialize();
-		divider->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(divider->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 88.0f);
@@ -106,7 +97,6 @@ namespace guillaume::entities::tests
 		auto divider = makeDivider(registry, 120.0f);
 
 		divider->setThickness(4.0f);
-		divider->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Line>(divider->getIdentifier())

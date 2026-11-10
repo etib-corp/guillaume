@@ -86,9 +86,44 @@ Guillaume stores state the ECS way and composes UI the widget way:
   calls that entity's `update()`, then its parent's, so a change propagates up
   the tree within the same system pass.
 
-So an entity behaves like a retained widget that keeps its state in
-components. Keep per-frame, cross-entity work in systems; keep
-"how this widget is built and styled" in the entity.
+So most entities still behave like retained widgets that keep part of their
+state in member fields. **That is the legacy shape, and it is being migrated
+away**: the target is a strict ECS in which an entity is only an identifier,
+all state is in components and all behavior is in systems.
+
+### Target shape and migration recipe
+
+`Divider` is the reference. It is split in three:
+
+| Piece | File | Holds |
+|---|---|---|
+| `components::Divider` | `components/divider.hpp` | Every piece of state: variant, length, thickness, inset, color, origin pose. |
+| `systems::Divider` | `systems/divider.hpp` | Every rule: it turns the configuration into `Transform`, `Bound`, `Line` and `Color`, each frame in the Measure phase. |
+| `entities::Divider` | `entities/divider.hpp` | No fields and no `update()`. A facade whose setters write the component, kept so existing code compiles. |
+
+`systems/test_divider.cpp` drives the system on a bare identifier with five
+components and no `entities::Divider` object at all.
+
+To migrate another widget:
+
+1. Move each member field of the entity class into a `components::X`
+   configuration component. Setters compare before writing and call
+   `setHasChanged(true)`, so an unchanged value never marks the entity dirty.
+2. Move the body of `update()`, `applyGeometry()`, `applyStyleState()` and
+   friends into `systems::X`, as a static `apply(registry, identifier)` that
+   reads and writes components only, plus an `update()` override that calls
+   it. Pick the phase by what it produces: Measure for intrinsic size, Layout
+   for child placement, Event for state driven by input.
+3. Register the system in `sources/systems/core_systems.cpp`.
+4. Reduce the entity class to a facade: add `components::X` to its
+   `EntityFiller` list, make each setter write the component and call
+   `systems::X::apply` (so the result is visible immediately while a scene is
+   being built), and delete its `initialize()` / `update()` overrides.
+5. Test the system on bare identifiers, without the entity class.
+
+When no entity overrides `update()` any more, `ecs::Entity::update()` and the
+calls to it in `ecs::System::routine` are deleted, and the entity classes can
+become plain builder functions.
 
 ## Patterns Used
 
