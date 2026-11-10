@@ -107,13 +107,6 @@ namespace guillaume::entities
 										   const std::string &texturePath = "");
 		};
 
-		private:
-		std::string _meshPath;	  ///< Name of the model to be used for this
-								  ///< Mesh entity
-
-		std::string _texturePath;	 ///< Name of the texture to be used for
-									 ///< this Mesh entity
-
 		public:
 		/**
 		 * @brief Default constructor for the Mesh component.
@@ -143,16 +136,6 @@ namespace guillaume::entities
 		 * @return Reference to this Mesh for chaining.
 		 */
 		Mesh &setTexturePath(const std::string &texturePath);
-
-		/**
-		 * @brief Initialize the model entity's derived state.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the model entity's derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

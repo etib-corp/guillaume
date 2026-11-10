@@ -89,8 +89,8 @@ namespace guillaume::entities
 		: ecs::EntityFiller<components::Transform, components::Bound,
 							components::Image, components::Accessibility>(
 			  registry)
-		, _texturePath(texturePath)
 	{
+		setTexturePath(texturePath);
 		getComponentRegistry()
 			.getComponent<components::Accessibility>(getIdentifier())
 			.setRole(components::AccessibilityRole::Image);
@@ -98,12 +98,13 @@ namespace guillaume::entities
 
 	const std::string &Image::getTexturePath(void) const
 	{
-		return _texturePath;
+		return getComponentRegistry()
+			.getComponent<components::Image>(getIdentifier())
+			.getTexturePath();
 	}
 
 	Image &Image::setFallbackPath(const std::string &fallbackPath)
 	{
-		_fallbackPath = fallbackPath;
 		getComponentRegistry()
 			.getComponent<components::Image>(getIdentifier())
 			.setFallbackPath(fallbackPath);
@@ -115,9 +116,10 @@ namespace guillaume::entities
 		if (width <= 0.0f || height <= 0.0f) {
 			throw std::invalid_argument("Image size must be positive");
 		}
-		_width	= width;
-		_height = height;
-		applySize();
+		getComponentRegistry()
+			.getComponent<components::Bound>(getIdentifier())
+			.setWidth(width)
+			.setHeight(height);
 		return *this;
 	}
 
@@ -128,17 +130,6 @@ namespace guillaume::entities
 				"Image width and aspect ratio must be positive");
 		}
 		return setSize(width, width / aspectRatio);
-	}
-
-	void Image::applySize(void)
-	{
-		if (_width <= 0.0f || _height <= 0.0f) {
-			return;
-		}
-		getComponentRegistry()
-			.getComponent<components::Bound>(getIdentifier())
-			.setWidth(_width)
-			.setHeight(_height);
 	}
 
 	components::Image::LoadState Image::getLoadState(void) const
@@ -162,23 +153,11 @@ namespace guillaume::entities
 
 	Image &Image::setTexturePath(const std::string &texturePath)
 	{
-		_texturePath = texturePath;
-
 		getComponentRegistry()
 			.getComponent<components::Image>(getIdentifier())
 			.setTexturePath(texturePath);
 
 		return *this;
-	}
-
-	void Image::initialize(void)
-	{
-	}
-
-	void Image::update(void)
-	{
-		setTexturePath(_texturePath);
-		applySize();
 	}
 
 }	 // namespace guillaume::entities

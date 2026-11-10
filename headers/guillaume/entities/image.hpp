@@ -113,18 +113,6 @@ namespace guillaume::entities
 											 const std::string &texturePath);
 		};
 
-		private:
-		std::string _texturePath;		 ///< Name of the texture to be used for
-										 ///< this Image entity
-		std::string _fallbackPath {};	 ///< Texture drawn on load failure
-		float _width { 0.0f };			 ///< Requested width (0: keep).
-		float _height { 0.0f };			 ///< Requested height (0: keep).
-
-		/**
-		 * @brief Push the requested size to the Bound component.
-		 */
-		void applySize(void);
-
 		public:
 		/**
 		 * @brief Default constructor for the Image component.
@@ -191,16 +179,6 @@ namespace guillaume::entities
 		 * @return Reference to this image for chaining.
 		 */
 		Image &setAccessibilityLabel(const std::string &label);
-
-		/**
-		 * @brief Initialize the image entity's derived state.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the image entity's derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities
