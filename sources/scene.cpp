@@ -29,6 +29,7 @@
 #include "guillaume/entities/app_bar.hpp"
 #include "guillaume/entities/badge.hpp"
 #include "guillaume/entities/card.hpp"
+#include "guillaume/entities/surface.hpp"
 #include "guillaume/entities/checkbox.hpp"
 #include "guillaume/entities/chip.hpp"
 #include "guillaume/entities/dialog.hpp"
@@ -63,6 +64,7 @@ namespace guillaume
 				  entities::Button::Builder, entities::Icon::Builder,
 				  entities::Mesh::Builder, entities::Image::Builder,
 				  entities::Divider::Builder, entities::Card::Builder,
+				  entities::Surface::Builder,
 				  entities::Badge::Builder, entities::AppBar::Builder,
 				  entities::Tooltip::Builder, entities::Snackbar::Builder,
 				  entities::List::Builder, entities::Checkbox::Builder,
@@ -80,6 +82,7 @@ namespace guillaume
 				  entities::Button::Director, entities::Icon::Director,
 				  entities::Mesh::Director, entities::Image::Director,
 				  entities::Divider::Director, entities::Card::Director,
+				  entities::Surface::Director,
 				  entities::Badge::Director, entities::AppBar::Director,
 				  entities::Tooltip::Director, entities::Snackbar::Director,
 				  entities::List::Director, entities::Checkbox::Director,

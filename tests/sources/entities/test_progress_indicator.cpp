@@ -22,6 +22,10 @@
 
 #include "entities/test_progress_indicator.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <cmath>
 #include <memory>
 
@@ -206,6 +210,60 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(progress->getParent(), parent);
 		EXPECT_EQ(progress->getVariant(),
 				  ProgressIndicator::Variant::LinearDeterminate);
+	}
+
+	TEST_F(TestProgressIndicator, ValueChangesAnimateOverShortFour)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 0.5f);
+
+		progress->setValue(1.0f);
+		EXPECT_FLOAT_EQ(progress->getValue(), 1.0f);
+		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 0.5f);
+
+		auto &animation = registry.getComponent<components::Animation>(
+			progress->getIdentifier());
+		EXPECT_FLOAT_EQ(animation.getDuration(),
+						getMotionDuration(theme::MotionDuration::Short4));
+		animation.advance(1.0f);
+		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 1.0f);
+	}
+
+	TEST_F(TestProgressIndicator, ExposesProgressBarValue)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				progress->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::ProgressBar);
+		ASSERT_TRUE(accessibility.getValue().has_value());
+		EXPECT_FLOAT_EQ(accessibility.getValue()->now, 50.0f);
+		EXPECT_FLOAT_EQ(accessibility.getValue()->max, 100.0f);
+	}
+
+	TEST_F(TestProgressIndicator, VisibilityAndColorOverride)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+
+		progress->setVisible(false);
+		registry.getComponent<components::Animation>(progress->getIdentifier())
+			.advance(1.0f);
+		EXPECT_FLOAT_EQ(progress->getOpacity(), 0.0f);
+
+		const auto tertiary = getActiveScheme()
+								  .getColor(SchemeColorRole::Tertiary)
+								  .getColor();
+		progress->setIndicatorColor(tertiary);
+		EXPECT_EQ(progress->getIndicatorColor(), tertiary);
+		EXPECT_FLOAT_EQ(ProgressIndicator::IndeterminateSegment, 0.6f);
 	}
 
 }	 // namespace guillaume::entities::tests

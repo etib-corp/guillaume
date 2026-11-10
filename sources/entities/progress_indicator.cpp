@@ -38,6 +38,7 @@
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/entities/placement_helpers.hpp"
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/motion/easing.hpp"
@@ -249,7 +250,8 @@ namespace guillaume::entities
 	ProgressIndicator::ProgressIndicator(ecs::ComponentRegistry &registry,
 										 const SurfaceConfig &config,
 										 Variant variant, float value)
-		: SurfaceBase<components::Value>(registry, config)
+		: SurfaceBase<components::Value, components::Animation,
+					  components::Accessibility>(registry, config)
 		, _variant(variant)
 		, _trackLength((variant == Variant::LinearDeterminate
 						|| variant == Variant::LinearIndeterminate)
@@ -269,10 +271,87 @@ namespace guillaume::entities
 			getComponentRegistry().getComponent<components::Value>(
 				getIdentifier());
 		valueComponent.setMin(0.0f).setMax(1.0f).setStep(0.0f);
-		valueComponent.setOnChangedHandler([this](float) {
-			applyState();
-		});
 		valueComponent.setValue(std::clamp(value, 0.0f, 1.0f));
+		_displayed = valueComponent.getValue();
+		_valueFrom = _displayed;
+		valueComponent.setOnChangedHandler([this](float) {
+			startTransition();
+		});
+
+		getComponentRegistry()
+			.getComponent<components::Animation>(getIdentifier())
+			.setDuration(getMotionDuration(theme::MotionDuration::Short4))
+			.setEasing(theme::MotionScale::standard())
+			.setOnSampleHandler([this](float progress) {
+				const float target = getValue();
+				_displayed = _valueFrom + (target - _valueFrom) * progress;
+				const float opacityTarget = _visible ? 1.0f : 0.0f;
+				_opacity =
+					_opacityFrom + (opacityTarget - _opacityFrom) * progress;
+				applyState();
+			});
+
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::ProgressBar);
+	}
+
+	void ProgressIndicator::startTransition(void)
+	{
+		_valueFrom	 = _displayed;
+		_opacityFrom = _opacity;
+		getComponentRegistry()
+			.getComponent<components::Animation>(getIdentifier())
+			.play();
+		applyState();
+	}
+
+	utility::graphic::Color32Bit ProgressIndicator::faded(
+		const utility::graphic::Color32Bit &color) const
+	{
+		return withAlpha(color, static_cast<std::uint8_t>(
+									static_cast<float>(color.getAlpha())
+										* _opacity
+									+ 0.5f));
+	}
+
+	float ProgressIndicator::getDisplayedValue(void) const
+	{
+		return _displayed;
+	}
+
+	ProgressIndicator &ProgressIndicator::setVisible(bool visible)
+	{
+		if (_visible == visible) {
+			return *this;
+		}
+		_visible = visible;
+		startTransition();
+		return *this;
+	}
+
+	bool ProgressIndicator::isVisible(void) const
+	{
+		return _visible;
+	}
+
+	float ProgressIndicator::getOpacity(void) const
+	{
+		return _opacity;
+	}
+
+	ProgressIndicator &ProgressIndicator::setIndicatorColor(
+		const utility::graphic::Color32Bit &color)
+	{
+		_indicatorColor = color;
+		applyState();
+		return *this;
+	}
+
+	utility::graphic::Color32Bit
+		ProgressIndicator::getIndicatorColor(void) const
+	{
+		return _indicatorColor.value_or(schemeColor(SchemeColorRole::Primary));
 	}
 
 	ProgressIndicator::~ProgressIndicator(void)
@@ -393,7 +472,7 @@ namespace guillaume::entities
 						if (_fill == nullptr || _track == nullptr) {
 							return;
 						}
-						const float segment = _trackLength * 0.4f;
+						const float segment = _trackLength * IndeterminateSegment;
 
 						placeChild(getComponentRegistry(), getIdentifier(),
 								   _fill->getIdentifier(),
@@ -425,11 +504,17 @@ namespace guillaume::entities
 			return;
 		}
 
-		const float normalized =
-			std::clamp(getComponentRegistry()
-						   .getComponent<components::Value>(getIdentifier())
-						   .getValue(),
-					   0.0f, 1.0f);
+		const float normalized = std::clamp(_displayed, 0.0f, 1.0f);
+
+		auto &accessibility =
+			getComponentRegistry().getComponent<components::Accessibility>(
+				getIdentifier());
+		if (isIndeterminate()) {
+			accessibility.setValue(std::nullopt);
+		} else {
+			accessibility.setValue(components::AccessibilityValue {
+				0.0f, 100.0f, std::clamp(getValue(), 0.0f, 1.0f) * 100.0f });
+		}
 
 		if (isCircular()) {
 			placeChild(getComponentRegistry(), getIdentifier(),
@@ -452,10 +537,10 @@ namespace guillaume::entities
 
 			getComponentRegistry()
 				.getComponent<components::Color>(_track->getIdentifier())
-				.setColor(schemeColor(SchemeColorRole::SurfaceVariant));
+				.setColor(faded(schemeColor(SchemeColorRole::SurfaceVariant)));
 			getComponentRegistry()
 				.getComponent<components::Color>(_fill->getIdentifier())
-				.setColor(schemeColor(SchemeColorRole::Primary));
+				.setColor(faded(getIndicatorColor()));
 
 			if (!isIndeterminate()) {
 				getComponentRegistry()
@@ -476,7 +561,7 @@ namespace guillaume::entities
 			.setHeight(LinearHeight);
 		getComponentRegistry()
 			.getComponent<components::Color>(_track->getIdentifier())
-			.setColor(schemeColor(SchemeColorRole::SurfaceVariant));
+			.setColor(faded(schemeColor(SchemeColorRole::SurfaceVariant)));
 
 		placeChild(getComponentRegistry(), getIdentifier(),
 				   _fill->getIdentifier(),
@@ -484,7 +569,7 @@ namespace guillaume::entities
 				   static_cast<std::uint32_t>(getLayer()));
 		getComponentRegistry()
 			.getComponent<components::Color>(_fill->getIdentifier())
-			.setColor(schemeColor(SchemeColorRole::Primary));
+			.setColor(faded(getIndicatorColor()));
 
 		if (!isIndeterminate()) {
 			getComponentRegistry()

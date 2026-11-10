@@ -67,6 +67,17 @@ namespace guillaume::entities
 		enum class Variant { FullWidth, Inset, Middle };
 
 		/**
+		 * @brief Default stroke: a hairline (Paper `StyleSheet.hairlineWidth`
+		 * on a 2x display).
+		 */
+		static constexpr float HairlineThickness = 0.5f;
+
+		/**
+		 * @brief Stroke of a bold divider (Paper `bold`).
+		 */
+		static constexpr float BoldThickness = 1.0f;
+
+		/**
 		 * @brief Builder used to configure and create `Divider` entities.
 		 */
 		class Builder: public EntityBuilderBase<Divider>
@@ -75,7 +86,7 @@ namespace guillaume::entities
 			utility::graphic::PoseF _pose {};		   ///< Divider pose.
 			utility::graphic::Color32Bit _color {};	   ///< Divider color.
 			float _length { 100.0f };				   ///< Total length.
-			float _thickness { 1.0f };				   ///< Stroke thickness.
+			float _thickness { HairlineThickness };	///< Stroke thickness.
 			float _inset { 16.0f };	   ///< Leading/trailing inset.
 			Variant _variant { Variant::FullWidth };	///< Divider variant.
 
@@ -166,7 +177,7 @@ namespace guillaume::entities
 		utility::graphic::PoseF _appliedPose {};	///< Last applied pose.
 		utility::graphic::Color32Bit _color {};		///< Divider color.
 		float _length { 100.0f };					///< Total length.
-		float _thickness { 1.0f };					///< Stroke thickness.
+		float _thickness { HairlineThickness };	///< Stroke thickness.
 		float _inset { 16.0f };						///< Leading/trailing inset.
 		Variant _variant { Variant::FullWidth };	///< Divider variant.
 
@@ -229,6 +240,20 @@ namespace guillaume::entities
 		 * @return Reference to this divider for chaining.
 		 */
 		Divider &setThickness(float thickness);
+
+		/**
+		 * @brief Switch between the hairline and the bold stroke (Paper
+		 * `bold`).
+		 * @param bold True for a 1 dp stroke, false for a hairline.
+		 * @return Reference to this divider for chaining.
+		 */
+		Divider &setBold(bool bold);
+
+		/**
+		 * @brief Check whether the divider uses the bold stroke.
+		 * @return True when the thickness is at least `BoldThickness`.
+		 */
+		bool isBold(void) const;
 
 		/**
 		 * @brief Set the leading/trailing inset.

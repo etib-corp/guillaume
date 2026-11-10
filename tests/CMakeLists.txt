@@ -34,6 +34,7 @@ set(TEST_SOURCES
     sources/entities/test_radio_button.cpp
     sources/entities/test_search.cpp
     sources/entities/test_snackbar.cpp
+    sources/entities/test_surface.cpp
     sources/entities/test_switch.cpp
     sources/entities/test_text_field.cpp
     sources/entities/test_tooltip.cpp

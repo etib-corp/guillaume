@@ -51,7 +51,7 @@ namespace guillaume::entities
 					 .getColor(SchemeColorRole::OutlineVariant)
 					 .getColor();
 		_length	   = 100.0f;
-		_thickness = 1.0f;
+		_thickness = HairlineThickness;
 		_inset	   = 16.0f;
 		_variant   = Variant::FullWidth;
 	}
@@ -201,6 +201,16 @@ namespace guillaume::entities
 		_thickness = thickness;
 		applyGeometry();
 		return *this;
+	}
+
+	Divider &Divider::setBold(bool bold)
+	{
+		return setThickness(bold ? BoldThickness : HairlineThickness);
+	}
+
+	bool Divider::isBold(void) const
+	{
+		return _thickness >= BoldThickness;
 	}
 
 	Divider &Divider::setInset(float inset)

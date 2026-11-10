@@ -22,6 +22,8 @@
 
 #include "guillaume/entities/loading_indicator.hpp"
 
+#include <stdexcept>
+
 #include <memory>
 
 #include "guillaume/ecs/entity_filler.hpp"
@@ -47,7 +49,7 @@ namespace guillaume::entities
 		constexpr float LinearWidth	 = 200.0f;
 		const float LinearRadius = getShapeRadius(theme::ShapeRole::Full);
 		constexpr float CircularSize = 48.0f;
-		constexpr float ArcThickness = 4.0f;
+		constexpr float StrokeRatio	 = 4.0f / 48.0f;	///< M3 4 dp at 48 dp.
 		constexpr float TwoPi		 = 6.28318530717958647692f;
 		constexpr float HalfPi		 = 1.57079632679489661923f;
 		constexpr float ArcSweep	 = 4.71238898038468985769f;	   // 1.5 * pi
@@ -132,7 +134,7 @@ namespace guillaume::entities
 	void LoadingIndicator::Builder::reset(void)
 	{
 		_config	 = SurfaceConfig();
-		_variant = Variant::Linear;
+		_variant = Variant::Circular;
 		_size	 = CircularSize;
 
 		_config.borderRadius = LinearRadius;
@@ -178,12 +180,95 @@ namespace guillaume::entities
 	LoadingIndicator::LoadingIndicator(ecs::ComponentRegistry &registry,
 									   const SurfaceConfig &config,
 									   Variant variant)
-		: SurfaceBase<components::Animation>(registry, config)
+		: SurfaceBase<components::Animation, components::Accessibility>(
+			  registry, config)
 		, _variant(variant)
-		, _diameter(config.hasFixedHeight ? config.fixedHeight : CircularSize)
+		, _diameter(variant == Variant::Circular && config.hasFixedHeight
+						? config.fixedHeight
+						: CircularSize)
 		, _animation()
 		, _built(false)
 	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::ProgressBar);
+		getComponentRegistry()
+			.getComponent<components::Animation>(getIdentifier())
+			.setDuration(getMotionDuration(theme::MotionDuration::Short4))
+			.setEasing(theme::MotionScale::standard())
+			.setOnSampleHandler([this](float progress) {
+				_opacity =
+					_opacityFrom + (_opacityTarget - _opacityFrom) * progress;
+				applyState();
+			});
+	}
+
+	void LoadingIndicator::startFade(void)
+	{
+		const float target = (isRunning() || !_hidesWhenStopped) ? 1.0f : 0.0f;
+		if (target == _opacityTarget && target == _opacity) {
+			return;
+		}
+		_opacityFrom   = _opacity;
+		_opacityTarget = target;
+		getComponentRegistry()
+			.getComponent<components::Animation>(getIdentifier())
+			.play();
+	}
+
+	LoadingIndicator &LoadingIndicator::setHidesWhenStopped(bool hides)
+	{
+		_hidesWhenStopped = hides;
+		startFade();
+		return *this;
+	}
+
+	bool LoadingIndicator::hidesWhenStopped(void) const
+	{
+		return _hidesWhenStopped;
+	}
+
+	float LoadingIndicator::getOpacity(void) const
+	{
+		return _opacity;
+	}
+
+	LoadingIndicator &LoadingIndicator::setIndicatorColor(
+		const utility::graphic::Color32Bit &color)
+	{
+		_indicatorColor = color;
+		applyState();
+		return *this;
+	}
+
+	utility::graphic::Color32Bit
+		LoadingIndicator::getIndicatorColor(void) const
+	{
+		return _indicatorColor.value_or(schemeColor(SchemeColorRole::Primary));
+	}
+
+	LoadingIndicator &LoadingIndicator::setSize(float size)
+	{
+		if (size <= 0.0f) {
+			throw std::invalid_argument("Loading indicator size must be positive");
+		}
+		_diameter = size;
+		if (_variant == Variant::Circular) {
+			_built = false;
+			buildChild();
+			applyState();
+		}
+		return *this;
+	}
+
+	float LoadingIndicator::getSize(void) const
+	{
+		return _diameter;
+	}
+
+	float LoadingIndicator::getStrokeWidth(void) const
+	{
+		return _diameter * StrokeRatio;
 	}
 
 	LoadingIndicator::~LoadingIndicator(void)
@@ -229,7 +314,7 @@ namespace guillaume::entities
 
 			getComponentRegistry()
 				.getComponent<components::Arc>(_animation->getIdentifier())
-				.setThickness(ArcThickness)
+				.setThickness(getStrokeWidth())
 				.setStartAngle(-HalfPi)
 				.setSweepAngle(ArcSweep);
 			getComponentRegistry()
@@ -279,6 +364,14 @@ namespace guillaume::entities
 		}
 
 		const float progress = _progress;
+
+		const auto color = getIndicatorColor();
+		getComponentRegistry()
+			.getComponent<components::Color>(_animation->getIdentifier())
+			.setColor(withAlpha(
+				color, static_cast<std::uint8_t>(
+						   static_cast<float>(color.getAlpha()) * _opacity
+						   + 0.5f)));
 
 		if (_variant == Variant::Circular) {
 			auto &arc = getComponentRegistry().getComponent<components::Arc>(
@@ -339,6 +432,7 @@ namespace guillaume::entities
 					_animation->getIdentifier())
 				.play();
 		}
+		startFade();
 		return *this;
 	}
 
@@ -350,6 +444,7 @@ namespace guillaume::entities
 					_animation->getIdentifier())
 				.stop();
 		}
+		startFade();
 		return *this;
 	}
 

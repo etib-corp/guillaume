@@ -22,6 +22,14 @@
 
 #include "entities/test_snackbar.hpp"
 
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
+#include <stdexcept>
+
 #include <memory>
 #include <string>
 
@@ -106,8 +114,7 @@ namespace guillaume::entities::tests
 			snackbar->getIdentifier());
 		EXPECT_FALSE(overlay.isModal());
 		EXPECT_TRUE(overlay.hasAutoDismiss());
-		EXPECT_FLOAT_EQ(overlay.getAutoDismiss(),
-						theme::MotionScale::SnackbarDuration);
+		EXPECT_FLOAT_EQ(overlay.getAutoDismiss(), Snackbar::DurationMedium);
 	}
 
 	TEST_F(TestSnackbar, WithActionBuildsTwoChildren)
@@ -151,6 +158,114 @@ namespace guillaume::entities::tests
 		ASSERT_NE(snackbar, nullptr);
 		EXPECT_EQ(snackbar->getParent(), parent);
 		EXPECT_EQ(snackbar->getVariant(), Snackbar::Variant::WithAction);
+	}
+
+	TEST_F(TestSnackbar, VisibilityDrivesOverlayAndVisuals)
+	{
+		ecs::ComponentRegistry registry;
+		auto snackbar = makeSnackbar(registry);
+		snackbar->initialize();
+
+		auto &overlay =
+			registry.getComponent<components::Overlay>(snackbar->getIdentifier());
+		EXPECT_TRUE(snackbar->isVisible());
+		EXPECT_TRUE(overlay.isVisible());
+		EXPECT_FLOAT_EQ(overlay.getAutoDismiss(), Snackbar::DurationMedium);
+
+		snackbar->hide();
+		EXPECT_FALSE(overlay.isVisible());
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(snackbar->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
+		EXPECT_FALSE(
+			registry.getComponent<components::Elevation>(snackbar->getIdentifier())
+				.hasShadow());
+
+		snackbar->show();
+		EXPECT_TRUE(overlay.isVisible());
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(snackbar->getIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::InverseSurface));
+	}
+
+	TEST_F(TestSnackbar, OverlayDismissCallsOnDismissAndHides)
+	{
+		ecs::ComponentRegistry registry;
+		auto snackbar = makeSnackbar(registry);
+		snackbar->initialize();
+		int dismissals = 0;
+		snackbar->setOnDismiss([&dismissals]() {
+			++dismissals;
+		});
+		snackbar->setDuration(Snackbar::DurationShort);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Overlay>(snackbar->getIdentifier())
+				.getAutoDismiss(),
+			Snackbar::DurationShort);
+		EXPECT_THROW(snackbar->setDuration(-1.0f), std::invalid_argument);
+
+		// systems::Overlay calls the dismiss handler when the timer elapses.
+		registry.getComponent<components::Overlay>(snackbar->getIdentifier())
+			.getOnDismissHandler()();
+		EXPECT_EQ(dismissals, 1);
+		EXPECT_FALSE(snackbar->isVisible());
+
+		// Hiding programmatically does not report a dismissal.
+		snackbar->show();
+		snackbar->hide();
+		EXPECT_EQ(dismissals, 1);
+	}
+
+	TEST_F(TestSnackbar, ActionIsPressableAndDismisses)
+	{
+		ecs::ComponentRegistry registry;
+		auto snackbar =
+			makeSnackbar(registry, Snackbar::Variant::WithAction, "Saved", "Undo");
+		snackbar->initialize();
+		int actions	   = 0;
+		int dismissals = 0;
+		snackbar->setOnAction([&actions]() {
+			++actions;
+		});
+		snackbar->setOnDismiss([&dismissals]() {
+			++dismissals;
+		});
+
+		auto action = snackbar->getActionEntity();
+		ASSERT_NE(action, nullptr);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  action->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::Button);
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				action->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(actions, 1);
+		EXPECT_EQ(dismissals, 1);
+		EXPECT_FALSE(snackbar->isVisible());
+	}
+
+	TEST_F(TestSnackbar, AnnouncesAsPoliteAlert)
+	{
+		ecs::ComponentRegistry registry;
+		auto snackbar = makeSnackbar(registry);
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				snackbar->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Alert);
+		EXPECT_EQ(accessibility.getLiveRegion(), components::LiveRegion::Polite);
+		EXPECT_EQ(accessibility.getLabel(), "Message");
+		EXPECT_EQ(
+			registry.getComponent<components::Elevation>(snackbar->getIdentifier())
+				.getElevationLevel(),
+			theme::ElevationLevel::Level3);
 	}
 
 }	 // namespace guillaume::entities::tests

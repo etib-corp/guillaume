@@ -33,8 +33,22 @@ namespace guillaume::components
 	 */
 	class Image: public ecs::Component
 	{
+		public:
+		/**
+		 * @brief Loading state of the texture, maintained by
+		 * `systems::ImageRender`.
+		 */
+		enum class LoadState {
+			Pending,	///< Not attempted yet.
+			Loaded,		///< The texture (or the fallback) is drawn.
+			Failed		///< Neither the texture nor the fallback loaded.
+		};
+
 		private:
 		std::string _texturePath {};	///< Path to the image texture file
+		std::string _fallbackPath {};	 ///< Texture drawn when loading fails
+		LoadState _loadState { LoadState::Pending };	///< Loading state.
+		bool _usingFallback { false };	  ///< Whether the fallback is drawn.
 
 		public:
 		/**
@@ -59,5 +73,38 @@ namespace guillaume::components
 		 * @return The image texture path.
 		 */
 		std::string getTexturePath(void) const;
+
+		/**
+		 * @brief Set the texture drawn when the main texture fails to load.
+		 * @param path Fallback texture path (empty to disable).
+		 * @return Reference to this Image component for chaining.
+		 */
+		Image &setFallbackPath(const std::string &path);
+
+		/**
+		 * @brief Get the fallback texture path.
+		 * @return The fallback path.
+		 */
+		const std::string &getFallbackPath(void) const;
+
+		/**
+		 * @brief Get the loading state.
+		 * @return The loading state.
+		 */
+		LoadState getLoadState(void) const;
+
+		/**
+		 * @brief Record the loading outcome (used by systems::ImageRender).
+		 * @param state New state.
+		 * @param usingFallback Whether the fallback texture is drawn.
+		 * @return Reference to this Image component for chaining.
+		 */
+		Image &setLoadState(LoadState state, bool usingFallback = false);
+
+		/**
+		 * @brief Check whether the fallback texture is drawn.
+		 * @return True when the main texture failed and the fallback loaded.
+		 */
+		bool isUsingFallback(void) const;
 	};
 }	 // namespace guillaume::components
