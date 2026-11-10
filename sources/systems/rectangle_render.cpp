@@ -22,6 +22,7 @@
 
 #include "guillaume/systems/rectangle_render.hpp"
 #include "guillaume/mesh_renderable.hpp"
+#include "guillaume/systems/shape_mesh.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -294,8 +295,28 @@ namespace guillaume::systems
 									std::vector<uint32_t> {});
 		buildTriangleFanVertices(mesh, center, roundedVertices, color);
 
-		auto renderable = std::make_shared<MeshRenderable>(
-			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");
+		std::vector<utility::graphic::Mesh> meshes { mesh };
+
+		if (bordersComponent.hasStroke()) {
+			const utility::graphic::PositionF strokeCenter(
+				-pose.getOrientation().getForward() * StrokeLift);
+			utility::graphic::Mesh stroke(
+				std::vector<utility::graphic::VertexF> {},
+				std::vector<uint32_t> {});
+			shape::buildRoundedStrokeMesh(
+				stroke,
+				utility::graphic::PositionF(center[0] + strokeCenter[0],
+											center[1] + strokeCenter[1],
+											center[2] + strokeCenter[2]),
+				pose.getOrientation(), boundComponent.getWidth() / 2.0f,
+				boundComponent.getHeight() / 2.0f,
+				extractAverageRadius(bordersComponent),
+				bordersComponent.getWidth(), 16, bordersComponent.getColor());
+			meshes.push_back(stroke);
+		}
+
+		auto renderable =
+			std::make_shared<MeshRenderable>(meshes, "mesh_material");
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {

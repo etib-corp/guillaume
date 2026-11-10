@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -33,7 +34,9 @@
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/icon.hpp"
+#include "guillaume/entities/icon_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
 #include "guillaume/entities/text.hpp"
@@ -55,13 +58,23 @@ namespace guillaume::entities
 	 *
 	 * @see SurfaceBase
 	 */
-	class AppBar: public SurfaceBase<>
+	class AppBar: public SurfaceBase<components::Elevation>
 	{
 		public:
 		/**
 		 * @brief App bar variant.
 		 */
-		enum class Variant { Small, Medium, Large, Bottom };
+		enum class Variant { Small, CenterAligned, Medium, Large, Bottom };
+
+		/**
+		 * @brief A pressable app bar icon (navigation or action).
+		 */
+		struct Action {
+			std::string icon {};					 ///< Icon glyph.
+			std::function<void(void)> onPress {};	 ///< Press handler.
+			std::string accessibilityLabel {};		 ///< Accessible name.
+			bool disabled { false };				 ///< Whether disabled.
+		};
 
 		/**
 		 * @brief Builder used to configure and create `AppBar` entities.
@@ -72,8 +85,9 @@ namespace guillaume::entities
 			SurfaceConfig _config;					///< Surface configuration.
 			Variant _variant { Variant::Small };	///< App bar variant.
 			std::string _title {};					///< Title text.
-			std::string _navigationIcon {};	   ///< Leading navigation icon.
-			std::vector<std::string> _actions {};	 ///< Trailing action icons.
+			Action _navigation {};				///< Leading navigation action.
+			std::vector<Action> _actions {};	///< Trailing actions.
+			bool _elevated { false };			///< Level-2 tonal elevation.
 
 			public:
 			/**
@@ -131,6 +145,35 @@ namespace guillaume::entities
 			Builder &addAction(const std::string &iconGlyphName);
 
 			/**
+			 * @brief Append a pressable action (Paper `Appbar.Action`).
+			 * @param iconGlyphName Icon glyph.
+			 * @param onPress Press handler.
+			 * @param accessibilityLabel Accessible name.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &addAction(const std::string &iconGlyphName,
+							   std::function<void(void)> onPress,
+							   const std::string &accessibilityLabel = "");
+
+			/**
+			 * @brief Set the navigation press handler (Paper
+			 * `Appbar.BackAction`).
+			 * @param onPress Press handler.
+			 * @param accessibilityLabel Accessible name.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withOnNavigation(
+				std::function<void(void)> onPress,
+				const std::string &accessibilityLabel = "Navigate up");
+
+			/**
+			 * @brief Use the elevated surface (Paper `elevated`).
+			 * @param elevated New flag.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withElevated(bool elevated);
+
+			/**
 			 * @brief Force the app bar width.
 			 * @param width The new width.
 			 * @return Reference to the builder for chaining.
@@ -158,13 +201,15 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::Small };	 ///< App bar variant.
-		std::string _title {};					 ///< Title text.
-		std::string _navigationIcon {};			 ///< Leading navigation icon.
-		std::vector<std::string> _actions {};	 ///< Trailing action icons.
-		std::shared_ptr<Icon> _navigationIconEntity;	///< Leading icon child.
-		std::shared_ptr<Text> _titleEntity;				///< Title child.
-		std::vector<std::shared_ptr<Icon>>
+		Variant _variant { Variant::Small };	///< App bar variant.
+		std::string _title {};					///< Title text.
+		Action _navigation {};					///< Leading navigation action.
+		std::vector<Action> _actions {};		///< Trailing actions.
+		bool _elevated { false };				///< Level-2 tonal elevation.
+		std::shared_ptr<IconButton>
+			_navigationIconEntity;			   ///< Leading icon button child.
+		std::shared_ptr<Text> _titleEntity;	   ///< Title child.
+		std::vector<std::shared_ptr<IconButton>>
 			_actionEntities {};	   ///< Trailing action children.
 
 		private:
@@ -173,6 +218,20 @@ namespace guillaume::entities
 		 * @return The app bar height.
 		 */
 		float getVariantHeight(void) const;
+
+		/**
+		 * @brief Get the title typescale role of the current variant.
+		 * @return titleLarge (small/center/bottom), headlineSmall (medium) or
+		 * headlineMedium (large).
+		 */
+		theme::TypeRole getTitleRole(void) const;
+
+		/**
+		 * @brief Build one pressable icon button.
+		 * @param action Action configuration.
+		 * @return The icon button child.
+		 */
+		std::shared_ptr<IconButton> buildAction(const Action &action);
 
 		/**
 		 * @brief Apply the variant-specific geometry and colors.
@@ -205,6 +264,21 @@ namespace guillaume::entities
 			   const std::vector<std::string> &actions);
 
 		/**
+		 * @brief Construct an app bar with pressable navigation and actions.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param variant App bar variant.
+		 * @param title Title text.
+		 * @param navigation Leading navigation action (empty icon: none).
+		 * @param actions Trailing actions.
+		 * @param elevated Whether the bar uses the elevated surface.
+		 */
+		AppBar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			   Variant variant, const std::string &title,
+			   const Action &navigation, const std::vector<Action> &actions,
+			   bool elevated);
+
+		/**
 		 * @brief Default destructor.
 		 */
 		~AppBar(void) override;
@@ -228,6 +302,43 @@ namespace guillaume::entities
 		 * @return Reference to this app bar for chaining.
 		 */
 		AppBar &setTitle(const std::string &title);
+
+		/**
+		 * @brief Use the elevated surface (Paper `elevated`).
+		 * @param elevated New flag.
+		 * @return Reference to this app bar for chaining.
+		 */
+		AppBar &setElevated(bool elevated);
+
+		/**
+		 * @brief Check the elevated flag.
+		 * @return True when elevated.
+		 */
+		bool isElevated(void) const;
+
+		/**
+		 * @brief Get the navigation icon button.
+		 * @return The button, or nullptr.
+		 */
+		std::shared_ptr<IconButton> getNavigationButton(void) const;
+
+		/**
+		 * @brief Get an action icon button.
+		 * @param index Action index.
+		 * @return The button, or nullptr.
+		 */
+		std::shared_ptr<IconButton> getActionButton(std::size_t index) const;
+
+		/**
+		 * @brief Get the title text.
+		 * @return The title, or nullptr.
+		 */
+		std::shared_ptr<Text> getTitle(void) const;
+
+		/**
+		 * @brief Horizontal padding (Paper: 4 dp).
+		 */
+		static constexpr float HorizontalPadding = 4.0f;
 
 		/**
 		 * @brief Initialize the app bar derived state.

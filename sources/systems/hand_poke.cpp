@@ -21,6 +21,7 @@
  */
 
 #include "guillaume/systems/hand_poke.hpp"
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
@@ -59,13 +60,14 @@ namespace guillaume::systems
 			this->template getComponent<components::HandPokeInteraction>(
 				entityIdentifier);
 
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
 		const auto ray = utility::graphic::RayF(
 			utility::graphic::PositionF(pokeEvent->getPose().getPosition()),
 			pokeEvent->getPose().getOrientation().getForward());
 		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
+			isInteractive(this->getComponentRegistry(), entityIdentifier)
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
 
 		if (isIntersecting) {
 			interaction.setPoking(true);

@@ -271,3 +271,159 @@ namespace guillaume::entities
 }	 // namespace guillaume::entities
 
 #include "guillaume/entities/surface.tpp"
+
+#include "guillaume/components/elevation.hpp"
+#include "guillaume/entities/builder_base.hpp"
+#include "guillaume/theme/tokens.hpp"
+
+namespace guillaume::entities
+{
+
+	/**
+	 * @brief Public Material 3 surface (react-native-paper `Surface`).
+	 *
+	 * A container whose background is the active scheme's Surface tinted for
+	 * its elevation level (Paper `elevation.level0-5`). In `Mode::Elevated`
+	 * (the default) it also casts the level's shadow; `Mode::Flat` keeps the
+	 * tonal background without a shadow.
+	 */
+	class Surface: public SurfaceBase<components::Elevation>
+	{
+		public:
+		/**
+		 * @brief Shadow mode (Paper `mode`).
+		 */
+		enum class Mode {
+			Flat,		///< Tonal background only.
+			Elevated	///< Tonal background plus shadow.
+		};
+
+		/**
+		 * @brief Builder for Surface entities.
+		 */
+		class Builder: public EntityBuilderBase<Surface>
+		{
+			private:
+			SurfaceConfig _config;	  ///< Surface configuration.
+			theme::ElevationLevel _elevation {
+				theme::ElevationLevel::Level1
+			};	  ///< Elevation level.
+			Mode _mode { Mode::Elevated };	  ///< Shadow mode.
+
+			public:
+			/**
+			 * @brief Construct a surface builder.
+			 * @param componentRegistry Component registry.
+			 * @param entityRegistry Entity registry.
+			 */
+			Builder(ecs::ComponentRegistry &componentRegistry,
+					ecs::EntityRegistry &entityRegistry);
+
+			/**
+			 * @brief Build the surface.
+			 * @return The surface.
+			 */
+			std::shared_ptr<Surface> buildEntity(void) override;
+
+			/**
+			 * @brief Reset to Paper defaults (level 1, elevated).
+			 */
+			void reset(void) override;
+
+			/** @brief Set the pose. @param pose Pose. @return *this. */
+			Builder &withPose(const utility::graphic::PoseF &pose);
+
+			/**
+			 * @brief Set the elevation level.
+			 * @param elevation Level 0-5.
+			 * @return *this.
+			 */
+			Builder &withElevation(theme::ElevationLevel elevation);
+
+			/** @brief Set the shadow mode. @param mode Mode. @return *this. */
+			Builder &withMode(Mode mode);
+
+			/**
+			 * @brief Set the corner shape.
+			 * @param role Shape role.
+			 * @return *this.
+			 */
+			Builder &withShape(theme::ShapeRole role);
+
+			/**
+			 * @brief Set the layout configuration of the children.
+			 * @param config Surface configuration (pose and color are
+			 * overridden by the builder).
+			 * @return *this.
+			 */
+			Builder &withConfig(const SurfaceConfig &config);
+		};
+
+		/**
+		 * @brief Director for Surface entities.
+		 */
+		class Director: public EntityDirectorBase
+		{
+			public:
+			/**
+			 * @brief Build a surface.
+			 * @param builder Builder.
+			 * @param parent Parent entity.
+			 * @param elevation Elevation level.
+			 * @param mode Shadow mode.
+			 * @return The surface.
+			 */
+			std::shared_ptr<Surface> makeSurface(
+				Builder &builder, std::shared_ptr<ecs::Entity> parent,
+				theme::ElevationLevel elevation, Mode mode = Mode::Elevated);
+		};
+
+		/**
+		 * @brief Construct a surface.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param elevation Elevation level.
+		 * @param mode Shadow mode.
+		 */
+		Surface(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+				theme::ElevationLevel elevation, Mode mode);
+
+		/**
+		 * @brief Destructor.
+		 */
+		~Surface(void) override = default;
+
+		/**
+		 * @brief Set the elevation level.
+		 * @param elevation Level 0-5.
+		 * @return *this.
+		 */
+		Surface &setElevation(theme::ElevationLevel elevation);
+
+		/** @brief Get the elevation level. @return The level. */
+		theme::ElevationLevel getElevation(void) const;
+
+		/** @brief Set the shadow mode. @param mode Mode. @return *this. */
+		Surface &setMode(Mode mode);
+
+		/** @brief Get the shadow mode. @return The mode. */
+		Mode getMode(void) const;
+
+		/**
+		 * @brief Restyle from the active theme.
+		 */
+		void update(void) override;
+
+		private:
+		theme::ElevationLevel _elevation {
+			theme::ElevationLevel::Level1
+		};	  ///< Elevation level.
+		Mode _mode { Mode::Elevated };	  ///< Shadow mode.
+
+		/**
+		 * @brief Resolve background and shadow from the elevation tokens.
+		 */
+		void applyElevation(void);
+	};
+
+}	 // namespace guillaume::entities

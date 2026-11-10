@@ -197,6 +197,12 @@ namespace guillaume::systems
 		const auto &elevation =
 			getComponent<components::Elevation>(entityIdentifier);
 
+		// A flat surface paints no shadow; leaving the handle unused lets
+		// cleanup() remove a shadow drawn before the level dropped to 0.
+		if (!elevation.hasShadow()) {
+			return;
+		}
+
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + bound.getWidth() / 2.0f,
 			pose.getPosition().y + bound.getHeight() / 2.0f,

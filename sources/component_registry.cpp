@@ -43,7 +43,8 @@ namespace guillaume
 			  components::SelectionGroup, components::Animation,
 			  components::Overlay, components::TextField, components::Ellipse,
 			  components::Ring, components::Arc, components::Line,
-			  components::Elevation, components::Scrim, components::Clip>()
+			  components::Elevation, components::Scrim, components::Clip,
+			  components::StyleState, components::Accessibility>()
 	{
 	}
 }	 // namespace guillaume

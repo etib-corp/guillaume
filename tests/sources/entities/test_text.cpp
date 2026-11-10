@@ -38,6 +38,7 @@
 #include "guillaume/entities/text.hpp"
 #include "guillaume/systems/measure_text.hpp"
 #include "guillaume/systems/text_render.hpp"
+#include "guillaume/theme.hpp"
 
 #include "mocks/engine_mock.hpp"
 
@@ -155,6 +156,80 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(registry.getComponent<components::Text>(text->getIdentifier())
 					  .getContent(),
 				  "Hello");
+	}
+
+	TEST_F(TestText, BuilderDefaultsToBodyMediumOnSurface)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		entities::Text::Builder builder(registry, entityRegistry);
+		auto text = builder.withContent("Hello").registerEntity(parent);
+		text->update();
+
+		const auto &token = getTypeToken(theme::TypeRole::BodyMedium);
+		const auto &component =
+			registry.getComponent<components::Text>(text->getIdentifier());
+		EXPECT_EQ(text->getTypeRole(), theme::TypeRole::BodyMedium);
+		EXPECT_FLOAT_EQ(component.getFontSize(), token.fontSize);
+		EXPECT_FLOAT_EQ(component.getLineHeight(), token.lineHeight);
+		EXPECT_FLOAT_EQ(component.getLetterSpacing(), token.letterSpacing);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(text->getIdentifier())
+				.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor());
+	}
+
+	TEST_F(TestText, TypeRoleSelectsWeightAndSize)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		entities::Text::Builder builder(registry, entityRegistry);
+		entities::Text::Director director;
+		auto text = director.makeText(
+			builder, parent, "Save", theme::TypeRole::LabelLarge,
+			utility::graphic::Color32Bit(0, 0, 0, 255));
+		text->update();
+
+		const auto &component =
+			registry.getComponent<components::Text>(text->getIdentifier());
+		EXPECT_FLOAT_EQ(component.getFontSize(),
+						getTypeToken(theme::TypeRole::LabelLarge).fontSize);
+		EXPECT_EQ(component.getFontWeight(), theme::FontWeight::Medium);
+
+		text->setTypeRole(theme::TypeRole::HeadlineSmall);
+		EXPECT_FLOAT_EQ(component.getFontSize(),
+						getTypeToken(theme::TypeRole::HeadlineSmall).fontSize);
+		EXPECT_EQ(component.getFontWeight(), theme::FontWeight::Regular);
+	}
+
+	TEST_F(TestText, ExplicitSizeOverridesRole)
+	{
+		ecs::ComponentRegistry registry;
+		auto text = std::make_shared<entities::Text>(
+			registry, "Hi", theme::TypeRole::TitleMedium,
+			utility::graphic::Color32Bit(0, 0, 0, 255), 30.0f);
+		text->update();
+
+		const auto &component =
+			registry.getComponent<components::Text>(text->getIdentifier());
+		EXPECT_FLOAT_EQ(component.getFontSize(), 30.0f);
+		EXPECT_EQ(component.getFontWeight(), theme::FontWeight::Medium);
+	}
+
+	TEST_F(TextEntityFixture, MeasureTextHonoursRoleLineHeight)
+	{
+		text->setTypeRole(theme::TypeRole::DisplayLarge);
+		measureText->bindComponentRegistry(componentRegistry);
+		measureText->update(text->getIdentifier());
+
+		EXPECT_GE(componentRegistry
+					  .getComponent<components::Bound>(text->getIdentifier())
+					  .getHeight(),
+				  64.0f);
 	}
 
 }	 // namespace guillaume::entities::tests

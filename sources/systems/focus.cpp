@@ -22,6 +22,13 @@
 
 #include "guillaume/systems/focus.hpp"
 
+#include <algorithm>
+#include <climits>
+
+#include "guillaume/components/accessibility.hpp"
+#include "guillaume/components/style_state.hpp"
+#include "guillaume/systems/hit_test.hpp"
+
 namespace guillaume::systems
 {
 
@@ -33,6 +40,7 @@ namespace guillaume::systems
 							components::HandButtonInteraction,
 							components::HandPinchInteraction,
 							components::HandPokeInteraction>(ecs::Phase::Event)
+		, event::EventManager<utility::event::KeyboardEvent>(eventBus)
 		, _engine(engine)
 		, _focusedEntity(std::nullopt)
 
@@ -67,8 +75,14 @@ namespace guillaume::systems
 			}
 		}
 
+		if (_focusedEntity.has_value()
+			&& _focusedEntity.value() != entityIdentifier) {
+			markFocused(_focusedEntity.value(), false);
+		}
+
 		// Set focus to new entity
 		_focusedEntity = entityIdentifier;
+		markFocused(entityIdentifier, true);
 		this->getLogger().info() << "Focus set to entity " << entityIdentifier;
 
 		// Trigger focus handler for new entity
@@ -105,6 +119,7 @@ namespace guillaume::systems
 					handler();
 				}
 			}
+			markFocused(previousEntity, false);
 			this->getLogger().info()
 				<< "Focus cleared from entity " << previousEntity;
 			_focusedEntity = std::nullopt;
@@ -126,6 +141,26 @@ namespace guillaume::systems
 	{
 		this->getLogger().debug()
 			<< "Updating Focus system for entity " << entityIdentifier;
+
+		// A disabled entity cannot take or keep the focus.
+		if (!isInteractive(this->getComponentRegistry(), entityIdentifier)) {
+			if (_focusedEntity.has_value()
+				&& _focusedEntity.value() == entityIdentifier) {
+				clearFocus();
+			}
+			return;
+		}
+
+		if (isFocusable(entityIdentifier)) {
+			int order = 0;
+			if (this->template hasComponent<components::Accessibility>(
+					entityIdentifier)) {
+				order = this->template getComponent<components::Accessibility>(
+								entityIdentifier)
+							.getFocusOrder();
+			}
+			_focusables.emplace_back(entityIdentifier, order);
+		}
 
 		bool entityClicked = false;
 
@@ -198,6 +233,97 @@ namespace guillaume::systems
 		if (!_focusedEntity.has_value() && _engine) {
 			_engine->setShouldCaptureViewportInput(true);
 		}
+	}
+
+	bool Focus::isFocusable(const ecs::Entity::Identifier &entityIdentifier)
+	{
+		if (!this->template hasComponent<components::Focus>(entityIdentifier)
+			|| !isInteractive(this->getComponentRegistry(), entityIdentifier)) {
+			return false;
+		}
+		if (this->template hasComponent<components::Accessibility>(
+				entityIdentifier)) {
+			return this
+				->template getComponent<components::Accessibility>(
+					entityIdentifier)
+				.isFocusable();
+		}
+		return true;
+	}
+
+	void Focus::markFocused(const ecs::Entity::Identifier &entityIdentifier,
+							bool focused)
+	{
+		if (this->template hasComponent<components::Focus>(entityIdentifier)) {
+			this->template getComponent<components::Focus>(entityIdentifier)
+				.setFocused(focused);
+		}
+		if (this->template hasComponent<components::StyleState>(
+				entityIdentifier)) {
+			this->template getComponent<components::StyleState>(
+					entityIdentifier)
+				.setFocused(focused);
+		}
+	}
+
+	void Focus::traverse(
+		const std::vector<std::pair<ecs::Entity::Identifier, int>> &candidates,
+		bool backward)
+	{
+		if (candidates.empty()) {
+			return;
+		}
+
+		auto ordered = candidates;
+		std::stable_sort(ordered.begin(), ordered.end(),
+						 [](const auto &lhs, const auto &rhs) {
+							 const int left =
+								 lhs.second > 0 ? lhs.second : INT_MAX;
+							 const int right =
+								 rhs.second > 0 ? rhs.second : INT_MAX;
+							 return left < right;
+						 });
+
+		const auto count	= static_cast<std::ptrdiff_t>(ordered.size());
+		std::ptrdiff_t next = backward ? count - 1 : 0;
+
+		if (_focusedEntity.has_value()) {
+			const auto current = std::find_if(
+				ordered.begin(), ordered.end(), [this](const auto &candidate) {
+					return candidate.first == _focusedEntity.value();
+				});
+			if (current != ordered.end()) {
+				const auto index = std::distance(ordered.begin(), current);
+				next			 = backward ? (index - 1 + count) % count
+											: (index + 1) % count;
+			}
+		}
+
+		setFocus(ordered[static_cast<std::size_t>(next)].first);
+	}
+
+	void Focus::prepare(void)
+	{
+		_focusables.clear();
+		consumeNextEvent();
+	}
+
+	void Focus::cleanup(void)
+	{
+		const auto keyboardEvent = getLastEvent();
+		if (!keyboardEvent || !keyboardEvent->getIsDownEvent()
+			|| keyboardEvent->getKeycode()
+				!= utility::event::KeyboardEvent::KeyCode::Tab) {
+			return;
+		}
+
+		const bool backward =
+			keyboardEvent->isModifierSet(
+				utility::event::KeyboardEvent::KeyModifiers::LeftShift)
+			|| keyboardEvent->isModifierSet(
+				utility::event::KeyboardEvent::KeyModifiers::RightShift);
+
+		traverse(_focusables, backward);
 	}
 
 }	 // namespace guillaume::systems

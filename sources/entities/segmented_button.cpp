@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -39,6 +40,11 @@ namespace guillaume::entities
 
 	std::shared_ptr<SegmentedButton> SegmentedButton::Builder::buildEntity(void)
 	{
+		if (!_segmentConfigs.empty()) {
+			return std::make_shared<SegmentedButton>(
+				this->getComponentRegistry(), _segmentConfigs, _selectionMode,
+				_onChange);
+		}
 		auto entity = std::make_shared<SegmentedButton>(
 			this->getComponentRegistry(), _labels, _selectionMode, _onChange);
 		return entity;
@@ -47,6 +53,7 @@ namespace guillaume::entities
 	void SegmentedButton::Builder::reset(void)
 	{
 		_labels.clear();
+		_segmentConfigs.clear();
 		_selectionMode = SelectionMode::Single;
 		_onChange	   = {};
 	}
@@ -62,6 +69,13 @@ namespace guillaume::entities
 		const SelectionMode &selectionMode)
 	{
 		_selectionMode = selectionMode;
+		return *this;
+	}
+
+	SegmentedButton::Builder &SegmentedButton::Builder::withSegments(
+		const std::vector<Segment> &segments)
+	{
+		_segmentConfigs = segments;
 		return *this;
 	}
 
@@ -90,7 +104,14 @@ namespace guillaume::entities
 			return;
 		}
 
-		const bool nowSelected = _segments[index]->isSelected();
+		bool nowSelected = _segments[index]->isSelected();
+
+		// Paper single-select commits the pressed value: pressing the
+		// selected segment keeps it selected instead of clearing it.
+		if (_selectionMode == SelectionMode::Single && !nowSelected) {
+			_segments[index]->setSelected(true);
+			nowSelected = true;
+		}
 
 		if (_selectionMode == SelectionMode::Single && nowSelected) {
 			for (std::size_t i = 0; i < _segments.size(); ++i) {
@@ -100,6 +121,7 @@ namespace guillaume::entities
 			}
 		}
 
+		applySegmentIcons();
 		layoutSegments();
 
 		if (_onChange) {
@@ -107,8 +129,33 @@ namespace guillaume::entities
 		}
 	}
 
+	void SegmentedButton::applySegmentIcons(void)
+	{
+		for (std::size_t i = 0; i < _segments.size(); ++i) {
+			const std::string icon =
+				i < _segmentConfigs.size() ? _segmentConfigs[i].icon : "";
+			_segments[i]->setIconGlyphName(_segments[i]->isSelected() ? "check"
+																	  : icon);
+		}
+	}
+
 	void SegmentedButton::layoutSegments(void)
 	{
+		// Equalize the segment widths (at least MinSegmentWidth).
+		float width = MinSegmentWidth;
+		for (const auto &segment: _segments) {
+			width = std::max(
+				width,
+				getComponentRegistry()
+					.getComponent<components::Bound>(segment->getIdentifier())
+					.getWidth());
+		}
+		for (auto &segment: _segments) {
+			if (auto button = std::dynamic_pointer_cast<Button>(segment)) {
+				button->setMinWidth(width);
+			}
+		}
+
 		std::vector<ecs::Entity::Identifier> childIdentifiers;
 		childIdentifiers.reserve(_segments.size());
 
@@ -168,6 +215,31 @@ namespace guillaume::entities
 			.setPadding(0.0f);
 	}
 
+	SegmentedButton::SegmentedButton(ecs::ComponentRegistry &registry,
+									 const std::vector<Segment> &segments,
+									 SelectionMode selectionMode,
+									 std::function<void(std::size_t)> onChange)
+		: SegmentedButton(registry, std::vector<std::string> {}, selectionMode,
+						  std::move(onChange))
+	{
+		_segmentConfigs = segments;
+		for (const auto &segment: segments) {
+			_labels.push_back(segment.label);
+		}
+	}
+
+	SegmentedButton &SegmentedButton::setSegmentDisabled(std::size_t index,
+														 bool disabled)
+	{
+		if (index < _segments.size()) {
+			_segments[index]->setDisabled(disabled);
+		}
+		if (index < _segmentConfigs.size()) {
+			_segmentConfigs[index].disabled = disabled;
+		}
+		return *this;
+	}
+
 	SegmentedButton::~SegmentedButton(void)
 	{
 	}
@@ -186,6 +258,7 @@ namespace guillaume::entities
 			_segments[index]->setSelected(true);
 		}
 
+		applySegmentIcons();
 		layoutSegments();
 
 		return *this;
@@ -199,6 +272,7 @@ namespace guillaume::entities
 
 		_segments[index]->setSelected(false);
 
+		applySegmentIcons();
 		layoutSegments();
 
 		return *this;
@@ -255,8 +329,19 @@ namespace guillaume::entities
 
 			segment->setIsToggle(true);
 
+			if (i < _segmentConfigs.size()) {
+				const auto &config = _segmentConfigs[i];
+				segment->setIconGlyphName(config.icon);
+				segment->setDisabled(config.disabled);
+				if (!config.accessibilityLabel.empty()) {
+					segment->setAccessibilityLabel(config.accessibilityLabel);
+				}
+			}
+
 			_segments.push_back(segment);
 		}
+
+		applySegmentIcons();
 	}
 
 	void SegmentedButton::update(void)

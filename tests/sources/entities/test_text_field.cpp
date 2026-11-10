@@ -22,10 +22,31 @@
 
 #include "entities/test_text_field.hpp"
 
+#include <guillaume/entities/style_helpers.hpp>
+
+#include <guillaume/components/text.hpp>
+
+#include <guillaume/components/transform.hpp>
+
+#include <guillaume/components/layout.hpp>
+
+#include <guillaume/components/focus.hpp>
+
+#include <algorithm>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <memory>
 #include <string>
 
 #include <guillaume/components/borders.hpp>
+#include <guillaume/theme.hpp>
 #include <guillaume/components/bound.hpp>
 #include <guillaume/components/color.hpp>
 #include <guillaume/components/line.hpp>
@@ -62,7 +83,7 @@ namespace guillaume::entities::tests
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(field->getIdentifier());
-		EXPECT_FLOAT_EQ(bound.getWidth(), 280.0f);
+		EXPECT_GE(bound.getWidth(), TextField::MinWidth);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 56.0f);
 	}
 
@@ -77,6 +98,12 @@ namespace guillaume::entities::tests
 		const auto &line =
 			registry.getComponent<components::Line>(field->getIdentifier());
 		EXPECT_FLOAT_EQ(line.getThickness(), 1.0f);
+		EXPECT_EQ(line.getPlacement(), components::Line::Placement::Bottom);
+		ASSERT_TRUE(line.hasColor());
+		EXPECT_EQ(line.getColor(),
+				  getActiveScheme()
+					  .getColor(SchemeColorRole::OnSurfaceVariant)
+					  .getColor());
 
 		const auto &color =
 			registry.getComponent<components::Color>(field->getIdentifier());
@@ -97,7 +124,11 @@ namespace guillaume::entities::tests
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(field->getIdentifier());
-		EXPECT_GT(borders.getColor().getAlpha(), 0);
+		EXPECT_TRUE(borders.hasStroke());
+		EXPECT_FLOAT_EQ(borders.getWidth(), 1.0f);
+		EXPECT_EQ(
+			borders.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Outline).getColor());
 	}
 
 	TEST_F(TestTextField, TextFieldComponentCarriesState)
@@ -164,6 +195,232 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(field->getParent(), parent);
 		EXPECT_EQ(field->getVariant(), TextField::Variant::Outlined);
 		EXPECT_TRUE(field->isError());
+	}
+
+	namespace
+	{
+		utility::graphic::Color32Bit role(SchemeColorRole value)
+		{
+			return getActiveScheme().getColor(value).getColor();
+		}
+
+		void focusField(ecs::ComponentRegistry &registry,
+						const std::shared_ptr<TextField> &field, bool focused)
+		{
+			registry.getComponent<components::Focus>(field->getIdentifier())
+				.setFocused(focused);
+			field->update();
+		}
+	}	 // namespace
+
+	TEST_F(TestTextField, LabelRestsThenFloatsOnFocus)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		TextField::Builder builder(registry, entityRegistry);
+		auto field = builder.withPlaceholder("Name").registerEntity(nullptr);
+		field->initialize();
+		field->update();
+
+		const auto &label = registry.getComponent<components::Text>(
+			field->getLabelIdentifier());
+		EXPECT_FALSE(field->isLabelFloating());
+		EXPECT_FLOAT_EQ(label.getFontSize(),
+						getTypeToken(theme::TypeRole::BodyLarge).fontSize);
+
+		focusField(registry, field, true);
+		EXPECT_TRUE(field->isFocused());
+		EXPECT_TRUE(field->isLabelFloating());
+		EXPECT_FLOAT_EQ(label.getFontSize(),
+						getTypeToken(theme::TypeRole::BodySmall).fontSize);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Color>(field->getLabelIdentifier())
+				.getColor(),
+			role(SchemeColorRole::Primary));
+
+		const auto &line =
+			registry.getComponent<components::Line>(field->getIdentifier());
+		EXPECT_FLOAT_EQ(line.getThickness(), 2.0f);
+		EXPECT_EQ(line.getColor(), role(SchemeColorRole::Primary));
+		EXPECT_TRUE(
+			registry.getComponent<components::TextField>(field->getIdentifier())
+				.isLabelFloating());
+	}
+
+	TEST_F(TestTextField, OutlinedFocusUsesPrimaryTwoDpOutline)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry, TextField::Variant::Outlined);
+		field->initialize();
+		focusField(registry, field, true);
+
+		const auto &borders =
+			registry.getComponent<components::Borders>(field->getIdentifier());
+		EXPECT_FLOAT_EQ(borders.getWidth(), 2.0f);
+		EXPECT_EQ(borders.getColor(), role(SchemeColorRole::Primary));
+	}
+
+	TEST_F(TestTextField, ErrorShowsErrorTextAndIcon)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry);
+		field->initialize();
+		field->setErrorText("Required");
+		field->setError(true);
+		field->update();
+
+		EXPECT_EQ(registry
+					  .getComponent<components::Text>(
+						  field->getSupportingIdentifier())
+					  .getContent(),
+				  "Required");
+		EXPECT_EQ(registry
+					  .getComponent<components::Color>(
+						  field->getSupportingIdentifier())
+					  .getColor(),
+				  role(SchemeColorRole::Error));
+		EXPECT_EQ(registry
+					  .getComponent<components::Color>(
+						  field->getErrorIconIdentifier())
+					  .getColor(),
+				  role(SchemeColorRole::Error));
+		EXPECT_EQ(
+			registry.getComponent<components::Line>(field->getIdentifier())
+				.getColor(),
+			role(SchemeColorRole::Error));
+	}
+
+	TEST_F(TestTextField, SupportingTextSitsBelowTheField)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry);
+		field->initialize();
+		field->update();
+
+		const auto fieldPose =
+			registry.getComponent<components::Transform>(field->getIdentifier())
+				.getPose();
+		const auto supportPose = registry
+									 .getComponent<components::Transform>(
+										 field->getSupportingIdentifier())
+									 .getPose();
+		EXPECT_GE(supportPose.getPosition().getY()
+					  - fieldPose.getPosition().getY(),
+				  56.0f);
+	}
+
+	TEST_F(TestTextField, InputIsEditableOnlyWhileFocusedAndEnabled)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry);
+		field->initialize();
+		field->update();
+		const auto input = field->getInputIdentifier();
+
+		EXPECT_FALSE(registry.hasComponent<components::Focus>(input));
+		focusField(registry, field, true);
+		EXPECT_TRUE(registry.hasComponent<components::Focus>(input));
+
+		field->setEditable(false);
+		EXPECT_FALSE(registry.hasComponent<components::Focus>(input));
+		field->setEditable(true);
+		EXPECT_TRUE(registry.hasComponent<components::Focus>(input));
+
+		field->setDisabled(true);
+		field->update();
+		EXPECT_TRUE(field->isDisabled());
+		EXPECT_FALSE(registry.hasComponent<components::Focus>(input));
+		EXPECT_EQ(registry.getComponent<components::Color>(input).getColor(),
+				  disabledContentColor());
+	}
+
+	TEST_F(TestTextField, AffixesShowWhileTheLabelFloats)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry);
+		field->setPrefix("$");
+		field->setSuffix("kg");
+		field->initialize();
+		field->update();
+
+		ASSERT_NE(field->getPrefixIdentifier(), ecs::Entity::InvalidIdentifier);
+		ASSERT_NE(field->getSuffixIdentifier(), ecs::Entity::InvalidIdentifier);
+		const auto &children =
+			registry.getComponent<components::Layout>(field->getIdentifier())
+				.getChildren();
+		EXPECT_NE(std::find(children.begin(), children.end(),
+							field->getPrefixIdentifier()),
+				  children.end());
+
+		field->setText("");
+		field->update();
+		const auto &resting =
+			registry.getComponent<components::Layout>(field->getIdentifier())
+				.getChildren();
+		EXPECT_EQ(std::find(resting.begin(), resting.end(),
+							field->getSuffixIdentifier()),
+				  resting.end());
+	}
+
+	TEST_F(TestTextField, OnChangeReportsEdits)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry);
+		field->initialize();
+		field->update();
+
+		std::string reported;
+		field->setOnChange([&reported](const std::string &text) {
+			reported = text;
+		});
+		registry.getComponent<components::Text>(field->getInputIdentifier())
+			.setContent("edited");
+		field->update();
+
+		EXPECT_EQ(reported, "edited");
+		EXPECT_EQ(field->getText(), "edited");
+	}
+
+	TEST_F(TestTextField, DenseMultilineAndWidth)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry);
+		field->initialize();
+		field->setDense(true);
+		field->update();
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(field->getIdentifier())
+				.getHeight(),
+			52.0f);
+
+		field->setWidth(40.0f);
+		field->update();
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(field->getIdentifier())
+				.getWidth(),
+			TextField::MinWidth);
+
+		field->setMultiline(true);
+		EXPECT_TRUE(field->isMultiline());
+		EXPECT_FALSE(
+			registry.getComponent<components::Layout>(field->getIdentifier())
+				.hasFixedHeight());
+	}
+
+	TEST_F(TestTextField, ExposesTextFieldSemantics)
+	{
+		ecs::ComponentRegistry registry;
+		auto field = makeTextField(registry);
+		field->initialize();
+
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				field->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::TextField);
+		EXPECT_EQ(accessibility.getLabel(), "Name");
+		EXPECT_EQ(accessibility.getHint(), "Support");
 	}
 
 }	 // namespace guillaume::entities::tests

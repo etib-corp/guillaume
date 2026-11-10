@@ -22,6 +22,10 @@
 
 #include "entities/test_icon.hpp"
 
+#include <guillaume/components/accessibility.hpp>
+
+#include "guillaume/theme.hpp"
+
 #include <memory>
 #include <string>
 
@@ -176,6 +180,40 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Glyph>(icon->getIdentifier())
 				.getName(),
 			"home");
+	}
+
+	TEST_F(TestIcon, BuilderDefaultsToOnSurface)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		entities::Icon::Builder builder(registry, entityRegistry);
+		auto icon = builder.withGlyphName("home").registerEntity(parent);
+		icon->update();
+
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(icon->getIdentifier())
+				.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor());
+	}
+
+	TEST_F(TestIcon, AccessibilityLabelGivesImageRole)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		entities::Icon::Builder builder(registry, entityRegistry);
+		auto icon = builder.withGlyphName("home").registerEntity(nullptr);
+
+		EXPECT_FALSE(registry.hasComponent<components::Accessibility>(
+			icon->getIdentifier()));
+		icon->setAccessibilityLabel("Home");
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				icon->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Image);
+		EXPECT_EQ(accessibility.getLabel(), "Home");
 	}
 
 }	 // namespace guillaume::entities::tests

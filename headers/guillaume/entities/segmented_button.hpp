@@ -58,6 +58,21 @@ namespace guillaume::entities
 		enum class SelectionMode { Single, Multi };
 
 		/**
+		 * @brief Per-segment configuration (Paper `buttons[]` entry).
+		 */
+		struct Segment {
+			std::string label {};				  ///< Visible label.
+			std::string icon {};				  ///< Optional leading icon.
+			bool disabled { false };			  ///< Whether disabled.
+			std::string accessibilityLabel {};	  ///< Accessible name.
+		};
+
+		/**
+		 * @brief Minimum segment width (Paper SegmentedButtons: 76 dp).
+		 */
+		static constexpr float MinSegmentWidth = 76.0f;
+
+		/**
 		 * @brief Builder used to configure and create `SegmentedButton`
 		 * entities.
 		 */
@@ -67,8 +82,9 @@ namespace guillaume::entities
 			std::shared_ptr<SegmentedButton>
 				_segmentedButton;	 ///< Segmented button entity being
 									 ///< built
-			std::vector<std::string> _labels;	 ///< Labels of the segments
-			SelectionMode _selectionMode;		 ///< Selection mode
+			std::vector<std::string> _labels;		 ///< Labels of the segments
+			SelectionMode _selectionMode;			 ///< Selection mode
+			std::vector<Segment> _segmentConfigs;	 ///< Per-segment options
 			std::function<void(std::size_t)>
 				_onChange;	  ///< Change event handler (selected index)
 
@@ -114,6 +130,13 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withOnChange(std::function<void(std::size_t)> onChange);
+
+			/**
+			 * @brief Configure segments individually (icon, disabled, label).
+			 * @param segments Segment configurations; replaces the labels.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withSegments(const std::vector<Segment> &segments);
 		};
 
 		/**
@@ -143,7 +166,8 @@ namespace guillaume::entities
 		};
 
 		private:
-		std::vector<std::string> _labels {};	///< Labels of the segments
+		std::vector<std::string> _labels {};		///< Labels of the segments
+		std::vector<Segment> _segmentConfigs {};	///< Segment options
 		SelectionMode _selectionMode {
 			SelectionMode::Single
 		};	  ///< Selection mode
@@ -165,6 +189,12 @@ namespace guillaume::entities
 		 */
 		void layoutSegments(void);
 
+		/**
+		 * @brief Show the check glyph on selected segments and the configured
+		 * icon on the others.
+		 */
+		void applySegmentIcons(void);
+
 		public:
 		/**
 		 * @brief Default constructor for the SegmentedButton entity.
@@ -177,6 +207,26 @@ namespace guillaume::entities
 						const std::vector<std::string> &labels,
 						SelectionMode selectionMode,
 						std::function<void(std::size_t)> onChange);
+
+		/**
+		 * @brief Construct a segmented button from segment configurations.
+		 * @param registry Component registry.
+		 * @param segments Segment configurations.
+		 * @param selectionMode Selection mode.
+		 * @param onChange Change handler.
+		 */
+		SegmentedButton(ecs::ComponentRegistry &registry,
+						const std::vector<Segment> &segments,
+						SelectionMode selectionMode,
+						std::function<void(std::size_t)> onChange);
+
+		/**
+		 * @brief Enable or disable one segment.
+		 * @param index Segment index.
+		 * @param disabled True to disable.
+		 * @return Reference to this segmented button for chaining.
+		 */
+		SegmentedButton &setSegmentDisabled(std::size_t index, bool disabled);
 
 		/**
 		 * @brief Default destructor for the SegmentedButton entity.

@@ -30,6 +30,7 @@
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/glyph.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/transform.hpp"
@@ -205,6 +206,17 @@ namespace guillaume::entities
 		 * @return Reference to this Icon for chaining.
 		 */
 		Icon &setStyle(const components::Glyph::Style &style);
+
+		/**
+		 * @brief Give the icon a meaning for assistive technologies.
+		 *
+		 * Icons are decorative by default; setting a non-empty label attaches
+		 * an `Accessibility` component with the Image role.
+		 *
+		 * @param label The accessibility label.
+		 * @return Reference to this icon for chaining.
+		 */
+		Icon &setAccessibilityLabel(const std::string &label);
 
 		/**
 		 * @brief Initialize the icon entity's derived state.

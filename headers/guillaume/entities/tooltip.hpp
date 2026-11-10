@@ -23,6 +23,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <utility/graphic/color.hpp>
@@ -32,6 +33,9 @@
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/accessibility.hpp"
+#include "guillaume/components/animation.hpp"
+#include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -54,13 +58,25 @@ namespace guillaume::entities
 	 * @see SurfaceBase
 	 * @see components::Overlay
 	 */
-	class Tooltip: public SurfaceBase<components::Overlay>
+	class Tooltip:
+		public SurfaceBase<components::Overlay, components::Elevation,
+						   components::Animation, components::Accessibility>
 	{
 		public:
 		/**
 		 * @brief Tooltip variant.
 		 */
 		enum class Variant { Plain, Rich };
+
+		/**
+		 * @brief Paper `enterTouchDelay`, in seconds.
+		 */
+		static constexpr float DefaultEnterDelay = 0.5f;
+
+		/**
+		 * @brief Paper `leaveTouchDelay`, in seconds.
+		 */
+		static constexpr float DefaultLeaveDelay = 1.5f;
 
 		/**
 		 * @brief Builder used to configure and create `Tooltip` entities.
@@ -152,11 +168,25 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::Plain };	///< Tooltip variant.
-		std::string _text {};					///< Tooltip body text.
-		std::string _title {};					///< Tooltip title.
-		std::shared_ptr<Text> _titleEntity;		///< Title child entity.
-		std::shared_ptr<Text> _textEntity;		///< Body child entity.
+		Variant _variant { Variant::Plain };		///< Tooltip variant.
+		std::string _text {};						///< Tooltip body text.
+		std::string _title {};						///< Tooltip title.
+		std::shared_ptr<Text> _titleEntity;			///< Title child entity.
+		std::shared_ptr<Text> _textEntity;			///< Body child entity.
+		std::weak_ptr<ecs::Entity> _anchor;			///< Trigger entity.
+		float _enterDelay { DefaultEnterDelay };	///< Hover-in delay.
+		float _leaveDelay { DefaultLeaveDelay };	///< Hover-out delay.
+		float _hoverTime { 0.0f };		 ///< Time the anchor has been hovered.
+		float _leaveTime { 0.0f };		 ///< Time since the anchor was left.
+		float _lastProgress { 0.0f };	 ///< Last ticker progress.
+		bool _visible { false };		 ///< Whether the tooltip is shown.
+		std::optional<std::pair<float, float>>
+			_viewport {};	 ///< Clamping area (width, height).
+
+		/**
+		 * @brief Mirror visibility on the overlay and the visuals.
+		 */
+		void applyVisibility(void);
 
 		private:
 		/**
@@ -217,6 +247,73 @@ namespace guillaume::entities
 		 * @return Reference to this tooltip for chaining.
 		 */
 		Tooltip &setText(const std::string &text);
+
+		/**
+		 * @brief Attach the tooltip to the entity whose hover triggers it.
+		 *
+		 * The anchor must own a mouse or hand hover interaction. Hovering it
+		 * for the enter delay shows the tooltip under the anchor; leaving it
+		 * for the leave delay hides it.
+		 *
+		 * @param anchor Trigger entity (nullptr detaches).
+		 * @return Reference to this tooltip for chaining.
+		 */
+		Tooltip &setAnchor(std::shared_ptr<ecs::Entity> anchor);
+
+		/**
+		 * @brief Set the hover-in delay (Paper `enterTouchDelay`).
+		 * @param seconds Delay, must be non-negative.
+		 * @return Reference to this tooltip for chaining.
+		 * @throws std::invalid_argument If @p seconds is negative.
+		 */
+		Tooltip &setEnterDelay(float seconds);
+
+		/**
+		 * @brief Set the hover-out delay (Paper `leaveTouchDelay`).
+		 * @param seconds Delay, must be non-negative.
+		 * @return Reference to this tooltip for chaining.
+		 * @throws std::invalid_argument If @p seconds is negative.
+		 */
+		Tooltip &setLeaveDelay(float seconds);
+
+		/** @brief Get the hover-in delay. @return Seconds. */
+		float getEnterDelay(void) const;
+
+		/** @brief Get the hover-out delay. @return Seconds. */
+		float getLeaveDelay(void) const;
+
+		/**
+		 * @brief Set the area the tooltip is kept inside.
+		 * @param width Area width.
+		 * @param height Area height.
+		 * @return Reference to this tooltip for chaining.
+		 */
+		Tooltip &setViewport(float width, float height);
+
+		/** @brief Show the tooltip under its anchor. @return *this. */
+		Tooltip &show(void);
+
+		/** @brief Hide the tooltip. @return *this. */
+		Tooltip &hide(void);
+
+		/** @brief Check the visibility. @return True when shown. */
+		bool isVisible(void) const;
+
+		/**
+		 * @brief Advance the hover delays.
+		 *
+		 * Driven every frame by the tooltip's own looping animation; exposed
+		 * for tests and custom schedulers.
+		 *
+		 * @param deltaTime Elapsed seconds.
+		 */
+		void advance(float deltaTime);
+
+		/**
+		 * @brief Place the tooltip under (or, when it would overflow the
+		 * viewport, above) its anchor, horizontally centered and clamped.
+		 */
+		void place(void);
 
 		/**
 		 * @brief Initialize the tooltip derived state.

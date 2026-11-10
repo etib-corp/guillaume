@@ -27,6 +27,7 @@
 #include <utility/graphic/color.hpp>
 
 #include "guillaume/ecs/component.hpp"
+#include "guillaume/theme/typescale.hpp"
 
 namespace guillaume::components
 {
@@ -42,6 +43,11 @@ namespace guillaume::components
 		private:
 		std::string _content {};	///< Text content
 		float _fontSize { 24 };		///< Font size of the text
+		theme::FontWeight _fontWeight {
+			theme::FontWeight::Regular
+		};	  ///< Font weight, selects the rendered font file
+		float _lineHeight { 0.0f };		  ///< Minimum line box height (0: none)
+		float _letterSpacing { 0.0f };	  ///< Letter spacing, in dp
 		std::size_t _cursorPosition {
 			0
 		};	  ///< Cursor position for text editing
@@ -82,6 +88,54 @@ namespace guillaume::components
 		 * @return The Text component for chaining.
 		 */
 		Text &setFontSize(float fontSize);
+
+		/**
+		 * @brief Get the font weight.
+		 * @return The font weight.
+		 */
+		theme::FontWeight getFontWeight(void) const;
+
+		/**
+		 * @brief Set the font weight; it selects the rendered font file.
+		 * @param fontWeight The new font weight.
+		 * @return Reference to this Text component for chaining.
+		 */
+		Text &setFontWeight(theme::FontWeight fontWeight);
+
+		/**
+		 * @brief Get the minimum line box height.
+		 * @return The line height (0 when the measured height is used).
+		 */
+		float getLineHeight(void) const;
+
+		/**
+		 * @brief Set the minimum line box height used by MeasureText.
+		 * @param lineHeight The new line height, must be non-negative.
+		 * @return Reference to this Text component for chaining.
+		 * @throws std::invalid_argument If @p lineHeight is negative.
+		 */
+		Text &setLineHeight(float lineHeight);
+
+		/**
+		 * @brief Get the letter spacing.
+		 * @return The letter spacing, in dp.
+		 */
+		float getLetterSpacing(void) const;
+
+		/**
+		 * @brief Set the letter spacing.
+		 * @param letterSpacing The new letter spacing, in dp.
+		 * @return Reference to this Text component for chaining.
+		 */
+		Text &setLetterSpacing(float letterSpacing);
+
+		/**
+		 * @brief Apply a typescale token (size, weight, line height and
+		 * letter spacing).
+		 * @param token The typescale token.
+		 * @return Reference to this Text component for chaining.
+		 */
+		Text &setTypeToken(const theme::TypeToken &token);
 
 		/**
 		 * @brief Get the cursor position.

@@ -22,10 +22,17 @@
 
 #include "guillaume/components/animation.hpp"
 
+#include "guillaume/theme.hpp"
+
 #include <algorithm>
 
 namespace guillaume::components
 {
+	Animation::Animation(void)
+		: _duration(getMotionDuration(theme::MotionDuration::Medium2))
+	{
+	}
+
 	float Animation::getDuration(void) const
 	{
 		return _duration;

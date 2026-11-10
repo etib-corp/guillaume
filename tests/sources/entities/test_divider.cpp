@@ -22,6 +22,8 @@
 
 #include "entities/test_divider.hpp"
 
+#include <guillaume/theme.hpp>
+
 #include <memory>
 
 #include <utility/graphic/color.hpp>
@@ -61,7 +63,7 @@ namespace guillaume::entities::tests
 		const auto &bound =
 			registry.getComponent<components::Bound>(divider->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 120.0f);
-		EXPECT_FLOAT_EQ(bound.getHeight(), 1.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), Divider::HairlineThickness);
 	}
 
 	TEST_F(TestDivider, InsetTrimsLeadingEdgeOnly)
@@ -145,6 +147,26 @@ namespace guillaume::entities::tests
 		ASSERT_NE(divider, nullptr);
 		EXPECT_EQ(divider->getParent(), parent);
 		EXPECT_EQ(divider->getVariant(), Divider::Variant::Middle);
+	}
+
+	TEST_F(TestDivider, BoldUsesOneDpStroke)
+	{
+		ecs::ComponentRegistry registry;
+		auto divider = makeDivider(registry, 120.0f);
+		EXPECT_FALSE(divider->isBold());
+
+		divider->setBold(true);
+		EXPECT_TRUE(divider->isBold());
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Line>(divider->getIdentifier())
+				.getThickness(),
+			Divider::BoldThickness);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(divider->getIdentifier())
+				.getColor(),
+			getActiveScheme()
+				.getColor(SchemeColorRole::OutlineVariant)
+				.getColor());
 	}
 
 }	 // namespace guillaume::entities::tests

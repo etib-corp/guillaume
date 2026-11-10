@@ -21,6 +21,7 @@
  */
 
 #include "guillaume/systems/hand_button.hpp"
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
@@ -68,10 +69,11 @@ namespace guillaume::systems
 			this->template getComponent<components::HandButtonInteraction>(
 				entityIdentifier);
 
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
 		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
+			isInteractive(this->getComponentRegistry(), entityIdentifier)
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
 		const bool isButtonPressed = handButtonEvent->isButtonPressed();
 
 		if (isButtonPressed && isIntersecting) {

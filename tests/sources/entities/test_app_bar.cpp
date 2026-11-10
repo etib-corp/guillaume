@@ -22,6 +22,14 @@
 
 #include "entities/test_app_bar.hpp"
 
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
+#include <utility>
+
 #include <memory>
 #include <string>
 
@@ -67,7 +75,7 @@ namespace guillaume::entities::tests
 		const auto &bound =
 			registry.getComponent<components::Bound>(appBar->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 360.0f);
-		EXPECT_FLOAT_EQ(bound.getHeight(), 56.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), 64.0f);
 	}
 
 	TEST_F(TestAppBar, TitleChildIsPositionedByLayout)
@@ -86,10 +94,11 @@ namespace guillaume::entities::tests
 		const auto positions = directChildPositions(registry, appBar);
 		ASSERT_EQ(positions.size(), 1u);
 
-		// Padding 16 on the main axis; the title is the only child and its
-		// bound is unmeasured (0x0) so it is centered in the 56px bar.
-		EXPECT_FLOAT_EQ(positions[0].getX(), 116.0f);
-		EXPECT_FLOAT_EQ(positions[0].getY(), 78.0f);
+		// Paper 4 dp padding on the main axis; the title is the only child
+		// and its bound is unmeasured (0x0) so it is centered in the 64 dp bar.
+		EXPECT_FLOAT_EQ(positions[0].getX(),
+						100.0f + AppBar::HorizontalPadding);
+		EXPECT_FLOAT_EQ(positions[0].getY(), 82.0f);
 		EXPECT_FLOAT_EQ(
 			positions[0].getZ(),
 			static_cast<float>(systems::Layout::ContentLayerOffset));
@@ -203,6 +212,117 @@ namespace guillaume::entities::tests
 		ASSERT_NE(appBar, nullptr);
 		EXPECT_EQ(appBar->getParent(), parent);
 		EXPECT_EQ(appBar->getVariant(), AppBar::Variant::Medium);
+	}
+
+	TEST_F(TestAppBar, HeightsAndTitleRolesFollowPaper)
+	{
+		ecs::ComponentRegistry registry;
+		const std::pair<AppBar::Variant, std::pair<float, theme::TypeRole>>
+			expected[] = {
+				{ AppBar::Variant::Small,
+				  { 64.0f, theme::TypeRole::TitleLarge } },
+				{ AppBar::Variant::CenterAligned,
+				  { 64.0f, theme::TypeRole::TitleLarge } },
+				{ AppBar::Variant::Medium,
+				  { 112.0f, theme::TypeRole::HeadlineSmall } },
+				{ AppBar::Variant::Large,
+				  { 152.0f, theme::TypeRole::HeadlineMedium } },
+			};
+
+		for (const auto &[variant, values]: expected) {
+			ecs::EntityRegistryContainer entityRegistry;
+			AppBar::Builder builder(registry, entityRegistry);
+			auto appBar =
+				builder.withVariant(variant).withTitle("Title").registerEntity(
+					nullptr);
+			appBar->update();
+
+			EXPECT_FLOAT_EQ(
+				registry
+					.getComponent<components::Bound>(appBar->getIdentifier())
+					.getHeight(),
+				values.first);
+			ASSERT_NE(appBar->getTitle(), nullptr);
+			EXPECT_EQ(appBar->getTitle()->getTypeRole(), values.second);
+			EXPECT_EQ(registry
+						  .getComponent<components::Accessibility>(
+							  appBar->getTitle()->getIdentifier())
+						  .getRole(),
+					  components::AccessibilityRole::Header);
+		}
+	}
+
+	TEST_F(TestAppBar, ActionsArePressableIconButtons)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		AppBar::Builder builder(registry, entityRegistry);
+		int searches   = 0;
+		int navigation = 0;
+		auto appBar	   = builder.withTitle("Inbox")
+						  .withNavigationIcon("arrow_back")
+						  .withOnNavigation([&navigation]() {
+							  ++navigation;
+						  })
+						  .addAction(
+							  "search",
+							  [&searches]() {
+								  ++searches;
+							  },
+							  "Search")
+						  .registerEntity(nullptr);
+		appBar->update();
+
+		auto action = appBar->getActionButton(0);
+		ASSERT_NE(action, nullptr);
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				action->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(searches, 1);
+		EXPECT_EQ(action->getAccessibilityLabel(), "Search");
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  action->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::Button);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Color>(action->getIconIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::OnSurfaceVariant));
+
+		auto back = appBar->getNavigationButton();
+		ASSERT_NE(back, nullptr);
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				back->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(navigation, 1);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(back->getIconIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::OnSurface));
+	}
+
+	TEST_F(TestAppBar, ElevatedUsesLevelTwoSurface)
+	{
+		ecs::ComponentRegistry registry;
+		auto appBar = makeAppBar(registry);
+		appBar->setElevated(true);
+
+		EXPECT_TRUE(appBar->isElevated());
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(appBar->getIdentifier())
+				.getColor(),
+			getElevatedSurfaceColor(theme::ElevationLevel::Level2));
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Elevation>(appBar->getIdentifier())
+				.getElevationLevel(),
+			theme::ElevationLevel::Level2);
 	}
 
 }	 // namespace guillaume::entities::tests

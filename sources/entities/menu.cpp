@@ -20,26 +20,54 @@
  SOFTWARE.
  */
 
-#include "guillaume/entities/menu.hpp"
-#include "guillaume/entities/overlay_helpers.hpp"
-
+#include <algorithm>
 #include <memory>
-#include <vector>
 
-#include "guillaume/components/overlay.hpp"
+#include "guillaume/entities/menu.hpp"
 
-#include "guillaume/entities/content_helpers.hpp"
-#include "guillaume/entities/overlay_helpers.hpp"
+#include "guillaume/components/accessibility.hpp"
+#include "guillaume/components/bound.hpp"
+#include "guillaume/components/transform.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/entities/content_helpers.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
 #include "guillaume/entities/overlay_helpers.hpp"
+#include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
 	namespace
 	{
+		/**
+		 * @brief M3 menu item height.
+		 */
 		constexpr float MenuItemHeight = 48.0f;
+
+		/**
+		 * @brief Paper dense menu item height.
+		 */
+		constexpr float DenseMenuItemHeight = 32.0f;
+
+		/**
+		 * @brief M3 menu item horizontal padding.
+		 */
+		constexpr float MenuItemPadding = theme::SpacingScale::get(3);
+
+		/**
+		 * @brief M3 gap between the icons and the label.
+		 */
+		constexpr float MenuItemSpacing = theme::SpacingScale::get(3);
+
+		/**
+		 * @brief M3 menu item icon size.
+		 */
+		constexpr float MenuIconSize = 24.0f;
+
+		/**
+		 * @brief Gap between the anchor and the menu.
+		 */
+		constexpr float AnchorGap = theme::SpacingScale::get(1);
 	}	 // namespace
 
 	Menu::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
@@ -69,8 +97,8 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Start;
 		_config.padding		 = 0.0f;
 		_config.spacing		 = 0.0f;
-		_config.borderRadius = 4.0f;
-		_config.setFixedWidth(200.0f);
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::ExtraSmall);
+		_config.setFixedWidth(MinWidth);
 	}
 
 	Menu::Builder &Menu::Builder::withPose(const utility::graphic::PoseF &pose)
@@ -95,6 +123,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	Menu::Builder &Menu::Builder::addItem(const Item &item)
+	{
+		_items.push_back(item);
+		return *this;
+	}
+
 	std::shared_ptr<Menu> Menu::Director::makeMenu(
 		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::vector<Item> &items)
@@ -102,7 +136,7 @@ namespace guillaume::entities
 		builder.withVariant(variant);
 
 		for (const auto &item: items) {
-			builder.addItem(item.label, item.leadingIcon);
+			builder.addItem(item);
 		}
 
 		return builder.registerEntity(parent);
@@ -110,12 +144,23 @@ namespace guillaume::entities
 
 	Menu::Menu(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::vector<Item> &items)
-		: SurfaceBase<components::Overlay>(registry, config)
+		: SurfaceBase<components::Overlay, components::Elevation>(registry,
+																  config)
 		, _variant(variant)
 		, _items(items)
 		, _rows()
 		, _rowsDirty(true)
 	{
+		if (!getComponentRegistry().hasComponent<components::Accessibility>(
+				getIdentifier())) {
+			getComponentRegistry().addComponent<components::Accessibility>(
+				getIdentifier());
+		}
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::Menu)
+			.setFocusable(false);
+
 		applyVariant();
 		applyOverlay();
 	}
@@ -132,14 +177,21 @@ namespace guillaume::entities
 		config.mainAxisAlignment = components::Layout::MainAxisAlignment::Start;
 		config.crossAxisAlignment =
 			components::Layout::CrossAxisAlignment::Start;
-		config.padding		 = 0.0f;
-		config.spacing		 = 0.0f;
-		config.borderRadius	 = 4.0f;
-		config.hasFixedWidth = true;
-		config.fixedWidth	 = 200.0f;
+		config.padding		= 0.0f;
+		config.spacing		= 0.0f;
+		config.borderRadius = getShapeRadius(theme::ShapeRole::ExtraSmall);
 
 		setSurfaceConfig(config);
-		setColor(schemeColor(SchemeColorRole::SurfaceContainer));
+
+		const auto level = _mode == Mode::Elevated
+			? theme::ElevationLevel::Level2
+			: theme::ElevationLevel::Level0;
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(level);
+		setColor(_mode == Mode::Elevated
+					 ? getElevatedSurfaceColor(theme::ElevationLevel::Level2)
+					 : schemeColor(SchemeColorRole::SurfaceContainer));
 	}
 
 	void Menu::applyOverlay(void)
@@ -153,51 +205,113 @@ namespace guillaume::entities
 		overlay.setDismissOnEscape(true);
 	}
 
-	std::shared_ptr<View> Menu::buildRow(const Item &item)
+	Menu::Row Menu::buildRow(std::size_t index)
 	{
+		const Item &item = _items[index];
+		Row row;
+
 		View::Builder builder(this->getComponentRegistry(), *this);
 		View::Director director;
 
-		auto row = director.makeDefaultView(builder, this->shared_from_this(),
+		row.view = director.makeDefaultView(builder, this->shared_from_this(),
 											utility::graphic::PoseF(), {});
 
-		if (row == nullptr) {
-			return nullptr;
+		if (row.view == nullptr) {
+			return row;
 		}
 
-		row->setColor(transparentColor());
-		row->setAxis(components::Layout::Axis::Horizontal);
-		row->setCrossAxisAlignment(
+		row.view->setColor(transparentColor());
+		row.view->setAxis(components::Layout::Axis::Horizontal);
+		row.view->setCrossAxisAlignment(
 			components::Layout::CrossAxisAlignment::Center);
-		row->setSpacing(12.0f);
-		row->setPadding(12.0f);
-		row->setFixedHeight(MenuItemHeight);
-
-		std::vector<std::shared_ptr<ecs::Entity>> children;
+		row.view->setSpacing(MenuItemSpacing);
+		row.view->setPadding(MenuItemPadding);
+		row.view->setFixedHeight(item.dense ? DenseMenuItemHeight
+											: MenuItemHeight);
 
 		if (!item.leadingIcon.empty()) {
 			auto icon = buildIcon(
-				this->getComponentRegistry(), *this, row, item.leadingIcon,
-				20.0f, schemeColor(SchemeColorRole::OnSurfaceVariant));
+				this->getComponentRegistry(), *this, row.view, item.leadingIcon,
+				MenuIconSize, schemeColor(SchemeColorRole::OnSurfaceVariant));
 
 			if (icon != nullptr) {
-				children.push_back(icon);
+				row.content.push_back(icon);
+				row.icons.push_back(icon);
 			}
 		}
 
 		if (!item.label.empty()) {
-			auto label =
-				buildText(this->getComponentRegistry(), *this, row, item.label,
-						  14.0f, schemeColor(SchemeColorRole::OnSurface));
+			row.label = buildText(this->getComponentRegistry(), *this, row.view,
+								  item.label, theme::TypeRole::BodyLarge,
+								  schemeColor(SchemeColorRole::OnSurface));
 
-			if (label != nullptr) {
-				children.push_back(label);
+			if (row.label != nullptr) {
+				row.content.push_back(row.label);
 			}
 		}
 
-		row->setEntities(children);
+		if (!item.trailingIcon.empty()) {
+			auto icon =
+				buildIcon(this->getComponentRegistry(), *this, row.view,
+						  item.trailingIcon, MenuIconSize,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
+
+			if (icon != nullptr) {
+				row.content.push_back(icon);
+				row.icons.push_back(icon);
+			}
+		}
+
+		row.view->setEntities(row.content);
+
+		const auto rowIdentifier = row.view->getIdentifier();
+		makeInteractive(
+			this->getComponentRegistry(), rowIdentifier,
+			components::AccessibilityRole::MenuItem,
+			[this, index]() {
+				if (index < _items.size() && _items[index].onPress) {
+					_items[index].onPress();
+				}
+			},
+			[this, index]() {
+				styleRow(index);
+			});
+		this->getComponentRegistry()
+			.getComponent<components::Accessibility>(rowIdentifier)
+			.setLabel(item.label);
+		setEnabled(this->getComponentRegistry(), rowIdentifier, !item.disabled);
 
 		return row;
+	}
+
+	void Menu::styleRow(std::size_t index)
+	{
+		if (index >= _rows.size() || _rows[index].view == nullptr) {
+			return;
+		}
+
+		auto &row			= _rows[index];
+		const auto identity = row.view->getIdentifier();
+		const bool enabled	= isEnabled(this->getComponentRegistry(), identity);
+
+		const auto labelColor = enabled
+			? schemeColor(SchemeColorRole::OnSurface)
+			: disabledContentColor();
+		const auto iconColor  = enabled
+			 ? schemeColor(SchemeColorRole::OnSurfaceVariant)
+			 : disabledContentColor();
+
+		row.view->setColor(stateLayerColor(
+			this->getComponentRegistry(), identity, transparentColor(),
+			schemeColor(SchemeColorRole::OnSurface)));
+		if (row.label != nullptr) {
+			row.label->setColor(labelColor);
+		}
+		for (const auto &icon: row.icons) {
+			if (auto glyph = std::dynamic_pointer_cast<Icon>(icon)) {
+				glyph->setColor(iconColor);
+			}
+		}
 	}
 
 	void Menu::buildItems(void)
@@ -205,10 +319,10 @@ namespace guillaume::entities
 		if (_rowsDirty) {
 			_rows.clear();
 
-			for (const auto &item: _items) {
-				auto row = buildRow(item);
+			for (std::size_t i = 0; i < _items.size(); ++i) {
+				auto row = buildRow(i);
 
-				if (row != nullptr) {
+				if (row.view != nullptr) {
 					_rows.push_back(row);
 				}
 			}
@@ -219,11 +333,80 @@ namespace guillaume::entities
 		std::vector<std::shared_ptr<ecs::Entity>> children;
 		children.reserve(_rows.size());
 
-		for (const auto &row: _rows) {
-			children.push_back(row);
+		for (std::size_t i = 0; i < _rows.size(); ++i) {
+			children.push_back(_rows[i].view);
+			styleRow(i);
 		}
 
 		setChildren(children);
+	}
+
+	void Menu::applyWidth(void)
+	{
+		float contentWidth = 0.0f;
+		for (const auto &row: _rows) {
+			float width		  = 2.0f * MenuItemPadding;
+			std::size_t count = 0;
+			for (const auto &child: row.content) {
+				if (child == nullptr
+					|| !this->getComponentRegistry()
+							.hasComponent<components::Bound>(
+								child->getIdentifier())) {
+					continue;
+				}
+				width +=
+					this->getComponentRegistry()
+						.getComponent<components::Bound>(child->getIdentifier())
+						.getWidth();
+				++count;
+			}
+			if (count > 1) {
+				width += MenuItemSpacing * static_cast<float>(count - 1);
+			}
+			contentWidth = std::max(contentWidth, width);
+		}
+
+		const float menuWidth = std::clamp(contentWidth, MinWidth, MaxWidth);
+
+		auto config = getSurfaceConfig();
+		if (!config.hasFixedWidth || config.fixedWidth != menuWidth) {
+			config.hasFixedWidth = true;
+			config.fixedWidth	 = menuWidth;
+			setSurfaceConfig(config);
+		}
+
+		for (const auto &row: _rows) {
+			if (row.view != nullptr) {
+				row.view->setFixedWidth(menuWidth);
+			}
+		}
+	}
+
+	void Menu::applyAnchor(void)
+	{
+		auto &registry = this->getComponentRegistry();
+		if (_anchor == ecs::Entity::InvalidIdentifier
+			|| !registry.hasComponent<components::Transform>(_anchor)
+			|| !registry.hasComponent<components::Bound>(_anchor)) {
+			return;
+		}
+
+		const auto anchorPose =
+			registry.getComponent<components::Transform>(_anchor).getPose();
+		const auto &anchorBound =
+			registry.getComponent<components::Bound>(_anchor);
+		const auto &bound =
+			registry.getComponent<components::Bound>(this->getIdentifier());
+
+		const float offsetY = _anchorPosition == AnchorPosition::Bottom
+			? anchorBound.getHeight() + AnchorGap
+			: -(bound.getHeight() + AnchorGap);
+
+		const utility::graphic::PositionF position(
+			anchorPose.getPosition().getX(),
+			anchorPose.getPosition().getY() + offsetY,
+			anchorPose.getPosition().getZ());
+		setPose(utility::graphic::PoseF(position, anchorPose.getOrientation()));
 	}
 
 	Menu &Menu::setVariant(Variant variant)
@@ -237,6 +420,18 @@ namespace guillaume::entities
 	Menu::Variant Menu::getVariant(void) const
 	{
 		return _variant;
+	}
+
+	Menu &Menu::setMode(Mode mode)
+	{
+		_mode = mode;
+		applyVariant();
+		return *this;
+	}
+
+	Menu::Mode Menu::getMode(void) const
+	{
+		return _mode;
 	}
 
 	Menu &Menu::setItems(const std::vector<Item> &items)
@@ -253,11 +448,72 @@ namespace guillaume::entities
 
 	ecs::Entity::Identifier Menu::getItemIdentifier(std::size_t index) const
 	{
-		if (index >= _rows.size() || _rows[index] == nullptr) {
+		if (index >= _rows.size() || _rows[index].view == nullptr) {
 			return ecs::Entity::InvalidIdentifier;
 		}
 
-		return _rows[index]->getIdentifier();
+		return _rows[index].view->getIdentifier();
+	}
+
+	Menu &Menu::setItemDisabled(std::size_t index, bool disabled)
+	{
+		if (index >= _items.size()) {
+			return *this;
+		}
+		_items[index].disabled = disabled;
+		if (index < _rows.size() && _rows[index].view != nullptr) {
+			setEnabled(this->getComponentRegistry(),
+					   _rows[index].view->getIdentifier(), !disabled);
+			styleRow(index);
+		}
+		return *this;
+	}
+
+	Menu &Menu::setAnchor(ecs::Entity::Identifier anchor)
+	{
+		_anchor = anchor;
+		applyAnchor();
+		return *this;
+	}
+
+	ecs::Entity::Identifier Menu::getAnchor(void) const
+	{
+		return _anchor;
+	}
+
+	Menu &Menu::setAnchorPosition(AnchorPosition position)
+	{
+		_anchorPosition = position;
+		applyAnchor();
+		return *this;
+	}
+
+	Menu::AnchorPosition Menu::getAnchorPosition(void) const
+	{
+		return _anchorPosition;
+	}
+
+	Menu &Menu::setOnDismiss(std::function<void(void)> onDismiss)
+	{
+		this->getComponentRegistry()
+			.getComponent<components::Overlay>(this->getIdentifier())
+			.setOnDismissHandler(std::move(onDismiss));
+		return *this;
+	}
+
+	Menu &Menu::dismiss(void)
+	{
+		if (!isVisible()) {
+			return *this;
+		}
+		hide();
+		if (const auto handler =
+				this->getComponentRegistry()
+					.getComponent<components::Overlay>(this->getIdentifier())
+					.getOnDismissHandler()) {
+			handler();
+		}
+		return *this;
 	}
 
 	Menu &Menu::open(void)
@@ -277,6 +533,7 @@ namespace guillaume::entities
 
 	Menu &Menu::show(void)
 	{
+		applyAnchor();
 		setOverlayVisible(this->getComponentRegistry(), this->getIdentifier(),
 						  true);
 		return *this;
@@ -301,6 +558,8 @@ namespace guillaume::entities
 		applyVariant();
 		applyOverlay();
 		buildItems();
+		applyWidth();
+		applyAnchor();
 	}
 
 	void Menu::update(void)
@@ -309,6 +568,8 @@ namespace guillaume::entities
 		applyVariant();
 		applyOverlay();
 		buildItems();
+		applyWidth();
+		applyAnchor();
 	}
 
 }	 // namespace guillaume::entities

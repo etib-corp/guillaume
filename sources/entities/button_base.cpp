@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include <cmath>
 #include <utility>
 
 #include "guillaume/entities/button_base.hpp"
@@ -36,13 +37,14 @@ namespace guillaume::entities
 						   bool isMorph, bool isDisabled, bool isTrailingIcon,
 						   const std::string &accessibilityLabel,
 						   std::function<void(void)> onClick)
-		: ecs::ParentEntityFiller<components::Transform, components::Bound,
-								  components::Color, components::Borders,
-								  components::Focus,
-								  components::HandButtonInteraction,
-								  components::HandHoverInteraction,
-								  components::MouseHoverInteraction,
-								  components::MouseButtonInteraction>(registry)
+		: ecs::ParentEntityFiller<
+			  components::Transform, components::Bound, components::Color,
+			  components::Borders, components::Focus,
+			  components::HandButtonInteraction,
+			  components::HandHoverInteraction,
+			  components::MouseHoverInteraction,
+			  components::MouseButtonInteraction, components::StyleState,
+			  components::Accessibility>(registry)
 		, _iconGlyphName(iconGlyphName)
 		, _iconStyle(iconStyle)
 		, _labelContent(labelContent)
@@ -51,11 +53,17 @@ namespace guillaume::entities
 		, _isToggle(isToggle)
 		, _isSelected(false)
 		, _isMorph(isMorph)
-		, _isDisabled(isDisabled)
 		, _isTrailingIcon(isTrailingIcon)
-		, _accessibilityLabel(accessibilityLabel)
 		, _onClick(std::move(onClick))
 	{
+		getComponentRegistry()
+			.getComponent<components::StyleState>(getIdentifier())
+			.setEnabled(!isDisabled);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::Button)
+			.setLabel(accessibilityLabel.empty() ? labelContent
+												 : accessibilityLabel);
 	}
 
 	ButtonBase &ButtonBase::setIconGlyphName(const std::string &iconGlyphName)
@@ -92,6 +100,13 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	void ButtonBase::syncAccessibilityState(void)
+	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setSelected(_isToggle && _isSelected);
+	}
+
 	ButtonBase &ButtonBase::setIsToggle(const bool &isToggle)
 	{
 		_isToggle = isToggle;
@@ -115,6 +130,7 @@ namespace guillaume::entities
 		}
 
 		_isSelected = selected;
+		syncAccessibilityState();
 
 		if (_icon && !_selectedIconGlyphName.empty()) {
 			_icon->setGlyphName(getActiveIconGlyphName());
@@ -159,7 +175,9 @@ namespace guillaume::entities
 
 	ButtonBase &ButtonBase::setDisabled(const bool &isDisabled)
 	{
-		_isDisabled = isDisabled;
+		getComponentRegistry()
+			.getComponent<components::StyleState>(getIdentifier())
+			.setEnabled(!isDisabled);
 
 		applyStyleState();
 		applyGeometry();
@@ -169,19 +187,114 @@ namespace guillaume::entities
 
 	bool ButtonBase::isDisabled(void) const
 	{
-		return _isDisabled;
+		return !getComponentRegistry()
+					.getComponent<components::StyleState>(getIdentifier())
+					.isEnabled();
 	}
 
 	ButtonBase &
 		ButtonBase::setAccessibilityLabel(const std::string &accessibilityLabel)
 	{
-		_accessibilityLabel = accessibilityLabel;
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setLabel(accessibilityLabel);
 		return *this;
 	}
 
 	const std::string &ButtonBase::getAccessibilityLabel(void) const
 	{
-		return _accessibilityLabel;
+		return getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.getLabel();
+	}
+
+	ButtonBase &
+		ButtonBase::setAccessibilityHint(const std::string &accessibilityHint)
+	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setHint(accessibilityHint);
+		return *this;
+	}
+
+	const std::string &ButtonBase::getAccessibilityHint(void) const
+	{
+		return getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.getHint();
+	}
+
+	ButtonBase &
+		ButtonBase::setAccessibilityRole(components::AccessibilityRole role)
+	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(role);
+		return *this;
+	}
+
+	ButtonBase &
+		ButtonBase::setOnLongPress(std::function<void(void)> onLongPress)
+	{
+		_onLongPress = std::move(onLongPress);
+		return *this;
+	}
+
+	ButtonBase &ButtonBase::setLoading(bool loading)
+	{
+		_isLoading = loading;
+		if (_icon) {
+			_icon->setGlyphName(getActiveIconGlyphName());
+		}
+		return *this;
+	}
+
+	bool ButtonBase::isLoading(void) const
+	{
+		return _isLoading;
+	}
+
+	ButtonBase &ButtonBase::setVisible(bool visible)
+	{
+		_isVisible = visible;
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setFocusable(visible);
+		applyStyleState();
+		return *this;
+	}
+
+	bool ButtonBase::isVisible(void) const
+	{
+		return _isVisible;
+	}
+
+	ButtonBase &ButtonBase::setContainerColorOverride(
+		std::optional<utility::graphic::Color32Bit> color)
+	{
+		_containerColorOverride = color;
+		applyStyleState();
+		return *this;
+	}
+
+	ButtonBase &ButtonBase::setContentColorOverride(
+		std::optional<utility::graphic::Color32Bit> color)
+	{
+		_contentColorOverride = color;
+		applyStyleState();
+		return *this;
+	}
+
+	utility::graphic::Color32Bit ButtonBase::resolveContainerColor(
+		const utility::graphic::Color32Bit &color) const
+	{
+		return _containerColorOverride.value_or(color);
+	}
+
+	utility::graphic::Color32Bit ButtonBase::resolveContentColor(
+		const utility::graphic::Color32Bit &color) const
+	{
+		return _contentColorOverride.value_or(color);
 	}
 
 	ButtonBase &ButtonBase::setOnClick(std::function<void(void)> onClick)
@@ -248,6 +361,11 @@ namespace guillaume::entities
 
 	const std::string &ButtonBase::getActiveIconGlyphName(void) const
 	{
+		static const std::string loadingGlyph(LoadingGlyph);
+		if (_isLoading) {
+			return loadingGlyph;
+		}
+
 		if (_isSelected && !_selectedIconGlyphName.empty()) {
 			return _selectedIconGlyphName;
 		}
@@ -278,12 +396,29 @@ namespace guillaume::entities
 		return stateLayer(base, overlay, alpha);
 	}
 
+	void ButtonBase::applyTouchTarget(float width, float height)
+	{
+		const utility::graphic::SizeUI margin(
+			static_cast<unsigned int>(
+				std::ceil(theme::SpacingScale::touchMargin(width))),
+			static_cast<unsigned int>(
+				std::ceil(theme::SpacingScale::touchMargin(height))));
+
+		getComponentRegistry()
+			.getComponent<components::MouseHoverInteraction>(getIdentifier())
+			.setAccessibilityMargin(margin);
+		getComponentRegistry()
+			.getComponent<components::HandHoverInteraction>(getIdentifier())
+			.setAccessibilityMargin(margin);
+	}
+
 	utility::graphic::Color32Bit ButtonBase::getDisabledContainerColor(void)
 	{
 		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
-			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 31U);
+			scheme.getColor(SchemeColorRole::OnSurface).getColor(),
+			getStateLayerAlpha(theme::StateLayer::DisabledContainer));
 	}
 
 	utility::graphic::Color32Bit ButtonBase::getDisabledContentColor(void)
@@ -291,7 +426,8 @@ namespace guillaume::entities
 		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
-			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 97U);
+			scheme.getColor(SchemeColorRole::OnSurface).getColor(),
+			getStateLayerAlpha(theme::StateLayer::DisabledContent));
 	}
 
 	utility::graphic::Color32Bit ButtonBase::getDisabledBorderColor(void)
@@ -299,12 +435,13 @@ namespace guillaume::entities
 		const auto &scheme = guillaume::getActiveScheme();
 
 		return applyStateAlpha(
-			scheme.getColor(SchemeColorRole::OnSurface).getColor(), 31U);
+			scheme.getColor(SchemeColorRole::OnSurface).getColor(),
+			getStateLayerAlpha(theme::StateLayer::DisabledContainer));
 	}
 
 	void ButtonBase::hoverHandler(void)
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -313,7 +450,7 @@ namespace guillaume::entities
 
 	void ButtonBase::unHoverHandler(void)
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			return;
 		}
 
@@ -322,22 +459,25 @@ namespace guillaume::entities
 
 	void ButtonBase::buttonPressHandler()
 	{
-		if (_isDisabled) {
+		if (isDisabled() || !_isVisible) {
 			return;
 		}
+
+		_pressStart = std::chrono::steady_clock::now();
 
 		applyStyleState();
 	}
 
 	void ButtonBase::buttonReleaseHandler()
 	{
-		if (_isDisabled) {
+		if (isDisabled() || !_isVisible) {
 			return;
 		}
 
 		if (_isToggle) {
 			_isSelected = !_isSelected;
 		}
+		syncAccessibilityState();
 
 		if (_icon && !_selectedIconGlyphName.empty()) {
 			_icon->setGlyphName(getActiveIconGlyphName());
@@ -346,7 +486,15 @@ namespace guillaume::entities
 		applyStyleState();
 		applyGeometry();
 
-		if (_onClick) {
+		const bool longPress = _onLongPress
+			&& _pressStart != std::chrono::steady_clock::time_point {}
+			&& std::chrono::steady_clock::now() - _pressStart
+				>= LongPressDuration;
+		_pressStart = {};
+
+		if (longPress) {
+			_onLongPress();
+		} else if (_onClick) {
 			_onClick();
 		}
 	}
@@ -366,9 +514,9 @@ namespace guillaume::entities
 			Text::Builder labelBuilder(getComponentRegistry(), *this);
 			Text::Director labelDirector;
 
-			_label = labelDirector.makeText(labelBuilder, shared_from_this(),
-											_labelContent, getIconFontSize(),
-											getInitialContentColor());
+			_label = labelDirector.makeText(
+				labelBuilder, shared_from_this(), _labelContent,
+				theme::TypeRole::LabelLarge, getInitialContentColor());
 		}
 
 		getComponentRegistry()
@@ -407,10 +555,8 @@ namespace guillaume::entities
 		setLabelContent(_labelContent);
 		setIsToggle(_isToggle);
 		setMorph(_isMorph);
-		setDisabled(_isDisabled);
 		setTrailingIcon(_isTrailingIcon);
 		setSelectedIconGlyphName(_selectedIconGlyphName);
-		setAccessibilityLabel(_accessibilityLabel);
 		setOnClick(_onClick);
 
 		applyStyleState();

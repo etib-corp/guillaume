@@ -21,6 +21,7 @@
  */
 
 #include "guillaume/systems/mouse_button.hpp"
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
@@ -79,10 +80,11 @@ namespace guillaume::systems
 			this->template getComponent<components::MouseButtonInteraction>(
 				entityIdentifier);
 
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
 		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
+			isInteractive(this->getComponentRegistry(), entityIdentifier)
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
 		const bool isButtonPressed = mouseButtonEvent->isButtonPressed();
 
 		if (isButtonPressed && isIntersecting) {

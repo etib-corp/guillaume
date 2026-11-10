@@ -21,6 +21,7 @@
  */
 
 #include "guillaume/entities/switch.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
 
 #include <functional>
 #include <memory>
@@ -177,6 +178,16 @@ namespace guillaume::entities
 		, _icon()
 		, _labelEntity()
 	{
+		makeInteractive(
+			getComponentRegistry(), getIdentifier(),
+			components::AccessibilityRole::Switch,
+			[this]() {
+				toggle();
+			},
+			[this]() {
+				applyVariant();
+			});
+
 		auto &value = getComponentRegistry().getComponent<components::Value>(
 			getIdentifier());
 		value.setMin(0.0f).setMax(1.0f).setStep(1.0f);
@@ -194,11 +205,19 @@ namespace guillaume::entities
 
 	void Switch::applyVariant(void)
 	{
-		const bool disabled = (_variant == Variant::Disabled);
+		setEnabled(getComponentRegistry(), getIdentifier(),
+				   _variant != Variant::Disabled);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setChecked(isChecked() ? components::CheckedState::Checked
+									: components::CheckedState::Unchecked)
+			.setLabel(_label);
+
+		const bool disabled = isDisabled();
 		const bool on		= isChecked();
 
 		if (disabled) {
-			setColor(withAlpha(schemeColor(SchemeColorRole::OnSurface), 31U));
+			setColor(disabledContainerColor());
 		} else if (on) {
 			setColor(schemeColor(SchemeColorRole::Primary));
 		} else {
@@ -212,16 +231,14 @@ namespace guillaume::entities
 
 		if (_icon != nullptr) {
 			_icon->setColor(
-				disabled
-					? withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U)
-					: schemeColor(on ? SchemeColorRole::OnPrimary
-									 : SchemeColorRole::OnSurfaceVariant));
+				disabled ? disabledContentColor()
+						 : schemeColor(on ? SchemeColorRole::OnPrimary
+										  : SchemeColorRole::OnSurfaceVariant));
 		}
 
 		if (_labelEntity != nullptr) {
 			if (disabled) {
-				_labelEntity->setColor(
-					withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U));
+				_labelEntity->setColor(disabledContentColor());
 			} else {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::OnSurface));
 			}
@@ -242,7 +259,7 @@ namespace guillaume::entities
 							ThumbInset, static_cast<std::uint32_t>(getLayer()));
 
 			const auto thumbColor = disabled
-				? withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U)
+				? disabledContentColor()
 				: schemeColor(on ? SchemeColorRole::OnPrimary
 								 : SchemeColorRole::Outline);
 
@@ -255,6 +272,23 @@ namespace guillaume::entities
 							_icon->getIdentifier(),
 							static_cast<std::uint32_t>(_thumb->getLayer()));
 			}
+		}
+
+		if (_labelEntity != nullptr) {
+			// The label sits beside the 52 dp track instead of inside it.
+			const auto &track =
+				getComponentRegistry().getComponent<components::Bound>(
+					getIdentifier());
+			const auto &label =
+				getComponentRegistry().getComponent<components::Bound>(
+					_labelEntity->getIdentifier());
+			placeChild(getComponentRegistry(), getIdentifier(),
+					   _labelEntity->getIdentifier(),
+					   utility::graphic::PositionF(
+						   track.getWidth() + LabelGap,
+						   (track.getHeight() - label.getHeight()) / 2.0f,
+						   0.0f),
+					   static_cast<std::uint32_t>(getLayer()));
 		}
 
 		applyVariant();
@@ -290,7 +324,27 @@ namespace guillaume::entities
 
 	Switch &Switch::toggle(void)
 	{
-		return setChecked(!isChecked());
+		if (isDisabled()) {
+			return *this;
+		}
+
+		setChecked(!isChecked());
+		if (_onValueChange) {
+			_onValueChange(isChecked());
+		}
+		return *this;
+	}
+
+	Switch &Switch::setOnValueChange(std::function<void(bool)> onValueChange)
+	{
+		_onValueChange = std::move(onValueChange);
+		return *this;
+	}
+
+	bool Switch::isDisabled(void) const
+	{
+		return _variant == Variant::Disabled
+			|| !isEnabled(getComponentRegistry(), getIdentifier());
 	}
 
 	Switch &Switch::setLabel(const std::string &label)
@@ -321,30 +375,15 @@ namespace guillaume::entities
 		}
 
 		if (!_label.empty()) {
-			_labelEntity = buildText(getComponentRegistry(), *this,
-									 shared_from_this(), _label, 14.0f,
-									 schemeColor(SchemeColorRole::OnSurface));
+			_labelEntity =
+				buildText(getComponentRegistry(), *this, shared_from_this(),
+						  _label, theme::TypeRole::BodyLarge,
+						  schemeColor(SchemeColorRole::OnSurface));
 		}
 
-		// The thumb is positioned manually; only the label participates in
-		// the surface layout.
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-		if (_labelEntity != nullptr) {
-			children.push_back(_labelEntity);
-		}
-		setChildren(children);
-
-		getComponentRegistry()
-			.getComponent<components::MouseButtonInteraction>(getIdentifier())
-			.setOnButtonReleaseHandler(
-				utility::event::MouseButtonEvent::Button::Left,
-				std::bind(&Switch::toggle, this));
-
-		getComponentRegistry()
-			.getComponent<components::HandButtonInteraction>(getIdentifier())
-			.setOnButtonReleaseHandler(
-				utility::event::HandButtonEvent::Button::A,
-				std::bind(&Switch::toggle, this));
+		// The thumb and the label are positioned manually; neither is a
+		// layout child of the track.
+		setChildren({});
 
 		applyState();
 	}

@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "guillaume/entities/icon.hpp"
+#include "guillaume/theme.hpp"
 #include "guillaume/entities/builder_base.hpp"
 
 namespace guillaume::entities
@@ -47,8 +48,9 @@ namespace guillaume::entities
 	{
 		_glyphName.clear();
 		_fontSize = 24.0f;
-		_color	  = { 255, 255, 255, 255 };
-		_style	  = components::Glyph::Style::Outlined;
+		_color =
+			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
+		_style = components::Glyph::Style::Outlined;
 	}
 
 	Icon::Builder &Icon::Builder::withGlyphName(const std::string &glyphName)
@@ -136,6 +138,23 @@ namespace guillaume::entities
 			.getComponent<components::Color>(getIdentifier())
 			.setColor(color);
 
+		return *this;
+	}
+
+	Icon &Icon::setAccessibilityLabel(const std::string &label)
+	{
+		auto &registry = getComponentRegistry();
+		if (!registry.hasComponent<components::Accessibility>(
+				getIdentifier())) {
+			if (label.empty()) {
+				return *this;
+			}
+			registry.addComponent<components::Accessibility>(getIdentifier());
+		}
+		registry.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(label.empty() ? components::AccessibilityRole::None
+								   : components::AccessibilityRole::Image)
+			.setLabel(label);
 		return *this;
 	}
 

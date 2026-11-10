@@ -22,6 +22,14 @@
 
 #include "entities/test_badge.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/text.hpp>
+
+#include <guillaume/components/animation.hpp>
+
+#include <stdexcept>
+
 #include <memory>
 
 #include <guillaume/components/borders.hpp>
@@ -63,7 +71,8 @@ namespace guillaume::entities::tests
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(badge->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 3.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::Full));
 	}
 
 	TEST_F(TestBadge, SmallIsPill)
@@ -76,8 +85,18 @@ namespace guillaume::entities::tests
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(badge->getIdentifier());
-		EXPECT_GT(bound.getWidth(), bound.getHeight());
+		EXPECT_GE(bound.getWidth(), bound.getHeight());
 		EXPECT_FLOAT_EQ(bound.getHeight(), 16.0f);
+
+		// A measured label wider than the badge grows it by Paper's 3 dp
+		// horizontal padding on each side.
+		ASSERT_EQ(badge->getChildren().size(), 1u);
+		registry
+			.getComponent<components::Bound>(
+				badge->getChildren().front()->getIdentifier())
+			.setWidth(30.0f);
+		badge->update();
+		EXPECT_FLOAT_EQ(bound.getWidth(), 36.0f);
 	}
 
 	TEST_F(TestBadge, LargeIsTallerThanSmall)
@@ -139,6 +158,75 @@ namespace guillaume::entities::tests
 		ASSERT_NE(badge, nullptr);
 		EXPECT_EQ(badge->getParent(), parent);
 		EXPECT_EQ(badge->getVariant(), Badge::Variant::Small);
+	}
+
+	TEST_F(TestBadge, DefaultsToPaperTwentyDpBadge)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		Badge::Builder builder(registry, entityRegistry);
+		auto badge = builder.withLabel("3").registerEntity(nullptr);
+		badge->initialize();
+		badge->update();
+
+		EXPECT_EQ(badge->getVariant(), Badge::Variant::Large);
+		EXPECT_FLOAT_EQ(badge->getSize(), 20.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(badge->getIdentifier())
+				.getHeight(),
+			20.0f);
+		const auto &label = registry.getComponent<components::Text>(
+			badge->getChildren().front()->getIdentifier());
+		EXPECT_FLOAT_EQ(label.getFontSize(), 10.0f);
+	}
+
+	TEST_F(TestBadge, SizeAndColorOverrides)
+	{
+		ecs::ComponentRegistry registry;
+		auto badge = makeBadge(registry, "1", Badge::Variant::Small);
+		badge->initialize();
+
+		badge->setSize(28.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(badge->getIdentifier())
+				.getHeight(),
+			28.0f);
+		EXPECT_THROW(badge->setSize(0.0f), std::invalid_argument);
+
+		const auto tertiary =
+			getActiveScheme().getColor(SchemeColorRole::Tertiary).getColor();
+		badge->setContainerColor(tertiary);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(badge->getIdentifier())
+				.getColor(),
+			tertiary);
+	}
+
+	TEST_F(TestBadge, VisibilityFadesOverShortThree)
+	{
+		ecs::ComponentRegistry registry;
+		auto badge = makeBadge(registry, "1", Badge::Variant::Small);
+		badge->initialize();
+
+		badge->setVisible(false);
+		EXPECT_FALSE(badge->isVisible());
+		EXPECT_FLOAT_EQ(badge->getOpacity(), 1.0f);
+
+		auto &animation = registry.getComponent<components::Animation>(
+			badge->getIdentifier());
+		EXPECT_FLOAT_EQ(animation.getDuration(),
+						getMotionDuration(theme::MotionDuration::Short3));
+		animation.advance(1.0f);
+		EXPECT_FLOAT_EQ(badge->getOpacity(), 0.0f);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(badge->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
+
+		badge->setVisible(true);
+		animation.advance(1.0f);
+		EXPECT_FLOAT_EQ(badge->getOpacity(), 1.0f);
 	}
 
 }	 // namespace guillaume::entities::tests

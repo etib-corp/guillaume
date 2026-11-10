@@ -34,6 +34,7 @@ set(TEST_SOURCES
     sources/entities/test_radio_button.cpp
     sources/entities/test_search.cpp
     sources/entities/test_snackbar.cpp
+    sources/entities/test_surface.cpp
     sources/entities/test_switch.cpp
     sources/entities/test_text_field.cpp
     sources/entities/test_tooltip.cpp
@@ -53,6 +54,7 @@ set(TEST_SOURCES
     sources/systems/test_focus.cpp
     sources/systems/test_ellipse_render.cpp
     sources/systems/test_animation.cpp
+    sources/systems/test_rectangle_render.cpp
     sources/systems/test_shape_render.cpp
     sources/systems/test_surface_render.cpp
     sources/systems/test_interaction.cpp
@@ -68,6 +70,7 @@ set(TEST_SOURCES
     sources/test_engine.cpp
     sources/test_metadata.cpp
     sources/test_storage.cpp
+    sources/test_theme.cpp
 )
 
 # Fetch GoogleTest

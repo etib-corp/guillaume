@@ -21,6 +21,7 @@
  */
 
 #include "guillaume/systems/drag.hpp"
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
@@ -71,6 +72,10 @@ namespace guillaume::systems
 						  .isButtonPressed(
 							  utility::event::HandButtonEvent::Button::A);
 		}
+
+		// A disabled entity ends any drag in progress and cannot start one.
+		pressed = pressed
+			&& isInteractive(this->getComponentRegistry(), entityIdentifier);
 
 		const auto position = motionEvent->getPosition();
 

@@ -166,6 +166,11 @@ namespace guillaume::systems
 
 		public:
 		/**
+		 * @brief Depth lift, in layer steps, of the stroke above the fill.
+		 */
+		static constexpr float StrokeLift = 0.5f;
+
+		/**
 		 * @brief Construct a rectangle rendering system.
 		 * @param engine The engine used to draw rectangles.
 		 */

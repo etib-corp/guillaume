@@ -29,9 +29,48 @@ namespace guillaume::components
 		if (_texturePath == path) {
 			return *this;
 		}
-		_texturePath = path;
+		_texturePath   = path;
+		_loadState	   = LoadState::Pending;
+		_usingFallback = false;
 		setHasChanged(true);
 		return *this;
+	}
+
+	Image &Image::setFallbackPath(const std::string &path)
+	{
+		if (_fallbackPath == path) {
+			return *this;
+		}
+		_fallbackPath = path;
+		if (_loadState == LoadState::Failed) {
+			_loadState = LoadState::Pending;
+		}
+		setHasChanged(true);
+		return *this;
+	}
+
+	const std::string &Image::getFallbackPath(void) const
+	{
+		return _fallbackPath;
+	}
+
+	Image::LoadState Image::getLoadState(void) const
+	{
+		return _loadState;
+	}
+
+	Image &Image::setLoadState(LoadState state, bool usingFallback)
+	{
+		// Bookkeeping only: the render system records the outcome without
+		// flagging a change, which would re-run entity updates every frame.
+		_loadState	   = state;
+		_usingFallback = usingFallback;
+		return *this;
+	}
+
+	bool Image::isUsingFallback(void) const
+	{
+		return _usingFallback;
 	}
 
 	std::string Image::getTexturePath(void) const

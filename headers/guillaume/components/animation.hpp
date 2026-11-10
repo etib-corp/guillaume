@@ -48,7 +48,7 @@ namespace guillaume::components
 			std::function<void(void)>;	  ///< Completion handler.
 
 		private:
-		float _duration { 0.3f };	 ///< Duration, in seconds.
+		float _duration { 0.0f };	 ///< Duration, in seconds.
 		float _elapsed { 0.0f };	 ///< Elapsed time, in seconds.
 		bool _playing { false };	 ///< Whether the animation is running.
 		bool _looping { false };	 ///< Whether the animation loops.
@@ -60,9 +60,9 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor for the Animation component.
+		 * @brief Construct an animation lasting the M3 medium2 duration.
 		 */
-		Animation(void) = default;
+		Animation(void);
 
 		/**
 		 * @brief Default destructor for the Animation component.

@@ -22,6 +22,20 @@
 
 #include "entities/test_navigation_bar.hpp"
 
+#include <guillaume/components/glyph.hpp>
+
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -144,6 +158,108 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(bar->getParent(), parent);
 		EXPECT_EQ(bar->getVariant(), NavigationBar::Variant::WithoutLabels);
 		EXPECT_EQ(bar->getDestinationCount(), 4U);
+	}
+
+	TEST_F(TestNavigationBar, ContainerAndActivePillUseMaterialRoles)
+	{
+		ecs::ComponentRegistry registry;
+		auto bar = makeNavigationBar(registry, makeDestinations(3));
+		bar->initialize();
+		bar->update();
+
+		const auto role = [](SchemeColorRole value) {
+			return getActiveScheme().getColor(value).getColor();
+		};
+		EXPECT_EQ(registry.getComponent<components::Color>(bar->getIdentifier())
+					  .getColor(),
+				  role(SchemeColorRole::SurfaceContainer));
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Color>(bar->getIndicatorIdentifier(0))
+				.getColor(),
+			role(SchemeColorRole::SecondaryContainer));
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Color>(bar->getIndicatorIdentifier(1))
+				.getColor()
+				.getAlpha(),
+			0);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(bar->getLabelIdentifier(0))
+				.getColor(),
+			role(SchemeColorRole::OnSurface));
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(bar->getIconIdentifier(0))
+				.getColor(),
+			role(SchemeColorRole::OnSecondaryContainer));
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(bar->getLabelIdentifier(1))
+				.getColor(),
+			role(SchemeColorRole::OnSurfaceVariant));
+	}
+
+	TEST_F(TestNavigationBar, PressSelectsAndReportsTheIndex)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		NavigationBar::Builder builder(registry, entityRegistry);
+		std::size_t reported = 99;
+		auto bar = builder.addDestination("home_outline", "Home", "home")
+					   .addDestination("mail_outline", "Mail", "mail", "3")
+					   .withOnIndexChange([&reported](std::size_t index) {
+						   reported = index;
+					   })
+					   .registerEntity(nullptr);
+		bar->initialize();
+		bar->update();
+
+		std::size_t presses = 0;
+		bar->setOnTabPress([&presses](std::size_t) {
+			++presses;
+		});
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				bar->getDestinationIdentifier(1))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(bar->getSelectedIndex(), 1U);
+		EXPECT_EQ(reported, 1U);
+		EXPECT_EQ(presses, 1U);
+		EXPECT_EQ(
+			registry.getComponent<components::Glyph>(bar->getIconIdentifier(1))
+				.getName(),
+			"mail");
+		EXPECT_EQ(
+			registry.getComponent<components::Glyph>(bar->getIconIdentifier(0))
+				.getName(),
+			"home_outline");
+		EXPECT_NE(bar->getBadgeIdentifier(1), ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(bar->getBadgeIdentifier(0), ecs::Entity::InvalidIdentifier);
+	}
+
+	TEST_F(TestNavigationBar, ExposesTabSemantics)
+	{
+		ecs::ComponentRegistry registry;
+		auto bar = makeNavigationBar(registry, makeDestinations(2));
+		bar->initialize();
+		bar->update();
+
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Accessibility>(bar->getIdentifier())
+				.getRole(),
+			components::AccessibilityRole::TabList);
+		const auto &first = registry.getComponent<components::Accessibility>(
+			bar->getDestinationIdentifier(0));
+		EXPECT_EQ(first.getRole(), components::AccessibilityRole::Tab);
+		EXPECT_TRUE(first.isSelected());
+		EXPECT_EQ(first.getLabel(), "Dest 0");
+		EXPECT_FALSE(registry
+						 .getComponent<components::Accessibility>(
+							 bar->getDestinationIdentifier(1))
+						 .isSelected());
 	}
 
 }	 // namespace guillaume::entities::tests

@@ -23,6 +23,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include <utility/graphic/color.hpp>
 #include <utility/graphic/pose.hpp>
@@ -31,6 +32,8 @@
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/accessibility.hpp"
+#include "guillaume/components/animation.hpp"
 #include "guillaume/components/value.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -55,7 +58,9 @@ namespace guillaume::entities
 	 * @see SurfaceBase
 	 * @see components::Value
 	 */
-	class ProgressIndicator: public SurfaceBase<components::Value>
+	class ProgressIndicator:
+		public SurfaceBase<components::Value, components::Animation,
+						   components::Accessibility>
 	{
 		public:
 		/**
@@ -165,6 +170,26 @@ namespace guillaume::entities
 		std::shared_ptr<ecs::Entity> _track;	///< Track child entity.
 		std::shared_ptr<ecs::Entity> _fill;		///< Fill child entity.
 		bool _built { false };					///< Whether children exist.
+		float _displayed { 0.0f };	  ///< Value currently drawn (animated).
+		float _valueFrom { 0.0f };	  ///< Value when the transition began.
+		bool _visible { true };		  ///< Target visibility (Paper `visible`).
+		float _opacity { 1.0f };	  ///< Current fade opacity.
+		float _opacityFrom { 1.0f };	///< Opacity when the fade began.
+		std::optional<utility::graphic::Color32Bit>
+			_indicatorColor {};	   ///< Fill color override (Paper `color`).
+
+		/**
+		 * @brief Start a 200 ms transition toward the target value/opacity.
+		 */
+		void startTransition(void);
+
+		/**
+		 * @brief Apply the global fade to a color.
+		 * @param color Color to fade.
+		 * @return The faded color.
+		 */
+		utility::graphic::Color32Bit
+			faded(const utility::graphic::Color32Bit &color) const;
 
 		private:
 		/**
@@ -231,6 +256,53 @@ namespace guillaume::entities
 		 * @return The normalized value, in `[0, 1]`.
 		 */
 		float getValue(void) const;
+
+		/**
+		 * @brief Get the value currently drawn, which trails the target value
+		 * by a 200 ms transition.
+		 * @return The drawn normalized value.
+		 */
+		float getDisplayedValue(void) const;
+
+		/**
+		 * @brief Show or hide the indicator with a 200 ms fade (Paper
+		 * `visible`).
+		 * @param visible Target visibility.
+		 * @return Reference to this indicator for chaining.
+		 */
+		ProgressIndicator &setVisible(bool visible);
+
+		/**
+		 * @brief Get the target visibility.
+		 * @return True when visible.
+		 */
+		bool isVisible(void) const;
+
+		/**
+		 * @brief Get the current fade opacity.
+		 * @return Opacity in [0, 1].
+		 */
+		float getOpacity(void) const;
+
+		/**
+		 * @brief Override the fill color (default `Primary`).
+		 * @param color Fill color.
+		 * @return Reference to this indicator for chaining.
+		 */
+		ProgressIndicator &
+			setIndicatorColor(const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Get the resolved fill color.
+		 * @return The fill color before fading.
+		 */
+		utility::graphic::Color32Bit getIndicatorColor(void) const;
+
+		/**
+		 * @brief Indeterminate segment length, as a fraction of the track
+		 * (Paper uses 60%).
+		 */
+		static constexpr float IndeterminateSegment = 0.6f;
 
 		/**
 		 * @brief Initialize the progress indicator derived state and children.

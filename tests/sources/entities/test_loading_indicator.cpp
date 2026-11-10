@@ -22,6 +22,12 @@
 
 #include "entities/test_loading_indicator.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
+#include <stdexcept>
+
 #include <memory>
 
 #include <guillaume/components/animation.hpp>
@@ -170,6 +176,71 @@ namespace guillaume::entities::tests
 		ASSERT_NE(loading, nullptr);
 		EXPECT_EQ(loading->getParent(), parent);
 		EXPECT_EQ(loading->getVariant(), LoadingIndicator::Variant::Linear);
+	}
+
+	TEST_F(TestLoadingIndicator, DefaultsToCircularM3Geometry)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		LoadingIndicator::Builder builder(registry, entityRegistry);
+		auto loading = builder.registerEntity(nullptr);
+		loading->initialize();
+
+		EXPECT_EQ(loading->getVariant(), LoadingIndicator::Variant::Circular);
+		EXPECT_FLOAT_EQ(loading->getSize(), 48.0f);
+		EXPECT_FLOAT_EQ(loading->getStrokeWidth(), 4.0f);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  loading->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::ProgressBar);
+
+		loading->setSize(24.0f);
+		EXPECT_FLOAT_EQ(loading->getStrokeWidth(), 2.0f);
+		EXPECT_THROW(loading->setSize(0.0f), std::invalid_argument);
+	}
+
+	TEST_F(TestLoadingIndicator, HidesWhenStoppedWithFade)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading =
+			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
+		loading->initialize();
+		EXPECT_TRUE(loading->hidesWhenStopped());
+
+		loading->stop();
+		auto &fade = registry.getComponent<components::Animation>(
+			loading->getIdentifier());
+		EXPECT_TRUE(fade.isPlaying());
+		EXPECT_FLOAT_EQ(fade.getDuration(),
+						getMotionDuration(theme::MotionDuration::Short4));
+		fade.advance(1.0f);
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 0.0f);
+
+		loading->start();
+		fade.advance(1.0f);
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 1.0f);
+
+		loading->setHidesWhenStopped(false);
+		loading->stop();
+		fade.advance(1.0f);
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 1.0f);
+	}
+
+	TEST_F(TestLoadingIndicator, ColorOverrideReachesIndicator)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading =
+			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
+		loading->initialize();
+		EXPECT_EQ(
+			loading->getIndicatorColor(),
+			getActiveScheme().getColor(SchemeColorRole::Primary).getColor());
+
+		const auto tertiary =
+			getActiveScheme().getColor(SchemeColorRole::Tertiary).getColor();
+		loading->setIndicatorColor(tertiary);
+		EXPECT_EQ(loading->getIndicatorColor(), tertiary);
 	}
 
 }	 // namespace guillaume::entities::tests

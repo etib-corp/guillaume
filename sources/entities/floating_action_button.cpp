@@ -22,10 +22,13 @@
 
 #include <algorithm>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include "guillaume/entities/floating_action_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/components/elevation.hpp"
+#include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -171,11 +174,11 @@ namespace guillaume::entities
 	{
 		switch (size) {
 			case FloatingActionButton::Size::Small:
-				return 12.0f;
+				return getShapeRadius(theme::ShapeRole::Medium);
 			case FloatingActionButton::Size::Medium:
-				return 16.0f;
+				return getShapeRadius(theme::ShapeRole::Large);
 			case FloatingActionButton::Size::Large:
-				return 28.0f;
+				return getShapeRadius(theme::ShapeRole::ExtraLarge);
 			default:
 				throw std::runtime_error("Invalid FAB size");
 		}
@@ -188,10 +191,11 @@ namespace guillaume::entities
 
 		switch (variant) {
 			case FloatingActionButton::Variant::Surface:
-				return scheme
-					.getColor(lowered ? SchemeColorRole::SurfaceContainerLow
-									  : SchemeColorRole::SurfaceContainerHigh)
-					.getColor();
+				// Paper's surface FAB uses the tonal elevation.level3 color
+				// (level1 when lowered).
+				return getElevatedSurfaceColor(
+					lowered ? theme::ElevationLevel::Level1
+							: theme::ElevationLevel::Level3);
 			case FloatingActionButton::Variant::Primary:
 				return scheme.getColor(SchemeColorRole::PrimaryContainer)
 					.getColor();
@@ -231,7 +235,7 @@ namespace guillaume::entities
 	utility::graphic::Color32Bit
 		FloatingActionButton::getInitialContentColor(void) const
 	{
-		return getContentColor(_variant);
+		return resolveContentColor(getContentColor(_variant));
 	}
 
 	float FloatingActionButton::getIconFontSize(void) const
@@ -239,9 +243,41 @@ namespace guillaume::entities
 		return ::guillaume::entities::getIconFontSize(_size);
 	}
 
+	void FloatingActionButton::applyElevation(void)
+	{
+		// M3 FAB: level 3 at rest (1 when lowered), one level up on hover,
+		// and flat when disabled.
+		auto level = _lowered ? theme::ElevationLevel::Level1
+							  : theme::ElevationLevel::Level3;
+		if (isDisabled() || !isVisible() || _mode == Mode::Flat) {
+			level = theme::ElevationLevel::Level0;
+		} else if (isHovered() && !isPressed()) {
+			level = static_cast<theme::ElevationLevel>(
+				static_cast<std::size_t>(level) + 1);
+		}
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(level);
+	}
+
 	void FloatingActionButton::applyStyleState(void)
 	{
-		if (_isDisabled) {
+		applyElevation();
+
+		if (!isVisible()) {
+			getComponentRegistry()
+				.getComponent<components::Color>(getIdentifier())
+				.setColor(transparentColor());
+			if (_icon) {
+				_icon->setColor(transparentColor());
+			}
+			if (_label) {
+				_label->setColor(transparentColor());
+			}
+			return;
+		}
+
+		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
 				.setColor(getDisabledContainerColor());
@@ -257,24 +293,19 @@ namespace guillaume::entities
 			return;
 		}
 
-		const auto baseContainerColor = getContainerColor(_variant, _lowered);
+		const auto baseContainerColor =
+			resolveContainerColor(getContainerColor(_variant, _lowered));
+		const auto contentColor =
+			resolveContentColor(getContentColor(_variant));
 
 		utility::graphic::Color32Bit containerColor = baseContainerColor;
 
 		if (isPressed()) {
-			containerColor = ButtonBase::applyStateLayer(
-				baseContainerColor,
-				guillaume::getActiveScheme()
-					.getColor(SchemeColorRole::OnPrimaryContainer)
-					.getColor(),
-				31U);
+			containerColor = stateLayer(baseContainerColor, contentColor,
+										theme::StateLayer::Pressed);
 		} else if (isHovered()) {
-			containerColor = ButtonBase::applyStateLayer(
-				baseContainerColor,
-				guillaume::getActiveScheme()
-					.getColor(SchemeColorRole::OnPrimaryContainer)
-					.getColor(),
-				20U);
+			containerColor = stateLayer(baseContainerColor, contentColor,
+										theme::StateLayer::Hovered);
 		}
 
 		getComponentRegistry()
@@ -282,34 +313,39 @@ namespace guillaume::entities
 			.setColor(containerColor);
 
 		if (_icon) {
-			_icon->setColor(getContentColor(_variant));
+			_icon->setColor(contentColor);
 		}
 
 		if (_label) {
-			_label->setColor(getContentColor(_variant));
+			_label->setColor(contentColor);
 		}
 	}
 
 	void FloatingActionButton::applyGeometry(void)
 	{
-		const float containerSize = getContainerSize(_size);
-		const float fontHeight	  = getIconFontSize();
+		const float containerSize =
+			_customSize.value_or(getContainerSize(_size));
+		const float fontHeight = getIconFontSize();
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(getIdentifier())
 			.setWidth(containerSize)
 			.setHeight(containerSize);
+		applyTouchTarget(containerSize, containerSize);
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
-			.setBorderRadius(getBorderRadius(_size));
+			.setBorderRadius(_customSize.has_value()
+								 // Paper: customSize / 3.5 (16 dp at 56 dp).
+								 ? *_customSize / 3.5f
+								 : getBorderRadius(_size));
 
 		if (_icon) {
 			_icon->setFontSize(fontHeight);
 		}
 
 		if (_label) {
-			_label->setFontSize(fontHeight);
+			_label->setTypeRole(theme::TypeRole::LabelLarge);
 		}
 
 		if (!_icon && !_label) {
@@ -402,6 +438,34 @@ namespace guillaume::entities
 		, _size(size)
 		, _lowered(lowered)
 	{
+		if (!getComponentRegistry().hasComponent<components::Elevation>(
+				getIdentifier())) {
+			getComponentRegistry().addComponent<components::Elevation>(
+				getIdentifier());
+		}
+	}
+
+	FloatingActionButton &FloatingActionButton::setMode(Mode mode)
+	{
+		_mode = mode;
+		applyStyleState();
+		return *this;
+	}
+
+	FloatingActionButton::Mode FloatingActionButton::getMode(void) const
+	{
+		return _mode;
+	}
+
+	FloatingActionButton &
+		FloatingActionButton::setCustomSize(std::optional<float> size)
+	{
+		if (size.has_value() && *size <= 0.0f) {
+			throw std::invalid_argument("FAB custom size must be positive");
+		}
+		_customSize = size;
+		applyGeometry();
+		return *this;
 	}
 
 	FloatingActionButton::~FloatingActionButton(void)

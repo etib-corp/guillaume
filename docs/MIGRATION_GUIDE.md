@@ -115,3 +115,41 @@ containerDirector.makeDefaultContainer(containerBuilder, parent, pose,
 layoutDirector.makeDefaultLayout(layoutBuilder, parent, pose, { text });
 ```
 
+
+## Material 3 parity defaults (milestone "M3 parity remediation")
+
+Several defaults changed to match react-native-paper v5. See
+`docs/THEMING.md` for the token layer.
+
+- **`components::Borders`** gains a stroke width (default `0`) and its color
+  now defaults to transparent. A border color alone paints nothing; call
+  `setWidth()` to draw the stroke.
+- **`components::Line`** can carry its own stroke color (`setColor()`) and an
+  edge placement (`Placement::Top/Center/Bottom`). Without a color it still
+  uses `components::Color`.
+- **`entities::Text`** defaults to the `BodyMedium` role and the `OnSurface`
+  color instead of 24 px white. The `fontSize` constructor/director overloads
+  still work and override the role size; prefer the `theme::TypeRole`
+  overloads.
+- **`entities::Icon`** defaults to `OnSurface` instead of white.
+- **Button family labels** (`Button`, `FloatingActionButton`,
+  `ExtendedFloatingActionButton`) use `labelLarge` instead of the icon size.
+- **Shapes:** icon buttons are circular at every size and chips use the 8 dp
+  `Small` shape; radii come from `getShapeRadius()`.
+- **`components::Elevation`** defaults to the level-1 token; use
+  `setElevationLevel()` rather than raw `setLevel()/setSpread()`.
+- **`ButtonBase`** no longer stores `_isDisabled` or `_accessibilityLabel`:
+  `isDisabled()`/`setDisabled()` read and write `components::StyleState`, and
+  the accessibility label lives in `components::Accessibility`.
+- **Snackbar** auto-dismisses after `MotionScale::SnackbarDuration` (7 s, the
+  Paper default) instead of 4 s.
+- **Family defaults:** `Button` defaults to the `Text` style (Paper
+  `mode="text"`); `Chip` defaults to the flat (secondary container) mode;
+  `AppBar` heights are 64/112/152 dp with 4 dp padding; `Badge` defaults to
+  the 20 dp variant; `LoadingIndicator` defaults to circular; `Search`
+  `FullScreen` is a 72 dp inline field; `TextField` width follows its content
+  (minimum 100 dp); `Divider` defaults to a hairline; `View` no longer fills
+  white.
+- **Checkbox / RadioButton / Switch** are pressable; their labels sit beside
+  the control instead of inside it, and `Variant::Disabled` routes through
+  `components::StyleState`.

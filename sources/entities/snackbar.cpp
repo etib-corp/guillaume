@@ -23,6 +23,10 @@
 #include <memory>
 
 #include "guillaume/entities/snackbar.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
+
+#include <stdexcept>
+#include <utility>
 
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
@@ -42,6 +46,10 @@ namespace guillaume::entities
 	{
 		auto entity = std::make_shared<Snackbar>(
 			this->getComponentRegistry(), _config, _variant, _message, _action);
+		entity->setDuration(_duration);
+		entity->setOnDismiss(_onDismiss);
+		entity->setOnAction(_onAction);
+		entity->setVisible(_visible);
 		return entity;
 	}
 
@@ -51,6 +59,10 @@ namespace guillaume::entities
 		_variant = Variant::SingleLine;
 		_message.clear();
 		_action.clear();
+		_visible   = true;
+		_duration  = DurationMedium;
+		_onDismiss = {};
+		_onAction  = {};
 
 		_config.axis = components::Layout::Axis::Horizontal;
 		_config.mainAxisAlignment =
@@ -88,6 +100,32 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	Snackbar::Builder &Snackbar::Builder::withVisible(bool visible)
+	{
+		_visible = visible;
+		return *this;
+	}
+
+	Snackbar::Builder &Snackbar::Builder::withDuration(float seconds)
+	{
+		_duration = seconds;
+		return *this;
+	}
+
+	Snackbar::Builder &
+		Snackbar::Builder::withOnDismiss(std::function<void(void)> onDismiss)
+	{
+		_onDismiss = std::move(onDismiss);
+		return *this;
+	}
+
+	Snackbar::Builder &
+		Snackbar::Builder::withOnAction(std::function<void(void)> onAction)
+	{
+		_onAction = std::move(onAction);
+		return *this;
+	}
+
 	std::shared_ptr<Snackbar> Snackbar::Director::makeSnackbar(
 		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::string &message, const std::string &action)
@@ -101,15 +139,30 @@ namespace guillaume::entities
 	Snackbar::Snackbar(ecs::ComponentRegistry &registry,
 					   const SurfaceConfig &config, Variant variant,
 					   const std::string &message, const std::string &action)
-		: SurfaceBase<components::Overlay>(registry, config)
+		: SurfaceBase<components::Overlay, components::Elevation,
+					  components::Accessibility>(registry, config)
 		, _variant(variant)
 		, _message(message)
 		, _action(action)
 		, _messageEntity()
 		, _actionEntity()
 	{
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(theme::ElevationLevel::Level3);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::Alert)
+			.setLiveRegion(components::LiveRegion::Polite)
+			.setLabel(message);
+		getComponentRegistry()
+			.getComponent<components::Overlay>(getIdentifier())
+			.setOnDismissHandler([this]() {
+				handleDismiss();
+			});
 		applyVariant();
 		applyOverlay();
+		applyVisibility();
 	}
 
 	Snackbar::~Snackbar(void)
@@ -139,12 +192,119 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Center;
 		config.padding		  = 16.0f;
 		config.spacing		  = 8.0f;
-		config.borderRadius	  = 4.0f;
+		config.borderRadius	  = getShapeRadius(theme::ShapeRole::ExtraSmall);
 		config.hasFixedHeight = true;
 		config.fixedHeight	  = getVariantHeight();
 
 		setSurfaceConfig(config);
-		setColor(schemeColor(SchemeColorRole::InverseSurface));
+		setColor(_visible ? schemeColor(SchemeColorRole::InverseSurface)
+						  : transparentColor());
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(_visible ? theme::ElevationLevel::Level3
+										: theme::ElevationLevel::Level0);
+	}
+
+	void Snackbar::applyVisibility(void)
+	{
+		auto &overlay =
+			getComponentRegistry().getComponent<components::Overlay>(
+				getIdentifier());
+		if (overlay.isVisible() != _visible) {
+			overlay.setElapsed(0.0f);
+			overlay.setVisible(_visible);
+		}
+		applyVariant();
+		if (_messageEntity != nullptr) {
+			_messageEntity->setColor(
+				_visible ? schemeColor(SchemeColorRole::InverseOnSurface)
+						 : transparentColor());
+		}
+		if (_actionEntity != nullptr) {
+			_actionEntity->setColor(
+				_visible ? schemeColor(SchemeColorRole::InversePrimary)
+						 : transparentColor());
+		}
+	}
+
+	void Snackbar::handleDismiss(void)
+	{
+		// A dismissal the snackbar requested itself (hide()) is not reported:
+		// like Paper, onDismiss only fires on timeout, Escape or action.
+		if (!_visible) {
+			return;
+		}
+		_visible = false;
+		applyVisibility();
+		if (_onDismiss) {
+			_onDismiss();
+		}
+	}
+
+	Snackbar &Snackbar::setVisible(bool visible)
+	{
+		_visible = visible;
+		applyVisibility();
+		return *this;
+	}
+
+	Snackbar &Snackbar::show(void)
+	{
+		return setVisible(true);
+	}
+
+	Snackbar &Snackbar::hide(void)
+	{
+		return setVisible(false);
+	}
+
+	bool Snackbar::isVisible(void) const
+	{
+		return _visible;
+	}
+
+	Snackbar &Snackbar::setDuration(float seconds)
+	{
+		if (seconds < 0.0f) {
+			throw std::invalid_argument("Snackbar duration must be >= 0");
+		}
+		_duration = seconds;
+		applyOverlay();
+		return *this;
+	}
+
+	float Snackbar::getDuration(void) const
+	{
+		return _duration;
+	}
+
+	Snackbar &Snackbar::setOnDismiss(std::function<void(void)> onDismiss)
+	{
+		_onDismiss = std::move(onDismiss);
+		return *this;
+	}
+
+	Snackbar &Snackbar::setOnAction(std::function<void(void)> onAction)
+	{
+		_onAction = std::move(onAction);
+		return *this;
+	}
+
+	Snackbar &Snackbar::pressAction(void)
+	{
+		if (!_visible) {
+			return *this;
+		}
+		if (_onAction) {
+			_onAction();
+		}
+		handleDismiss();
+		return *this;
+	}
+
+	std::shared_ptr<Text> Snackbar::getActionEntity(void) const
+	{
+		return _actionEntity;
 	}
 
 	void Snackbar::applyOverlay(void)
@@ -155,7 +315,7 @@ namespace guillaume::entities
 
 		overlay.setModal(false);
 		overlay.setDismissOnOutsideClick(false);
-		overlay.setAutoDismiss(4.0f);
+		overlay.setAutoDismiss(_duration);
 	}
 
 	void Snackbar::buildContent(void)
@@ -164,16 +324,29 @@ namespace guillaume::entities
 			schemeColor(SchemeColorRole::InverseOnSurface);
 
 		if (_messageEntity == nullptr && !_message.empty()) {
-			_messageEntity = buildText(this->getComponentRegistry(), *this,
-									   this->shared_from_this(), _message,
-									   14.0f, messageColor);
+			_messageEntity = buildText(
+				this->getComponentRegistry(), *this, this->shared_from_this(),
+				_message, theme::TypeRole::BodyMedium, messageColor);
 		}
 
 		if (_variant == Variant::WithAction && _actionEntity == nullptr
 			&& !_action.empty()) {
 			_actionEntity = buildText(
 				this->getComponentRegistry(), *this, this->shared_from_this(),
-				_action, 14.0f, schemeColor(SchemeColorRole::InversePrimary));
+				_action, theme::TypeRole::LabelLarge,
+				schemeColor(SchemeColorRole::InversePrimary));
+			if (_actionEntity != nullptr) {
+				makeInteractive(this->getComponentRegistry(),
+								_actionEntity->getIdentifier(),
+								components::AccessibilityRole::Button,
+								[this]() {
+									pressAction();
+								});
+				this->getComponentRegistry()
+					.getComponent<components::Accessibility>(
+						_actionEntity->getIdentifier())
+					.setLabel(_action);
+			}
 		}
 
 		std::vector<std::shared_ptr<ecs::Entity>> children;
@@ -204,6 +377,9 @@ namespace guillaume::entities
 	Snackbar &Snackbar::setMessage(const std::string &message)
 	{
 		_message = message;
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setLabel(message);
 
 		if (_messageEntity != nullptr) {
 			_messageEntity->setContent(message);
@@ -218,6 +394,7 @@ namespace guillaume::entities
 		applyVariant();
 		applyOverlay();
 		buildContent();
+		applyVisibility();
 	}
 
 	void Snackbar::update(void)
@@ -226,6 +403,7 @@ namespace guillaume::entities
 		applyVariant();
 		applyOverlay();
 		buildContent();
+		applyVisibility();
 	}
 
 }	 // namespace guillaume::entities

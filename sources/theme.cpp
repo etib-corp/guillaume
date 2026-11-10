@@ -262,8 +262,89 @@ namespace guillaume
 		_palettes[role] = palette;
 	}
 
+	const theme::Typescale &Theme::getTypescale(void) const
+	{
+		return _typescale;
+	}
+
+	theme::Typescale &Theme::getTypescale(void)
+	{
+		return _typescale;
+	}
+
+	void Theme::setTypescale(const theme::Typescale &typescale)
+	{
+		_typescale = typescale;
+	}
+
+	const theme::ShapeScale &Theme::getShapes(void) const
+	{
+		return _shapes;
+	}
+
+	theme::ShapeScale &Theme::getShapes(void)
+	{
+		return _shapes;
+	}
+
+	const theme::ElevationScale &Theme::getElevations(void) const
+	{
+		return _elevations;
+	}
+
+	theme::ElevationScale &Theme::getElevations(void)
+	{
+		return _elevations;
+	}
+
+	const theme::StateLayerScale &Theme::getStateLayers(void) const
+	{
+		return _stateLayers;
+	}
+
+	theme::StateLayerScale &Theme::getStateLayers(void)
+	{
+		return _stateLayers;
+	}
+
+	const theme::MotionScale &Theme::getMotion(void) const
+	{
+		return _motion;
+	}
+
+	theme::MotionScale &Theme::getMotion(void)
+	{
+		return _motion;
+	}
+
 	namespace
 	{
+		/**
+		 * @brief Derive the disabled and backdrop roles of a scheme.
+		 *
+		 * Matches react-native-paper's MD3 themes: disabled containers use
+		 * onSurface at 12%, disabled content onSurface at 38%, and the backdrop
+		 * is neutral-variant 20 at 40%.
+		 */
+		void initializeDerivedRoles(Scheme &scheme)
+		{
+			const auto &onSurface =
+				scheme.getColor(SchemeColorRole::OnSurface).getColor();
+			const auto withAlpha = [&onSurface](std::uint8_t alpha) {
+				return utility::graphic::Color32Bit(onSurface.getRed(),
+													onSurface.getGreen(),
+													onSurface.getBlue(), alpha);
+			};
+
+			scheme.setColor(SchemeColorRole::SurfaceDisabled, withAlpha(31),
+							"surfaceDisabled");
+			scheme.setColor(SchemeColorRole::OnSurfaceDisabled, withAlpha(97),
+							"onSurfaceDisabled");
+			scheme.setColor(SchemeColorRole::Backdrop,
+							utility::graphic::Color32Bit(50, 47, 55, 102),
+							"backdrop");
+		}
+
 		/**
 		 * @brief Initialize light color scheme.
 		 */
@@ -362,6 +443,67 @@ namespace guillaume
 			scheme.setColor(SchemeColorRole::InversePrimary,
 							utility::graphic::Color32Bit(208, 188, 255, 255),
 							"inversePrimary");
+
+			scheme.setColor(SchemeColorRole::OutlineVariant,
+							utility::graphic::Color32Bit(202, 196, 208, 255),
+							"outlineVariant");
+			scheme.setColor(SchemeColorRole::PrimaryFixed,
+							utility::graphic::Color32Bit(234, 221, 255, 255),
+							"primaryFixed");
+			scheme.setColor(SchemeColorRole::OnPrimaryFixed,
+							utility::graphic::Color32Bit(33, 0, 93, 255),
+							"onPrimaryFixed");
+			scheme.setColor(SchemeColorRole::PrimaryFixedDim,
+							utility::graphic::Color32Bit(208, 188, 255, 255),
+							"primaryFixedDim");
+			scheme.setColor(SchemeColorRole::OnPrimaryFixedVariant,
+							utility::graphic::Color32Bit(79, 55, 139, 255),
+							"onPrimaryFixedVariant");
+			scheme.setColor(SchemeColorRole::SecondaryFixed,
+							utility::graphic::Color32Bit(232, 222, 248, 255),
+							"secondaryFixed");
+			scheme.setColor(SchemeColorRole::OnSecondaryFixed,
+							utility::graphic::Color32Bit(29, 25, 43, 255),
+							"onSecondaryFixed");
+			scheme.setColor(SchemeColorRole::SecondaryFixedDim,
+							utility::graphic::Color32Bit(204, 194, 220, 255),
+							"secondaryFixedDim");
+			scheme.setColor(SchemeColorRole::OnSecondaryFixedVariant,
+							utility::graphic::Color32Bit(74, 68, 88, 255),
+							"onSecondaryFixedVariant");
+			scheme.setColor(SchemeColorRole::TertiaryFixed,
+							utility::graphic::Color32Bit(255, 216, 228, 255),
+							"tertiaryFixed");
+			scheme.setColor(SchemeColorRole::OnTertiaryFixed,
+							utility::graphic::Color32Bit(49, 17, 29, 255),
+							"onTertiaryFixed");
+			scheme.setColor(SchemeColorRole::TertiaryFixedDim,
+							utility::graphic::Color32Bit(239, 184, 200, 255),
+							"tertiaryFixedDim");
+			scheme.setColor(SchemeColorRole::OnTertiaryFixedVariant,
+							utility::graphic::Color32Bit(99, 59, 72, 255),
+							"onTertiaryFixedVariant");
+			scheme.setColor(SchemeColorRole::SurfaceDim,
+							utility::graphic::Color32Bit(222, 216, 225, 255),
+							"surfaceDim");
+			scheme.setColor(SchemeColorRole::SurfaceBright,
+							utility::graphic::Color32Bit(254, 247, 255, 255),
+							"surfaceBright");
+			scheme.setColor(SchemeColorRole::SurfaceContainerLowest,
+							utility::graphic::Color32Bit(255, 255, 255, 255),
+							"surfaceContainerLowest");
+			scheme.setColor(SchemeColorRole::SurfaceContainerLow,
+							utility::graphic::Color32Bit(247, 242, 250, 255),
+							"surfaceContainerLow");
+			scheme.setColor(SchemeColorRole::SurfaceContainer,
+							utility::graphic::Color32Bit(243, 237, 247, 255),
+							"surfaceContainer");
+			scheme.setColor(SchemeColorRole::SurfaceContainerHigh,
+							utility::graphic::Color32Bit(236, 230, 240, 255),
+							"surfaceContainerHigh");
+			scheme.setColor(SchemeColorRole::SurfaceContainerHighest,
+							utility::graphic::Color32Bit(230, 224, 233, 255),
+							"surfaceContainerHighest");
 		}
 
 		/**
@@ -770,6 +912,67 @@ namespace guillaume
 			scheme.setColor(SchemeColorRole::InversePrimary,
 							utility::graphic::Color32Bit(103, 80, 164, 255),
 							"inversePrimary");
+
+			scheme.setColor(SchemeColorRole::OutlineVariant,
+							utility::graphic::Color32Bit(73, 69, 79, 255),
+							"outlineVariant");
+			scheme.setColor(SchemeColorRole::PrimaryFixed,
+							utility::graphic::Color32Bit(234, 221, 255, 255),
+							"primaryFixed");
+			scheme.setColor(SchemeColorRole::OnPrimaryFixed,
+							utility::graphic::Color32Bit(33, 0, 93, 255),
+							"onPrimaryFixed");
+			scheme.setColor(SchemeColorRole::PrimaryFixedDim,
+							utility::graphic::Color32Bit(208, 188, 255, 255),
+							"primaryFixedDim");
+			scheme.setColor(SchemeColorRole::OnPrimaryFixedVariant,
+							utility::graphic::Color32Bit(79, 55, 139, 255),
+							"onPrimaryFixedVariant");
+			scheme.setColor(SchemeColorRole::SecondaryFixed,
+							utility::graphic::Color32Bit(232, 222, 248, 255),
+							"secondaryFixed");
+			scheme.setColor(SchemeColorRole::OnSecondaryFixed,
+							utility::graphic::Color32Bit(29, 25, 43, 255),
+							"onSecondaryFixed");
+			scheme.setColor(SchemeColorRole::SecondaryFixedDim,
+							utility::graphic::Color32Bit(204, 194, 220, 255),
+							"secondaryFixedDim");
+			scheme.setColor(SchemeColorRole::OnSecondaryFixedVariant,
+							utility::graphic::Color32Bit(74, 68, 88, 255),
+							"onSecondaryFixedVariant");
+			scheme.setColor(SchemeColorRole::TertiaryFixed,
+							utility::graphic::Color32Bit(255, 216, 228, 255),
+							"tertiaryFixed");
+			scheme.setColor(SchemeColorRole::OnTertiaryFixed,
+							utility::graphic::Color32Bit(49, 17, 29, 255),
+							"onTertiaryFixed");
+			scheme.setColor(SchemeColorRole::TertiaryFixedDim,
+							utility::graphic::Color32Bit(239, 184, 200, 255),
+							"tertiaryFixedDim");
+			scheme.setColor(SchemeColorRole::OnTertiaryFixedVariant,
+							utility::graphic::Color32Bit(99, 59, 72, 255),
+							"onTertiaryFixedVariant");
+			scheme.setColor(SchemeColorRole::SurfaceDim,
+							utility::graphic::Color32Bit(20, 18, 24, 255),
+							"surfaceDim");
+			scheme.setColor(SchemeColorRole::SurfaceBright,
+							utility::graphic::Color32Bit(59, 56, 62, 255),
+							"surfaceBright");
+			scheme.setColor(SchemeColorRole::SurfaceContainerLowest,
+							utility::graphic::Color32Bit(15, 13, 19, 255),
+							"surfaceContainerLowest");
+			scheme.setColor(SchemeColorRole::SurfaceContainerLow,
+							utility::graphic::Color32Bit(29, 27, 32, 255),
+							"surfaceContainerLow");
+			scheme.setColor(SchemeColorRole::SurfaceContainer,
+							utility::graphic::Color32Bit(33, 31, 38, 255),
+							"surfaceContainer");
+			scheme.setColor(SchemeColorRole::SurfaceContainerHigh,
+							utility::graphic::Color32Bit(43, 41, 48, 255),
+							"surfaceContainerHigh");
+			scheme.setColor(SchemeColorRole::SurfaceContainerHighest,
+							utility::graphic::Color32Bit(54, 52, 59, 255),
+							"surfaceContainerHighest");
 		}
 
 		/**
@@ -1297,6 +1500,12 @@ namespace guillaume
 		initializeDarkHighContrastScheme(
 			theme.getScheme(ThemeSchemeRole::DarkHighContrast));
 
+		for (std::size_t role = 0; role < ThemeSchemeRole::ThemeSchemeCount;
+			 ++role) {
+			initializeDerivedRoles(
+				theme.getScheme(static_cast<ThemeSchemeRole>(role)));
+		}
+
 		// Initialize all palettes
 		initializePalettes(theme);
 
@@ -1318,6 +1527,45 @@ namespace guillaume
 	void setActiveScheme(ThemeSchemeRole role)
 	{
 		activeSchemeRole = role;
+	}
+
+	const theme::Typescale &getActiveTypescale(void)
+	{
+		return defaultTheme.getTypescale();
+	}
+
+	const theme::TypeToken &getTypeToken(theme::TypeRole role)
+	{
+		return getActiveTypescale().get(role);
+	}
+
+	float getShapeRadius(theme::ShapeRole role)
+	{
+		return defaultTheme.getShapes().getRadius(role);
+	}
+
+	std::uint8_t getStateLayerAlpha(theme::StateLayer layer)
+	{
+		return defaultTheme.getStateLayers().getAlpha(layer);
+	}
+
+	const theme::ElevationToken &getElevationToken(theme::ElevationLevel level)
+	{
+		return defaultTheme.getElevations().get(level);
+	}
+
+	utility::graphic::Color32Bit
+		getElevatedSurfaceColor(theme::ElevationLevel level)
+	{
+		const auto &scheme = getActiveScheme();
+		return defaultTheme.getElevations().tint(
+			scheme.getColor(SchemeColorRole::Surface).getColor(),
+			scheme.getColor(SchemeColorRole::SurfaceTint).getColor(), level);
+	}
+
+	float getMotionDuration(theme::MotionDuration duration)
+	{
+		return defaultTheme.getMotion().getDuration(duration);
 	}
 
 }	 // namespace guillaume

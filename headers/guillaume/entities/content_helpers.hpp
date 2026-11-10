@@ -90,4 +90,29 @@ namespace guillaume::entities
 		return director.makeText(builder, parent, content, fontSize, color);
 	}
 
+	/**
+	 * @brief Build a child text styled by a Material 3 typescale role.
+	 * @param registry Component registry.
+	 * @param entityRegistry Entity registry receiving the text.
+	 * @param parent Parent entity; nothing is built when null.
+	 * @param content Text content; nothing is built when empty.
+	 * @param role Typescale role.
+	 * @param color Text color.
+	 * @return The text entity, or nullptr.
+	 */
+	inline std::shared_ptr<Text> buildText(
+		ecs::ComponentRegistry &registry, ecs::EntityRegistry &entityRegistry,
+		std::shared_ptr<ecs::Entity> parent, const std::string &content,
+		theme::TypeRole role, const utility::graphic::Color32Bit &color)
+	{
+		if (content.empty() || parent == nullptr) {
+			return nullptr;
+		}
+
+		Text::Builder builder(registry, entityRegistry);
+		Text::Director director;
+
+		return director.makeText(builder, parent, content, role, color);
+	}
+
 }	 // namespace guillaume::entities

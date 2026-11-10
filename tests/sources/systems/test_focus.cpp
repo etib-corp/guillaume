@@ -22,6 +22,16 @@
 
 #include "systems/test_focus.hpp"
 
+#include <vector>
+
+#include <memory>
+
+#include <utility/event/keyboard_event.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 namespace guillaume::systems::tests
 {
 
@@ -252,6 +262,107 @@ namespace guillaume::systems::tests
 
 		_focusSystem->setFocus(entity1);
 		EXPECT_EQ(focusCount, 1);
+	}
+
+	namespace
+	{
+		void pressTab(event::EventBus &bus, bool shift = false)
+		{
+			auto event = std::make_shared<utility::event::KeyboardEvent>();
+			event->setKeycode(utility::event::KeyboardEvent::KeyCode::Tab);
+			event->setModifiers(
+				shift ? utility::event::KeyboardEvent::KeyModifiers::LeftShift
+					  : utility::event::KeyboardEvent::KeyModifiers::Unknown);
+			event->setIsDownEvent(true);
+			bus.publish(std::move(event));
+		}
+	}	 // namespace
+
+	TEST_F(TestFocusSystem, TabTraversesInTreeOrderAndWraps)
+	{
+		const auto first  = createFocusableEntity();
+		const auto second = createFocusableEntity();
+		const std::vector<ecs::Entity::Identifier> frame { first, second };
+
+		const auto runFrame = [&](bool shift) {
+			pressTab(*_eventBus, shift);
+			_focusSystem->prepare();
+			for (const auto id: frame) {
+				_focusSystem->update(id);
+			}
+			_focusSystem->cleanup();
+		};
+
+		runFrame(false);
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), first);
+		EXPECT_TRUE(_componentRegistry.getComponent<components::Focus>(first)
+						.isFocused());
+
+		runFrame(false);
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), second);
+		EXPECT_FALSE(_componentRegistry.getComponent<components::Focus>(first)
+						 .isFocused());
+
+		runFrame(false);
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), first);
+
+		runFrame(true);
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), second);
+	}
+
+	TEST_F(TestFocusSystem, TabHonoursFocusOrderAndSkipsDisabled)
+	{
+		const auto late		= createFocusableEntity();
+		const auto disabled = createFocusableEntity();
+		const auto early	= createFocusableEntity();
+
+		_componentRegistry.addComponent<components::Accessibility>(early);
+		_componentRegistry.getComponent<components::Accessibility>(early)
+			.setFocusOrder(1);
+		_componentRegistry.addComponent<components::StyleState>(disabled);
+		_componentRegistry.getComponent<components::StyleState>(disabled)
+			.setEnabled(false);
+
+		const std::vector<ecs::Entity::Identifier> frame { late, disabled,
+														   early };
+		const auto runFrame = [&]() {
+			pressTab(*_eventBus);
+			_focusSystem->prepare();
+			for (const auto id: frame) {
+				_focusSystem->update(id);
+			}
+			_focusSystem->cleanup();
+		};
+
+		runFrame();
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), early);
+		runFrame();
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), late);
+		runFrame();
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), early);
+	}
+
+	TEST_F(TestFocusSystem, DisabledEntityCannotTakeOrKeepFocus)
+	{
+		const auto entity = createFocusableEntity();
+		_componentRegistry.addComponent<components::StyleState>(entity);
+
+		_focusSystem->setFocus(entity);
+		EXPECT_TRUE(
+			_componentRegistry.getComponent<components::StyleState>(entity)
+				.isFocused());
+
+		_componentRegistry.getComponent<components::StyleState>(entity)
+			.setEnabled(false);
+		_focusSystem->update(entity);
+		EXPECT_FALSE(_focusSystem->getFocusedEntity().has_value());
+
+		_componentRegistry
+			.getComponent<components::MouseButtonInteraction>(entity)
+			.setButtonPressed(utility::event::MouseButtonEvent::Button::Left,
+							  true);
+		_focusSystem->update(entity);
+		EXPECT_FALSE(_focusSystem->getFocusedEntity().has_value());
 	}
 
 }	 // namespace guillaume::systems::tests

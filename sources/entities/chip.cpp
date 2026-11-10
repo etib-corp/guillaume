@@ -27,6 +27,7 @@
 
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
@@ -55,7 +56,7 @@ namespace guillaume::entities
 		_iconGlyph.clear();
 		_selected = false;
 
-		_config.borderRadius = 16.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::Small);
 		_config.axis		 = components::Layout::Axis::Horizontal;
 		_config.mainAxisAlignment =
 			components::Layout::MainAxisAlignment::Center;
@@ -110,14 +111,29 @@ namespace guillaume::entities
 	Chip::Chip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::string &label,
 			   const std::string &iconGlyph, bool selected)
-		: SurfaceBase<components::Selectable>(registry, config)
+		: SurfaceBase<components::Selectable, components::Elevation>(registry,
+																	 config)
 		, _variant(variant)
 		, _label(label)
 		, _iconGlyph(iconGlyph)
 		, _leadingIcon()
 		, _trailingIcon()
 		, _labelEntity()
+		, _checkIcon()
 	{
+		makeInteractive(
+			getComponentRegistry(), getIdentifier(),
+			components::AccessibilityRole::Button,
+			[this]() {
+				pressHandler();
+			},
+			[this]() {
+				applyVariant();
+			});
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setLabel(label);
+
 		getComponentRegistry()
 			.getComponent<components::Selectable>(getIdentifier())
 			.setSelected(selected)
@@ -126,6 +142,19 @@ namespace guillaume::entities
 			});
 
 		applyVariant();
+	}
+
+	void Chip::pressHandler(void)
+	{
+		if (isDisabled()) {
+			return;
+		}
+		if (_variant == Variant::Filter) {
+			setSelected(!isSelected());
+		}
+		if (_onPress) {
+			_onPress();
+		}
 	}
 
 	Chip::~Chip(void)
@@ -138,32 +167,172 @@ namespace guillaume::entities
 			getComponentRegistry().getComponent<components::Borders>(
 				getIdentifier());
 
-		const bool selected =
-			getComponentRegistry()
-				.getComponent<components::Selectable>(getIdentifier())
-				.isSelected();
+		const bool selected = isSelected();
+		const bool disabled = isDisabled();
+		const bool outlined = (_mode == Mode::Outlined);
 
-		auto contentColor = schemeColor(SchemeColorRole::OnSurfaceVariant);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setSelected(selected);
 
-		if (_variant == Variant::Filter && selected) {
-			setColor(schemeColor(SchemeColorRole::SecondaryContainer));
-			borders.setColor(transparentColor());
-			contentColor = schemeColor(SchemeColorRole::OnSecondaryContainer);
-		} else {
-			setColor(transparentColor());
-			borders.setColor(schemeColor(SchemeColorRole::Outline));
-			contentColor = schemeColor(SchemeColorRole::OnSurfaceVariant);
+		// Paper v5 Chip/helpers.tsx: flat chips sit on secondaryContainer;
+		// outlined chips are transparent with an outline until selected.
+		utility::graphic::Color32Bit container = transparentColor();
+		if (!outlined || selected) {
+			container = schemeColor(SchemeColorRole::SecondaryContainer);
 		}
+		auto content   = (outlined && !selected)
+			  ? schemeColor(SchemeColorRole::OnSurfaceVariant)
+			  : schemeColor(SchemeColorRole::OnSecondaryContainer);
+		auto iconColor = selected
+			? schemeColor(SchemeColorRole::OnSecondaryContainer)
+			: schemeColor(SchemeColorRole::Primary);
+
+		if (disabled) {
+			container =
+				outlined ? transparentColor() : disabledContainerColor();
+			content	  = disabledContentColor();
+			iconColor = disabledContentColor();
+		} else {
+			if (selected && _showSelectedOverlay) {
+				container =
+					stateLayer(container, content, theme::StateLayer::Pressed);
+			}
+			container = stateLayerColor(getComponentRegistry(), getIdentifier(),
+										container, content);
+		}
+
+		setColor(container);
+
+		if (outlined && !selected) {
+			borders
+				.setColor(disabled ? disabledContainerColor()
+								   : schemeColor(SchemeColorRole::Outline))
+				.setWidth(1.0f);
+		} else {
+			borders.setColor(transparentColor()).setWidth(0.0f);
+		}
+
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel((_elevated && !disabled)
+								   ? theme::ElevationLevel::Level1
+								   : theme::ElevationLevel::Level0);
+
+		auto config	   = getSurfaceConfig();
+		config.padding = _compact ? 8.0f : 12.0f;
+		setSurfaceConfig(config);
 
 		if (_leadingIcon != nullptr) {
-			_leadingIcon->setColor(contentColor);
+			_leadingIcon->setColor(iconColor);
+		}
+		if (_checkIcon != nullptr) {
+			_checkIcon->setColor((selected && _showSelectedCheck)
+									 ? iconColor
+									 : transparentColor());
 		}
 		if (_trailingIcon != nullptr) {
-			_trailingIcon->setColor(contentColor);
+			_trailingIcon->setColor(content);
 		}
 		if (_labelEntity != nullptr) {
-			_labelEntity->setColor(contentColor);
+			_labelEntity->setColor(content);
 		}
+
+		attachChildren();
+	}
+
+	void Chip::attachChildren(void)
+	{
+		if (_labelEntity == nullptr && _leadingIcon == nullptr
+			&& _checkIcon == nullptr && _trailingIcon == nullptr) {
+			return;
+		}
+
+		std::vector<std::shared_ptr<ecs::Entity>> children;
+		// The selected check replaces the leading icon (Paper
+		// showSelectedCheck); it is not laid out while unselected.
+		if (_checkIcon != nullptr && isSelected() && _showSelectedCheck) {
+			children.push_back(_checkIcon);
+		} else if (_leadingIcon != nullptr) {
+			children.push_back(_leadingIcon);
+		}
+		if (_labelEntity != nullptr) {
+			children.push_back(_labelEntity);
+		}
+		if (_trailingIcon != nullptr) {
+			children.push_back(_trailingIcon);
+		}
+		setChildren(children);
+	}
+
+	Chip &Chip::setMode(Mode mode)
+	{
+		_mode = mode;
+		applyVariant();
+		return *this;
+	}
+
+	Chip::Mode Chip::getMode(void) const
+	{
+		return _mode;
+	}
+
+	Chip &Chip::setDisabled(bool disabled)
+	{
+		setEnabled(getComponentRegistry(), getIdentifier(), !disabled);
+		applyVariant();
+		return *this;
+	}
+
+	bool Chip::isDisabled(void) const
+	{
+		return !isEnabled(getComponentRegistry(), getIdentifier());
+	}
+
+	Chip &Chip::setCompact(bool compact)
+	{
+		_compact = compact;
+		applyVariant();
+		return *this;
+	}
+
+	Chip &Chip::setElevated(bool elevated)
+	{
+		_elevated = elevated;
+		applyVariant();
+		return *this;
+	}
+
+	Chip &Chip::setShowSelectedOverlay(bool show)
+	{
+		_showSelectedOverlay = show;
+		applyVariant();
+		return *this;
+	}
+
+	Chip &Chip::setShowSelectedCheck(bool show)
+	{
+		_showSelectedCheck = show;
+		applyVariant();
+		return *this;
+	}
+
+	Chip &Chip::setOnPress(std::function<void(void)> onPress)
+	{
+		_onPress = std::move(onPress);
+		return *this;
+	}
+
+	Chip &Chip::setOnClose(std::function<void(void)> onClose)
+	{
+		_onClose = std::move(onClose);
+		return *this;
+	}
+
+	ecs::Entity::Identifier Chip::getCloseIconIdentifier(void) const
+	{
+		return _trailingIcon != nullptr ? _trailingIcon->getIdentifier()
+										: ecs::Entity::InvalidIdentifier;
 	}
 
 	Chip &Chip::setVariant(Variant variant)
@@ -214,25 +383,11 @@ namespace guillaume::entities
 		SurfaceBase::initialize();
 
 		const auto contentColor =
-			schemeColor(SchemeColorRole::OnSurfaceVariant);
+			schemeColor(SchemeColorRole::OnSecondaryContainer);
 
 		std::string leadingGlyph = _iconGlyph;
-
-		switch (_variant) {
-			case Variant::Assist:
-				if (leadingGlyph.empty()) {
-					leadingGlyph = "event";
-				}
-				break;
-			case Variant::Filter:
-				if (leadingGlyph.empty()) {
-					leadingGlyph = "check";
-				}
-				break;
-			case Variant::Input:
-			case Variant::Suggestion:
-			default:
-				break;
+		if (_variant == Variant::Assist && leadingGlyph.empty()) {
+			leadingGlyph = "event";
 		}
 
 		if (!leadingGlyph.empty()) {
@@ -241,29 +396,36 @@ namespace guillaume::entities
 						  leadingGlyph, 18.0f, contentColor);
 		}
 
+		if (_variant == Variant::Filter) {
+			_checkIcon =
+				buildIcon(getComponentRegistry(), *this, shared_from_this(),
+						  "check", 18.0f, contentColor);
+		}
+
 		if (!_label.empty()) {
 			_labelEntity =
 				buildText(getComponentRegistry(), *this, shared_from_this(),
-						  _label, 14.0f, contentColor);
+						  _label, theme::TypeRole::LabelLarge, contentColor);
 		}
 
-		if (_variant == Variant::Input) {
+		if (_variant == Variant::Input || _onClose) {
 			_trailingIcon =
 				buildIcon(getComponentRegistry(), *this, shared_from_this(),
-						  "cancel", 18.0f, contentColor);
+						  "close", 18.0f, contentColor);
+			if (_trailingIcon != nullptr) {
+				makeInteractive(
+					getComponentRegistry(), _trailingIcon->getIdentifier(),
+					components::AccessibilityRole::Button, [this]() {
+						if (!isDisabled() && _onClose) {
+							_onClose();
+						}
+					});
+				getComponentRegistry()
+					.getComponent<components::Accessibility>(
+						_trailingIcon->getIdentifier())
+					.setLabel("Close");
+			}
 		}
-
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-		if (_leadingIcon != nullptr) {
-			children.push_back(_leadingIcon);
-		}
-		if (_labelEntity != nullptr) {
-			children.push_back(_labelEntity);
-		}
-		if (_trailingIcon != nullptr) {
-			children.push_back(_trailingIcon);
-		}
-		setChildren(children);
 
 		applyVariant();
 	}
