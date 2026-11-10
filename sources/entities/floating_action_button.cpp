@@ -309,7 +309,7 @@ namespace guillaume::entities
 		}
 
 		if (_label) {
-			_label->setFontSize(fontHeight);
+			_label->setTypeRole(theme::TypeRole::LabelLarge);
 		}
 
 		if (!_icon && !_label) {

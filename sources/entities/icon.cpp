@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "guillaume/entities/icon.hpp"
+#include "guillaume/theme.hpp"
 #include "guillaume/entities/builder_base.hpp"
 
 namespace guillaume::entities
@@ -47,7 +48,7 @@ namespace guillaume::entities
 	{
 		_glyphName.clear();
 		_fontSize = 24.0f;
-		_color	  = { 255, 255, 255, 255 };
+		_color = getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
 		_style	  = components::Glyph::Style::Outlined;
 	}
 

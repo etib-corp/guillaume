@@ -262,6 +262,21 @@ namespace guillaume
 		_palettes[role] = palette;
 	}
 
+	const theme::Typescale &Theme::getTypescale(void) const
+	{
+		return _typescale;
+	}
+
+	theme::Typescale &Theme::getTypescale(void)
+	{
+		return _typescale;
+	}
+
+	void Theme::setTypescale(const theme::Typescale &typescale)
+	{
+		_typescale = typescale;
+	}
+
 	namespace
 	{
 		/**
@@ -1472,6 +1487,16 @@ namespace guillaume
 	void setActiveScheme(ThemeSchemeRole role)
 	{
 		activeSchemeRole = role;
+	}
+
+	const theme::Typescale &getActiveTypescale(void)
+	{
+		return defaultTheme.getTypescale();
+	}
+
+	const theme::TypeToken &getTypeToken(theme::TypeRole role)
+	{
+		return getActiveTypescale().get(role);
 	}
 
 }	 // namespace guillaume

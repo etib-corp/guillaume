@@ -30,6 +30,8 @@
 
 #include <utility/graphic/color.hpp>
 
+#include "guillaume/theme/typescale.hpp"
+
 namespace guillaume
 {
 
@@ -415,6 +417,7 @@ namespace guillaume
 			_schemes;	 ///< Schemes indexed by ThemeSchemeRole
 		std::array<Palette, ThemePaletteRole::ThemePaletteCount>
 			_palettes;	  ///< Palettes indexed by ThemePaletteRole
+		theme::Typescale _typescale;	///< Material 3 typescale
 
 		public:
 		/**
@@ -499,6 +502,24 @@ namespace guillaume
 		 * @param palette Palette to set for the role.
 		 */
 		void setPalette(ThemePaletteRole role, const Palette &palette);
+
+		/**
+		 * @brief Get the theme typescale.
+		 * @return Immutable typescale reference.
+		 */
+		const theme::Typescale &getTypescale(void) const;
+
+		/**
+		 * @brief Get the mutable theme typescale.
+		 * @return Mutable typescale reference.
+		 */
+		theme::Typescale &getTypescale(void);
+
+		/**
+		 * @brief Replace the theme typescale.
+		 * @param typescale New typescale.
+		 */
+		void setTypescale(const theme::Typescale &typescale);
 	};
 
 	extern const Theme defaultTheme;
@@ -514,5 +535,18 @@ namespace guillaume
 	 * @param role The scheme role to activate.
 	 */
 	void setActiveScheme(ThemeSchemeRole role);
+
+	/**
+	 * @brief Get the typescale of the active theme.
+	 * @return Immutable typescale reference.
+	 */
+	const theme::Typescale &getActiveTypescale(void);
+
+	/**
+	 * @brief Get the active theme token of a typescale role.
+	 * @param role Typescale role.
+	 * @return Immutable token reference.
+	 */
+	const theme::TypeToken &getTypeToken(theme::TypeRole role);
 
 }	 // namespace guillaume

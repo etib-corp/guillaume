@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "guillaume/theme/typescale.hpp"
 #include <string>
 
 #include <utility/cache.hpp>
@@ -46,6 +47,9 @@ namespace guillaume::systems
 		utility::graphic::Color32Bit
 			color;	  ///< The color of the text, which may affect its rendering
 					  ///< and measurement
+		theme::FontWeight fontWeight {
+			theme::FontWeight::Regular
+		};	  ///< The font weight, which selects the measured font file
 
 		/**
 		 * @brief Equality operator for MeasureTextCacheKey.
@@ -61,6 +65,9 @@ namespace guillaume::systems
 				return false;
 			}
 			if (color != other.color) {
+				return false;
+			}
+			if (fontWeight != other.fontWeight) {
 				return false;
 			}
 			return true;
@@ -92,7 +99,7 @@ namespace guillaume::systems
 			if (color != other.color) {
 				return color < other.color;
 			}
-			return false;
+			return fontWeight < other.fontWeight;
 		}
 	};
 

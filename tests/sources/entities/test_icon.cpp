@@ -22,6 +22,8 @@
 
 #include "entities/test_icon.hpp"
 
+#include "guillaume/theme.hpp"
+
 #include <memory>
 #include <string>
 
@@ -176,6 +178,22 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Glyph>(icon->getIdentifier())
 				.getName(),
 			"home");
+	}
+
+	TEST_F(TestIcon, BuilderDefaultsToOnSurface)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		auto parent = std::make_shared<ecs::Entity>();
+
+		entities::Icon::Builder builder(registry, entityRegistry);
+		auto icon = builder.withGlyphName("home").registerEntity(parent);
+		icon->update();
+
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(icon->getIdentifier())
+				.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor());
 	}
 
 }	 // namespace guillaume::entities::tests

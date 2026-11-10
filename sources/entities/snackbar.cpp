@@ -166,14 +166,14 @@ namespace guillaume::entities
 		if (_messageEntity == nullptr && !_message.empty()) {
 			_messageEntity = buildText(this->getComponentRegistry(), *this,
 									   this->shared_from_this(), _message,
-									   14.0f, messageColor);
+									   theme::TypeRole::BodyMedium, messageColor);
 		}
 
 		if (_variant == Variant::WithAction && _actionEntity == nullptr
 			&& !_action.empty()) {
 			_actionEntity = buildText(
 				this->getComponentRegistry(), *this, this->shared_from_this(),
-				_action, 14.0f, schemeColor(SchemeColorRole::InversePrimary));
+				_action, theme::TypeRole::LabelLarge, schemeColor(SchemeColorRole::InversePrimary));
 		}
 
 		std::vector<std::shared_ptr<ecs::Entity>> children;

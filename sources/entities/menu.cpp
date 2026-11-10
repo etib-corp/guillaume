@@ -188,7 +188,7 @@ namespace guillaume::entities
 		if (!item.label.empty()) {
 			auto label =
 				buildText(this->getComponentRegistry(), *this, row, item.label,
-						  14.0f, schemeColor(SchemeColorRole::OnSurface));
+						  theme::TypeRole::BodyLarge, schemeColor(SchemeColorRole::OnSurface));
 
 			if (label != nullptr) {
 				children.push_back(label);

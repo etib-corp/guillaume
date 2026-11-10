@@ -179,7 +179,7 @@ namespace guillaume::entities
 
 		if (!item.headline.empty()) {
 			auto headline = buildText(this->getComponentRegistry(), *this, row,
-									  item.headline, 16.0f,
+									  item.headline, theme::TypeRole::BodyLarge,
 									  schemeColor(SchemeColorRole::OnSurface));
 
 			if (headline != nullptr) {
@@ -190,7 +190,7 @@ namespace guillaume::entities
 		if (!item.supporting.empty()) {
 			auto supporting = buildText(
 				this->getComponentRegistry(), *this, row, item.supporting,
-				14.0f, schemeColor(SchemeColorRole::OnSurfaceVariant));
+				theme::TypeRole::BodyMedium, schemeColor(SchemeColorRole::OnSurfaceVariant));
 
 			if (supporting != nullptr) {
 				children.push_back(supporting);

@@ -187,14 +187,14 @@ namespace guillaume::entities
 
 		if (_titleEntity == nullptr && !_title.empty()) {
 			_titleEntity = buildText(this->getComponentRegistry(), *this,
-									 this->shared_from_this(), _title, 22.0f,
+									 this->shared_from_this(), _title, theme::TypeRole::HeadlineSmall,
 									 schemeColor(SchemeColorRole::OnSurface));
 		}
 
 		if (_messageEntity == nullptr && !_message.empty()) {
 			_messageEntity =
 				buildText(this->getComponentRegistry(), *this,
-						  this->shared_from_this(), _message, 14.0f,
+						  this->shared_from_this(), _message, theme::TypeRole::BodyMedium,
 						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 		}
 
@@ -211,7 +211,7 @@ namespace guillaume::entities
 			for (const auto &action: _actions) {
 				auto actionEntity =
 					buildText(this->getComponentRegistry(), *this,
-							  this->shared_from_this(), action, 14.0f,
+							  this->shared_from_this(), action, theme::TypeRole::LabelLarge,
 							  schemeColor(SchemeColorRole::Primary));
 
 				if (actionEntity != nullptr) {

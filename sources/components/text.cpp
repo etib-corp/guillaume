@@ -22,6 +22,8 @@
 
 #include "guillaume/components/text.hpp"
 
+#include <stdexcept>
+
 namespace guillaume::components
 {
 	const std::string &Text::getContent(void) const
@@ -52,6 +54,65 @@ namespace guillaume::components
 	{
 		_fontSize = fontSize;
 		setHasChanged(true);
+		return *this;
+	}
+
+	theme::FontWeight Text::getFontWeight(void) const
+	{
+		return _fontWeight;
+	}
+
+	Text &Text::setFontWeight(theme::FontWeight fontWeight)
+	{
+		if (_fontWeight == fontWeight) {
+			return *this;
+		}
+		_fontWeight = fontWeight;
+		setHasChanged(true);
+		return *this;
+	}
+
+	float Text::getLineHeight(void) const
+	{
+		return _lineHeight;
+	}
+
+	Text &Text::setLineHeight(float lineHeight)
+	{
+		if (lineHeight < 0.0f) {
+			throw std::invalid_argument("Line height must be non-negative");
+		}
+		if (_lineHeight == lineHeight) {
+			return *this;
+		}
+		_lineHeight = lineHeight;
+		setHasChanged(true);
+		return *this;
+	}
+
+	float Text::getLetterSpacing(void) const
+	{
+		return _letterSpacing;
+	}
+
+	Text &Text::setLetterSpacing(float letterSpacing)
+	{
+		if (_letterSpacing == letterSpacing) {
+			return *this;
+		}
+		_letterSpacing = letterSpacing;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Text &Text::setTypeToken(const theme::TypeToken &token)
+	{
+		if (_fontSize != token.fontSize) {
+			setFontSize(token.fontSize);
+		}
+		setFontWeight(token.fontWeight);
+		setLineHeight(token.lineHeight);
+		setLetterSpacing(token.letterSpacing);
 		return *this;
 	}
 

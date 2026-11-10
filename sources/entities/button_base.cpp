@@ -367,7 +367,7 @@ namespace guillaume::entities
 			Text::Director labelDirector;
 
 			_label = labelDirector.makeText(labelBuilder, shared_from_this(),
-											_labelContent, getIconFontSize(),
+											_labelContent, theme::TypeRole::LabelLarge,
 											getInitialContentColor());
 		}
 

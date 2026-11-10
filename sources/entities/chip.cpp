@@ -245,7 +245,7 @@ namespace guillaume::entities
 		if (!_label.empty()) {
 			_labelEntity =
 				buildText(getComponentRegistry(), *this, shared_from_this(),
-						  _label, 14.0f, contentColor);
+						  _label, theme::TypeRole::LabelLarge, contentColor);
 		}
 
 		if (_variant == Variant::Input) {

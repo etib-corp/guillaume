@@ -156,7 +156,7 @@ namespace guillaume::entities
 
 		if (_titleEntity == nullptr && !_title.empty()) {
 			_titleEntity = buildText(this->getComponentRegistry(), *this,
-									 this->shared_from_this(), _title, 22.0f,
+									 this->shared_from_this(), _title, theme::TypeRole::TitleLarge,
 									 foregroundColor);
 		}
 

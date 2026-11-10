@@ -23,6 +23,8 @@
 #include "test_theme.hpp"
 
 #include <cstddef>
+#include <iterator>
+#include <stdexcept>
 
 namespace guillaume::tests
 {
@@ -156,6 +158,68 @@ namespace guillaume::tests
 		const auto dark =
 			getActiveScheme().getColor(SchemeColorRole::Surface).getColor();
 		EXPECT_FALSE(sameColor(light, dark));
+	}
+
+	TEST_F(TestTheme, TypescaleMatchesMaterialBaseline)
+	{
+		struct Expected {
+			theme::TypeRole role;
+			float size;
+			float lineHeight;
+			float letterSpacing;
+			theme::FontWeight weight;
+		};
+		constexpr auto R = theme::FontWeight::Regular;
+		constexpr auto M = theme::FontWeight::Medium;
+		const Expected expected[] = {
+			{ theme::TypeRole::DisplayLarge, 57.0f, 64.0f, 0.0f, R },
+			{ theme::TypeRole::DisplayMedium, 45.0f, 52.0f, 0.0f, R },
+			{ theme::TypeRole::DisplaySmall, 36.0f, 44.0f, 0.0f, R },
+			{ theme::TypeRole::HeadlineLarge, 32.0f, 40.0f, 0.0f, R },
+			{ theme::TypeRole::HeadlineMedium, 28.0f, 36.0f, 0.0f, R },
+			{ theme::TypeRole::HeadlineSmall, 24.0f, 32.0f, 0.0f, R },
+			{ theme::TypeRole::TitleLarge, 22.0f, 28.0f, 0.0f, R },
+			{ theme::TypeRole::TitleMedium, 16.0f, 24.0f, 0.15f, M },
+			{ theme::TypeRole::TitleSmall, 14.0f, 20.0f, 0.1f, M },
+			{ theme::TypeRole::LabelLarge, 14.0f, 20.0f, 0.1f, M },
+			{ theme::TypeRole::LabelMedium, 12.0f, 16.0f, 0.5f, M },
+			{ theme::TypeRole::LabelSmall, 11.0f, 16.0f, 0.5f, M },
+			{ theme::TypeRole::BodyLarge, 16.0f, 24.0f, 0.15f, R },
+			{ theme::TypeRole::BodyMedium, 14.0f, 20.0f, 0.25f, R },
+			{ theme::TypeRole::BodySmall, 12.0f, 16.0f, 0.4f, R },
+			{ theme::TypeRole::Default, 14.0f, 20.0f, 0.0f, R },
+		};
+		static_assert(std::size(expected)
+						  == static_cast<std::size_t>(theme::TypeRole::Count),
+					  "every typescale role must be checked");
+
+		for (const auto &entry: expected) {
+			const auto &token = getTypeToken(entry.role);
+			const auto index  = static_cast<std::size_t>(entry.role);
+			EXPECT_FLOAT_EQ(token.fontSize, entry.size) << index;
+			EXPECT_FLOAT_EQ(token.lineHeight, entry.lineHeight) << index;
+			EXPECT_FLOAT_EQ(token.letterSpacing, entry.letterSpacing) << index;
+			EXPECT_EQ(token.fontWeight, entry.weight) << index;
+			EXPECT_EQ(token.fontFamily, "Roboto") << index;
+		}
+	}
+
+	TEST_F(TestTheme, TypescaleRejectsInvalidTokens)
+	{
+		theme::Typescale typescale;
+		theme::TypeToken token;
+		token.fontSize = 0.0f;
+		EXPECT_THROW(typescale.set(theme::TypeRole::BodyLarge, token),
+					 std::invalid_argument);
+		EXPECT_THROW(typescale.get(theme::TypeRole::Count), std::out_of_range);
+	}
+
+	TEST_F(TestTheme, FontWeightSelectsBundledFont)
+	{
+		EXPECT_EQ(theme::fontPath(theme::FontWeight::Regular),
+				  "fonts/Roboto-Regular.ttf");
+		EXPECT_EQ(theme::fontPath(theme::FontWeight::Medium),
+				  "fonts/Roboto-Medium.ttf");
 	}
 
 }	 // namespace guillaume::tests

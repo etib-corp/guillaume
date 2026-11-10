@@ -24,6 +24,8 @@
 
 #include "guillaume/systems/measure_text.hpp"
 
+#include <algorithm>
+
 namespace guillaume::systems
 {
 
@@ -73,7 +75,9 @@ namespace guillaume::systems
 
 		MeasureTextCacheKey cacheKey { textComponent.getContent(),
 									   textComponent.getFontSize(),
-									   colorComponent.getColor() };
+									   colorComponent.getColor(),
+									   textComponent.getFontWeight() };
+		const float lineHeight = textComponent.getLineHeight();
 
 		getLogger().debug() << "Measuring text '" << cacheKey.content
 							<< "' for entity " << entityIdentifier;
@@ -85,7 +89,7 @@ namespace guillaume::systems
 			if (cacheValue.has_value()) {
 				getComponent<components::Bound>(entityIdentifier)
 					.setWidth(cacheValue->getWidth())
-					.setHeight(cacheValue->getHeight());
+					.setHeight(std::max(cacheValue->getHeight(), lineHeight));
 			}
 			return;
 		}
@@ -93,14 +97,15 @@ namespace guillaume::systems
 		utility::graphic::Text text(_ressourceProvider,
 									transformComponent.getPose(),
 									colorComponent.getColor(), cacheKey.content,
-									cacheKey.fontSize, _defaultFontPath);
+									cacheKey.fontSize,
+									theme::fontPath(cacheKey.fontWeight));
 		text.setColor(utility::graphic::Color32Bit());
 
 		auto textSize = _engine->measureText(text);
 
 		getComponent<components::Bound>(entityIdentifier)
 			.setWidth(textSize.getWidth())
-			.setHeight(textSize.getHeight());
+			.setHeight(std::max(textSize.getHeight(), lineHeight));
 
 		put(cacheKey, textSize);
 	}

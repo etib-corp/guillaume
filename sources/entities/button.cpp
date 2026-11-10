@@ -681,7 +681,7 @@ namespace guillaume::entities
 		}
 
 		if (_label) {
-			_label->setFontSize(fontHeight);
+			_label->setTypeRole(theme::TypeRole::LabelLarge);
 		}
 
 		const auto &buttonPose =

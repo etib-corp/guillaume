@@ -322,7 +322,7 @@ namespace guillaume::entities
 
 		if (!_label.empty()) {
 			_labelEntity = buildText(getComponentRegistry(), *this,
-									 shared_from_this(), _label, 14.0f,
+									 shared_from_this(), _label, theme::TypeRole::BodyLarge,
 									 schemeColor(SchemeColorRole::OnSurface));
 		}
 

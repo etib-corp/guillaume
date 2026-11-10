@@ -24,6 +24,7 @@
 
 #include "guillaume/systems/text_render.hpp"
 #include "guillaume/text_renderable.hpp"
+#include "guillaume/theme/typescale.hpp"
 
 namespace guillaume::systems
 {
@@ -79,7 +80,8 @@ namespace guillaume::systems
 		auto renderable = std::make_shared<TextRenderable>(
 			_ressourceProvider, transformComponent.getPose(),
 			colorComponent.getColor(), textComponent.getContent(),
-			textComponent.getFontSize(), _defaultFontPath);
+			textComponent.getFontSize(),
+			theme::fontPath(textComponent.getFontWeight()));
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {

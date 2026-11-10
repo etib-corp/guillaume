@@ -146,4 +146,5 @@ set(GUILLAUME_SOURCES
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
     sources/theme.cpp
+    sources/theme/typescale.cpp
 )

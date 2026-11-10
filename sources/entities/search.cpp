@@ -193,7 +193,7 @@ namespace guillaume::entities
 
 		if (_textEntity == nullptr && !_text.empty()) {
 			_textEntity = buildText(this->getComponentRegistry(), *this,
-									this->shared_from_this(), _text, 16.0f,
+									this->shared_from_this(), _text, theme::TypeRole::BodyLarge,
 									schemeColor(SchemeColorRole::OnSurface));
 		}
 
