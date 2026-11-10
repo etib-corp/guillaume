@@ -141,7 +141,8 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::MeasureMesh measureModel(ressourceProvider, *engine);
+		guillaume::systems::MeasureMesh measureModel(ressourceProvider,
+													 *engine);
 
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
