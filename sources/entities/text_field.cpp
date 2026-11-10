@@ -370,17 +370,26 @@ namespace guillaume::entities
 
 	void TextField::buildContent(void)
 	{
-		auto &registry = this->getComponentRegistry();
-		const auto &component =
-			registry.getComponent<components::TextField>(this->getIdentifier());
-		const bool disabled = isDisabled();
-		const bool floating = isLabelFloating();
-
+		const bool disabled		= isDisabled();
 		const auto content		= disabled ? disabledContentColor()
 										   : schemeColor(SchemeColorRole::OnSurface);
 		const auto variantColor = disabled
 			? disabledContentColor()
 			: schemeColor(SchemeColorRole::OnSurfaceVariant);
+
+		createChildren(content, variantColor);
+		applyContentColors(content, variantColor);
+		arrangeChildren();
+		placeManualChildren();
+	}
+
+	void TextField::createChildren(
+		const utility::graphic::Color32Bit &content,
+		const utility::graphic::Color32Bit &variantColor)
+	{
+		auto &registry = this->getComponentRegistry();
+		const auto &component =
+			registry.getComponent<components::TextField>(this->getIdentifier());
 
 		if (_leadingIconEntity == nullptr && !_leadingIcon.empty()) {
 			_leadingIconEntity =
@@ -453,8 +462,15 @@ namespace guillaume::entities
 		} else if (_supportingEntity != nullptr) {
 			_supportingEntity->setContent(support);
 		}
+	}
 
-		// Colors.
+	void TextField::applyContentColors(
+		const utility::graphic::Color32Bit &content,
+		const utility::graphic::Color32Bit &variantColor)
+	{
+		const bool disabled = isDisabled();
+		const bool floating = isLabelFloating();
+
 		_textEntity->setColor(content);
 		if (_labelEntity != nullptr) {
 			_labelEntity->setTypeRole(floating ? theme::TypeRole::BodySmall
@@ -484,6 +500,12 @@ namespace guillaume::entities
 				_error && !disabled ? schemeColor(SchemeColorRole::Error)
 									: variantColor);
 		}
+	}
+
+	void TextField::arrangeChildren(void)
+	{
+		auto &registry		= this->getComponentRegistry();
+		const bool floating = isLabelFloating();
 
 		// Input column: the filled label floats above the input, the
 		// outlined label floats on the outline (placed manually).
@@ -536,7 +558,6 @@ namespace guillaume::entities
 		setSurfaceConfig(config);
 
 		setChildren(children);
-		placeManualChildren();
 	}
 
 	void TextField::placeManualChildren(void)

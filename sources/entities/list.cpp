@@ -213,21 +213,7 @@ namespace guillaume::entities
 		Row row;
 
 		if (item.kind == ItemKind::Subheader) {
-			auto header =
-				buildText(registry, *this, this->shared_from_this(),
-						  item.headline, theme::TypeRole::TitleSmall,
-						  schemeColor(SchemeColorRole::OnSurfaceVariant));
-			if (header != nullptr) {
-				registry.addComponent<components::Accessibility>(
-					header->getIdentifier());
-				registry
-					.getComponent<components::Accessibility>(
-						header->getIdentifier())
-					.setRole(components::AccessibilityRole::Header)
-					.setLabel(item.headline)
-					.setFocusable(false);
-			}
-			row.entity = header;
+			row.entity = buildSubheader(item);
 			return row;
 		}
 
@@ -245,6 +231,67 @@ namespace guillaume::entities
 		row.view->setPadding(RowPadding);
 		row.view->setSpacing(RowSpacing);
 		row.view->setFixedWidth(getListWidth());
+
+		std::vector<std::shared_ptr<ecs::Entity>> rowChildren { buildRowLead(
+			row, item, inset) };
+
+		const bool accordion	   = !item.children.empty();
+		const std::string trailing = accordion
+			? std::string(item.expanded ? "expand_less" : "expand_more")
+			: item.trailingIcon;
+
+		if (!trailing.empty()) {
+			auto icon =
+				buildIcon(registry, *row.view, row.view, trailing, ListIconSize,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
+			if (icon != nullptr) {
+				rowChildren.push_back(icon);
+				row.icons.push_back(icon);
+				if (accordion) {
+					row.chevron = icon;
+				}
+			}
+			row.view->setMainAxisAlignment(
+				components::Layout::MainAxisAlignment::SpaceBetween);
+		}
+
+		row.view->setEntities(rowChildren);
+		makeRowInteractive(row, item, path);
+
+		for (std::size_t i = 0; i < item.children.size(); ++i) {
+			auto childPath = path;
+			childPath.push_back(i);
+			row.children.push_back(
+				buildRow(item.children[i], childPath, inset + AccordionInset));
+		}
+
+		return row;
+	}
+
+	std::shared_ptr<ecs::Entity> List::buildSubheader(const Item &item)
+	{
+		auto &registry = this->getComponentRegistry();
+
+		auto header = buildText(registry, *this, this->shared_from_this(),
+								item.headline, theme::TypeRole::TitleSmall,
+								schemeColor(SchemeColorRole::OnSurfaceVariant));
+		if (header != nullptr) {
+			registry.addComponent<components::Accessibility>(
+				header->getIdentifier());
+			registry
+				.getComponent<components::Accessibility>(
+					header->getIdentifier())
+				.setRole(components::AccessibilityRole::Header)
+				.setLabel(item.headline)
+				.setFocusable(false);
+		}
+		return header;
+	}
+
+	std::shared_ptr<View> List::buildRowLead(Row &row, const Item &item,
+											 float inset)
+	{
+		auto &registry = this->getComponentRegistry();
 
 		auto lead = makeView(registry, *row.view, row.view,
 							 components::Layout::Axis::Horizontal);
@@ -303,29 +350,14 @@ namespace guillaume::entities
 		leadChildren.push_back(row.content);
 		lead->setEntities(leadChildren);
 
-		std::vector<std::shared_ptr<ecs::Entity>> rowChildren { lead };
+		return lead;
+	}
 
-		const bool accordion	   = !item.children.empty();
-		const std::string trailing = accordion
-			? std::string(item.expanded ? "expand_less" : "expand_more")
-			: item.trailingIcon;
-
-		if (!trailing.empty()) {
-			auto icon =
-				buildIcon(registry, *row.view, row.view, trailing, ListIconSize,
-						  schemeColor(SchemeColorRole::OnSurfaceVariant));
-			if (icon != nullptr) {
-				rowChildren.push_back(icon);
-				row.icons.push_back(icon);
-				if (accordion) {
-					row.chevron = icon;
-				}
-			}
-			row.view->setMainAxisAlignment(
-				components::Layout::MainAxisAlignment::SpaceBetween);
-		}
-
-		row.view->setEntities(rowChildren);
+	void List::makeRowInteractive(Row &row, const Item &item,
+								  const std::vector<std::size_t> &path)
+	{
+		auto &registry		 = this->getComponentRegistry();
+		const bool accordion = !item.children.empty();
 
 		const auto identifier = row.view->getIdentifier();
 		makeInteractive(
@@ -345,15 +377,6 @@ namespace guillaume::entities
 			accessibility.setExpanded(item.expanded);
 		}
 		setEnabled(registry, identifier, !item.disabled);
-
-		for (std::size_t i = 0; i < item.children.size(); ++i) {
-			auto childPath = path;
-			childPath.push_back(i);
-			row.children.push_back(
-				buildRow(item.children[i], childPath, inset + AccordionInset));
-		}
-
-		return row;
 	}
 
 	void List::styleRow(Row &row)

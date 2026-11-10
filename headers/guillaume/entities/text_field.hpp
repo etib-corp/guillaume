@@ -436,6 +436,29 @@ namespace guillaume::entities
 		void buildContent(void);
 
 		/**
+		 * @brief Create the child entities that do not exist yet and refresh
+		 * the supporting text.
+		 * @param content Color of the input text.
+		 * @param variantColor Color of the label, icons, affixes and support.
+		 */
+		void createChildren(const utility::graphic::Color32Bit &content,
+							const utility::graphic::Color32Bit &variantColor);
+
+		/**
+		 * @brief Color every child for the enabled, error and floating states.
+		 * @param content Color of the input text.
+		 * @param variantColor Color of the label, icons, affixes and support.
+		 */
+		void applyContentColors(
+			const utility::graphic::Color32Bit &content,
+			const utility::graphic::Color32Bit &variantColor);
+
+		/**
+		 * @brief Order the children in the row and size the field to them.
+		 */
+		void arrangeChildren(void);
+
+		/**
 		 * @brief Give the input child the focus component while it may be
 		 * edited.
 		 */
