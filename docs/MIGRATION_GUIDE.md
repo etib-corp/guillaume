@@ -115,3 +115,31 @@ containerDirector.makeDefaultContainer(containerBuilder, parent, pose,
 layoutDirector.makeDefaultLayout(layoutBuilder, parent, pose, { text });
 ```
 
+
+## Material 3 parity defaults (milestone "M3 parity remediation")
+
+Several defaults changed to match react-native-paper v5. See
+`docs/THEMING.md` for the token layer.
+
+- **`components::Borders`** gains a stroke width (default `0`) and its color
+  now defaults to transparent. A border color alone paints nothing; call
+  `setWidth()` to draw the stroke.
+- **`components::Line`** can carry its own stroke color (`setColor()`) and an
+  edge placement (`Placement::Top/Center/Bottom`). Without a color it still
+  uses `components::Color`.
+- **`entities::Text`** defaults to the `BodyMedium` role and the `OnSurface`
+  color instead of 24 px white. The `fontSize` constructor/director overloads
+  still work and override the role size; prefer the `theme::TypeRole`
+  overloads.
+- **`entities::Icon`** defaults to `OnSurface` instead of white.
+- **Button family labels** (`Button`, `FloatingActionButton`,
+  `ExtendedFloatingActionButton`) use `labelLarge` instead of the icon size.
+- **Shapes:** icon buttons are circular at every size and chips use the 8 dp
+  `Small` shape; radii come from `getShapeRadius()`.
+- **`components::Elevation`** defaults to the level-1 token; use
+  `setElevationLevel()` rather than raw `setLevel()/setSpread()`.
+- **`ButtonBase`** no longer stores `_isDisabled` or `_accessibilityLabel`:
+  `isDisabled()`/`setDisabled()` read and write `components::StyleState`, and
+  the accessibility label lives in `components::Accessibility`.
+- **Snackbar** auto-dismisses after `MotionScale::SnackbarDuration` (7 s, the
+  Paper default) instead of 4 s.
