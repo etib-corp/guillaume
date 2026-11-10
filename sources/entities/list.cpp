@@ -21,16 +21,73 @@
  */
 
 #include <memory>
+#include <utility>
 
 #include "guillaume/entities/list.hpp"
 
-#include "guillaume/entities/content_helpers.hpp"
+#include "guillaume/components/accessibility.hpp"
+#include "guillaume/components/bound.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/content_helpers.hpp"
+#include "guillaume/entities/divider.hpp"
+#include "guillaume/entities/image.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
+	namespace
+	{
+		/**
+		 * @brief Default list width.
+		 */
+		constexpr float ListWidth = 360.0f;
+
+		/**
+		 * @brief M3 list item padding (16 dp on every side).
+		 */
+		constexpr float RowPadding = theme::SpacingScale::get(4);
+
+		/**
+		 * @brief M3 gap between the leading slot, content and trailing slot.
+		 */
+		constexpr float RowSpacing = theme::SpacingScale::get(4);
+
+		/**
+		 * @brief Inset of accordion children (Paper aligns them with the
+		 * parent title).
+		 */
+		constexpr float AccordionInset = 40.0f;
+
+		/**
+		 * @brief M3 list icon size.
+		 */
+		constexpr float ListIconSize = 24.0f;
+
+		std::shared_ptr<View> makeView(ecs::ComponentRegistry &registry,
+									   ecs::EntityRegistry &entityRegistry,
+									   std::shared_ptr<ecs::Entity> parent,
+									   components::Layout::Axis axis)
+		{
+			View::Builder builder(registry, entityRegistry);
+			View::Director director;
+			auto view = director.makeDefaultView(builder, parent,
+												 utility::graphic::PoseF(), {});
+			view->setColor(transparentColor());
+			view->setAxis(axis);
+			view->setMainAxisAlignment(
+				components::Layout::MainAxisAlignment::Start);
+			view->setCrossAxisAlignment(
+				axis == components::Layout::Axis::Vertical
+					? components::Layout::CrossAxisAlignment::Start
+					: components::Layout::CrossAxisAlignment::Center);
+			view->setPadding(0.0f);
+			view->setSpacing(0.0f);
+			return view;
+		}
+	}	 // namespace
+
 	List::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 						   ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<List>(componentRegistry, entityRegistry)
@@ -58,7 +115,7 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Start;
 		_config.padding = 0.0f;
 		_config.spacing = 0.0f;
-		_config.setFixedWidth(360.0f);
+		_config.setFixedWidth(ListWidth);
 	}
 
 	List::Builder &List::Builder::withPose(const utility::graphic::PoseF &pose)
@@ -94,6 +151,21 @@ namespace guillaume::entities
 			parent);
 	}
 
+	List::Item List::subheader(const std::string &title)
+	{
+		Item item;
+		item.kind	  = ItemKind::Subheader;
+		item.headline = title;
+		return item;
+	}
+
+	List::Item List::divider(void)
+	{
+		Item item;
+		item.kind = ItemKind::Divider;
+		return item;
+	}
+
 	List::List(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::vector<Item> &items)
 		: SurfaceBase<>(registry, config)
@@ -109,17 +181,10 @@ namespace guillaume::entities
 	{
 	}
 
-	float List::getVariantHeight(void) const
+	float List::getListWidth(void) const
 	{
-		switch (_variant) {
-			case Variant::TwoLine:
-				return 64.0f;
-			case Variant::ThreeLine:
-				return 88.0f;
-			case Variant::SingleLine:
-			default:
-				return 48.0f;
-		}
+		const auto &config = getSurfaceConfig();
+		return config.hasFixedWidth ? config.fixedWidth : ListWidth;
 	}
 
 	void List::applyVariant(void)
@@ -132,84 +197,252 @@ namespace guillaume::entities
 			components::Layout::CrossAxisAlignment::Start;
 		config.padding		= 0.0f;
 		config.spacing		= 0.0f;
-		config.borderRadius = 0.0f;
+		config.borderRadius = getShapeRadius(theme::ShapeRole::None);
 
 		if (!config.hasFixedWidth) {
 			config.hasFixedWidth = true;
-			config.fixedWidth	 = 360.0f;
+			config.fixedWidth	 = ListWidth;
 		}
 
 		setSurfaceConfig(config);
 		setColor(schemeColor(SchemeColorRole::Surface));
 	}
 
-	std::shared_ptr<View> List::buildRow(const Item &item)
+	List::Row List::buildRow(const Item &item, std::vector<std::size_t> path,
+							 float inset)
 	{
-		const float rowHeight = getVariantHeight();
+		auto &registry = this->getComponentRegistry();
+		Row row;
 
-		View::Builder builder(this->getComponentRegistry(), *this);
-		View::Director director;
-
-		auto row = director.makeDefaultView(builder, this->shared_from_this(),
-											utility::graphic::PoseF(), {});
-
-		if (row == nullptr) {
-			return nullptr;
+		if (item.kind == ItemKind::Subheader) {
+			auto header = buildText(registry, *this, this->shared_from_this(),
+									item.headline, theme::TypeRole::TitleSmall,
+									schemeColor(SchemeColorRole::OnSurfaceVariant));
+			if (header != nullptr) {
+				registry.addComponent<components::Accessibility>(
+					header->getIdentifier());
+				registry
+					.getComponent<components::Accessibility>(
+						header->getIdentifier())
+					.setRole(components::AccessibilityRole::Header)
+					.setLabel(item.headline)
+					.setFocusable(false);
+			}
+			row.entity = header;
+			return row;
 		}
 
-		row->setColor(transparentColor());
-		row->setAxis(components::Layout::Axis::Horizontal);
-		row->setCrossAxisAlignment(
-			components::Layout::CrossAxisAlignment::Center);
-		row->setSpacing(16.0f);
-		row->setPadding(16.0f);
-		row->setFixedHeight(rowHeight);
+		if (item.kind == ItemKind::Divider) {
+			Divider::Builder builder(registry, *this);
+			Divider::Director director;
+			row.entity = director.makeDivider(builder, this->shared_from_this(),
+											  getListWidth(),
+											  Divider::Variant::FullWidth);
+			return row;
+		}
 
-		std::vector<std::shared_ptr<ecs::Entity>> children;
+		row.view   = makeView(registry, *this, this->shared_from_this(),
+							  components::Layout::Axis::Horizontal);
+		row.entity = row.view;
+		row.view->setPadding(RowPadding);
+		row.view->setSpacing(RowSpacing);
+		row.view->setFixedWidth(getListWidth());
 
-		if (!item.leadingIcon.empty()) {
-			auto icon = buildIcon(
-				this->getComponentRegistry(), *this, row, item.leadingIcon,
-				24.0f, schemeColor(SchemeColorRole::OnSurfaceVariant));
+		auto lead = makeView(registry, *row.view, row.view,
+							 components::Layout::Axis::Horizontal);
+		lead->setSpacing(RowSpacing);
 
+		std::vector<std::shared_ptr<ecs::Entity>> leadChildren;
+
+		if (inset > 0.0f) {
+			auto spacer = makeView(registry, *lead, lead,
+								   components::Layout::Axis::Horizontal);
+			spacer->setFixedWidth(inset);
+			spacer->setFixedHeight(1.0f);
+			leadChildren.push_back(spacer);
+		}
+
+		if (!item.leadingImage.empty()) {
+			Image::Builder builder(registry, *lead);
+			Image::Director director;
+			auto image =
+				director.makeImage(builder, lead, item.leadingImage);
+			if (image != nullptr) {
+				leadChildren.push_back(image);
+			}
+		} else if (!item.leadingIcon.empty()) {
+			auto icon = buildIcon(registry, *lead, lead, item.leadingIcon,
+								  ListIconSize,
+								  schemeColor(SchemeColorRole::OnSurfaceVariant));
 			if (icon != nullptr) {
-				children.push_back(icon);
+				leadChildren.push_back(icon);
+				row.icons.push_back(icon);
 			}
 		}
+
+		row.content = makeView(registry, *lead, lead,
+							   components::Layout::Axis::Vertical);
+		std::vector<std::shared_ptr<ecs::Entity>> contentChildren;
 
 		if (!item.headline.empty()) {
-			auto headline = buildText(this->getComponentRegistry(), *this, row,
-									  item.headline, theme::TypeRole::BodyLarge,
-									  schemeColor(SchemeColorRole::OnSurface));
-
-			if (headline != nullptr) {
-				children.push_back(headline);
+			row.headline = buildText(registry, *row.content, row.content,
+									 item.headline, theme::TypeRole::BodyLarge,
+									 schemeColor(SchemeColorRole::OnSurface));
+			if (row.headline != nullptr) {
+				contentChildren.push_back(row.headline);
 			}
 		}
 
-		if (!item.supporting.empty()) {
-			auto supporting = buildText(
-				this->getComponentRegistry(), *this, row, item.supporting,
-				theme::TypeRole::BodyMedium, schemeColor(SchemeColorRole::OnSurfaceVariant));
-
-			if (supporting != nullptr) {
-				children.push_back(supporting);
+		if (!item.supporting.empty() && _variant != Variant::SingleLine) {
+			row.supporting = buildText(
+				registry, *row.content, row.content, item.supporting,
+				theme::TypeRole::BodyMedium,
+				schemeColor(SchemeColorRole::OnSurfaceVariant));
+			if (row.supporting != nullptr) {
+				contentChildren.push_back(row.supporting);
 			}
 		}
 
-		if (!item.trailingIcon.empty()) {
-			auto icon = buildIcon(
-				this->getComponentRegistry(), *this, row, item.trailingIcon,
-				24.0f, schemeColor(SchemeColorRole::OnSurfaceVariant));
+		row.content->setEntities(contentChildren);
+		leadChildren.push_back(row.content);
+		lead->setEntities(leadChildren);
 
+		std::vector<std::shared_ptr<ecs::Entity>> rowChildren { lead };
+
+		const bool accordion = !item.children.empty();
+		const std::string trailing = accordion
+			? std::string(item.expanded ? "expand_less" : "expand_more")
+			: item.trailingIcon;
+
+		if (!trailing.empty()) {
+			auto icon = buildIcon(registry, *row.view, row.view, trailing,
+								  ListIconSize,
+								  schemeColor(SchemeColorRole::OnSurfaceVariant));
 			if (icon != nullptr) {
-				children.push_back(icon);
+				rowChildren.push_back(icon);
+				row.icons.push_back(icon);
+				if (accordion) {
+					row.chevron = icon;
+				}
 			}
+			row.view->setMainAxisAlignment(
+				components::Layout::MainAxisAlignment::SpaceBetween);
 		}
 
-		row->setEntities(children);
+		row.view->setEntities(rowChildren);
+
+		const auto identifier = row.view->getIdentifier();
+		makeInteractive(
+			registry, identifier, components::AccessibilityRole::ListItem,
+			[this, path]() {
+				pressRow(path);
+			},
+			[this, path]() {
+				if (Row *target = findRow(path)) {
+					styleRow(*target);
+				}
+			});
+		auto &accessibility =
+			registry.getComponent<components::Accessibility>(identifier);
+		accessibility.setLabel(item.headline).setHint(item.supporting);
+		if (accordion) {
+			accessibility.setExpanded(item.expanded);
+		}
+		setEnabled(registry, identifier, !item.disabled);
+
+		for (std::size_t i = 0; i < item.children.size(); ++i) {
+			auto childPath = path;
+			childPath.push_back(i);
+			row.children.push_back(
+				buildRow(item.children[i], childPath, inset + AccordionInset));
+		}
 
 		return row;
+	}
+
+	void List::styleRow(Row &row)
+	{
+		if (row.view == nullptr) {
+			return;
+		}
+
+		auto &registry		  = this->getComponentRegistry();
+		const auto identifier = row.view->getIdentifier();
+		const bool enabled	  = isEnabled(registry, identifier);
+
+		auto headlineColor = enabled ? schemeColor(SchemeColorRole::OnSurface)
+									 : disabledContentColor();
+		auto supportingColor = enabled
+			? schemeColor(SchemeColorRole::OnSurfaceVariant)
+			: disabledContentColor();
+		auto iconColor = supportingColor;
+		auto rowColor  = stateLayerColor(registry, identifier, transparentColor(),
+										 schemeColor(SchemeColorRole::OnSurface));
+
+		if (row.hidden) {
+			headlineColor	= transparentColor();
+			supportingColor = transparentColor();
+			iconColor		= transparentColor();
+			rowColor		= transparentColor();
+		}
+
+		row.view->setColor(rowColor);
+		if (row.headline != nullptr) {
+			row.headline->setColor(headlineColor);
+		}
+		if (row.supporting != nullptr) {
+			row.supporting->setColor(supportingColor);
+		}
+		for (const auto &icon: row.icons) {
+			icon->setColor(iconColor);
+		}
+	}
+
+	List::Row *List::findRow(const std::vector<std::size_t> &path)
+	{
+		if (path.empty() || path[0] >= _rows.size()) {
+			return nullptr;
+		}
+		Row *row = &_rows[path[0]];
+		for (std::size_t i = 1; i < path.size(); ++i) {
+			if (path[i] >= row->children.size()) {
+				return nullptr;
+			}
+			row = &row->children[path[i]];
+		}
+		return row;
+	}
+
+	List::Item *List::findItem(const std::vector<std::size_t> &path)
+	{
+		if (path.empty() || path[0] >= _items.size()) {
+			return nullptr;
+		}
+		Item *item = &_items[path[0]];
+		for (std::size_t i = 1; i < path.size(); ++i) {
+			if (path[i] >= item->children.size()) {
+				return nullptr;
+			}
+			item = &item->children[path[i]];
+		}
+		return item;
+	}
+
+	void List::pressRow(const std::vector<std::size_t> &path)
+	{
+		Item *item = findItem(path);
+		Row *row   = findRow(path);
+		if (item == nullptr || row == nullptr || row->hidden) {
+			return;
+		}
+
+		if (!item->children.empty() && path.size() == 1) {
+			setExpanded(path[0], !item->expanded);
+		}
+
+		if (item->onPress) {
+			item->onPress();
+		}
 	}
 
 	void List::buildItems(void)
@@ -217,12 +450,8 @@ namespace guillaume::entities
 		if (_rowsDirty) {
 			_rows.clear();
 
-			for (const auto &item: _items) {
-				auto row = buildRow(item);
-
-				if (row != nullptr) {
-					_rows.push_back(row);
-				}
+			for (std::size_t i = 0; i < _items.size(); ++i) {
+				_rows.push_back(buildRow(_items[i], { i }, 0.0f));
 			}
 
 			_rowsDirty = false;
@@ -231,8 +460,26 @@ namespace guillaume::entities
 		std::vector<std::shared_ptr<ecs::Entity>> children;
 		children.reserve(_rows.size());
 
-		for (const auto &row: _rows) {
-			children.push_back(row);
+		for (std::size_t i = 0; i < _rows.size(); ++i) {
+			auto &row = _rows[i];
+			if (row.entity != nullptr) {
+				children.push_back(row.entity);
+			}
+			styleRow(row);
+
+			const bool expanded = _items[i].expanded;
+			for (auto &child: row.children) {
+				child.hidden = !expanded;
+				if (child.view != nullptr) {
+					setEnabled(this->getComponentRegistry(),
+							   child.view->getIdentifier(),
+							   expanded && !_items[i].children.empty());
+				}
+				styleRow(child);
+				if (expanded && child.entity != nullptr) {
+					children.push_back(child.entity);
+				}
+			}
 		}
 
 		setChildren(children);
@@ -265,10 +512,75 @@ namespace guillaume::entities
 
 	ecs::Entity::Identifier List::getItemIdentifier(std::size_t index) const
 	{
-		if (index >= _rows.size() || _rows[index] == nullptr) {
+		if (index >= _rows.size() || _rows[index].entity == nullptr) {
 			return ecs::Entity::InvalidIdentifier;
 		}
-		return _rows[index]->getIdentifier();
+		return _rows[index].entity->getIdentifier();
+	}
+
+	ecs::Entity::Identifier
+		List::getChildIdentifier(std::size_t index,
+								 std::size_t childIndex) const
+	{
+		if (index >= _rows.size() || childIndex >= _rows[index].children.size()
+			|| _rows[index].children[childIndex].entity == nullptr) {
+			return ecs::Entity::InvalidIdentifier;
+		}
+		return _rows[index].children[childIndex].entity->getIdentifier();
+	}
+
+	ecs::Entity::Identifier List::getContentIdentifier(std::size_t index) const
+	{
+		if (index >= _rows.size() || _rows[index].content == nullptr) {
+			return ecs::Entity::InvalidIdentifier;
+		}
+		return _rows[index].content->getIdentifier();
+	}
+
+	List &List::setItemDisabled(std::size_t index, bool disabled)
+	{
+		if (index >= _items.size()) {
+			return *this;
+		}
+		_items[index].disabled = disabled;
+		if (index < _rows.size() && _rows[index].view != nullptr) {
+			setEnabled(this->getComponentRegistry(),
+					   _rows[index].view->getIdentifier(), !disabled);
+			styleRow(_rows[index]);
+		}
+		return *this;
+	}
+
+	List &List::setExpanded(std::size_t index, bool expanded)
+	{
+		if (index >= _items.size() || _items[index].children.empty()) {
+			return *this;
+		}
+		_items[index].expanded = expanded;
+
+		if (index < _rows.size()) {
+			auto &row = _rows[index];
+			if (row.chevron != nullptr) {
+				row.chevron->setGlyphName(expanded ? "expand_less"
+												   : "expand_more");
+			}
+			if (row.view != nullptr) {
+				this->getComponentRegistry()
+					.getComponent<components::Accessibility>(
+						row.view->getIdentifier())
+					.setExpanded(expanded);
+			}
+		}
+
+		if (!_rowsDirty) {
+			buildItems();
+		}
+		return *this;
+	}
+
+	bool List::isExpanded(std::size_t index) const
+	{
+		return index < _items.size() && _items[index].expanded;
 	}
 
 	void List::initialize(void)

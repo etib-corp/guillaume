@@ -22,6 +22,24 @@
 
 #include "entities/test_dialog.hpp"
 
+#include <guillaume/components/scrim.hpp>
+
+#include <guillaume/components/layout.hpp>
+
+#include <guillaume/components/animation.hpp>
+
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -152,6 +170,106 @@ namespace guillaume::entities::tests
 		ASSERT_NE(dialog, nullptr);
 		EXPECT_EQ(dialog->getParent(), parent);
 		EXPECT_EQ(dialog->getVariant(), Dialog::Variant::Simple);
+	}
+
+	TEST_F(TestDialog, ActionsSitInARightAlignedRow)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		Dialog::Builder builder(registry, entityRegistry);
+		int confirmed = 0;
+		auto dialog = builder.withTitle("Title")
+						  .withMessage("Message")
+						  .addAction("Cancel")
+						  .addAction("OK",
+									 [&confirmed]() {
+										 ++confirmed;
+									 })
+						  .registerEntity(nullptr);
+		dialog->initialize();
+		dialog->update();
+
+		ASSERT_EQ(dialog->getActionCount(), 2U);
+		const auto &row = registry.getComponent<components::Layout>(
+			dialog->getActionRowIdentifier());
+		EXPECT_EQ(row.getAxis(), components::Layout::Axis::Horizontal);
+		EXPECT_EQ(row.getMainAxisAlignment(),
+				  components::Layout::MainAxisAlignment::End);
+		EXPECT_EQ(row.getChildren().size(), 2U);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				dialog->getActionIdentifier(1))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(confirmed, 1);
+	}
+
+	TEST_F(TestDialog, HeroIconIsSecondaryAndCentered)
+	{
+		ecs::ComponentRegistry registry;
+		auto dialog = makeDialog(registry, Dialog::Variant::Confirmation);
+		dialog->initialize();
+		dialog->update();
+
+		ASSERT_NE(dialog->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(registry
+					  .getComponent<components::Color>(
+						  dialog->getIconIdentifier())
+					  .getColor(),
+				  getActiveScheme().getColor(SchemeColorRole::Secondary).getColor());
+		EXPECT_EQ(
+			registry.getComponent<components::Layout>(dialog->getIdentifier())
+				.getCrossAxisAlignment(),
+			components::Layout::CrossAxisAlignment::Center);
+	}
+
+	TEST_F(TestDialog, BackdropFadesInWhenShown)
+	{
+		ecs::ComponentRegistry registry;
+		auto dialog = makeDialog(registry);
+		dialog->initialize();
+
+		const auto backdrop = dialog->getBackdropIdentifier();
+		ASSERT_NE(backdrop, ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(registry.getComponent<components::Scrim>(backdrop)
+					  .getColor()
+					  .getAlpha(),
+				  0);
+
+		dialog->show();
+		auto &animation = registry.getComponent<components::Animation>(backdrop);
+		EXPECT_TRUE(animation.isPlaying());
+		animation.advance(1.0f);
+		EXPECT_EQ(registry.getComponent<components::Scrim>(backdrop).getColor(),
+				  getActiveScheme().getColor(SchemeColorRole::Backdrop).getColor());
+	}
+
+	TEST_F(TestDialog, DismissCallsTheHandlerAndSemantics)
+	{
+		ecs::ComponentRegistry registry;
+		auto dialog = makeDialog(registry);
+		dialog->initialize();
+
+		bool dismissed = false;
+		dialog->setOnDismiss([&dismissed]() {
+			dismissed = true;
+		});
+		dialog->show();
+		dialog->dismiss();
+		EXPECT_TRUE(dismissed);
+		EXPECT_FALSE(dialog->isVisible());
+
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  dialog->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::Dialog);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(dialog->getIdentifier())
+				.getColor(),
+			getElevatedSurfaceColor(theme::ElevationLevel::Level3));
 	}
 
 }	 // namespace guillaume::entities::tests

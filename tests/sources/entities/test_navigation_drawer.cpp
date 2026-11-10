@@ -22,6 +22,24 @@
 
 #include "entities/test_navigation_drawer.hpp"
 
+#include <guillaume/components/scrim.hpp>
+
+#include <guillaume/components/layout.hpp>
+
+#include <guillaume/components/animation.hpp>
+
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -162,6 +180,119 @@ namespace guillaume::entities::tests
 		ASSERT_NE(drawer, nullptr);
 		EXPECT_EQ(drawer->getParent(), parent);
 		EXPECT_EQ(drawer->getDestinationCount(), 3U);
+	}
+
+	TEST_F(TestNavigationDrawer, ActiveDestinationShowsThePill)
+	{
+		ecs::ComponentRegistry registry;
+		auto drawer = makeNavigationDrawer(registry, makeDestinations(2));
+		drawer->initialize();
+		drawer->update();
+
+		EXPECT_EQ(registry
+					  .getComponent<components::Color>(
+						  drawer->getDestinationIdentifier(0))
+					  .getColor(),
+				  getActiveScheme()
+					  .getColor(SchemeColorRole::SecondaryContainer)
+					  .getColor());
+		EXPECT_EQ(registry
+					  .getComponent<components::Color>(
+						  drawer->getDestinationIdentifier(1))
+					  .getColor()
+					  .getAlpha(),
+				  0);
+	}
+
+	TEST_F(TestNavigationDrawer, PressSelectsAndDisabledIsInert)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		NavigationDrawer::Builder builder(registry, entityRegistry);
+		std::size_t reported = 99;
+		auto drawer = builder.addSection("Mail")
+						  .addDestination("inbox", "Inbox", "24")
+						  .addDestination("send", "Sent")
+						  .addDivider()
+						  .addDestination("delete", "Trash", "", true)
+						  .withOnIndexChange([&reported](std::size_t index) {
+							  reported = index;
+						  })
+						  .registerEntity(nullptr);
+		drawer->initialize();
+		drawer->update();
+
+		EXPECT_EQ(drawer->getDestinationCount(), 3U);
+		EXPECT_EQ(drawer->getSectionCount(), 1U);
+		EXPECT_EQ(drawer->getDividerCount(), 1U);
+		EXPECT_NE(drawer->getRightIdentifier(0), ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  drawer->getSectionIdentifier(0))
+					  .getRole(),
+				  components::AccessibilityRole::Header);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				drawer->getDestinationIdentifier(1))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(drawer->getSelectedIndex(), 1U);
+		EXPECT_EQ(reported, 1U);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				drawer->getDestinationIdentifier(2))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(drawer->getSelectedIndex(), 1U);
+		EXPECT_FALSE(registry
+						 .getComponent<components::StyleState>(
+							 drawer->getDestinationIdentifier(2))
+						 .isEnabled());
+	}
+
+	TEST_F(TestNavigationDrawer, ModalDrawerShowsTheBackdrop)
+	{
+		ecs::ComponentRegistry registry;
+		auto drawer = makeNavigationDrawer(registry, makeDestinations(2),
+										   NavigationDrawer::Variant::Modal);
+		drawer->initialize();
+		drawer->show();
+
+		const auto backdrop = drawer->getBackdropIdentifier();
+		ASSERT_NE(backdrop, ecs::Entity::InvalidIdentifier);
+		registry.getComponent<components::Animation>(backdrop).advance(1.0f);
+		EXPECT_EQ(registry.getComponent<components::Scrim>(backdrop)
+					  .getColor(),
+				  getActiveScheme().getColor(SchemeColorRole::Backdrop).getColor());
+
+		drawer->hide();
+		EXPECT_EQ(registry.getComponent<components::Scrim>(backdrop)
+					  .getColor()
+					  .getAlpha(),
+				  0);
+	}
+
+	TEST_F(TestNavigationDrawer, CollapsedVariantIsARail)
+	{
+		ecs::ComponentRegistry registry;
+		auto drawer = makeNavigationDrawer(registry, makeDestinations(2),
+										   NavigationDrawer::Variant::Collapsed);
+		drawer->initialize();
+		drawer->update();
+
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(drawer->getIdentifier())
+				.getWidth(),
+			80.0f);
+		EXPECT_EQ(registry
+					  .getComponent<components::Layout>(
+						  drawer->getDestinationIdentifier(0))
+					  .getAxis(),
+				  components::Layout::Axis::Vertical);
 	}
 
 }	 // namespace guillaume::entities::tests

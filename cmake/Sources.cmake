@@ -70,6 +70,7 @@ set(GUILLAUME_SOURCES
     sources/entities/button_base.cpp
     sources/entities/builder_base.cpp
     sources/entities/app_bar.cpp
+    sources/entities/backdrop.cpp
     sources/entities/badge.cpp
     sources/entities/card.cpp
     sources/entities/checkbox.cpp
