@@ -81,7 +81,9 @@ set(GUILLAUME_SOURCES
     sources/entities/loading_indicator.cpp
     sources/entities/menu.cpp
     sources/entities/navigation_bar.cpp
+    sources/entities/navigation_bar_destination.cpp
     sources/entities/navigation_drawer.cpp
+    sources/entities/navigation_drawer_destination.cpp
     sources/entities/progress_indicator.cpp
     sources/entities/search.cpp
     sources/entities/segmented_button.cpp
