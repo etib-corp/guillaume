@@ -366,6 +366,19 @@ namespace guillaume::entities
 		void buildContent(void);
 
 		/**
+		 * @brief Create the icons, the editable text and the placeholder that
+		 * do not exist yet.
+		 */
+		void createChildren(void);
+
+		/**
+		 * @brief Show or hide the placeholder, clear, loading and trailing
+		 * children through their colors, depending on the query and the
+		 * loading state.
+		 */
+		void applyContentColors(void);
+
+		/**
 		 * @brief Build a pressable icon child.
 		 * @param glyph Icon glyph.
 		 * @param label Accessibility label.
