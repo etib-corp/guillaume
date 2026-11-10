@@ -115,6 +115,8 @@ namespace guillaume
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::StyleState>());
 		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::Overlay>(_eventBus, _engine));
+		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::FocusRingRender>(_engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::Animation>(_engine));
