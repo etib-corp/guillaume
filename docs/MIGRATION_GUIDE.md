@@ -3,6 +3,56 @@
 This guide documents breaking API changes introduced for v1.0 and how to
 update existing code.
 
+## `Application` takes its engine in the constructor
+
+**Before:** `Application<MyScene, MyScene> app(resources);` followed by
+`app.setEngine(std::move(engine));`. The default scene had to be repeated in
+the scene list, and calling `run()` before `setEngine()` dereferenced a null
+engine.
+
+**After:** `Application<MyScene> app(resources, std::move(engine));`. The
+first template argument is the default scene and every scene is listed once
+(`Application<Home, Settings>`); a repeated scene type no longer compiles. A
+null engine throws `std::invalid_argument`. `setEngine()` is gone.
+
+**Update:** Pass the engine to the constructor and remove the duplicated
+default scene from the template arguments.
+
+`Application::pollEvents()`, `update()`, `clear()` and `present()` were removed:
+they only forwarded to the engine and were not used by `run()`. Call
+`routine()` to run one frame.
+
+## Systems take `utility::Engine &`
+
+**Before:** engine-backed systems were constructed from a
+`std::unique_ptr<utility::Engine> &`.
+
+**After:** they take a `utility::Engine &`. `SceneManager` also takes the engine
+by reference in its constructor; `SceneManager::setEngine()` is gone.
+
+**Update:** Pass `*engine` when constructing a system yourself.
+
+## `SceneManager::switchToScene` runs the scene lifecycle
+
+**Before:** `switchToScene<T>()` only changed the active scene type.
+
+**After:** it calls `onExit()` on the current scene and `onEnter()` on the new
+one, like a transition requested with `Scene::goToScene<T>()`.
+
+## `application.hpp` no longer includes every system
+
+Core systems are registered by `systems::registerCoreSystems()`
+(`guillaume/systems/core_systems.hpp`). Include the header of any system you
+reference directly.
+
+## Theme accessors read the active theme
+
+`getShapeRadius()`, `getStateLayerAlpha()`, `getElevationToken()`,
+`getMotionDuration()`, `getActiveTypescale()` and `getActiveScheme()` now read
+`getActiveTheme()` instead of `defaultTheme`. Behavior is unchanged until you
+call `setActiveTheme()`. `getActiveColor(role)` replaces the
+`getActiveScheme().getColor(role).getColor()` chain.
+
 ## `EntityRegistry::getEntity` now returns `nullptr` instead of throwing
 
 **Before (v0.x):** `getEntity<EntityType>(id)` threw `std::runtime_error` when

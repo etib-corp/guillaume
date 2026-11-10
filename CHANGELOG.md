@@ -59,6 +59,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   blocks; the default Material 3 theme data moved to
   `sources/theme/default_theme.cpp`.
 - Added `getActiveColor(role)`; removed the unused `SystemNotFoundException`.
+- **Breaking:** `Application` takes the engine in its constructor and
+  `setEngine()` is removed; the default scene is the first template argument
+  and is no longer repeated (`Application<MyScene>`).
+- **Breaking:** removed `Application::pollEvents/update/clear/present`;
+  engine-backed systems and `SceneManager` take `utility::Engine &`.
+- `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
+- Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 - Moved include paths onto the `guillaume` target (target-scoped includes).
 - `Entity::getNextIdentifier` is now atomic (thread-safe identifier generation).
 - `EventBus::subscribe` now takes its listener by value.

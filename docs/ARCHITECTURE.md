@@ -49,6 +49,7 @@ sequenceDiagram
         App->>Engine: clear()
         App->>Engine: update()
         App->>SR: run phases (Event, Measure, Layout, Render)
+        App->>SM: reset component changed flags
         App->>SM: processSceneTransition()
         App->>Engine: present()
     end
@@ -66,6 +67,32 @@ flowchart LR
     C --> D[Set active scene type]
     D --> F[Call onEnter on new scene]
 ```
+
+## Patterns Used
+
+| Pattern | Where | Role |
+|---|---|---|
+| Facade | `Application` | One entry point over engine, scenes, events and systems. |
+| Bridge | `utility::Engine` | Platform rendering and input behind an interface the consumer implements. |
+| State | `Scene` + `SceneManager` | One active scene; every switch goes through `onExit()` / `onEnter()`. |
+| Observer | `event::EventBus`, `event::EventSubscriber` | Engine events fan out to subscribed systems. |
+| Strategy | `ecs::LevelOrderTraveler`, `ecs::ReverseLevelOrderTraveler` | Each phase picks its tree traversal order. |
+| Template Method | `ecs::System::routine` (`prepare` / `update` / `cleanup`), `EntityBuilderBase::buildEntity` | Fixed skeleton, per-type hooks. |
+| Builder | `entities::X::Builder` | Fluent configuration of an entity before it is registered. |
+
+## Where Things Are Registered
+
+- **Core systems** are listed once, in `sources/systems/core_systems.cpp`
+  (`systems::registerCoreSystems`). `Application` only calls it.
+- **Sources** are listed explicitly in `cmake/Sources.cmake` and tests in
+  `tests/CMakeLists.txt`; there is no `file(GLOB)`.
+- **Style lookups** for the button family live in
+  `entities/button_style.hpp` and `entities/fab_style.hpp` as one table row per
+  size or variant.
+- **Theme tokens** are read through the free accessors in `theme.hpp`
+  (`getActiveColor`, `getShapeRadius`, …), which resolve against
+  `getActiveTheme()`. Replace it with `setActiveTheme()` before building a
+  scene.
 
 ## Design Goal
 

@@ -7,8 +7,8 @@ model, scene management, event dispatching, and storage helpers.
 ## Key Concepts
 
 - **Application** — owns the engine, scene manager, event bus, and system
-  registry; drives the main loop (`pollEvents` → `update` → `clear` →
-  `present`).
+  registry; drives the main loop (see the
+  [frame lifecycle](docs/ARCHITECTURE.md#frame-lifecycle)).
 - **ECS** — entities, components, and systems compose the UI. Systems run in
   ordered phases (Event, Measure, Layout, Render) and traverse the entity
   hierarchy.
@@ -41,8 +41,8 @@ class MyScene : public guillaume::Scene {
 
 int main() {
     auto resources = std::make_shared<utility::RessourceProvider>(...);
-    guillaume::Application<MyScene> app(resources);
-    app.setEngine(std::make_unique<MyEngine>());
+    guillaume::Application<MyScene> app(resources,
+                                        std::make_unique<MyEngine>());
     return app.run();
 }
 ```
@@ -98,6 +98,7 @@ published to [GitHub Pages](https://etib-corp.github.io/guillaume).
 - [Architecture](docs/ARCHITECTURE.md)
 - [How Guillaume Works](docs/HOW_GUILLAUME_WORKS.md)
 - [Getting Started](docs/GETTING_STARTED.md)
+- [Theming](docs/THEMING.md)
 - [Threading Model](docs/THREADING_MODEL.md)
 - [Versioning & Support](docs/VERSIONING.md)
 - [Engine Coupling](docs/ENGINE_COUPLING.md)
