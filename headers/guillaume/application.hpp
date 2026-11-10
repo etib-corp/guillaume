@@ -61,14 +61,17 @@ namespace guillaume
 	/**
 	 * @brief Application base class.
 	 *
-	 * @tparam DefaultSceneType The default scene type to activate when the
-	 * application starts. Must be one of the registered SceneTypes.
-	 * @tparam SceneTypes Variadic template parameter pack for scene types used
-	 * in the application. Each scene type must inherit from the Scene class.
+	 * Owns the engine, the scene manager, the event bus and the system
+	 * registry, and drives the frame loop.
+	 *
+	 * @tparam DefaultSceneType The scene activated when the application
+	 * starts.
+	 * @tparam SceneTypes The other scenes of the application. Every scene type
+	 * must inherit from Scene and appear only once.
 	 *
 	 * @code
-	 * class MyEngine : public utility::Engine { ... };
-	 * Application<DefaultScene, Scene1, Scene2> app;
+	 * Application<HomeScene, SettingsScene> app(
+	 *     resources, std::make_unique<MyEngine>());
 	 * return app.run();
 	 * @endcode
 	 *
@@ -77,60 +80,27 @@ namespace guillaume
 	 * @see utility::Engine
 	 */
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	class Application:
 		protected utility::logging::Loggable<
 			Application<DefaultSceneType, SceneTypes...>,
 			utility::logging::DefaultLogger>
 	{
-		private:
-		std::unique_ptr<utility::Engine>
-			_engine;	///< Unique pointer to the application engine
-		std::unique_ptr<SceneManager<DefaultSceneType, SceneTypes...>>
-			_sceneManager;			  ///< Manager for application scenes
-		event::EventBus _eventBus;	  ///< Event bus dispatching to systems
-		event::EventSubscriber<utility::event::QuitEvent>
-			_quitEventSubscriber;				///< Subscriber for quit events
-		ecs::SystemRegistry _systemRegistry;	///< Shared system registry
-		ecs::SystemPhaseList _systemPhases;		///< Ordered list of phases and
-												///< traversal strategies
-		///< OS-level interactions
-		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   ///< Shared
-								   ///< ressource
-								   ///< provider
-
-		/**
-		 * @brief Run one system update pass for the active scene.
-		 * @param phaseDefinition The system phase definition to run.
-		 */
-		template<typename PhaseType> void runPhase(PhaseType &phaseDefinition);
-
-		/**
-		 * @brief Register core systems used by the application.
-		 */
-		void registerCoreSystems(void);
-
-		protected:
-		/**
-		 * @brief Get a shared pointer to the resource provider.
-		 * @return Shared pointer to the resource provider.
-		 */
-		std::shared_ptr<utility::RessourceProvider> getRessourceProvider(void)
-		{
-			return _ressourceProvider;
-		}
-
 		public:
 		/**
-		 * @brief Construct an application with a shared resource provider.
-		 * @param ressourceProvider Shared pointer to the resource provider to
-		 * be used by the application. This allows for sharing resources across
-		 * different parts of the application, such as systems and scenes, while
-		 * maintaining a single source of truth for resource management.
+		 * @brief Construct an application.
+		 *
+		 * Registers the core systems, creates the scenes and enters the
+		 * default scene.
+		 * @param ressourceProvider Shared pointer to the resource provider
+		 * used by the systems and the scenes.
+		 * @param engine The engine that renders and polls events. The
+		 * application takes ownership.
+		 * @throws std::invalid_argument If the engine is null.
 		 */
 		Application(
-			std::shared_ptr<utility::RessourceProvider> ressourceProvider);
+			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
+			std::unique_ptr<utility::Engine> engine);
 
 		/**
 		 * @brief Default destructor
@@ -138,35 +108,10 @@ namespace guillaume
 		virtual ~Application(void);
 
 		/**
-		 * @brief Set the engine for the application.
-		 * @param engine The engine to be used by the application.
-		 */
-		void setEngine(std::unique_ptr<utility::Engine> engine);
-
-		/**
-		 * @brief Run one system update pass for the active scene.
+		 * @brief Run one frame: poll events, clear, update the engine, run the
+		 * system phases, process a pending scene transition and present.
 		 */
 		void routine(void);
-
-		/**
-		 * @brief Poll events from the engine.
-		 */
-		void pollEvents(void);
-
-		/**
-		 * @brief Update the engine state.
-		 */
-		void update(void);
-
-		/**
-		 * @brief Clear the engine rendering target.
-		 */
-		void clear(void);
-
-		/**
-		 * @brief Present the rendered frame.
-		 */
-		void present(void);
 
 		/**
 		 * @brief Check if the application should quit (using engine).
@@ -179,6 +124,45 @@ namespace guillaume
 		 * @return Exit code.
 		 */
 		int run(void);
+
+		protected:
+		/**
+		 * @brief Get a shared pointer to the resource provider.
+		 * @return Shared pointer to the resource provider.
+		 */
+		std::shared_ptr<utility::RessourceProvider> getRessourceProvider(void)
+		{
+			return _ressourceProvider;
+		}
+
+		private:
+		/**
+		 * @brief Run one system update pass for the active scene.
+		 * @param phaseDefinition The system phase definition to run.
+		 */
+		template<typename PhaseType> void runPhase(PhaseType &phaseDefinition);
+
+		/**
+		 * @brief Reject a null engine before any member depends on it.
+		 * @param engine The engine handed to the constructor.
+		 * @return The same engine.
+		 * @throws std::invalid_argument If the engine is null.
+		 */
+		static std::unique_ptr<utility::Engine>
+			requireEngine(std::unique_ptr<utility::Engine> engine);
+
+		std::unique_ptr<utility::Engine>
+			_engine;	///< Unique pointer to the application engine
+		std::unique_ptr<SceneManager<DefaultSceneType, SceneTypes...>>
+			_sceneManager;			  ///< Manager for application scenes
+		event::EventBus _eventBus;	  ///< Event bus dispatching to systems
+		event::EventSubscriber<utility::event::QuitEvent>
+			_quitEventSubscriber;				///< Subscriber for quit events
+		ecs::SystemRegistry _systemRegistry;	///< Shared system registry
+		ecs::SystemPhaseList _systemPhases;		///< Ordered list of phases and
+												///< traversal strategies
+		std::shared_ptr<utility::RessourceProvider>
+			_ressourceProvider;	   ///< Shared ressource provider
 	};
 
 }	 // namespace guillaume

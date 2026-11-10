@@ -50,8 +50,7 @@ namespace guillaume::systems
 								 components::Color, components::Ellipse>
 	{
 		private:
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< utility::Engine instance
+		utility::Engine &_engine;	 ///< utility::Engine instance
 
 		private:
 		/**
@@ -85,7 +84,7 @@ namespace guillaume::systems
 		 * @brief Construct an ellipse rendering system.
 		 * @param engine The engine used to draw ellipses.
 		 */
-		EllipseRender(std::unique_ptr<utility::Engine> &engine);
+		EllipseRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

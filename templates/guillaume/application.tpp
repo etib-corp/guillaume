@@ -29,7 +29,7 @@ namespace guillaume
 {
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	template<typename PhaseType>
 	void Application<DefaultSceneType, SceneTypes...>::runPhase(
 		PhaseType &phaseDefinition)
@@ -46,53 +46,51 @@ namespace guillaume
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::registerCoreSystems()
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
+	std::unique_ptr<utility::Engine>
+		Application<DefaultSceneType, SceneTypes...>::requireEngine(
+			std::unique_ptr<utility::Engine> engine)
 	{
-		systems::registerCoreSystems(_systemRegistry, _eventBus, _engine,
-									 _ressourceProvider);
+		if (engine == nullptr) {
+			throw std::invalid_argument(
+				"Application requires a non-null engine");
+		}
+		return engine;
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	Application<DefaultSceneType, SceneTypes...>::Application(
-		std::shared_ptr<utility::RessourceProvider> ressourceProvider)
-		: _ressourceProvider(std::move(ressourceProvider))
-		, _engine(nullptr)
+		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
+		std::unique_ptr<utility::Engine> engine)
+		: _engine(requireEngine(std::move(engine)))
 		, _sceneManager(nullptr)
 		, _eventBus()
 		, _quitEventSubscriber(_eventBus)
 		, _systemRegistry()
 		, _systemPhases()
+		, _ressourceProvider(std::move(ressourceProvider))
 	{
-		registerCoreSystems();
+		systems::registerCoreSystems(_systemRegistry, _eventBus, *_engine,
+									 _ressourceProvider);
+		_engine->setEventCallback(
+			[this](std::shared_ptr<utility::event::Event> &event) {
+				this->_eventBus.publish(std::move(event));
+			});
 		_sceneManager =
 			std::make_unique<SceneManager<DefaultSceneType, SceneTypes...>>(
-				_ressourceProvider);
+				_ressourceProvider, *_engine);
+		_sceneManager->enterActiveScene();
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	Application<DefaultSceneType, SceneTypes...>::~Application(void)
 	{
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::setEngine(
-		std::unique_ptr<utility::Engine> engine)
-	{
-		_engine = std::move(engine);
-		_engine->setEventCallback(
-			[this](std::shared_ptr<utility::event::Event> &event) {
-				this->_eventBus.publish(std::move(event));
-			});
-		_sceneManager->setEngine(_engine.get());
-		_sceneManager->enterActiveScene();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	void Application<DefaultSceneType, SceneTypes...>::routine(void)
 	{
 		// Entities are placed once per scene entry (see
@@ -119,35 +117,7 @@ namespace guillaume
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::pollEvents(void)
-	{
-		_engine->pollEvents();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::update(void)
-	{
-		_engine->update();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::clear(void)
-	{
-		_engine->clear();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::present(void)
-	{
-		_engine->present();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	bool Application<DefaultSceneType, SceneTypes...>::shouldQuit(void)
 	{
 		if (_quitEventSubscriber.hasPendingEvents()) {
@@ -158,7 +128,7 @@ namespace guillaume
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	int Application<DefaultSceneType, SceneTypes...>::run(void)
 	{
 		this->getLogger().info() << "Entering main loop";

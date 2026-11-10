@@ -40,12 +40,12 @@ namespace guillaume::systems
 	 * @param systemRegistry Registry receiving the systems.
 	 * @param eventBus Event bus the input systems subscribe to.
 	 * @param engine Engine handle used by the measuring and rendering systems.
-	 * It is held by reference and may still be null at registration time.
+	 * It must outlive the registered systems.
 	 * @param ressourceProvider Provider used to load fonts, images and meshes.
 	 */
 	void registerCoreSystems(
 		ecs::SystemRegistry &systemRegistry, event::EventBus &eventBus,
-		std::unique_ptr<utility::Engine> &engine,
+		utility::Engine &engine,
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider);
 
 }	 // namespace guillaume::systems

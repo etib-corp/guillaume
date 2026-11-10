@@ -63,8 +63,7 @@ namespace guillaume::systems
 		public event::EventManager<utility::event::KeyboardEvent>
 	{
 		private:
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< utility::Engine instance
+		utility::Engine &_engine;	 ///< utility::Engine instance
 		std::optional<ecs::Entity::Identifier>
 			_focusedEntity;	   ///< Currently focused entity identifier
 		std::optional<ecs::Entity::Identifier>
@@ -95,8 +94,7 @@ namespace guillaume::systems
 		 * @param eventBus The event bus for focus events.
 		 * @param engine Pointer to the engine for viewport input control.
 		 */
-		Focus(event::EventBus &eventBus,
-			  std::unique_ptr<utility::Engine> &engine);
+		Focus(event::EventBus &eventBus, utility::Engine &engine);
 
 		/**
 		 * @brief Set focus to a specific entity.

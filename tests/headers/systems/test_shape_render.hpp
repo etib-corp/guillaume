@@ -66,9 +66,9 @@ namespace guillaume::systems::tests
 			_engine = std::make_unique<guillaume::tests::EngineMock>();
 			_engineMock =
 				static_cast<guillaume::tests::EngineMock *>(_engine.get());
-			_ringSystem = std::make_unique<RingRender>(_engine);
-			_arcSystem	= std::make_unique<ArcRender>(_engine);
-			_lineSystem = std::make_unique<LineRender>(_engine);
+			_ringSystem = std::make_unique<RingRender>(*_engine);
+			_arcSystem	= std::make_unique<ArcRender>(*_engine);
+			_lineSystem = std::make_unique<LineRender>(*_engine);
 			_ringSystem->bindComponentRegistry(_componentRegistry);
 			_arcSystem->bindComponentRegistry(_componentRegistry);
 			_lineSystem->bindComponentRegistry(_componentRegistry);

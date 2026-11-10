@@ -55,7 +55,7 @@ namespace guillaume::systems::tests
 			_engine = std::make_unique<guillaume::tests::EngineMock>();
 			_engineMock =
 				static_cast<guillaume::tests::EngineMock *>(_engine.get());
-			_animationSystem = std::make_unique<Animation>(_engine);
+			_animationSystem = std::make_unique<Animation>(*_engine);
 			_animationSystem->bindComponentRegistry(_componentRegistry);
 		}
 

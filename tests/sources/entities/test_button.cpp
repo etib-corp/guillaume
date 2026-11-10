@@ -401,9 +401,9 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::RectangleRender rectangleRender(engine);
-		guillaume::systems::TextRender textRender(ressourceProvider, engine);
-		guillaume::systems::GlyphRender glyphRender(ressourceProvider, engine);
+		guillaume::systems::RectangleRender rectangleRender(*engine);
+		guillaume::systems::TextRender textRender(ressourceProvider, *engine);
+		guillaume::systems::GlyphRender glyphRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto button = std::make_shared<Button>(

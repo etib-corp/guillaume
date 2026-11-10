@@ -46,14 +46,14 @@ namespace guillaume::systems
 								 components::Scrim>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
+		utility::Engine &_engine;	 ///< utility::Engine.
 
 		public:
 		/**
 		 * @brief Construct a scrim rendering system.
 		 * @param engine The engine used to draw scrims.
 		 */
-		ScrimRender(std::unique_ptr<utility::Engine> &engine);
+		ScrimRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

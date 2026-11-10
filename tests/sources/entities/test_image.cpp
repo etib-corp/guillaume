@@ -129,7 +129,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::ImageRender imageRender(ressourceProvider, engine);
+		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "texture.png");
@@ -155,7 +155,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::ImageRender imageRender(ressourceProvider, engine);
+		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "missing.png");

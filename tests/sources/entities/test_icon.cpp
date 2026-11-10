@@ -92,9 +92,9 @@ namespace guillaume::entities::tests
 					std::make_shared<utility::RessourceProvider>(systemIo);
 				measureGlyph =
 					std::make_unique<guillaume::systems::MeasureGlyph>(
-						ressourceProvider, engine);
+						ressourceProvider, *engine);
 				glyphRender = std::make_unique<guillaume::systems::GlyphRender>(
-					ressourceProvider, engine);
+					ressourceProvider, *engine);
 
 				icon = std::make_shared<entities::Icon>(
 					componentRegistry, "home", 24.0f,

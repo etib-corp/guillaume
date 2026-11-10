@@ -64,7 +64,7 @@ namespace guillaume::systems
 {
 	void registerCoreSystems(
 		ecs::SystemRegistry &systemRegistry, event::EventBus &eventBus,
-		std::unique_ptr<utility::Engine> &engine,
+		utility::Engine &engine,
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider)
 	{
 		systemRegistry.registerNewSystem(

@@ -187,12 +187,27 @@ namespace guillaume
 	concept InheritFromScene = std::is_base_of_v<Scene, Type>;
 
 	/**
-	 * @brief Concept to ensure a type is present in a parameter pack.
-	 * @tparam Type The type to check.
-	 * @tparam Types The parameter pack to check against.
+	 * @brief True when no type appears twice in a parameter pack.
+	 * @tparam Types The parameter pack to check.
 	 */
-	template<typename Type, typename... Types>
-	concept IsOneOf = (std::is_same_v<Type, Types> || ...);
+	template<typename... Types> inline constexpr bool areDistinct = true;
+
+	/**
+	 * @brief Recursive case: the first type differs from every other one and
+	 * the remaining types are distinct.
+	 * @tparam First The type compared with the rest of the pack.
+	 * @tparam Rest The remaining types.
+	 */
+	template<typename First, typename... Rest>
+	inline constexpr bool areDistinct<First, Rest...> =
+		(!std::is_same_v<First, Rest> && ...) && areDistinct<Rest...>;
+
+	/**
+	 * @brief Concept to ensure every type of a parameter pack is unique.
+	 * @tparam Types The parameter pack to check.
+	 */
+	template<typename... Types>
+	concept AllDistinct = areDistinct<Types...>;
 
 }	 // namespace guillaume
 

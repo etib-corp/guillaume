@@ -32,8 +32,7 @@
 namespace guillaume::systems
 {
 
-	Focus::Focus(event::EventBus &eventBus,
-				 std::unique_ptr<utility::Engine> &engine)
+	Focus::Focus(event::EventBus &eventBus, utility::Engine &engine)
 		: ecs::SystemFiller<components::Focus, components::Transform,
 							components::Bound,
 							components::MouseButtonInteraction,
@@ -223,15 +222,13 @@ namespace guillaume::systems
 		// If entity was clicked, set focus and disable viewport input
 		if (entityClicked) {
 			setFocus(entityIdentifier);
-			if (_engine) {
-				_engine->setShouldCaptureViewportInput(false);
-			}
+			_engine.setShouldCaptureViewportInput(false);
 			return;
 		}
 
-		// If focus was cleared and we have an engine, re-enable viewport input
-		if (!_focusedEntity.has_value() && _engine) {
-			_engine->setShouldCaptureViewportInput(true);
+		// If focus was cleared, re-enable viewport input
+		if (!_focusedEntity.has_value()) {
+			_engine.setShouldCaptureViewportInput(true);
 		}
 	}
 

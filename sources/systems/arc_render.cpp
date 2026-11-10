@@ -30,7 +30,7 @@
 
 namespace guillaume::systems
 {
-	ArcRender::ArcRender(std::unique_ptr<utility::Engine> &engine)
+	ArcRender::ArcRender(utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Color, components::Arc>(
 			  ecs::Phase::Render)
@@ -45,7 +45,7 @@ namespace guillaume::systems
 
 	void ArcRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void ArcRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -83,11 +83,11 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable), renderable,
+				   RenderHandle { _engine.createObject(renderable), renderable,
 								  true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

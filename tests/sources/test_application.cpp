@@ -89,45 +89,39 @@ namespace guillaume::tests
 			ecs::Entity::InvalidIdentifier;
 	}	 // namespace
 
-	TEST_F(TestApplication, ConstructsWithRessourceProvider)
+	TEST_F(TestApplication, ConstructsWithRessourceProviderAndEngine)
 	{
 		utility::DefaultSystemIO systemIo;
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::Application<StubScene, StubScene> application(
-			ressourceProvider);
+		guillaume::Application<StubScene> application(
+			ressourceProvider, std::make_unique<EngineMock>());
 
 		EXPECT_FALSE(application.shouldQuit());
 	}
 
-	TEST_F(TestApplication, SetEngineAcceptsAnEngine)
+	TEST_F(TestApplication, RejectsNullEngine)
 	{
 		utility::DefaultSystemIO systemIo;
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::Application<StubScene, StubScene> application(
-			ressourceProvider);
-
-		auto engine = std::make_unique<EngineMock>();
-		EXPECT_NO_THROW(application.setEngine(std::move(engine)));
+		EXPECT_THROW(
+			guillaume::Application<StubScene>(ressourceProvider, nullptr),
+			std::invalid_argument);
 	}
 
-	TEST_F(TestApplication, LifecycleMethodsRunAfterEngineAttached)
+	TEST_F(TestApplication, RoutineRunsOneFrame)
 	{
 		utility::DefaultSystemIO systemIo;
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::Application<StubScene, StubScene> application(
-			ressourceProvider);
+		guillaume::Application<StubScene> application(
+			ressourceProvider, std::make_unique<EngineMock>());
 
-		application.setEngine(std::make_unique<EngineMock>());
-
-		EXPECT_NO_THROW(application.update());
-		EXPECT_NO_THROW(application.clear());
-		EXPECT_NO_THROW(application.present());
+		EXPECT_NO_THROW(application.routine());
 	}
 
 	TEST_F(TestApplication, PlacesEntitiesFromTheirTopLeftCorner)
@@ -184,10 +178,8 @@ namespace guillaume::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::Application<PlacementRecordingScene, PlacementRecordingScene>
-			application(ressourceProvider);
-
-		application.setEngine(std::make_unique<EngineMock>());
+		guillaume::Application<PlacementRecordingScene> application(
+			ressourceProvider, std::make_unique<EngineMock>());
 
 		ASSERT_NE(PlacementRecordingScene::instance, nullptr);
 
@@ -220,10 +212,8 @@ namespace guillaume::tests
 		auto engine		= std::make_unique<EngineMock>();
 		auto *enginePtr = engine.get();
 
-		guillaume::Application<PlacementRecordingScene, PlacementRecordingScene>
-			application(ressourceProvider);
-
-		application.setEngine(std::move(engine));
+		guillaume::Application<PlacementRecordingScene> application(
+			ressourceProvider, std::move(engine));
 
 		ASSERT_NE(PlacementRecordingScene::instance, nullptr);
 

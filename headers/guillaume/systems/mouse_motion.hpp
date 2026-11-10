@@ -46,9 +46,8 @@ namespace guillaume::systems
 		public event::EventManager<utility::event::MouseMotionEvent>
 	{
 		private:
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< Reference to the engine for potential
-						 ///< visual feedback on motion interactions
+		utility::Engine &_engine;	 ///< Reference to the engine for potential
+									 ///< visual feedback on motion interactions
 
 		public:
 		/**
@@ -57,8 +56,7 @@ namespace guillaume::systems
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 * @param engine Reference to the engine for visual feedback.
 		 */
-		MouseMotion(event::EventBus &eventBus,
-					std::unique_ptr<utility::Engine> &engine);
+		MouseMotion(event::EventBus &eventBus, utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor for the MouseMotion system.

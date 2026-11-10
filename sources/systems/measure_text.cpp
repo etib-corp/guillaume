@@ -31,7 +31,7 @@ namespace guillaume::systems
 
 	MeasureText::MeasureText(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Text, components::Bound,
 							components::Transform, components::Color>(
 			  ecs::Phase::Measure)
@@ -100,7 +100,7 @@ namespace guillaume::systems
 			theme::fontPath(cacheKey.fontWeight));
 		text.setColor(utility::graphic::Color32Bit());
 
-		auto textSize = _engine->measureText(text);
+		auto textSize = _engine.measureText(text);
 
 		getComponent<components::Bound>(entityIdentifier)
 			.setWidth(textSize.getWidth())

@@ -47,9 +47,8 @@ namespace guillaume::systems
 		public event::EventManager<utility::event::MouseButtonEvent>
 	{
 		private:
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< Reference to the engine for potential
-						 ///< visual feedback on button interactions
+		utility::Engine &_engine;	 ///< Reference to the engine for potential
+									 ///< visual feedback on button interactions
 
 		public:
 		/**
@@ -58,8 +57,7 @@ namespace guillaume::systems
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 * @param engine Reference to the game engine.
 		 */
-		MouseButton(event::EventBus &eventBus,
-					std::unique_ptr<utility::Engine> &engine);
+		MouseButton(event::EventBus &eventBus, utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor for the MouseButton system.

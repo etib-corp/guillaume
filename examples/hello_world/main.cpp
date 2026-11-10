@@ -103,8 +103,8 @@ int main(void)
 	utility::DefaultSystemIO systemIo;
 	auto resources = std::make_shared<utility::RessourceProvider>(systemIo);
 
-	guillaume::Application<HelloWorldScene, HelloWorldScene> app(resources);
-	app.setEngine(std::make_unique<NoopEngine>());
+	guillaume::Application<HelloWorldScene> app(resources,
+												std::make_unique<NoopEngine>());
 
 	return app.run();
 }

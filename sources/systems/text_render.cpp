@@ -30,7 +30,7 @@ namespace guillaume::systems
 {
 	TextRender::TextRender(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Text,
 							components::Color>(ecs::Phase::Render)
 		, _ressourceProvider(ressourceProvider)
@@ -51,7 +51,7 @@ namespace guillaume::systems
 
 	void TextRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void TextRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -85,12 +85,12 @@ namespace guillaume::systems
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
-			size_t objectId = _engine->createObject(renderable);
+			size_t objectId = _engine.createObject(renderable);
 			insert(entityIdentifier,
 				   RenderHandle { objectId, renderable, true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

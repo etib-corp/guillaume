@@ -50,13 +50,13 @@ namespace guillaume
 	/**
 	 * @brief Scene manager class responsible for managing scenes in the
 	 * application.
-	 * @tparam DefaultSceneType The default scene type to activate when the
-	 * application starts. Must be one of the registered SceneTypes.
-	 * @tparam SceneTypes Variadic template parameter pack for scene types used
-	 * in the application. Each scene type must inherit from the Scene class.
+	 * @tparam DefaultSceneType The scene activated when the application
+	 * starts.
+	 * @tparam SceneTypes The other scenes of the application. Every scene type
+	 * must inherit from Scene and appear only once.
 	 */
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	class SceneManager:
 		public utility::logging::Loggable<
 			SceneManager<DefaultSceneType, SceneTypes...>,
@@ -71,9 +71,15 @@ namespace guillaume
 			_activeSceneType;	 ///< Type index of the currently active scene
 		LocalStorage _localStorage;	   ///< Local storage for persistent data
 		SessionStorage
-			_sessionStorage;	///< Session storage for temporary data
-		utility::Engine
-			*_engine;	 ///< Pointer to the application engine (non-owning)
+			_sessionStorage;		 ///< Session storage for temporary data
+		utility::Engine &_engine;	 ///< Application engine (non-owning)
+
+		/**
+		 * @brief Leave the active scene and enter another registered scene.
+		 * @param nextType Type index of the scene to activate.
+		 * @throws std::runtime_error If the scene type is not registered.
+		 */
+		void transitionTo(std::type_index nextType);
 
 		protected:
 		/**
@@ -84,12 +90,15 @@ namespace guillaume
 
 		public:
 		/**
-		 * @brief Default constructor for the SceneManager class.
+		 * @brief Construct the manager and create every scene.
 		 * @param ressourceProvider Shared pointer to the resource provider for
 		 * the scenes.
+		 * @param engine Engine queried for the current view. It must outlive
+		 * the manager.
 		 */
 		SceneManager(
-			std::shared_ptr<utility::RessourceProvider> ressourceProvider);
+			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
+			utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor for the SceneManager class.
@@ -116,12 +125,6 @@ namespace guillaume
 		bool hasActiveScene(void) const noexcept;
 
 		/**
-		 * @brief Set the engine pointer used to query the current view.
-		 * @param engine Pointer to the engine instance.
-		 */
-		void setEngine(utility::Engine *engine);
-
-		/**
 		 * @brief Enter the currently active scene, setting its view from the
 		 * engine and calling onEnter().
 		 * @throws std::runtime_error if there is no active scene.
@@ -138,7 +141,9 @@ namespace guillaume
 		void processSceneTransition(void);
 
 		/**
-		 * @brief Switch to a different scene.
+		 * @brief Switch to a different scene immediately. Calls onExit() on
+		 * the current scene and onEnter() on the new one, like a transition
+		 * requested by the scene itself.
 		 * @tparam SceneType The type of the scene to switch to.
 		 * @throws std::runtime_error if the specified scene type is not found
 		 * in the scene manager.

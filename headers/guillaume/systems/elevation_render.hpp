@@ -46,14 +46,14 @@ namespace guillaume::systems
 								 components::Elevation>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
+		utility::Engine &_engine;	 ///< utility::Engine.
 
 		public:
 		/**
 		 * @brief Construct an elevation rendering system.
 		 * @param engine The engine used to draw shadows.
 		 */
-		ElevationRender(std::unique_ptr<utility::Engine> &engine);
+		ElevationRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

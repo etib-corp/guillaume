@@ -25,8 +25,7 @@
 
 namespace guillaume::systems
 {
-	MouseButton::MouseButton(event::EventBus &eventBus,
-							 std::unique_ptr<utility::Engine> &engine)
+	MouseButton::MouseButton(event::EventBus &eventBus, utility::Engine &engine)
 		: ecs::SystemFiller<components::MouseButtonInteraction,
 							components::Transform, components::Bound>(
 			  ecs::Phase::Event)
@@ -65,7 +64,7 @@ namespace guillaume::systems
 
 		utility::graphic::RayF ray;
 		try {
-			ray = _engine->getView().viewPointToRay(position);
+			ray = _engine.getView().viewPointToRay(position);
 		} catch (const std::out_of_range &exception) {
 			this->getLogger().warning()
 				<< "MouseButton::update: " << exception.what();

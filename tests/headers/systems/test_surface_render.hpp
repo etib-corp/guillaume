@@ -65,9 +65,9 @@ namespace guillaume::systems::tests
 			_engine = std::make_unique<guillaume::tests::EngineMock>();
 			_engineMock =
 				static_cast<guillaume::tests::EngineMock *>(_engine.get());
-			_elevationSystem = std::make_unique<ElevationRender>(_engine);
-			_scrimSystem	 = std::make_unique<ScrimRender>(_engine);
-			_clipSystem		 = std::make_unique<Clip>(_engine);
+			_elevationSystem = std::make_unique<ElevationRender>(*_engine);
+			_scrimSystem	 = std::make_unique<ScrimRender>(*_engine);
+			_clipSystem		 = std::make_unique<Clip>(*_engine);
 			_elevationSystem->bindComponentRegistry(_componentRegistry);
 			_scrimSystem->bindComponentRegistry(_componentRegistry);
 			_clipSystem->bindComponentRegistry(_componentRegistry);

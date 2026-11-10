@@ -143,7 +143,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::MeasureMesh measureModel(ressourceProvider, engine);
+		guillaume::systems::MeasureMesh measureModel(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
@@ -173,7 +173,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::MeshRender modelRender(ressourceProvider, engine);
+		guillaume::systems::MeshRender modelRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
@@ -196,7 +196,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::MeshRender modelRender(ressourceProvider, engine);
+		guillaume::systems::MeshRender modelRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto model = std::make_shared<entities::Mesh>(registry, "missing.obj");

@@ -27,7 +27,7 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestEllipseRender, Constructor)
 	{
-		EXPECT_NO_THROW({ auto ellipseSystem = EllipseRender(_engine); });
+		EXPECT_NO_THROW({ auto ellipseSystem = EllipseRender(*_engine); });
 	}
 
 	TEST_F(TestEllipseRender, UpdateAddsTriangleFanMesh)

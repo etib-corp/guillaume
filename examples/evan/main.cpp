@@ -142,8 +142,7 @@ int main(void)
 	auto engine =
 		std::make_unique<evan::Engine>(resources, std::move(platform));
 
-	guillaume::Application<DemoScene, DemoScene> app(resources);
-	app.setEngine(std::move(engine));
+	guillaume::Application<DemoScene> app(resources, std::move(engine));
 
 	return app.run();
 }

@@ -70,9 +70,9 @@ namespace guillaume::entities::tests
 				ressourceProvider =
 					std::make_shared<utility::RessourceProvider>(systemIo);
 				measureText = std::make_unique<guillaume::systems::MeasureText>(
-					ressourceProvider, engine);
+					ressourceProvider, *engine);
 				textRender = std::make_unique<guillaume::systems::TextRender>(
-					ressourceProvider, engine);
+					ressourceProvider, *engine);
 
 				text = std::make_shared<entities::Text>(
 					componentRegistry, "Hello", 24.0f,

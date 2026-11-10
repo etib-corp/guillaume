@@ -55,7 +55,7 @@ namespace guillaume::systems
 		 * @brief Construct the focus-ring render system.
 		 * @param engine Engine drawing the rings.
 		 */
-		FocusRingRender(std::unique_ptr<utility::Engine> &engine);
+		FocusRingRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.
@@ -79,7 +79,7 @@ namespace guillaume::systems
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< Engine.
+		utility::Engine &_engine;	 ///< Engine.
 	};
 
 }	 // namespace guillaume::systems

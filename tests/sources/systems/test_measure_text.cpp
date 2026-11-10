@@ -50,7 +50,7 @@ namespace
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 		guillaume::systems::MeasureText measureTextSystem { ressourceProvider,
-															engine };
+															*engine };
 		guillaume::ecs::ComponentRegistry componentRegistry;
 		guillaume::ecs::EntityRegistryContainer entityRegistry;
 		guillaume::ecs::Entity::Identifier entityIdentifier {
