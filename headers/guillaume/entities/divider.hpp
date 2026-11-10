@@ -34,6 +34,7 @@
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
+#include "guillaume/components/divider.hpp"
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -57,24 +58,27 @@ namespace guillaume::entities
 	 */
 	class Divider:
 		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Color, components::Line>
+								 components::Color, components::Line,
+								 components::Divider>
 	{
 		public:
 		/**
 		 * @brief Divider variant.
 		 */
-		enum class Variant { FullWidth, Inset, Middle };
+		using Variant = components::Divider::Variant;
 
 		/**
 		 * @brief Default stroke: a hairline (Paper `StyleSheet.hairlineWidth`
 		 * on a 2x display).
 		 */
-		static constexpr float HairlineThickness = 0.5f;
+		static constexpr float HairlineThickness =
+			components::Divider::HairlineThickness;
 
 		/**
 		 * @brief Stroke of a bold divider (Paper `bold`).
 		 */
-		static constexpr float BoldThickness = 1.0f;
+		static constexpr float BoldThickness =
+			components::Divider::BoldThickness;
 
 		/**
 		 * @brief Builder used to configure and create `Divider` entities.
@@ -162,33 +166,6 @@ namespace guillaume::entities
 												 float length, Variant variant);
 		};
 
-		private:
-		utility::graphic::PoseF _pose {};			///< Divider origin pose.
-		utility::graphic::PoseF _appliedPose {};	///< Last applied pose.
-		utility::graphic::Color32Bit _color {};		///< Divider color.
-		float _length { 100.0f };					///< Total length.
-		float _thickness { HairlineThickness };		///< Stroke thickness.
-		float _inset { 16.0f };						///< Leading/trailing inset.
-		Variant _variant { Variant::FullWidth };	///< Divider variant.
-
-		private:
-		/**
-		 * @brief Apply the variant-specific geometry and colors.
-		 */
-		void applyGeometry(void);
-
-		/**
-		 * @brief Compute the effective leading inset for the variant.
-		 * @return The leading inset.
-		 */
-		float getLeadingInset(void) const;
-
-		/**
-		 * @brief Compute the effective trailing inset for the variant.
-		 * @return The trailing inset.
-		 */
-		float getTrailingInset(void) const;
-
 		public:
 		/**
 		 * @brief Construct a Divider entity.
@@ -265,15 +242,23 @@ namespace guillaume::entities
 		 */
 		Variant getVariant(void) const;
 
+		private:
 		/**
-		 * @brief Initialize the divider derived state.
+		 * @brief Access the divider configuration component.
+		 * @return The component holding this divider's state.
 		 */
-		void initialize(void) override;
+		components::Divider &config(void);
 
 		/**
-		 * @brief Recompute the divider derived state.
+		 * @brief Access the divider configuration component.
+		 * @return The component holding this divider's state.
 		 */
-		void update(void) override;
+		const components::Divider &config(void) const;
+
+		/**
+		 * @brief Run systems::Divider on this entity right now.
+		 */
+		void apply(void);
 	};
 
 }	 // namespace guillaume::entities

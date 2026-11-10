@@ -1,7 +1,87 @@
 # Migration Guide
 
-This guide documents breaking API changes introduced for v1.0 and how to
-update existing code.
+This guide documents breaking API changes and how to update existing code,
+newest first. The first group is unreleased; the rest shipped up to 2026.3.1.
+
+## Entity `Director` classes are folded into their `Builder`
+
+**Before:** every entity had a `Builder` and a `Director`; presets were called
+as `director.makeButton(builder, parent, ...)`, and scenes fetched directors
+with `getDirectorManager().getDirector<X::Director>()`.
+
+**After:** the presets are `Builder` members with the same names and the same
+remaining arguments: `builder.makeButton(parent, ...)`. `X::Director`,
+`ecs::EntityDirector`, `ecs::EntityDirectorManager` and
+`Scene::getDirectorManager()` are removed.
+
+**Update:** Drop the director variable and the `builder` argument:
+
+```cpp
+// Before
+auto &director = getDirectorManager().getDirector<Button::Director>();
+auto button = director.makeButton(builder, parent, "Save", onClick);
+
+// After
+auto button = builder.makeButton(parent, "Save", onClick);
+```
+
+## `ecs::Phase` is a scoped enum
+
+**Before:** `enum Phase : size_t`, implicitly convertible to an integer.
+
+**After:** `enum class Phase : std::size_t`. `ecs::Phase::Event` and the other
+enumerators are spelled the same; code that used a phase as an array index or
+printed it needs `static_cast<std::size_t>(phase)`.
+
+## `Application` takes its engine in the constructor
+
+**Before:** `Application<MyScene, MyScene> app(resources);` followed by
+`app.setEngine(std::move(engine));`. The default scene had to be repeated in
+the scene list, and calling `run()` before `setEngine()` dereferenced a null
+engine.
+
+**After:** `Application<MyScene> app(resources, std::move(engine));`. The
+first template argument is the default scene and every scene is listed once
+(`Application<Home, Settings>`); a repeated scene type no longer compiles. A
+null engine throws `std::invalid_argument`. `setEngine()` is gone.
+
+**Update:** Pass the engine to the constructor and remove the duplicated
+default scene from the template arguments.
+
+`Application::pollEvents()`, `update()`, `clear()` and `present()` were removed:
+they only forwarded to the engine and were not used by `run()`. Call
+`routine()` to run one frame.
+
+## Systems take `utility::Engine &`
+
+**Before:** engine-backed systems were constructed from a
+`std::unique_ptr<utility::Engine> &`.
+
+**After:** they take a `utility::Engine &`. `SceneManager` also takes the engine
+by reference in its constructor; `SceneManager::setEngine()` is gone.
+
+**Update:** Pass `*engine` when constructing a system yourself.
+
+## `SceneManager::switchToScene` runs the scene lifecycle
+
+**Before:** `switchToScene<T>()` only changed the active scene type.
+
+**After:** it calls `onExit()` on the current scene and `onEnter()` on the new
+one, like a transition requested with `Scene::goToScene<T>()`.
+
+## `application.hpp` no longer includes every system
+
+Core systems are registered by `systems::registerCoreSystems()`
+(`guillaume/systems/core_systems.hpp`). Include the header of any system you
+reference directly.
+
+## Theme accessors read the active theme
+
+`getShapeRadius()`, `getStateLayerAlpha()`, `getElevationToken()`,
+`getMotionDuration()`, `getActiveTypescale()` and `getActiveScheme()` now read
+`getActiveTheme()` instead of `defaultTheme`. Behavior is unchanged until you
+call `setActiveTheme()`. `getActiveColor(role)` replaces the
+`getActiveScheme().getColor(role).getColor()` chain.
 
 ## Entity `Director` classes are folded into their `Builder`
 
@@ -77,10 +157,10 @@ call `setActiveTheme()`. `getActiveColor(role)` replaces the
 
 ## `EntityRegistry::getEntity` now returns `nullptr` instead of throwing
 
-**Before (v0.x):** `getEntity<EntityType>(id)` threw `std::runtime_error` when
+**Before:** `getEntity<EntityType>(id)` threw `std::runtime_error` when
 the entity was not found or was not of the expected type.
 
-**After (v1.0):** `getEntity<EntityType>(id)` returns `nullptr` when the entity
+**After:** `getEntity<EntityType>(id)` returns `nullptr` when the entity
 is not found or is not of the expected type. It also returns `nullptr` for
 `Entity::InvalidIdentifier`.
 
@@ -149,34 +229,29 @@ Several trivial getters (e.g. `Entity::getIdentifier`, `Entity::getSignature`,
 
 Identifier generation is now thread-safe. No source change is required.
 
-## `Panel` and `Container` replaced by `Layout`
+## `Panel`, `Container` and `Layout` replaced by `View`
 
-The `Panel` entity was replaced by `Container`, which is now itself replaced by
-`Layout`. `Layout` keeps the surface behavior (pose, color, border radius) and
-delegates child arrangement to `components::Layout` + `systems::Layout`.
+The `Panel`, `Container` and `Layout` entities are gone. `entities::View` is
+the layout container: it keeps the surface behavior (pose, color, border
+radius) and delegates child arrangement to `components::Layout` +
+`systems::Layout`.
 
-**Before:** `Container` owned the row/column arrangement, padding, spacing and
-margin directly.
+`View::Builder` exposes:
 
-**After:** `Layout` stores the arrangement in a `components::Layout` and exposes
-the standard builder/director:
+- `withAxis(Axis::Horizontal | Axis::Vertical)`
+- `withMainAxisAlignment(...)` / `withCrossAxisAlignment(...)`
+- `withSpacing(gap)` — gap between adjacent children
+- `withPadding(padding)` — space around the children
+- `withFixedWidth(width)` / `withFixedHeight(height)` — force a dimension
+  (auto by default)
+- `withEntities({...})` — the children to arrange
 
-- `Layout::Axis::Horizontal` / `Layout::Axis::Vertical` (default `Horizontal`)
-- `Layout::MainAxisAlignment::{Start, Center, End, SpaceBetween}`
-- `Layout::CrossAxisAlignment::{Start, Center, End}`
-- `spacing` — gap between adjacent children
-- `padding` — space around the children
-- `withFixedWidth` / `withFixedHeight` — force a dimension (auto by default)
+The geometry is produced by `systems::Layout`, a core system of the Layout
+phase. It positions the children and writes the resulting size back to the
+view's `components::Bound`. There is no `margin`: nest a `View` or adjust the
+pose instead.
 
-The geometry is produced by `systems::Layout`, registered as a core system in
-the Layout phase. It positions the children, applies the main/cross axis
-alignments and writes the resulting size back to the container
-`components::Bound`. The old `margin` parameter is gone: use an outer `Layout`
-or adjust the pose instead.
-
-**Update:** Rename `Container` to `Layout` and use the new builder/director
-methods. The method names changed from `makeDefaultContainer` /
-`makeColorContainer` to `makeDefaultLayout` / `makeColorLayout`:
+**Update:** Replace the old container with `View` and its builder presets:
 
 ```cpp
 // Before
@@ -184,9 +259,8 @@ containerDirector.makeDefaultContainer(containerBuilder, parent, pose,
                                        { text });
 
 // After
-layoutDirector.makeDefaultLayout(layoutBuilder, parent, pose, { text });
+viewBuilder.makeDefaultView(parent, pose, { text });
 ```
-
 
 ## Material 3 parity defaults (milestone "M3 parity remediation")
 

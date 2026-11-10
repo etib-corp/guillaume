@@ -266,6 +266,35 @@ namespace guillaume::entities
 
 	void Search::buildContent(void)
 	{
+		createChildren();
+		applyContentColors();
+
+		const bool hasQuery = !getText().empty();
+
+		std::vector<std::shared_ptr<ecs::Entity>> children;
+
+		if (_searchIcon != nullptr) {
+			children.push_back(_searchIcon);
+		}
+
+		if (hasQuery || _placeholderEntity == nullptr) {
+			children.push_back(_textEntity);
+		} else {
+			children.push_back(_placeholderEntity);
+		}
+
+		children.push_back(_loading ? std::shared_ptr<ecs::Entity>(_loadingIcon)
+									: std::shared_ptr<ecs::Entity>(_clearIcon));
+
+		if (_trailingIcon != nullptr) {
+			children.push_back(_trailingIcon);
+		}
+
+		setChildren(children);
+	}
+
+	void Search::createChildren(void)
+	{
 		if (_searchIcon == nullptr) {
 			_searchIcon = buildPressableIcon(_iconGlyph, "search", [this]() {
 				if (_onIconPress) {
@@ -313,7 +342,10 @@ namespace guillaume::entities
 					}
 				});
 		}
+	}
 
+	void Search::applyContentColors(void)
+	{
 		const bool hasQuery	 = !getText().empty();
 		const auto iconColor = schemeColor(SchemeColorRole::OnSurfaceVariant);
 
@@ -339,27 +371,6 @@ namespace guillaume::entities
 		if (_trailingIcon != nullptr) {
 			_trailingIcon->setColor(iconColor);
 		}
-
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-
-		if (_searchIcon != nullptr) {
-			children.push_back(_searchIcon);
-		}
-
-		if (hasQuery || _placeholderEntity == nullptr) {
-			children.push_back(_textEntity);
-		} else {
-			children.push_back(_placeholderEntity);
-		}
-
-		children.push_back(_loading ? std::shared_ptr<ecs::Entity>(_loadingIcon)
-									: std::shared_ptr<ecs::Entity>(_clearIcon));
-
-		if (_trailingIcon != nullptr) {
-			children.push_back(_trailingIcon);
-		}
-
-		setChildren(children);
 	}
 
 	Search &Search::setVariant(Variant variant)

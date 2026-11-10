@@ -17,6 +17,7 @@ set(TEST_SOURCES
     sources/ecs/test_system.cpp
     sources/ecs/test_system_filler.cpp
     sources/ecs/test_system_registry.cpp
+    sources/ecs/test_travelers.cpp
     sources/entities/test_button.cpp
     sources/entities/test_app_bar.cpp
     sources/entities/test_badge.cpp
@@ -52,6 +53,7 @@ set(TEST_SOURCES
     sources/event/test_event_handler.cpp
     sources/event/test_event_subscriber.cpp
     sources/systems/test_focus.cpp
+    sources/systems/test_divider.cpp
     sources/systems/test_ellipse_render.cpp
     sources/systems/test_animation.cpp
     sources/systems/test_rectangle_render.cpp
@@ -64,7 +66,7 @@ set(TEST_SOURCES
     sources/systems/test_text_input.cpp
     sources/systems/test_text_render.cpp
     sources/systems/test_value_interactions.cpp
-    sources/systems/text_glyph_render.cpp
+    sources/systems/test_glyph_render.cpp
     sources/test_application.cpp
     sources/test_ecs.cpp
     sources/test_engine.cpp
@@ -81,6 +83,8 @@ FetchContent_Declare(
 )
 # Prevent GoogleTest from overriding our compiler/linker settings on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# GoogleTest is a test-only dependency: keep it out of `cmake --install`.
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Create test executable

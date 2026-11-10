@@ -294,20 +294,7 @@ namespace guillaume::entities
 		}
 
 		if (_titleEntity == nullptr && !_title.empty()) {
-			_titleEntity = buildText(this->getComponentRegistry(), *this,
-									 this->shared_from_this(), _title,
-									 theme::TypeRole::HeadlineSmall,
-									 schemeColor(SchemeColorRole::OnSurface));
-			if (_titleEntity != nullptr) {
-				getComponentRegistry().addComponent<components::Accessibility>(
-					_titleEntity->getIdentifier());
-				getComponentRegistry()
-					.getComponent<components::Accessibility>(
-						_titleEntity->getIdentifier())
-					.setRole(components::AccessibilityRole::Header)
-					.setLabel(_title)
-					.setFocusable(false);
-			}
+			buildTitle();
 		}
 
 		if (_messageEntity == nullptr && !_message.empty()) {
@@ -318,38 +305,7 @@ namespace guillaume::entities
 		}
 
 		if (_actionRow == nullptr && !_actions.empty()) {
-			View::Builder rowBuilder(this->getComponentRegistry(), *this);
-			_actionRow = rowBuilder.makeDefaultView(
-				this->shared_from_this(), utility::graphic::PoseF(), {});
-			_actionRow->setColor(transparentColor());
-			_actionRow->setAxis(components::Layout::Axis::Horizontal);
-			_actionRow->setMainAxisAlignment(
-				components::Layout::MainAxisAlignment::End);
-			_actionRow->setCrossAxisAlignment(
-				components::Layout::CrossAxisAlignment::Center);
-			_actionRow->setSpacing(theme::SpacingScale::get(2));
-			_actionRow->setPadding(0.0f);
-			_actionRow->setFixedWidth(DialogWidth - 2.0f * DialogPadding);
-
-			std::vector<std::shared_ptr<ecs::Entity>> buttons;
-			for (const auto &action: _actions) {
-				if (action.label.empty()) {
-					continue;
-				}
-				Button::Builder buttonBuilder(this->getComponentRegistry(),
-											  *_actionRow);
-				auto button = buttonBuilder.withLabel(action.label)
-								  .withColorStyle(Button::Color::Text)
-								  .withShape(Button::Shape::Round)
-								  .withSize(Button::Size::Small)
-								  .withOnClick(action.onPress)
-								  .registerEntity(_actionRow);
-				if (button != nullptr) {
-					_actionEntities.push_back(button);
-					buttons.push_back(button);
-				}
-			}
-			_actionRow->setEntities(buttons);
+			buildActionRow();
 		}
 
 		if (_iconEntity != nullptr) {
@@ -369,6 +325,60 @@ namespace guillaume::entities
 		}
 
 		setChildren(children);
+	}
+
+	void Dialog::buildTitle(void)
+	{
+		_titleEntity = buildText(this->getComponentRegistry(), *this,
+								 this->shared_from_this(), _title,
+								 theme::TypeRole::HeadlineSmall,
+								 schemeColor(SchemeColorRole::OnSurface));
+		if (_titleEntity != nullptr) {
+			getComponentRegistry().addComponent<components::Accessibility>(
+				_titleEntity->getIdentifier());
+			getComponentRegistry()
+				.getComponent<components::Accessibility>(
+					_titleEntity->getIdentifier())
+				.setRole(components::AccessibilityRole::Header)
+				.setLabel(_title)
+				.setFocusable(false);
+		}
+	}
+
+	void Dialog::buildActionRow(void)
+	{
+		View::Builder rowBuilder(this->getComponentRegistry(), *this);
+		_actionRow = rowBuilder.makeDefaultView(this->shared_from_this(),
+												utility::graphic::PoseF(), {});
+		_actionRow->setColor(transparentColor());
+		_actionRow->setAxis(components::Layout::Axis::Horizontal);
+		_actionRow->setMainAxisAlignment(
+			components::Layout::MainAxisAlignment::End);
+		_actionRow->setCrossAxisAlignment(
+			components::Layout::CrossAxisAlignment::Center);
+		_actionRow->setSpacing(theme::SpacingScale::get(2));
+		_actionRow->setPadding(0.0f);
+		_actionRow->setFixedWidth(DialogWidth - 2.0f * DialogPadding);
+
+		std::vector<std::shared_ptr<ecs::Entity>> buttons;
+		for (const auto &action: _actions) {
+			if (action.label.empty()) {
+				continue;
+			}
+			Button::Builder buttonBuilder(this->getComponentRegistry(),
+										  *_actionRow);
+			auto button = buttonBuilder.withLabel(action.label)
+							  .withColorStyle(Button::Color::Text)
+							  .withShape(Button::Shape::Round)
+							  .withSize(Button::Size::Small)
+							  .withOnClick(action.onPress)
+							  .registerEntity(_actionRow);
+			if (button != nullptr) {
+				_actionEntities.push_back(button);
+				buttons.push_back(button);
+			}
+		}
+		_actionRow->setEntities(buttons);
 	}
 
 	Dialog &Dialog::setVariant(Variant variant)

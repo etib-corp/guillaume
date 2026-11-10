@@ -207,6 +207,17 @@ namespace guillaume::entities
 		 */
 		void buildContent(void);
 
+		/**
+		 * @brief Create the title text and mark it as a header for
+		 * accessibility.
+		 */
+		void buildTitle(void);
+
+		/**
+		 * @brief Create the action row and one text button per action.
+		 */
+		void buildActionRow(void);
+
 		public:
 		/**
 		 * @brief Construct a Dialog entity.

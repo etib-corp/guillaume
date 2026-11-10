@@ -54,6 +54,7 @@ namespace guillaume
 			_storageFilePath;		  ///< Backing SQLite database file
 		sqlite3 *_database;			  ///< SQLite connection handle
 		mutable std::mutex _mutex;	  ///< Synchronizes SQLite access
+		bool _persistent { true };	  ///< False after the in-memory fallback
 		sqlite3_stmt *_setItemStmt {
 			nullptr
 		};	  ///< Cached prepared statement for setItem
@@ -156,6 +157,16 @@ namespace guillaume
 		 * an exception is thrown with details about the failure.
 		 */
 		static std::filesystem::path defaultStoragePath(void) noexcept(false);
+
+		/**
+		 * @brief Whether the items are written to the storage file.
+		 *
+		 * When the storage file cannot be opened (read-only or missing
+		 * location), the storage falls back to an in-memory database so the
+		 * application keeps working, but nothing survives a restart.
+		 * @return True when backed by the file, false when in-memory.
+		 */
+		bool isPersistent(void) const noexcept;
 	};
 
 }	 // namespace guillaume

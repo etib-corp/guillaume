@@ -25,6 +25,7 @@
 #include "guillaume/systems/animation.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/clip.hpp"
+#include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/drag.hpp"
 #include "guillaume/systems/elevation_render.hpp"
 #include "guillaume/systems/ellipse_render.hpp"
@@ -121,6 +122,7 @@ namespace guillaume::systems
 			std::make_unique<systems::ScrimRender>(engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Clip>(engine));
+		systemRegistry.registerNewSystem(std::make_unique<systems::Divider>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));

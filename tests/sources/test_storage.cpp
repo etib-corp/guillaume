@@ -23,6 +23,8 @@
 #include "test_storage.hpp"
 
 #include <chrono>
+#include <filesystem>
+#include <memory>
 
 namespace guillaume::tests
 {
@@ -193,6 +195,44 @@ namespace guillaume::tests
 		EXPECT_EQ(*attempts, 3);
 		EXPECT_FLOAT_EQ(*ratio, 0.5f);
 		EXPECT_FALSE(*ok);
+	}
+
+	TEST_F(TestStorage, LocalStorageIsPersistentWhenTheFileOpens)
+	{
+		LocalStorage localStorage(_localStoragePath);
+
+		EXPECT_TRUE(localStorage.isPersistent());
+	}
+
+	TEST_F(TestStorage, LocalStorageFallsBackToMemoryWhenTheFileCannotOpen)
+	{
+		// A directory is not a valid database file.
+		const auto unusable = std::filesystem::temp_directory_path();
+
+		LocalStorage localStorage(unusable);
+
+		EXPECT_FALSE(localStorage.isPersistent());
+
+		// The fallback still behaves like a storage.
+		localStorage.setItem("key", "value");
+		ASSERT_TRUE(localStorage.getItem("key").has_value());
+		EXPECT_EQ(*localStorage.getItem("key"), "value");
+	}
+
+	TEST_F(TestStorage, LocalStorageFallsBackWhenTheDirectoryCannotBeCreated)
+	{
+		// The parent of the database path is a regular file.
+		const auto blocker = _localStoragePath;
+		{
+			LocalStorage create(blocker);
+		}
+		ASSERT_TRUE(std::filesystem::is_regular_file(blocker));
+
+		std::unique_ptr<LocalStorage> localStorage;
+		ASSERT_NO_THROW(localStorage = std::make_unique<LocalStorage>(
+							blocker / "nested" / "storage.db"));
+
+		EXPECT_FALSE(localStorage->isPersistent());
 	}
 
 }	 // namespace guillaume::tests
