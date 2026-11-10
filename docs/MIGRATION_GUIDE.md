@@ -1,7 +1,7 @@
 # Migration Guide
 
-This guide documents breaking API changes introduced for v1.0 and how to
-update existing code.
+This guide documents breaking API changes and how to update existing code,
+newest first. The first group is unreleased; the rest shipped up to 2026.3.1.
 
 ## Entity `Director` classes are folded into their `Builder`
 
@@ -77,10 +77,10 @@ call `setActiveTheme()`. `getActiveColor(role)` replaces the
 
 ## `EntityRegistry::getEntity` now returns `nullptr` instead of throwing
 
-**Before (v0.x):** `getEntity<EntityType>(id)` threw `std::runtime_error` when
+**Before:** `getEntity<EntityType>(id)` threw `std::runtime_error` when
 the entity was not found or was not of the expected type.
 
-**After (v1.0):** `getEntity<EntityType>(id)` returns `nullptr` when the entity
+**After:** `getEntity<EntityType>(id)` returns `nullptr` when the entity
 is not found or is not of the expected type. It also returns `nullptr` for
 `Entity::InvalidIdentifier`.
 
@@ -149,34 +149,29 @@ Several trivial getters (e.g. `Entity::getIdentifier`, `Entity::getSignature`,
 
 Identifier generation is now thread-safe. No source change is required.
 
-## `Panel` and `Container` replaced by `Layout`
+## `Panel`, `Container` and `Layout` replaced by `View`
 
-The `Panel` entity was replaced by `Container`, which is now itself replaced by
-`Layout`. `Layout` keeps the surface behavior (pose, color, border radius) and
-delegates child arrangement to `components::Layout` + `systems::Layout`.
+The `Panel`, `Container` and `Layout` entities are gone. `entities::View` is
+the layout container: it keeps the surface behavior (pose, color, border
+radius) and delegates child arrangement to `components::Layout` +
+`systems::Layout`.
 
-**Before:** `Container` owned the row/column arrangement, padding, spacing and
-margin directly.
+`View::Builder` exposes:
 
-**After:** `Layout` stores the arrangement in a `components::Layout` and exposes
-the standard builder/director:
+- `withAxis(Axis::Horizontal | Axis::Vertical)`
+- `withMainAxisAlignment(...)` / `withCrossAxisAlignment(...)`
+- `withSpacing(gap)` — gap between adjacent children
+- `withPadding(padding)` — space around the children
+- `withFixedWidth(width)` / `withFixedHeight(height)` — force a dimension
+  (auto by default)
+- `withEntities({...})` — the children to arrange
 
-- `Layout::Axis::Horizontal` / `Layout::Axis::Vertical` (default `Horizontal`)
-- `Layout::MainAxisAlignment::{Start, Center, End, SpaceBetween}`
-- `Layout::CrossAxisAlignment::{Start, Center, End}`
-- `spacing` — gap between adjacent children
-- `padding` — space around the children
-- `withFixedWidth` / `withFixedHeight` — force a dimension (auto by default)
+The geometry is produced by `systems::Layout`, a core system of the Layout
+phase. It positions the children and writes the resulting size back to the
+view's `components::Bound`. There is no `margin`: nest a `View` or adjust the
+pose instead.
 
-The geometry is produced by `systems::Layout`, registered as a core system in
-the Layout phase. It positions the children, applies the main/cross axis
-alignments and writes the resulting size back to the container
-`components::Bound`. The old `margin` parameter is gone: use an outer `Layout`
-or adjust the pose instead.
-
-**Update:** Rename `Container` to `Layout` and use the new builder/director
-methods. The method names changed from `makeDefaultContainer` /
-`makeColorContainer` to `makeDefaultLayout` / `makeColorLayout`:
+**Update:** Replace the old container with `View` and its builder presets:
 
 ```cpp
 // Before
@@ -184,9 +179,8 @@ containerDirector.makeDefaultContainer(containerBuilder, parent, pose,
                                        { text });
 
 // After
-layoutDirector.makeDefaultLayout(layoutBuilder, parent, pose, { text });
+viewBuilder.makeDefaultView(parent, pose, { text });
 ```
-
 
 ## Material 3 parity defaults (milestone "M3 parity remediation")
 

@@ -4,37 +4,43 @@ This document describes how Guillaume is versioned and supported.
 
 ## Versioning
 
-Guillaume follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
-(`MAJOR.MINOR.PATCH`):
+Guillaume uses calendar versioning: `YEAR.MINOR.PATCH` (for example
+`2026.3.1`). The version is bumped automatically when a pull request is merged
+into `main`, from the pull request title
+(see [Commit Conventions](COMMIT_CONVENTIONS.md)):
 
-- **MAJOR** — incompatible API changes.
-- **MINOR** — backwards-compatible feature additions.
-- **PATCH** — backwards-compatible bug fixes.
+| PR title starts with | Effect |
+|---|---|
+| `feat` | `MINOR` + 1, `PATCH` reset to 0 |
+| `fix` | `PATCH` + 1 |
+| anything else (`refactor`, `docs`, `chore`, …) | no new version |
 
-The current version is declared in `CMakeLists.txt` and mirrored in
-`CHANGELOG.md`.
+The first release of a new calendar year resets `MINOR` and `PATCH` to 0
+before applying the bump.
 
-## Long-Term Support (LTS)
+The current version is declared in `CMakeLists.txt`; every version is tagged
+`vYEAR.MINOR.PATCH` and listed in `CHANGELOG.md`.
 
-- The **1.x** line is the current supported series.
-- Bug fixes and security patches are backported to the latest 1.x release.
-- New features land in the next minor release.
+## Compatibility
 
-## Deprecation Window
+The version number does not encode compatibility: a breaking change can land
+in any release. Instead:
 
-- Deprecated APIs are documented in the API reference and the `CHANGELOG.md`.
-- A deprecated API is removed **no earlier than two minor releases** after it
-  is marked deprecated.
-- Each release ships a **migration guide** (`docs/MIGRATION_GUIDE.md`) that
-  documents breaking changes and how to update.
+- Breaking changes are marked **Breaking** in `CHANGELOG.md`.
+- Each one has a before/after entry in `docs/MIGRATION_GUIDE.md`.
+- Pull requests that break the API carry a `!` in their title
+  (`refactor!: ...`).
 
-## Communication
+Pin an exact tag when you depend on Guillaume, and read the changelog before
+moving to a newer one.
 
-- Every release is announced in `CHANGELOG.md`.
-- Breaking changes are always accompanied by a migration guide entry.
+## Support
+
+- Only the latest release is supported. Fixes land on `main` and ship in the
+  next release; they are not backported.
 - Security issues are handled per `SECURITY.md`.
 
 ## Release Cadence
 
-Releases are cut when the maintainers determine the `main` branch is stable
-and the release checklist is complete. There is no fixed calendar schedule.
+A release is cut on every merged `feat` or `fix` pull request. There is no
+fixed calendar schedule.

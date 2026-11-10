@@ -2,18 +2,48 @@
 
 All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Versions follow the calendar scheme described in
+[docs/VERSIONING.md](docs/VERSIONING.md); breaking changes are marked
+**Breaking**.
 
-## [2026.1.0] - 2026-09-26
+## [Unreleased]
 
-## [2026.2.0] - 2026-09-26
+### Changed
 
-## [2026.3.0] - 2026-10-08
+- Core systems are registered by `systems::registerCoreSystems()`
+  (`guillaume/systems/core_systems.hpp`); `guillaume/application.hpp` no longer
+  includes every system header, so include the system headers you use.
+- The hand input systems share `systems::HandEventSystem` /
+  `systems::HandRaySystem` instead of six copies of the same wiring.
+- Button, icon button and FAB styles resolve through lookup tables
+  (`entities/button_style.hpp`, `entities/fab_style.hpp`) instead of `switch`
+  blocks; the default Material 3 theme data moved to
+  `sources/theme/default_theme.cpp`.
+- Added `getActiveColor(role)`; removed the unused `SystemNotFoundException`.
+- **Breaking:** `Application` takes the engine in its constructor and
+  `setEngine()` is removed; the default scene is the first template argument
+  and is no longer repeated (`Application<MyScene>`).
+- **Breaking:** removed `Application::pollEvents/update/clear/present`;
+  engine-backed systems and `SceneManager` take `utility::Engine &`.
+- **Breaking:** entity `Director` classes are folded into their `Builder`
+  (`builder.makeXxx(parent, ...)`); the director manager is removed.
+- `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
+- Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
+
+### Fixed
+
+- `systems::Overlay` was registered twice and ran twice per frame.
+- `-DBUILD_DOCS=ON` now enables the documentation target; `BUILD_ALL_DOCS` is
+  kept as a deprecated alias.
+- GoogleTest is no longer installed by `cmake --install`; the bundled fonts
+  are.
 
 ## [2026.3.1] - 2026-11-10
 
-## [Unreleased]
+Versions 2026.1.0 to 2026.3.0 were tagged without changelog entries, so this
+section lists everything released since 1.0.0.
+
 
 ### Added
 
@@ -23,7 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NavigationDrawer`, `NavigationRail`, `ProgressIndicator`, `RadioButton`,
   `Search`, `SideSheet`, `Slider`, `Snackbar`, `Switch`, `Tabs`, `TextField`,
   `TimePicker`, `Toolbar`, and `Tooltip`, each with a `Builder` + `Director`
-  and `TEST_F` coverage.
+  and `TEST_F` coverage. The families that react-native-paper does not ship
+  were removed again in this release (see **Removed**).
 - Shared entity foundations for component families: `entities::SurfaceBase`
   and `entities::SurfaceConfig`, which arrange children through
   `systems::Layout` instead of hand-rolled geometry, plus
@@ -49,25 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replaced `file(GLOB)` with explicit source lists for reproducible builds.
-- Core systems are registered by `systems::registerCoreSystems()`
-  (`guillaume/systems/core_systems.hpp`); `guillaume/application.hpp` no longer
-  includes every system header, so include the system headers you use.
-- The hand input systems share `systems::HandEventSystem` /
-  `systems::HandRaySystem` instead of six copies of the same wiring.
-- Button, icon button and FAB styles resolve through lookup tables
-  (`entities/button_style.hpp`, `entities/fab_style.hpp`) instead of `switch`
-  blocks; the default Material 3 theme data moved to
-  `sources/theme/default_theme.cpp`.
-- Added `getActiveColor(role)`; removed the unused `SystemNotFoundException`.
-- **Breaking:** `Application` takes the engine in its constructor and
-  `setEngine()` is removed; the default scene is the first template argument
-  and is no longer repeated (`Application<MyScene>`).
-- **Breaking:** removed `Application::pollEvents/update/clear/present`;
-  engine-backed systems and `SceneManager` take `utility::Engine &`.
-- **Breaking:** entity `Director` classes are folded into their `Builder`
-  (`builder.makeXxx(parent, ...)`); the director manager is removed.
-- `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
-- Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 - Moved include paths onto the `guillaume` target (target-scoped includes).
 - `Entity::getNextIdentifier` is now atomic (thread-safe identifier generation).
 - `EventBus::subscribe` now takes its listener by value.
@@ -149,6 +161,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `components::Bound` now marks itself changed when its width or height is
   set, so a measured size written by `systems::MeasureText`/`MeasureGlyph`
   propagates to the parent and containers re-hug their text.
+
+### Removed
+
+- Component families with no react-native-paper equivalent (#114):
+  `BottomSheet`, `Carousel`, `DatePicker`, `NavigationRail`, `SideSheet`,
+  `Slider`, `Tabs`, `TimePicker` and `Toolbar`.
+
+## [2026.3.0] - 2026-10-08
+
+## [2026.2.0] - 2026-09-26
+
+## [2026.1.0] - 2026-09-26
 
 ## [1.0.0] - 2025-08-25
 
