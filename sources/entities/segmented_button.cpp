@@ -145,10 +145,10 @@ namespace guillaume::entities
 		float width = MinSegmentWidth;
 		for (const auto &segment: _segments) {
 			width = std::max(
-				width, getComponentRegistry()
-						   .getComponent<components::Bound>(
-							   segment->getIdentifier())
-						   .getWidth());
+				width,
+				getComponentRegistry()
+					.getComponent<components::Bound>(segment->getIdentifier())
+					.getWidth());
 		}
 		for (auto &segment: _segments) {
 			if (auto button = std::dynamic_pointer_cast<Button>(segment)) {

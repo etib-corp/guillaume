@@ -37,15 +37,14 @@ namespace guillaume::entities
 						   bool isMorph, bool isDisabled, bool isTrailingIcon,
 						   const std::string &accessibilityLabel,
 						   std::function<void(void)> onClick)
-		: ecs::ParentEntityFiller<components::Transform, components::Bound,
-								  components::Color, components::Borders,
-								  components::Focus,
-								  components::HandButtonInteraction,
-								  components::HandHoverInteraction,
-								  components::MouseHoverInteraction,
-								  components::MouseButtonInteraction,
-								  components::StyleState,
-								  components::Accessibility>(registry)
+		: ecs::ParentEntityFiller<
+			  components::Transform, components::Bound, components::Color,
+			  components::Borders, components::Focus,
+			  components::HandButtonInteraction,
+			  components::HandHoverInteraction,
+			  components::MouseHoverInteraction,
+			  components::MouseButtonInteraction, components::StyleState,
+			  components::Accessibility>(registry)
 		, _iconGlyphName(iconGlyphName)
 		, _iconStyle(iconStyle)
 		, _labelContent(labelContent)
@@ -515,9 +514,9 @@ namespace guillaume::entities
 			Text::Builder labelBuilder(getComponentRegistry(), *this);
 			Text::Director labelDirector;
 
-			_label = labelDirector.makeText(labelBuilder, shared_from_this(),
-											_labelContent, theme::TypeRole::LabelLarge,
-											getInitialContentColor());
+			_label = labelDirector.makeText(
+				labelBuilder, shared_from_this(), _labelContent,
+				theme::TypeRole::LabelLarge, getInitialContentColor());
 		}
 
 		getComponentRegistry()

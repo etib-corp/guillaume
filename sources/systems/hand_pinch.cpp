@@ -65,8 +65,9 @@ namespace guillaume::systems
 			pinchEvent->getPose().getOrientation().getForward());
 		const bool isIntersecting =
 			isInteractive(this->getComponentRegistry(), entityIdentifier)
-			&& hitTest(ray, transform.getPose(), bound,
-					hitMargin(this->getComponentRegistry(), entityIdentifier));
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
 
 		if (isIntersecting) {
 			interaction.setPinching(true);

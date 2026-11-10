@@ -41,9 +41,9 @@ namespace guillaume::entities
 
 	std::shared_ptr<AppBar> AppBar::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<AppBar>(this->getComponentRegistry(),
-											   _config, _variant, _title,
-											   _navigation, _actions, _elevated);
+		auto entity = std::make_shared<AppBar>(
+			this->getComponentRegistry(), _config, _variant, _title,
+			_navigation, _actions, _elevated);
 		return entity;
 	}
 
@@ -105,11 +105,10 @@ namespace guillaume::entities
 								   std::function<void(void)> onPress,
 								   const std::string &accessibilityLabel)
 	{
-		_actions.push_back(Action { iconGlyphName, std::move(onPress),
-									accessibilityLabel.empty()
-										? iconGlyphName
-										: accessibilityLabel,
-									false });
+		_actions.push_back(Action {
+			iconGlyphName, std::move(onPress),
+			accessibilityLabel.empty() ? iconGlyphName : accessibilityLabel,
+			false });
 		return *this;
 	}
 
@@ -241,10 +240,10 @@ namespace guillaume::entities
 		}
 
 		if (_titleEntity == nullptr && !_title.empty()) {
-			_titleEntity = buildText(this->getComponentRegistry(), *this,
-									 this->shared_from_this(), _title,
-									 getTitleRole(),
-									 schemeColor(SchemeColorRole::OnSurface));
+			_titleEntity =
+				buildText(this->getComponentRegistry(), *this,
+						  this->shared_from_this(), _title, getTitleRole(),
+						  schemeColor(SchemeColorRole::OnSurface));
 			if (_titleEntity != nullptr) {
 				auto &registry = this->getComponentRegistry();
 				if (!registry.hasComponent<components::Accessibility>(
@@ -356,8 +355,7 @@ namespace guillaume::entities
 		return _navigationIconEntity;
 	}
 
-	std::shared_ptr<IconButton>
-		AppBar::getActionButton(std::size_t index) const
+	std::shared_ptr<IconButton> AppBar::getActionButton(std::size_t index) const
 	{
 		return index < _actionEntities.size() ? _actionEntities[index]
 											  : nullptr;

@@ -171,7 +171,7 @@ namespace guillaume::entities
 		std::shared_ptr<ecs::Entity> _fill;		///< Fill child entity.
 		bool _built { false };					///< Whether children exist.
 		float _displayed { 0.0f };	  ///< Value currently drawn (animated).
-		float _valueFrom { 0.0f };	  ///< Drawn value when the transition began.
+		float _valueFrom { 0.0f };	  ///< Value when the transition began.
 		bool _visible { true };		  ///< Target visibility (Paper `visible`).
 		float _opacity { 1.0f };	  ///< Current fade opacity.
 		float _opacityFrom { 1.0f };	///< Opacity when the fade began.

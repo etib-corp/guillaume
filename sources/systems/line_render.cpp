@@ -60,7 +60,7 @@ namespace guillaume::systems
 		const auto &pose =
 			getComponent<components::Transform>(entityIdentifier).getPose();
 		const auto &bound = getComponent<components::Bound>(entityIdentifier);
-		const auto &line = getComponent<components::Line>(entityIdentifier);
+		const auto &line  = getComponent<components::Line>(entityIdentifier);
 		const auto &color = line.hasColor()
 			? line.getColor()
 			: getComponent<components::Color>(entityIdentifier).getColor();
@@ -68,8 +68,7 @@ namespace guillaume::systems
 		float centerY = bound.getHeight() / 2.0f;
 		if (line.getPlacement() == components::Line::Placement::Top) {
 			centerY = line.getThickness() / 2.0f;
-		} else if (line.getPlacement()
-				   == components::Line::Placement::Bottom) {
+		} else if (line.getPlacement() == components::Line::Placement::Bottom) {
 			centerY = bound.getHeight() - line.getThickness() / 2.0f;
 		}
 

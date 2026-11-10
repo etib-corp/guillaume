@@ -323,8 +323,9 @@ namespace guillaume::entities
 
 	void FloatingActionButton::applyGeometry(void)
 	{
-		const float containerSize = _customSize.value_or(getContainerSize(_size));
-		const float fontHeight	  = getIconFontSize();
+		const float containerSize =
+			_customSize.value_or(getContainerSize(_size));
+		const float fontHeight = getIconFontSize();
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(getIdentifier())
@@ -456,7 +457,8 @@ namespace guillaume::entities
 		return _mode;
 	}
 
-	FloatingActionButton &FloatingActionButton::setCustomSize(std::optional<float> size)
+	FloatingActionButton &
+		FloatingActionButton::setCustomSize(std::optional<float> size)
 	{
 		if (size.has_value() && *size <= 0.0f) {
 			throw std::invalid_argument("FAB custom size must be positive");

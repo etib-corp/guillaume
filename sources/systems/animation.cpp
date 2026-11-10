@@ -57,7 +57,8 @@ namespace guillaume::systems
 		}
 
 		// Clamp large deltas (e.g. after a stall) so animations do not jump.
-		const float deltaTime = std::clamp(_deltaTime, 0.0f, theme::MotionScale::MaxFrameStep);
+		const float deltaTime =
+			std::clamp(_deltaTime, 0.0f, theme::MotionScale::MaxFrameStep);
 
 		getComponent<components::Animation>(entityIdentifier)
 			.advance(deltaTime);

@@ -189,21 +189,22 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(chip->getChildren().size(), 1U);
 
 		registry
-			.getComponent<components::MouseButtonInteraction>(chip->getIdentifier())
+			.getComponent<components::MouseButtonInteraction>(
+				chip->getIdentifier())
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_TRUE(chip->isSelected());
 		EXPECT_EQ(chip->getChildren().size(), 2U);
-		EXPECT_TRUE(registry
-						.getComponent<components::Accessibility>(
-							chip->getIdentifier())
-						.isSelected());
+		EXPECT_TRUE(
+			registry
+				.getComponent<components::Accessibility>(chip->getIdentifier())
+				.isSelected());
 	}
 
 	TEST_F(TestChip, PressCloseAndDisabled)
 	{
 		ecs::ComponentRegistry registry;
-		auto chip = makeChip(registry, Chip::Variant::Input, "Email");
+		auto chip	= makeChip(registry, Chip::Variant::Input, "Email");
 		int presses = 0;
 		int closes	= 0;
 		chip->setOnPress([&presses]() {
@@ -216,30 +217,34 @@ namespace guillaume::entities::tests
 		chip->update();
 
 		registry
-			.getComponent<components::MouseButtonInteraction>(chip->getIdentifier())
+			.getComponent<components::MouseButtonInteraction>(
+				chip->getIdentifier())
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_EQ(presses, 1);
 		ASSERT_NE(chip->getCloseIconIdentifier(),
 				  ecs::Entity::InvalidIdentifier);
 		registry
-			.getComponent<components::MouseButtonInteraction>(chip->getCloseIconIdentifier())
+			.getComponent<components::MouseButtonInteraction>(
+				chip->getCloseIconIdentifier())
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_EQ(closes, 1);
-		EXPECT_EQ(registry
-					  .getComponent<components::Accessibility>(
-						  chip->getIdentifier())
-					  .getRole(),
-				  components::AccessibilityRole::Button);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Accessibility>(chip->getIdentifier())
+				.getRole(),
+			components::AccessibilityRole::Button);
 
 		chip->setDisabled(true);
 		registry
-			.getComponent<components::MouseButtonInteraction>(chip->getIdentifier())
+			.getComponent<components::MouseButtonInteraction>(
+				chip->getIdentifier())
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		registry
-			.getComponent<components::MouseButtonInteraction>(chip->getCloseIconIdentifier())
+			.getComponent<components::MouseButtonInteraction>(
+				chip->getCloseIconIdentifier())
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_EQ(presses, 1);

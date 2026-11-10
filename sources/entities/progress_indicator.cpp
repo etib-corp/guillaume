@@ -309,10 +309,10 @@ namespace guillaume::entities
 	utility::graphic::Color32Bit ProgressIndicator::faded(
 		const utility::graphic::Color32Bit &color) const
 	{
-		return withAlpha(color, static_cast<std::uint8_t>(
-									static_cast<float>(color.getAlpha())
-										* _opacity
-									+ 0.5f));
+		return withAlpha(
+			color,
+			static_cast<std::uint8_t>(
+				static_cast<float>(color.getAlpha()) * _opacity + 0.5f));
 	}
 
 	float ProgressIndicator::getDisplayedValue(void) const
@@ -472,7 +472,8 @@ namespace guillaume::entities
 						if (_fill == nullptr || _track == nullptr) {
 							return;
 						}
-						const float segment = _trackLength * IndeterminateSegment;
+						const float segment =
+							_trackLength * IndeterminateSegment;
 
 						placeChild(getComponentRegistry(), getIdentifier(),
 								   _fill->getIdentifier(),

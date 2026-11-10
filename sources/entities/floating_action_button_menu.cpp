@@ -77,8 +77,7 @@ namespace guillaume::entities
 			const std::string &iconGlyphName, const std::string &label,
 			std::function<void(void)> onClick)
 	{
-		_actions.push_back(
-			Action { label, iconGlyphName, std::move(onClick) });
+		_actions.push_back(Action { label, iconGlyphName, std::move(onClick) });
 		return *this;
 	}
 
@@ -261,15 +260,15 @@ namespace guillaume::entities
 					FloatingActionButton::Size::Small);
 			} else {
 				// A labelled action shows its label beside the icon.
-				button = labelledBuilder.withIcon(action.iconGlyphName)
-							 .withLabel(action.label)
-							 .withOnClick(action.onClick)
-							 .withVariant(
-								 ExtendedFloatingActionButton::Variant::Surface)
-							 .withSize(
-								 ExtendedFloatingActionButton::Size::Small)
-							 .withAccessibilityLabel(action.label)
-							 .registerEntity(shared_from_this());
+				button =
+					labelledBuilder.withIcon(action.iconGlyphName)
+						.withLabel(action.label)
+						.withOnClick(action.onClick)
+						.withVariant(
+							ExtendedFloatingActionButton::Variant::Surface)
+						.withSize(ExtendedFloatingActionButton::Size::Small)
+						.withAccessibilityLabel(action.label)
+						.registerEntity(shared_from_this());
 			}
 
 			_actionButtons.push_back(button);

@@ -201,7 +201,8 @@ namespace guillaume::entities::tests
 		release();
 		EXPECT_EQ(checkbox->getState(), Checkbox::State::Unchecked);
 		EXPECT_EQ(
-			registry.getComponent<components::Borders>(checkbox->getIdentifier())
+			registry
+				.getComponent<components::Borders>(checkbox->getIdentifier())
 				.getColor(),
 			schemeColor(SchemeColorRole::OnSurfaceVariant));
 	}
@@ -226,7 +227,8 @@ namespace guillaume::entities::tests
 				.getComponent<components::StyleState>(checkbox->getIdentifier())
 				.isEnabled());
 		EXPECT_EQ(
-			registry.getComponent<components::Borders>(checkbox->getIdentifier())
+			registry
+				.getComponent<components::Borders>(checkbox->getIdentifier())
 				.getColor(),
 			disabledContentColor());
 	}

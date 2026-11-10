@@ -90,8 +90,9 @@ namespace guillaume::entities
 	 */
 	inline utility::graphic::Color32Bit disabledContentColor(void)
 	{
-		return withAlpha(schemeColor(SchemeColorRole::OnSurface),
-						 getStateLayerAlpha(theme::StateLayer::DisabledContent));
+		return withAlpha(
+			schemeColor(SchemeColorRole::OnSurface),
+			getStateLayerAlpha(theme::StateLayer::DisabledContent));
 	}
 
 	/**

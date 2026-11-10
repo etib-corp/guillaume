@@ -62,9 +62,9 @@ namespace guillaume::systems
 		if (!hovered
 			&& hasComponent<components::HandHoverInteraction>(
 				entityIdentifier)) {
-			hovered = getComponent<components::HandHoverInteraction>(
-						  entityIdentifier)
-						  .isHovered();
+			hovered =
+				getComponent<components::HandHoverInteraction>(entityIdentifier)
+					.isHovered();
 		}
 
 		bool pressed = false;
@@ -100,8 +100,9 @@ namespace guillaume::systems
 
 		bool dragged = false;
 		if (hasComponent<components::DragInteraction>(entityIdentifier)) {
-			dragged = getComponent<components::DragInteraction>(entityIdentifier)
-						  .isDragging();
+			dragged =
+				getComponent<components::DragInteraction>(entityIdentifier)
+					.isDragging();
 		}
 
 		state.setHovered(hovered).setPressed(pressed).setDragged(dragged);

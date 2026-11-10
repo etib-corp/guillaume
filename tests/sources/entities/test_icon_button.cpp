@@ -201,9 +201,9 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto button = std::make_shared<IconButton>(
-			registry, "favorite", "", components::Glyph::Style::Outlined,
-			false, IconButton::Variant::Standard, IconButton::Size::Small,
-			false, "", std::function<void(void)>());
+			registry, "favorite", "", components::Glyph::Style::Outlined, false,
+			IconButton::Variant::Standard, IconButton::Size::Small, false, "",
+			std::function<void(void)>());
 
 		button->initialize();
 		button->update();
@@ -225,9 +225,10 @@ namespace guillaume::entities::tests
 
 	namespace
 	{
-		std::shared_ptr<IconButton> makeIconButtonFor(
-			ecs::ComponentRegistry &registry, IconButton::Variant variant,
-			bool toggle, bool disabled = false)
+		std::shared_ptr<IconButton>
+			makeIconButtonFor(ecs::ComponentRegistry &registry,
+							  IconButton::Variant variant, bool toggle,
+							  bool disabled = false)
 		{
 			auto button = std::make_shared<IconButton>(
 				registry, "favorite", "", components::Glyph::Style::Outlined,
@@ -261,8 +262,8 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 
-		auto filled = makeIconButtonFor(registry, IconButton::Variant::Filled,
-										false);
+		auto filled =
+			makeIconButtonFor(registry, IconButton::Variant::Filled, false);
 		EXPECT_EQ(containerOf(registry, filled),
 				  schemeColor(SchemeColorRole::Primary));
 		EXPECT_EQ(iconOf(registry, filled),
@@ -275,8 +276,8 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(iconOf(registry, filledToggle),
 				  schemeColor(SchemeColorRole::Primary));
 
-		auto tonal = makeIconButtonFor(registry, IconButton::Variant::Tonal,
-									   false);
+		auto tonal =
+			makeIconButtonFor(registry, IconButton::Variant::Tonal, false);
 		EXPECT_EQ(containerOf(registry, tonal),
 				  schemeColor(SchemeColorRole::SecondaryContainer));
 		EXPECT_EQ(iconOf(registry, tonal),
@@ -295,9 +296,8 @@ namespace guillaume::entities::tests
 	TEST_F(TestIconButton, DisabledStandardHasNoContainerOrBorder)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = makeIconButtonFor(registry,
-										IconButton::Variant::Standard, false,
-										true);
+		auto button = makeIconButtonFor(registry, IconButton::Variant::Standard,
+										false, true);
 		EXPECT_EQ(containerOf(registry, button).getAlpha(), 0);
 		EXPECT_FALSE(
 			registry.getComponent<components::Borders>(button->getIdentifier())

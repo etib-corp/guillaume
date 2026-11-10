@@ -75,7 +75,7 @@ namespace guillaume::entities
 		 * @brief One dialog action, rendered as a text button.
 		 */
 		struct Action {
-			std::string label;				   ///< Button label.
+			std::string label;					  ///< Button label.
 			std::function<void(void)> onPress;	  ///< Press handler.
 		};
 
@@ -85,12 +85,12 @@ namespace guillaume::entities
 		class Builder: public EntityBuilderBase<Dialog>
 		{
 			private:
-			SurfaceConfig _config;					 ///< Surface configuration.
-			Variant _variant { Variant::Alert };	 ///< Dialog variant.
-			std::string _title {};					 ///< Dialog title.
-			std::string _message {};				 ///< Dialog message.
-			std::vector<Action> _actions {};	///< Dialog actions.
-			std::string _icon {};				///< Hero icon glyph.
+			SurfaceConfig _config;					///< Surface configuration.
+			Variant _variant { Variant::Alert };	///< Dialog variant.
+			std::string _title {};					///< Dialog title.
+			std::string _message {};				///< Dialog message.
+			std::vector<Action> _actions {};		///< Dialog actions.
+			std::string _icon {};					///< Hero icon glyph.
 			std::function<void(void)> _onDismiss {};	///< Dismiss handler.
 
 			public:
@@ -197,8 +197,8 @@ namespace guillaume::entities
 		std::shared_ptr<Text> _titleEntity;		 ///< Title child.
 		std::shared_ptr<Text> _messageEntity;	 ///< Message child.
 		std::vector<std::shared_ptr<Button>>
-			_actionEntities {};	   ///< Action buttons.
-		std::shared_ptr<View> _actionRow;	  ///< Right-aligned action row.
+			_actionEntities {};					///< Action buttons.
+		std::shared_ptr<View> _actionRow;		///< Right-aligned action row.
 		std::shared_ptr<Backdrop> _backdrop;	///< Modal backdrop.
 
 		private:

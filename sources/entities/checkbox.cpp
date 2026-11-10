@@ -126,8 +126,8 @@ namespace guillaume::entities
 			});
 
 		// Grow the 18 dp box to the 40 dp target without growing it visually.
-		const auto margin = static_cast<unsigned int>(
-			(TouchTarget - config.fixedWidth) / 2.0f);
+		const auto margin =
+			static_cast<unsigned int>((TouchTarget - config.fixedWidth) / 2.0f);
 		getComponentRegistry()
 			.getComponent<components::MouseHoverInteraction>(getIdentifier())
 			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
@@ -208,10 +208,9 @@ namespace guillaume::entities
 					: _uncheckedColor.value_or(
 						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 				setColor(disabled ? transparentColor()
-								  : stateLayerColor(getComponentRegistry(),
-													getIdentifier(),
-													transparentColor(),
-													outline));
+								  : stateLayerColor(
+										getComponentRegistry(), getIdentifier(),
+										transparentColor(), outline));
 				borders.setWidth(2.0f);
 				borders.setColor(disabled ? disabledContentColor() : outline);
 				break;
@@ -226,8 +225,7 @@ namespace guillaume::entities
 
 		if (_labelEntity != nullptr) {
 			if (disabled) {
-				_labelEntity->setColor(
-					disabledContentColor());
+				_labelEntity->setColor(disabledContentColor());
 			} else if (errored) {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::Error));
 			} else {
@@ -244,8 +242,9 @@ namespace guillaume::entities
 			return;
 		}
 
-		const auto &box = getComponentRegistry().getComponent<components::Bound>(
-			getIdentifier());
+		const auto &box =
+			getComponentRegistry().getComponent<components::Bound>(
+				getIdentifier());
 		const auto &label =
 			getComponentRegistry().getComponent<components::Bound>(
 				_labelEntity->getIdentifier());
@@ -366,9 +365,10 @@ namespace guillaume::entities
 					  "check", 14.0f, schemeColor(SchemeColorRole::OnPrimary));
 
 		if (!_label.empty()) {
-			_labelEntity = buildText(getComponentRegistry(), *this,
-									 shared_from_this(), _label, theme::TypeRole::BodyLarge,
-									 schemeColor(SchemeColorRole::OnSurface));
+			_labelEntity =
+				buildText(getComponentRegistry(), *this, shared_from_this(),
+						  _label, theme::TypeRole::BodyLarge,
+						  schemeColor(SchemeColorRole::OnSurface));
 		}
 
 		// Only the check glyph is laid out inside the box; the label is placed

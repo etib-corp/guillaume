@@ -264,8 +264,8 @@ namespace guillaume::entities
 		 * @param color Custom color, or none for the theme color.
 		 * @return Reference to this checkbox for chaining.
 		 */
-		Checkbox &setCheckedColor(
-			std::optional<utility::graphic::Color32Bit> color);
+		Checkbox &
+			setCheckedColor(std::optional<utility::graphic::Color32Bit> color);
 
 		/**
 		 * @brief Override the unchecked outline color (Paper

@@ -83,9 +83,9 @@ namespace guillaume::entities
 		 */
 		struct Entry {
 			EntryKind kind { EntryKind::Destination };	  ///< Entry kind.
-			std::string icon {};	 ///< Destination icon glyph.
-			std::string label {};	 ///< Destination label or section title.
-			std::string right {};	 ///< Trailing text (badge count, ...).
+			std::string icon {};		///< Destination icon glyph.
+			std::string label {};		///< Destination label or section title.
+			std::string right {};		///< Trailing text (badge count, ...).
 			bool disabled { false };	///< Whether the destination is
 										///< disabled.
 		};
@@ -168,8 +168,8 @@ namespace guillaume::entities
 			 * @param onIndexChange Handler.
 			 * @return Reference to this builder for chaining.
 			 */
-			Builder &
-				withOnIndexChange(std::function<void(std::size_t)> onIndexChange);
+			Builder &withOnIndexChange(
+				std::function<void(std::size_t)> onIndexChange);
 		};
 
 		/**
@@ -367,7 +367,7 @@ namespace guillaume::entities
 		std::vector<std::shared_ptr<ecs::Entity>>
 			_sectionEntities {};	///< Section header children.
 		std::vector<std::shared_ptr<ecs::Entity>>
-			_dividerEntities {};	///< Divider children.
+			_dividerEntities {};				///< Divider children.
 		std::shared_ptr<Backdrop> _backdrop;	///< Modal backdrop.
 		std::function<void(std::size_t)>
 			_onIndexChange {};				  ///< Selection change handler.

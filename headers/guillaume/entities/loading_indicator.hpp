@@ -73,9 +73,9 @@ namespace guillaume::entities
 		class Builder: public EntityBuilderBase<LoadingIndicator>
 		{
 			private:
-			SurfaceConfig _config;					 ///< Surface configuration.
-			Variant _variant { Variant::Circular };	 ///< Visual variant.
-			float _size { 48.0f };					 ///< Circular diameter.
+			SurfaceConfig _config;	  ///< Surface configuration.
+			Variant _variant { Variant::Circular };	   ///< Visual variant.
+			float _size { 48.0f };					   ///< Circular diameter.
 
 			public:
 			/**

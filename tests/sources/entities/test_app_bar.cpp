@@ -219,7 +219,8 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		const std::pair<AppBar::Variant, std::pair<float, theme::TypeRole>>
 			expected[] = {
-				{ AppBar::Variant::Small, { 64.0f, theme::TypeRole::TitleLarge } },
+				{ AppBar::Variant::Small,
+				  { 64.0f, theme::TypeRole::TitleLarge } },
 				{ AppBar::Variant::CenterAligned,
 				  { 64.0f, theme::TypeRole::TitleLarge } },
 				{ AppBar::Variant::Medium,
@@ -231,13 +232,14 @@ namespace guillaume::entities::tests
 		for (const auto &[variant, values]: expected) {
 			ecs::EntityRegistryContainer entityRegistry;
 			AppBar::Builder builder(registry, entityRegistry);
-			auto appBar = builder.withVariant(variant)
-							  .withTitle("Title")
-							  .registerEntity(nullptr);
+			auto appBar =
+				builder.withVariant(variant).withTitle("Title").registerEntity(
+					nullptr);
 			appBar->update();
 
 			EXPECT_FLOAT_EQ(
-				registry.getComponent<components::Bound>(appBar->getIdentifier())
+				registry
+					.getComponent<components::Bound>(appBar->getIdentifier())
 					.getHeight(),
 				values.first);
 			ASSERT_NE(appBar->getTitle(), nullptr);
@@ -287,8 +289,7 @@ namespace guillaume::entities::tests
 				  components::AccessibilityRole::Button);
 		EXPECT_EQ(
 			registry
-				.getComponent<components::Color>(
-					action->getIconIdentifier())
+				.getComponent<components::Color>(action->getIconIdentifier())
 				.getColor(),
 			schemeColor(SchemeColorRole::OnSurfaceVariant));
 
@@ -317,11 +318,11 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Color>(appBar->getIdentifier())
 				.getColor(),
 			getElevatedSurfaceColor(theme::ElevationLevel::Level2));
-		EXPECT_EQ(registry
-					  .getComponent<components::Elevation>(
-						  appBar->getIdentifier())
-					  .getElevationLevel(),
-				  theme::ElevationLevel::Level2);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Elevation>(appBar->getIdentifier())
+				.getElevationLevel(),
+			theme::ElevationLevel::Level2);
 	}
 
 }	 // namespace guillaume::entities::tests

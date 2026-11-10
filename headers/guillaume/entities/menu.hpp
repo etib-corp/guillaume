@@ -92,9 +92,9 @@ namespace guillaume::entities
 		 * @brief Menu item.
 		 */
 		struct Item {
-			std::string label;			   ///< Item label text.
-			std::string leadingIcon;	   ///< Optional leading icon glyph.
-			std::string trailingIcon {};   ///< Optional trailing icon glyph.
+			std::string label;				///< Item label text.
+			std::string leadingIcon;		///< Optional leading icon glyph.
+			std::string trailingIcon {};	///< Optional trailing icon glyph.
 			std::function<void(void)> onPress {};	 ///< Press handler.
 			bool disabled { false };	///< Whether the item is disabled.
 			bool dense { false };		///< Whether the item is 32 dp high.
@@ -354,8 +354,8 @@ namespace guillaume::entities
 		struct Row {
 			std::shared_ptr<View> view;	   ///< Row container.
 			std::vector<std::shared_ptr<ecs::Entity>>
-				content;					   ///< Row children.
-			std::shared_ptr<Text> label;	   ///< Label child.
+				content;					///< Row children.
+			std::shared_ptr<Text> label;	///< Label child.
 			std::vector<std::shared_ptr<ecs::Entity>>
 				icons;	  ///< Leading/trailing icon children.
 		};

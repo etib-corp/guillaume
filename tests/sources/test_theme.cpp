@@ -77,9 +77,9 @@ namespace guillaume::tests
 			SchemeColorRole::SurfaceContainerHighest,
 		};
 		const utility::graphic::Color32Bit black(0, 0, 0, 255);
-		for (ThemeSchemeRole scheme :
-			 {ThemeSchemeRole::Light, ThemeSchemeRole::Dark}) {
-			for (SchemeColorRole role : surfaces) {
+		for (ThemeSchemeRole scheme:
+			 { ThemeSchemeRole::Light, ThemeSchemeRole::Dark }) {
+			for (SchemeColorRole role: surfaces) {
 				EXPECT_FALSE(sameColor(
 					defaultTheme.getScheme(scheme).getColor(role).getColor(),
 					black))
@@ -107,11 +107,11 @@ namespace guillaume::tests
 	{
 		const Scheme &light = defaultTheme.getScheme(ThemeSchemeRole::Light);
 		const Scheme &dark	= defaultTheme.getScheme(ThemeSchemeRole::Dark);
-		for (SchemeColorRole role :
-			 {SchemeColorRole::Surface, SchemeColorRole::OnSurface,
-			  SchemeColorRole::SurfaceContainerLow,
-			  SchemeColorRole::SurfaceContainerHighest,
-			  SchemeColorRole::OutlineVariant}) {
+		for (SchemeColorRole role:
+			 { SchemeColorRole::Surface, SchemeColorRole::OnSurface,
+			   SchemeColorRole::SurfaceContainerLow,
+			   SchemeColorRole::SurfaceContainerHighest,
+			   SchemeColorRole::OutlineVariant }) {
 			EXPECT_FALSE(sameColor(light.getColor(role).getColor(),
 								   dark.getColor(role).getColor()))
 				<< static_cast<std::size_t>(role);
@@ -138,8 +138,7 @@ namespace guillaume::tests
 			const auto &container =
 				current.getColor(SchemeColorRole::SurfaceDisabled).getColor();
 			const auto &content =
-				current.getColor(SchemeColorRole::OnSurfaceDisabled)
-					.getColor();
+				current.getColor(SchemeColorRole::OnSurfaceDisabled).getColor();
 			EXPECT_EQ(container.getRed(), onSurface.getRed());
 			EXPECT_EQ(container.getAlpha(),
 					  getStateLayerAlpha(theme::StateLayer::DisabledContainer));
@@ -173,8 +172,8 @@ namespace guillaume::tests
 			float letterSpacing;
 			theme::FontWeight weight;
 		};
-		constexpr auto R = theme::FontWeight::Regular;
-		constexpr auto M = theme::FontWeight::Medium;
+		constexpr auto R		  = theme::FontWeight::Regular;
+		constexpr auto M		  = theme::FontWeight::Medium;
 		const Expected expected[] = {
 			{ theme::TypeRole::DisplayLarge, 57.0f, 64.0f, 0.0f, R },
 			{ theme::TypeRole::DisplayMedium, 45.0f, 52.0f, 0.0f, R },
@@ -257,10 +256,10 @@ namespace guillaume::tests
 		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::Focused), 0.12f);
 		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::Pressed), 0.12f);
 		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::Dragged), 0.16f);
-		EXPECT_FLOAT_EQ(
-			layers.getOpacity(theme::StateLayer::DisabledContent), 0.38f);
-		EXPECT_FLOAT_EQ(
-			layers.getOpacity(theme::StateLayer::DisabledContainer), 0.12f);
+		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::DisabledContent),
+						0.38f);
+		EXPECT_FLOAT_EQ(layers.getOpacity(theme::StateLayer::DisabledContainer),
+						0.12f);
 		EXPECT_EQ(getStateLayerAlpha(theme::StateLayer::Hovered), 20);
 		EXPECT_EQ(getStateLayerAlpha(theme::StateLayer::Pressed), 31);
 		EXPECT_EQ(getStateLayerAlpha(theme::StateLayer::DisabledContent), 97);
@@ -280,27 +279,29 @@ namespace guillaume::tests
 				expected[level]);
 		}
 
-		const auto surface = getActiveScheme()
-								 .getColor(SchemeColorRole::Surface)
-								 .getColor();
+		const auto surface =
+			getActiveScheme().getColor(SchemeColorRole::Surface).getColor();
 		EXPECT_TRUE(sameColor(
 			getElevatedSurfaceColor(theme::ElevationLevel::Level0), surface));
 		EXPECT_FALSE(sameColor(
 			getElevatedSurfaceColor(theme::ElevationLevel::Level3), surface));
 		EXPECT_EQ(getElevationToken(theme::ElevationLevel::Level0).shadowAlpha,
 				  0);
-		EXPECT_GT(getElevationToken(theme::ElevationLevel::Level5).shadowSpread,
-				  getElevationToken(theme::ElevationLevel::Level1).shadowSpread);
+		EXPECT_GT(
+			getElevationToken(theme::ElevationLevel::Level5).shadowSpread,
+			getElevationToken(theme::ElevationLevel::Level1).shadowSpread);
 	}
 
 	TEST_F(TestTheme, MotionDurationsFollowMaterialTokens)
 	{
-		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Short1), 0.05f);
+		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Short1),
+						0.05f);
 		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Short4), 0.2f);
-		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Medium2), 0.3f);
+		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Medium2),
+						0.3f);
 		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::Long2), 0.5f);
-		EXPECT_FLOAT_EQ(
-			getMotionDuration(theme::MotionDuration::ExtraLong4), 1.0f);
+		EXPECT_FLOAT_EQ(getMotionDuration(theme::MotionDuration::ExtraLong4),
+						1.0f);
 		EXPECT_EQ(theme::MotionScale::enter(),
 				  motion::Easing::EmphasizedDecelerate);
 		EXPECT_EQ(theme::MotionScale::exit(),
@@ -309,8 +310,8 @@ namespace guillaume::tests
 
 	TEST_F(TestTheme, EmphasizedEasingsHitEndpoints)
 	{
-		for (motion::Easing easing : { motion::Easing::EmphasizedDecelerate,
-									   motion::Easing::EmphasizedAccelerate }) {
+		for (motion::Easing easing: { motion::Easing::EmphasizedDecelerate,
+									  motion::Easing::EmphasizedAccelerate }) {
 			EXPECT_NEAR(motion::applyEasing(easing, 0.0f), 0.0f, 1e-4f);
 			EXPECT_NEAR(motion::applyEasing(easing, 1.0f), 1.0f, 1e-4f);
 		}

@@ -202,26 +202,23 @@ namespace guillaume::entities::tests
 
 		const auto clearIdentifier = search->getClearIdentifier();
 		ASSERT_NE(clearIdentifier, ecs::Entity::InvalidIdentifier);
-		EXPECT_GT(
-			registry.getComponent<components::Color>(clearIdentifier)
-				.getColor()
-				.getAlpha(),
-			0);
+		EXPECT_GT(registry.getComponent<components::Color>(clearIdentifier)
+					  .getColor()
+					  .getAlpha(),
+				  0);
 
 		registry
-			.getComponent<components::MouseButtonInteraction>(
-				clearIdentifier)
+			.getComponent<components::MouseButtonInteraction>(clearIdentifier)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 
 		EXPECT_TRUE(cleared);
 		EXPECT_EQ(search->getText(), "");
 		search->update();
-		EXPECT_EQ(
-			registry.getComponent<components::Color>(clearIdentifier)
-				.getColor()
-				.getAlpha(),
-			0);
+		EXPECT_EQ(registry.getComponent<components::Color>(clearIdentifier)
+					  .getColor()
+					  .getAlpha(),
+				  0);
 		EXPECT_FALSE(
 			registry.getComponent<components::StyleState>(clearIdentifier)
 				.isEnabled());
@@ -240,18 +237,16 @@ namespace guillaume::entities::tests
 		});
 		search->setIcon("arrow_back");
 		const auto icon = search->getIconIdentifier();
-		registry
-			.getComponent<components::MouseButtonInteraction>(
-				icon)
+		registry.getComponent<components::MouseButtonInteraction>(icon)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 
 		EXPECT_EQ(presses, 1);
 		EXPECT_EQ(registry.getComponent<components::Glyph>(icon).getName(),
 				  "arrow_back");
-		EXPECT_EQ(registry.getComponent<components::Accessibility>(icon)
-					  .getRole(),
-				  components::AccessibilityRole::Button);
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(icon).getRole(),
+			components::AccessibilityRole::Button);
 	}
 
 	TEST_F(TestSearch, PlaceholderShowsWhileEmpty)
@@ -288,7 +283,8 @@ namespace guillaume::entities::tests
 
 		EXPECT_TRUE(search->isLoading());
 		EXPECT_EQ(
-			registry.getComponent<components::Elevation>(search->getIdentifier())
+			registry
+				.getComponent<components::Elevation>(search->getIdentifier())
 				.getElevationLevel(),
 			theme::ElevationLevel::Level3);
 		EXPECT_EQ(

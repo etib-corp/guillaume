@@ -47,7 +47,7 @@ namespace guillaume::entities
 	{
 		constexpr float LinearHeight = 4.0f;
 		constexpr float LinearWidth	 = 200.0f;
-		const float LinearRadius = getShapeRadius(theme::ShapeRole::Full);
+		const float LinearRadius	 = getShapeRadius(theme::ShapeRole::Full);
 		constexpr float CircularSize = 48.0f;
 		constexpr float StrokeRatio	 = 4.0f / 48.0f;	///< M3 4 dp at 48 dp.
 		constexpr float TwoPi		 = 6.28318530717958647692f;
@@ -241,8 +241,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	utility::graphic::Color32Bit
-		LoadingIndicator::getIndicatorColor(void) const
+	utility::graphic::Color32Bit LoadingIndicator::getIndicatorColor(void) const
 	{
 		return _indicatorColor.value_or(schemeColor(SchemeColorRole::Primary));
 	}
@@ -250,7 +249,8 @@ namespace guillaume::entities
 	LoadingIndicator &LoadingIndicator::setSize(float size)
 	{
 		if (size <= 0.0f) {
-			throw std::invalid_argument("Loading indicator size must be positive");
+			throw std::invalid_argument(
+				"Loading indicator size must be positive");
 		}
 		_diameter = size;
 		if (_variant == Variant::Circular) {
@@ -369,9 +369,9 @@ namespace guillaume::entities
 		getComponentRegistry()
 			.getComponent<components::Color>(_animation->getIdentifier())
 			.setColor(withAlpha(
-				color, static_cast<std::uint8_t>(
-						   static_cast<float>(color.getAlpha()) * _opacity
-						   + 0.5f)));
+				color,
+				static_cast<std::uint8_t>(
+					static_cast<float>(color.getAlpha()) * _opacity + 0.5f)));
 
 		if (_variant == Variant::Circular) {
 			auto &arc = getComponentRegistry().getComponent<components::Arc>(

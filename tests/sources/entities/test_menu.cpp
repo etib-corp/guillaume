@@ -92,11 +92,10 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(menu->getIdentifier());
 		EXPECT_GE(bound.getWidth(), Menu::MinWidth);
 		EXPECT_LE(bound.getWidth(), Menu::MaxWidth);
-		EXPECT_FLOAT_EQ(registry
-							.getComponent<components::Bound>(
-								menu->getItemIdentifier(0))
-							.getWidth(),
-						bound.getWidth());
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
+				.getWidth(),
+			bound.getWidth());
 	}
 
 	TEST_F(TestMenu, ItemCountMatchesInput)
@@ -184,8 +183,8 @@ namespace guillaume::entities::tests
 	TEST_F(TestMenu, ItemsArePressableWithMenuSemantics)
 	{
 		ecs::ComponentRegistry registry;
-		int presses = 0;
-		auto items	= makeItems(2);
+		int presses		 = 0;
+		auto items		 = makeItems(2);
 		items[0].onPress = [&presses]() {
 			++presses;
 		};
@@ -193,7 +192,7 @@ namespace guillaume::entities::tests
 			++presses;
 		};
 		items[1].disabled = true;
-		auto menu = makeMenu(registry, items);
+		auto menu		  = makeMenu(registry, items);
 		menu->initialize();
 		menu->update();
 
@@ -211,7 +210,8 @@ namespace guillaume::entities::tests
 
 		EXPECT_EQ(presses, 1);
 		EXPECT_EQ(
-			registry.getComponent<components::Accessibility>(menu->getIdentifier())
+			registry
+				.getComponent<components::Accessibility>(menu->getIdentifier())
 				.getRole(),
 			components::AccessibilityRole::Menu);
 		EXPECT_EQ(registry
@@ -239,16 +239,14 @@ namespace guillaume::entities::tests
 		menu->initialize();
 		menu->update();
 
-		EXPECT_FLOAT_EQ(registry
-							.getComponent<components::Bound>(
-								menu->getItemIdentifier(0))
-							.getHeight(),
-						48.0f);
-		EXPECT_FLOAT_EQ(registry
-							.getComponent<components::Bound>(
-								menu->getItemIdentifier(1))
-							.getHeight(),
-						32.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
+				.getHeight(),
+			48.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(menu->getItemIdentifier(1))
+				.getHeight(),
+			32.0f);
 	}
 
 	TEST_F(TestMenu, AnchorPlacesTheMenuBelowOrAbove)
@@ -272,8 +270,8 @@ namespace guillaume::entities::tests
 		menu->update();
 
 		auto y = [&]() {
-			return registry.getComponent<components::Transform>(
-							   menu->getIdentifier())
+			return registry
+				.getComponent<components::Transform>(menu->getIdentifier())
 				.getPose()
 				.getPosition()
 				.getY();

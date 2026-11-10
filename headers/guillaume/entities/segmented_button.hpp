@@ -61,10 +61,10 @@ namespace guillaume::entities
 		 * @brief Per-segment configuration (Paper `buttons[]` entry).
 		 */
 		struct Segment {
-			std::string label {};				///< Visible label.
-			std::string icon {};				///< Optional leading icon.
-			bool disabled { false };			///< Whether disabled.
-			std::string accessibilityLabel {};	///< Accessible name.
+			std::string label {};				  ///< Visible label.
+			std::string icon {};				  ///< Optional leading icon.
+			bool disabled { false };			  ///< Whether disabled.
+			std::string accessibilityLabel {};	  ///< Accessible name.
 		};
 
 		/**
@@ -82,8 +82,8 @@ namespace guillaume::entities
 			std::shared_ptr<SegmentedButton>
 				_segmentedButton;	 ///< Segmented button entity being
 									 ///< built
-			std::vector<std::string> _labels;	 ///< Labels of the segments
-			SelectionMode _selectionMode;		 ///< Selection mode
+			std::vector<std::string> _labels;		 ///< Labels of the segments
+			SelectionMode _selectionMode;			 ///< Selection mode
 			std::vector<Segment> _segmentConfigs;	 ///< Per-segment options
 			std::function<void(std::size_t)>
 				_onChange;	  ///< Change event handler (selected index)
@@ -166,7 +166,7 @@ namespace guillaume::entities
 		};
 
 		private:
-		std::vector<std::string> _labels {};	///< Labels of the segments
+		std::vector<std::string> _labels {};		///< Labels of the segments
 		std::vector<Segment> _segmentConfigs {};	///< Segment options
 		SelectionMode _selectionMode {
 			SelectionMode::Single

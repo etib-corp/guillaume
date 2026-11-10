@@ -114,7 +114,7 @@ namespace guillaume::theme
 	 * @brief Shadow and tonal tint of one elevation level.
 	 */
 	struct ElevationToken {
-		float tintOpacity { 0.0f };	   ///< SurfaceTint opacity over Surface.
+		float tintOpacity { 0.0f };		///< SurfaceTint opacity over Surface.
 		float shadowSpread { 0.0f };	///< Shadow expansion, in dp.
 		std::uint8_t shadowAlpha { 0 };	   ///< Peak shadow opacity (0-255).
 	};

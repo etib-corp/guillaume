@@ -92,8 +92,8 @@ namespace guillaume::entities
 			Variant _variant { Variant::SingleLine };	 ///< Snackbar variant.
 			std::string _message {};					 ///< Message text.
 			std::string _action {};						 ///< Action label.
-			bool _visible { true };	   ///< Initial visibility.
-			float _duration { DurationMedium };	   ///< Display time.
+			bool _visible { true };						///< Initial visibility.
+			float _duration { DurationMedium };			///< Display time.
 			std::function<void(void)> _onDismiss {};	///< Dismiss handler.
 			std::function<void(void)> _onAction {};		///< Action handler.
 
@@ -203,7 +203,7 @@ namespace guillaume::entities
 		std::shared_ptr<Text> _messageEntity;		 ///< Message child entity.
 		std::shared_ptr<Text> _actionEntity;		 ///< Action child entity.
 		bool _visible { true };	   ///< Whether the snackbar is shown.
-		float _duration { DurationMedium };		  ///< Display time.
+		float _duration { DurationMedium };			///< Display time.
 		std::function<void(void)> _onDismiss {};	///< Dismiss handler.
 		std::function<void(void)> _onAction {};		///< Action handler.
 
@@ -291,7 +291,8 @@ namespace guillaume::entities
 		/** @brief Show the snackbar. @return *this. */
 		Snackbar &show(void);
 
-		/** @brief Hide the snackbar without calling onDismiss. @return *this. */
+		/** @brief Hide the snackbar without calling onDismiss. @return *this.
+		 */
 		Snackbar &hide(void);
 
 		/** @brief Check the visibility. @return True when shown. */

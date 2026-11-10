@@ -170,36 +170,32 @@ namespace guillaume::entities::tests
 		const auto role = [](SchemeColorRole value) {
 			return getActiveScheme().getColor(value).getColor();
 		};
+		EXPECT_EQ(registry.getComponent<components::Color>(bar->getIdentifier())
+					  .getColor(),
+				  role(SchemeColorRole::SurfaceContainer));
 		EXPECT_EQ(
-			registry.getComponent<components::Color>(bar->getIdentifier())
+			registry
+				.getComponent<components::Color>(bar->getIndicatorIdentifier(0))
 				.getColor(),
-			role(SchemeColorRole::SurfaceContainer));
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(
-						  bar->getIndicatorIdentifier(0))
-					  .getColor(),
-				  role(SchemeColorRole::SecondaryContainer));
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(
-						  bar->getIndicatorIdentifier(1))
-					  .getColor()
-					  .getAlpha(),
-				  0);
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(
-						  bar->getLabelIdentifier(0))
-					  .getColor(),
-				  role(SchemeColorRole::OnSurface));
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(
-						  bar->getIconIdentifier(0))
-					  .getColor(),
-				  role(SchemeColorRole::OnSecondaryContainer));
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(
-						  bar->getLabelIdentifier(1))
-					  .getColor(),
-				  role(SchemeColorRole::OnSurfaceVariant));
+			role(SchemeColorRole::SecondaryContainer));
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Color>(bar->getIndicatorIdentifier(1))
+				.getColor()
+				.getAlpha(),
+			0);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(bar->getLabelIdentifier(0))
+				.getColor(),
+			role(SchemeColorRole::OnSurface));
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(bar->getIconIdentifier(0))
+				.getColor(),
+			role(SchemeColorRole::OnSecondaryContainer));
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(bar->getLabelIdentifier(1))
+				.getColor(),
+			role(SchemeColorRole::OnSurfaceVariant));
 	}
 
 	TEST_F(TestNavigationBar, PressSelectsAndReportsTheIndex)
@@ -231,14 +227,14 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(bar->getSelectedIndex(), 1U);
 		EXPECT_EQ(reported, 1U);
 		EXPECT_EQ(presses, 1U);
-		EXPECT_EQ(registry
-					  .getComponent<components::Glyph>(bar->getIconIdentifier(1))
-					  .getName(),
-				  "mail");
-		EXPECT_EQ(registry
-					  .getComponent<components::Glyph>(bar->getIconIdentifier(0))
-					  .getName(),
-				  "home_outline");
+		EXPECT_EQ(
+			registry.getComponent<components::Glyph>(bar->getIconIdentifier(1))
+				.getName(),
+			"mail");
+		EXPECT_EQ(
+			registry.getComponent<components::Glyph>(bar->getIconIdentifier(0))
+				.getName(),
+			"home_outline");
 		EXPECT_NE(bar->getBadgeIdentifier(1), ecs::Entity::InvalidIdentifier);
 		EXPECT_EQ(bar->getBadgeIdentifier(0), ecs::Entity::InvalidIdentifier);
 	}
@@ -251,7 +247,8 @@ namespace guillaume::entities::tests
 		bar->update();
 
 		EXPECT_EQ(
-			registry.getComponent<components::Accessibility>(bar->getIdentifier())
+			registry
+				.getComponent<components::Accessibility>(bar->getIdentifier())
 				.getRole(),
 			components::AccessibilityRole::TabList);
 		const auto &first = registry.getComponent<components::Accessibility>(

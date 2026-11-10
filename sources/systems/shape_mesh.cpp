@@ -258,11 +258,12 @@ namespace guillaume::systems::shape
 			const auto appendArc = [&](float cx, float cy, float start,
 									   float end) {
 				for (int i = 0; i <= arcSegments; ++i) {
-					const float t = static_cast<float>(i)
-						/ static_cast<float>(arcSegments);
+					const float t =
+						static_cast<float>(i) / static_cast<float>(arcSegments);
 					const float angle = start + (end - start) * t;
-					loop.push_back(utility::math::Vector2F(
-						{ cx + std::cos(angle) * r, cy + std::sin(angle) * r }));
+					loop.push_back(
+						utility::math::Vector2F({ cx + std::cos(angle) * r,
+												  cy + std::sin(angle) * r }));
 				}
 			};
 			appendArc(hw - r, -hh + r, -pi / 2.0f, 0.0f);
@@ -283,11 +284,11 @@ namespace guillaume::systems::shape
 
 		const auto count = static_cast<std::uint32_t>(outer.size());
 		for (std::uint32_t i = 0; i < count; ++i) {
-			const std::uint32_t next		= (i + 1) % count;
-			const std::uint32_t outerIndex	= i * 2;
-			const std::uint32_t innerIndex	= i * 2 + 1;
-			const std::uint32_t outerNext	= next * 2;
-			const std::uint32_t innerNext	= next * 2 + 1;
+			const std::uint32_t next	   = (i + 1) % count;
+			const std::uint32_t outerIndex = i * 2;
+			const std::uint32_t innerIndex = i * 2 + 1;
+			const std::uint32_t outerNext  = next * 2;
+			const std::uint32_t innerNext  = next * 2 + 1;
 			mesh.addIndex(outerIndex);
 			mesh.addIndex(innerIndex);
 			mesh.addIndex(outerNext);

@@ -61,9 +61,9 @@ namespace guillaume::entities
 	 * The label rests in the input position (`bodyLarge`) and floats
 	 * (`bodySmall`) while the field is focused or populated: above the input in
 	 * the filled variant, on the outline in the outlined variant. The active
-	 * indicator is 2 dp `primary` while focused, `error` in the error state, and
-	 * `onSurface` at the disabled opacities while disabled. The width follows
-	 * the content with a 100 dp minimum unless `setWidth()` forces it.
+	 * indicator is 2 dp `primary` while focused, `error` in the error state,
+	 * and `onSurface` at the disabled opacities while disabled. The width
+	 * follows the content with a 100 dp minimum unless `setWidth()` forces it.
 	 *
 	 * The Material Design variants are:
 	 * - `Filled`: a `surfaceContainerHighest` container with a bottom line.
@@ -229,7 +229,8 @@ namespace guillaume::entities
 		 */
 		~TextField(void) override;
 
-		/** @brief Set the variant. @param variant New variant. @return *this. */
+		/** @brief Set the variant. @param variant New variant. @return *this.
+		 */
 		TextField &setVariant(Variant variant);
 
 		/** @brief Get the variant. @return The variant. */
@@ -252,7 +253,8 @@ namespace guillaume::entities
 		/** @brief Get the input text. @return The text. */
 		std::string getText(void) const;
 
-		/** @brief Set the error state. @param error New state. @return *this. */
+		/** @brief Set the error state. @param error New state. @return *this.
+		 */
 		TextField &setError(bool error);
 
 		/** @brief Check the error state. @return True in error. */
@@ -351,7 +353,8 @@ namespace guillaume::entities
 		 * @param onChange The handler.
 		 * @return Reference to this field for chaining.
 		 */
-		TextField &setOnChange(std::function<void(const std::string &)> onChange);
+		TextField &
+			setOnChange(std::function<void(const std::string &)> onChange);
 
 		/**
 		 * @brief Set the handler called when the field gains the focus.
@@ -385,7 +388,8 @@ namespace guillaume::entities
 		/** @brief Get the suffix child. @return The identifier or Invalid. */
 		ecs::Entity::Identifier getSuffixIdentifier(void) const;
 
-		/** @brief Get the error icon child. @return The identifier or Invalid. */
+		/** @brief Get the error icon child. @return The identifier or Invalid.
+		 */
 		ecs::Entity::Identifier getErrorIconIdentifier(void) const;
 
 		/**
@@ -411,9 +415,9 @@ namespace guillaume::entities
 		bool _multiline { false };				 ///< Multiline flag.
 		std::optional<float> _width {};			 ///< Forced width.
 		std::function<void(const std::string &)>
-			_onChange {};						 ///< Text change handler.
-		std::function<void(void)> _onFocus {};	 ///< Focus handler.
-		std::function<void(void)> _onBlur {};	 ///< Blur handler.
+			_onChange {};							  ///< Text change handler.
+		std::function<void(void)> _onFocus {};		  ///< Focus handler.
+		std::function<void(void)> _onBlur {};		  ///< Blur handler.
 		std::shared_ptr<Icon> _leadingIconEntity;	  ///< Leading icon child.
 		std::shared_ptr<Icon> _trailingIconEntity;	  ///< Trailing icon child.
 		std::shared_ptr<Icon> _errorIconEntity;		  ///< Error icon child.

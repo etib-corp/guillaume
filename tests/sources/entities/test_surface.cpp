@@ -64,7 +64,8 @@ namespace guillaume::entities::tests
 				.getColor(),
 			getElevatedSurfaceColor(theme::ElevationLevel::Level1));
 		EXPECT_TRUE(
-			registry.getComponent<components::Elevation>(surface->getIdentifier())
+			registry
+				.getComponent<components::Elevation>(surface->getIdentifier())
 				.hasShadow());
 	}
 
@@ -79,12 +80,14 @@ namespace guillaume::entities::tests
 			surface->update();
 
 			EXPECT_EQ(
-				registry.getComponent<components::Color>(surface->getIdentifier())
+				registry
+					.getComponent<components::Color>(surface->getIdentifier())
 					.getColor(),
 				getElevatedSurfaceColor(level))
 				<< index;
-			const auto &elevation = registry.getComponent<components::Elevation>(
-				surface->getIdentifier());
+			const auto &elevation =
+				registry.getComponent<components::Elevation>(
+					surface->getIdentifier());
 			EXPECT_EQ(elevation.getElevationLevel(), level) << index;
 			EXPECT_EQ(elevation.hasShadow(),
 					  level != theme::ElevationLevel::Level0)
@@ -103,12 +106,14 @@ namespace guillaume::entities::tests
 				.getColor(),
 			getElevatedSurfaceColor(theme::ElevationLevel::Level3));
 		EXPECT_FALSE(
-			registry.getComponent<components::Elevation>(surface->getIdentifier())
+			registry
+				.getComponent<components::Elevation>(surface->getIdentifier())
 				.hasShadow());
 
 		surface->setMode(Surface::Mode::Elevated);
 		EXPECT_EQ(
-			registry.getComponent<components::Elevation>(surface->getIdentifier())
+			registry
+				.getComponent<components::Elevation>(surface->getIdentifier())
 				.getElevationLevel(),
 			theme::ElevationLevel::Level3);
 	}

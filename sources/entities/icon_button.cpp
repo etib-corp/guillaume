@@ -288,10 +288,10 @@ namespace guillaume::entities
 		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
-				.setColor((_variant == Variant::Filled
-						   || _variant == Variant::Tonal)
-							  ? getDisabledContainerColor()
-							  : transparentColor());
+				.setColor(
+					(_variant == Variant::Filled || _variant == Variant::Tonal)
+						? getDisabledContainerColor()
+						: transparentColor());
 
 			getComponentRegistry()
 				.getComponent<components::Borders>(getIdentifier())

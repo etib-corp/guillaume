@@ -91,9 +91,9 @@ namespace guillaume::entities
 		{
 			private:
 			NavigationBar::Destination _spec {};	///< Destination data.
-			bool _showLabel { true };	   ///< Whether the label is shown.
-			std::shared_ptr<View> _pill {};		   ///< Active indicator.
-			std::shared_ptr<Icon> _icon {};		   ///< Icon child.
+			bool _showLabel { true };		   ///< Whether the label is shown.
+			std::shared_ptr<View> _pill {};	   ///< Active indicator.
+			std::shared_ptr<Icon> _icon {};	   ///< Icon child.
 			std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
 			std::shared_ptr<Badge> _badge {};		  ///< Badge child.
 			std::function<void(void)> _onPress {};	  ///< Press handler.
@@ -173,9 +173,9 @@ namespace guillaume::entities
 				_pill->setFixedWidth(IndicatorWidth);
 				_pill->setFixedHeight(IndicatorHeight);
 
-				_icon = buildIcon(getComponentRegistry(), *_pill, _pill,
-								  _spec.icon, 24.0f,
-								  schemeColor(SchemeColorRole::OnSurfaceVariant));
+				_icon = buildIcon(
+					getComponentRegistry(), *_pill, _pill, _spec.icon, 24.0f,
+					schemeColor(SchemeColorRole::OnSurfaceVariant));
 				if (_icon != nullptr) {
 					_pill->setEntities({ _icon });
 				}
@@ -259,12 +259,12 @@ namespace guillaume::entities
 			 */
 			void applySelectionColor(bool selected)
 			{
-				const auto pillColor = selected
-					? schemeColor(SchemeColorRole::SecondaryContainer)
-					: transparentColor();
-				const auto iconColor = selected
-					? schemeColor(SchemeColorRole::OnSecondaryContainer)
-					: schemeColor(SchemeColorRole::OnSurfaceVariant);
+				const auto pillColor  = selected
+					 ? schemeColor(SchemeColorRole::SecondaryContainer)
+					 : transparentColor();
+				const auto iconColor  = selected
+					 ? schemeColor(SchemeColorRole::OnSecondaryContainer)
+					 : schemeColor(SchemeColorRole::OnSurfaceVariant);
 				const auto labelColor = selected
 					? schemeColor(SchemeColorRole::OnSurface)
 					: schemeColor(SchemeColorRole::OnSurfaceVariant);
@@ -367,9 +367,8 @@ namespace guillaume::entities
 			std::vector<NavigationBar::Destination> destinations;
 			destinations.reserve(pairs.size());
 			for (const auto &pair: pairs) {
-				destinations.push_back(
-					NavigationBar::Destination { pair.first, pair.second, "",
-												 "" });
+				destinations.push_back(NavigationBar::Destination {
+					pair.first, pair.second, "", "" });
 			}
 			return destinations;
 		}
@@ -501,18 +500,18 @@ namespace guillaume::entities
 		const auto &bound =
 			getComponentRegistry().getComponent<components::Bound>(
 				getIdentifier());
-		const float padding = getSurfaceConfig().padding;
-		const float width	= getSurfaceConfig().hasFixedWidth
-			  ? getSurfaceConfig().fixedWidth
-			  : bound.getWidth();
+		const float padding			 = getSurfaceConfig().padding;
+		const float width			 = getSurfaceConfig().hasFixedWidth
+					   ? getSurfaceConfig().fixedWidth
+					   : bound.getWidth();
 		const float destinationWidth = _destinations.empty()
 			? 0.0f
 			: (width - 2.0f * padding)
 				/ static_cast<float>(_destinations.size());
 
 		for (std::size_t i = 0; i < _destinations.size(); ++i) {
-			auto entity = std::make_shared<BarDestination>(getComponentRegistry(),
-														   _destinations[i]);
+			auto entity = std::make_shared<BarDestination>(
+				getComponentRegistry(), _destinations[i]);
 			entity->setParent(shared_from_this());
 			this->addEntity(entity);
 			getComponentRegistry()
@@ -660,8 +659,8 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	NavigationBar &
-		NavigationBar::setOnTabPress(std::function<void(std::size_t)> onTabPress)
+	NavigationBar &NavigationBar::setOnTabPress(
+		std::function<void(std::size_t)> onTabPress)
 	{
 		_onTabPress = std::move(onTabPress);
 		return *this;
@@ -712,8 +711,7 @@ namespace guillaume::entities
 
 	namespace
 	{
-		template<typename Getter>
-		ecs::Entity::Identifier destinationPart(
+		template<typename Getter> ecs::Entity::Identifier destinationPart(
 			const std::vector<std::shared_ptr<ecs::Entity>> &destinations,
 			std::size_t index, Getter getter)
 		{
@@ -779,7 +777,8 @@ namespace guillaume::entities
 		SurfaceBase::update();
 
 		for (auto &entity: _destinationEntities) {
-			auto destination = std::dynamic_pointer_cast<BarDestination>(entity);
+			auto destination =
+				std::dynamic_pointer_cast<BarDestination>(entity);
 			if (destination != nullptr) {
 				destination->applyGeometry();
 			}

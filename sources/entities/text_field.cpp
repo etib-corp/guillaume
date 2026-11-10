@@ -206,8 +206,7 @@ namespace guillaume::entities
 		, _text(text)
 	{
 		makeInteractive(getComponentRegistry(), getIdentifier(),
-						components::AccessibilityRole::TextField, {},
-						[this]() {
+						components::AccessibilityRole::TextField, {}, [this]() {
 							applyVariant();
 						});
 		getComponentRegistry()
@@ -317,15 +316,17 @@ namespace guillaume::entities
 				outline = schemeColor(SchemeColorRole::Primary);
 			}
 			setColor(transparentColor());
-			borders.setBorderRadius(getShapeRadius(theme::ShapeRole::ExtraSmall))
+			borders
+				.setBorderRadius(getShapeRadius(theme::ShapeRole::ExtraSmall))
 				.setColor(outline)
 				.setWidth(stroke);
 			line.setThickness(0.0f).clearColor();
 		} else {
-			setColor(disabled
-						 ? withAlpha(schemeColor(SchemeColorRole::OnSurface),
-									 DisabledFilledAlpha)
-						 : schemeColor(SchemeColorRole::SurfaceContainerHighest));
+			setColor(
+				disabled
+					? withAlpha(schemeColor(SchemeColorRole::OnSurface),
+								DisabledFilledAlpha)
+					: schemeColor(SchemeColorRole::SurfaceContainerHighest));
 			borders.setBorderRadius(getShapeRadius(theme::ShapeRole::None))
 				.setColor(transparentColor())
 				.setWidth(0.0f);
@@ -354,7 +355,7 @@ namespace guillaume::entities
 			return;
 		}
 
-		auto &registry = getComponentRegistry();
+		auto &registry		  = getComponentRegistry();
 		const auto identifier = _textEntity->getIdentifier();
 		const bool editing	  = _editable && !isDisabled() && isFocused();
 		const bool hasFocus =
@@ -369,14 +370,14 @@ namespace guillaume::entities
 
 	void TextField::buildContent(void)
 	{
-		auto &registry		 = this->getComponentRegistry();
-		const auto &component = registry.getComponent<components::TextField>(
-			this->getIdentifier());
+		auto &registry = this->getComponentRegistry();
+		const auto &component =
+			registry.getComponent<components::TextField>(this->getIdentifier());
 		const bool disabled = isDisabled();
 		const bool floating = isLabelFloating();
 
-		const auto content = disabled ? disabledContentColor()
-									  : schemeColor(SchemeColorRole::OnSurface);
+		const auto content		= disabled ? disabledContentColor()
+										   : schemeColor(SchemeColorRole::OnSurface);
 		const auto variantColor = disabled
 			? disabledContentColor()
 			: schemeColor(SchemeColorRole::OnSurfaceVariant);
@@ -394,18 +395,17 @@ namespace guillaume::entities
 		}
 
 		if (_errorIconEntity == nullptr) {
-			_errorIconEntity = buildIcon(registry, *this,
-										 this->shared_from_this(), "error",
-										 FieldIconSize,
-										 schemeColor(SchemeColorRole::Error));
+			_errorIconEntity =
+				buildIcon(registry, *this, this->shared_from_this(), "error",
+						  FieldIconSize, schemeColor(SchemeColorRole::Error));
 		}
 
 		if (_inputColumn == nullptr) {
 			View::Builder builder(registry, *this);
 			View::Director director;
-			_inputColumn = director.makeDefaultView(
-				builder, this->shared_from_this(), utility::graphic::PoseF(),
-				{});
+			_inputColumn =
+				director.makeDefaultView(builder, this->shared_from_this(),
+										 utility::graphic::PoseF(), {});
 			_inputColumn->setColor(transparentColor());
 			_inputColumn->setAxis(components::Layout::Axis::Vertical);
 			_inputColumn->setMainAxisAlignment(
@@ -432,7 +432,7 @@ namespace guillaume::entities
 			_labelEntity =
 				director.makeText(builder, _inputColumn, _placeholder,
 								  theme::TypeRole::BodyLarge, variantColor);
-	_labelEntity->setContent(_placeholder);
+			_labelEntity->setContent(_placeholder);
 		}
 
 		if (_prefixEntity == nullptr && !component.getPrefix().empty()) {
@@ -452,10 +452,9 @@ namespace guillaume::entities
 			(_error && !errorText.empty()) ? errorText : _supportingText;
 
 		if (_supportingEntity == nullptr && !support.empty()) {
-			_supportingEntity = buildText(registry, *this,
-										  this->shared_from_this(), support,
-										  theme::TypeRole::BodySmall,
-										  variantColor);
+			_supportingEntity =
+				buildText(registry, *this, this->shared_from_this(), support,
+						  theme::TypeRole::BodySmall, variantColor);
 		} else if (_supportingEntity != nullptr) {
 			_supportingEntity->setContent(support);
 		}
@@ -524,10 +523,12 @@ namespace guillaume::entities
 		// Intrinsic width: content plus padding, never below MinWidth.
 		float width = 2.0f * FieldPadding;
 		for (const auto &child: children) {
-			if (registry.hasComponent<components::Bound>(child->getIdentifier())) {
-				width += registry.getComponent<components::Bound>(
-									 child->getIdentifier())
-							 .getWidth();
+			if (registry.hasComponent<components::Bound>(
+					child->getIdentifier())) {
+				width +=
+					registry
+						.getComponent<components::Bound>(child->getIdentifier())
+						.getWidth();
 			}
 		}
 		if (children.size() > 1) {
@@ -536,7 +537,7 @@ namespace guillaume::entities
 
 		auto config			 = getSurfaceConfig();
 		config.hasFixedWidth = true;
-		config.fixedWidth = std::max(MinWidth, _width.value_or(width));
+		config.fixedWidth	 = std::max(MinWidth, _width.value_or(width));
 		setSurfaceConfig(config);
 
 		setChildren(children);
@@ -545,7 +546,7 @@ namespace guillaume::entities
 
 	void TextField::placeManualChildren(void)
 	{
-		auto &registry = getComponentRegistry();
+		auto &registry	 = getComponentRegistry();
 		const auto layer = static_cast<std::uint32_t>(getLayer());
 		const float height =
 			registry.getComponent<components::Bound>(getIdentifier())
@@ -554,9 +555,8 @@ namespace guillaume::entities
 		if (_supportingEntity != nullptr) {
 			placeChild(registry, getIdentifier(),
 					   _supportingEntity->getIdentifier(),
-					   utility::graphic::PositionF(FieldPadding,
-												   height + SupportingGap,
-												   0.0f),
+					   utility::graphic::PositionF(
+						   FieldPadding, height + SupportingGap, 0.0f),
 					   layer);
 		}
 

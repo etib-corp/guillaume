@@ -120,8 +120,9 @@ namespace guillaume::entities::tests
 
 		const auto &color =
 			registry.getComponent<components::Color>(card->getIdentifier());
-		EXPECT_EQ(color.getColor(),
-				  getActiveScheme().getColor(SchemeColorRole::Surface).getColor());
+		EXPECT_EQ(
+			color.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Surface).getColor());
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(card->getIdentifier());
@@ -143,8 +144,9 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(card->getVariant(), Card::Variant::Outlined);
 		const auto &color =
 			registry.getComponent<components::Color>(card->getIdentifier());
-		EXPECT_EQ(color.getColor(),
-				  getActiveScheme().getColor(SchemeColorRole::Surface).getColor());
+		EXPECT_EQ(
+			color.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Surface).getColor());
 	}
 
 	TEST_F(TestCard, DirectorBuildsAndRegisters)
@@ -193,7 +195,8 @@ namespace guillaume::entities::tests
 
 		EXPECT_TRUE(card->isInteractive());
 		EXPECT_EQ(
-			registry.getComponent<components::Accessibility>(card->getIdentifier())
+			registry
+				.getComponent<components::Accessibility>(card->getIdentifier())
 				.getRole(),
 			components::AccessibilityRole::Button);
 
@@ -271,11 +274,11 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(children[2], card->getContent());
 		EXPECT_EQ(children[3], card->getActionsSection());
 
-		EXPECT_FLOAT_EQ(
-			registry
-				.getComponent<components::Bound>(card->getCover()->getIdentifier())
-				.getHeight(),
-			Card::CoverHeight);
+		EXPECT_FLOAT_EQ(registry
+							.getComponent<components::Bound>(
+								card->getCover()->getIdentifier())
+							.getHeight(),
+						Card::CoverHeight);
 		EXPECT_EQ(registry
 					  .getComponent<components::Accessibility>(
 						  card->getTitleSection()->getIdentifier())

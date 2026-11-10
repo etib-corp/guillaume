@@ -111,8 +111,8 @@ namespace guillaume::entities
 	Chip::Chip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::string &label,
 			   const std::string &iconGlyph, bool selected)
-		: SurfaceBase<components::Selectable, components::Elevation>(
-			  registry, config)
+		: SurfaceBase<components::Selectable, components::Elevation>(registry,
+																	 config)
 		, _variant(variant)
 		, _label(label)
 		, _iconGlyph(iconGlyph)
@@ -181,24 +181,25 @@ namespace guillaume::entities
 		if (!outlined || selected) {
 			container = schemeColor(SchemeColorRole::SecondaryContainer);
 		}
-		auto content = (outlined && !selected)
-			? schemeColor(SchemeColorRole::OnSurfaceVariant)
-			: schemeColor(SchemeColorRole::OnSecondaryContainer);
+		auto content   = (outlined && !selected)
+			  ? schemeColor(SchemeColorRole::OnSurfaceVariant)
+			  : schemeColor(SchemeColorRole::OnSecondaryContainer);
 		auto iconColor = selected
 			? schemeColor(SchemeColorRole::OnSecondaryContainer)
 			: schemeColor(SchemeColorRole::Primary);
 
 		if (disabled) {
-			container = outlined ? transparentColor() : disabledContainerColor();
+			container =
+				outlined ? transparentColor() : disabledContainerColor();
 			content	  = disabledContentColor();
 			iconColor = disabledContentColor();
 		} else {
 			if (selected && _showSelectedOverlay) {
-				container = stateLayer(container, content,
-									   theme::StateLayer::Pressed);
+				container =
+					stateLayer(container, content, theme::StateLayer::Pressed);
 			}
-			container = stateLayerColor(getComponentRegistry(),
-										getIdentifier(), container, content);
+			container = stateLayerColor(getComponentRegistry(), getIdentifier(),
+										container, content);
 		}
 
 		setColor(container);
@@ -412,14 +413,13 @@ namespace guillaume::entities
 				buildIcon(getComponentRegistry(), *this, shared_from_this(),
 						  "close", 18.0f, contentColor);
 			if (_trailingIcon != nullptr) {
-				makeInteractive(getComponentRegistry(),
-								_trailingIcon->getIdentifier(),
-								components::AccessibilityRole::Button,
-								[this]() {
-									if (!isDisabled() && _onClose) {
-										_onClose();
-									}
-								});
+				makeInteractive(
+					getComponentRegistry(), _trailingIcon->getIdentifier(),
+					components::AccessibilityRole::Button, [this]() {
+						if (!isDisabled() && _onClose) {
+							_onClose();
+						}
+					});
 				getComponentRegistry()
 					.getComponent<components::Accessibility>(
 						_trailingIcon->getIdentifier())

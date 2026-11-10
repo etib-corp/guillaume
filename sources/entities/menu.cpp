@@ -241,10 +241,9 @@ namespace guillaume::entities
 		}
 
 		if (!item.label.empty()) {
-			row.label =
-				buildText(this->getComponentRegistry(), *this, row.view,
-						  item.label, theme::TypeRole::BodyLarge,
-						  schemeColor(SchemeColorRole::OnSurface));
+			row.label = buildText(this->getComponentRegistry(), *this, row.view,
+								  item.label, theme::TypeRole::BodyLarge,
+								  schemeColor(SchemeColorRole::OnSurface));
 
 			if (row.label != nullptr) {
 				row.content.push_back(row.label);
@@ -298,13 +297,13 @@ namespace guillaume::entities
 		const auto labelColor = enabled
 			? schemeColor(SchemeColorRole::OnSurface)
 			: disabledContentColor();
-		const auto iconColor = enabled
-			? schemeColor(SchemeColorRole::OnSurfaceVariant)
-			: disabledContentColor();
+		const auto iconColor  = enabled
+			 ? schemeColor(SchemeColorRole::OnSurfaceVariant)
+			 : disabledContentColor();
 
-		row.view->setColor(stateLayerColor(this->getComponentRegistry(),
-										   identity, transparentColor(),
-										   schemeColor(SchemeColorRole::OnSurface)));
+		row.view->setColor(stateLayerColor(
+			this->getComponentRegistry(), identity, transparentColor(),
+			schemeColor(SchemeColorRole::OnSurface)));
 		if (row.label != nullptr) {
 			row.label->setColor(labelColor);
 		}
@@ -346,7 +345,7 @@ namespace guillaume::entities
 	{
 		float contentWidth = 0.0f;
 		for (const auto &row: _rows) {
-			float width = 2.0f * MenuItemPadding;
+			float width		  = 2.0f * MenuItemPadding;
 			std::size_t count = 0;
 			for (const auto &child: row.content) {
 				if (child == nullptr
@@ -355,10 +354,10 @@ namespace guillaume::entities
 								child->getIdentifier())) {
 					continue;
 				}
-				width += this->getComponentRegistry()
-							 .getComponent<components::Bound>(
-								 child->getIdentifier())
-							 .getWidth();
+				width +=
+					this->getComponentRegistry()
+						.getComponent<components::Bound>(child->getIdentifier())
+						.getWidth();
 				++count;
 			}
 			if (count > 1) {
@@ -394,7 +393,8 @@ namespace guillaume::entities
 
 		const auto anchorPose =
 			registry.getComponent<components::Transform>(_anchor).getPose();
-		const auto &anchorBound = registry.getComponent<components::Bound>(_anchor);
+		const auto &anchorBound =
+			registry.getComponent<components::Bound>(_anchor);
 		const auto &bound =
 			registry.getComponent<components::Bound>(this->getIdentifier());
 

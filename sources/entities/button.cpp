@@ -432,7 +432,8 @@ namespace guillaume::entities
 	{
 		return ButtonBase::applyStateLayer(
 			getBaseContainerColor(style, isToggle, isSelected),
-			getContentColor(style, isToggle, isSelected), getStateLayerAlpha(theme::StateLayer::Pressed));
+			getContentColor(style, isToggle, isSelected),
+			getStateLayerAlpha(theme::StateLayer::Pressed));
 	}
 
 	static utility::graphic::Color32Bit
@@ -441,7 +442,8 @@ namespace guillaume::entities
 	{
 		return ButtonBase::applyStateLayer(
 			getBaseContainerColor(style, isToggle, isSelected),
-			getContentColor(style, isToggle, isSelected), getStateLayerAlpha(theme::StateLayer::Hovered));
+			getContentColor(style, isToggle, isSelected),
+			getStateLayerAlpha(theme::StateLayer::Hovered));
 	}
 
 	static utility::graphic::Color32Bit
@@ -667,21 +669,21 @@ namespace guillaume::entities
 		const bool hasIcon	= _icon != nullptr;
 		const bool hasLabel = _label != nullptr;
 
-		const float iconWidth = hasIcon
-			? getComponentRegistry()
-				  .getComponent<components::Bound>(_icon->getIdentifier())
-				  .getWidth()
-			: 0.0f;
-		const float iconHeight = hasIcon
-			? getComponentRegistry()
-				  .getComponent<components::Bound>(_icon->getIdentifier())
-				  .getHeight()
-			: 0.0f;
-		const float labelWidth = hasLabel
-			? getComponentRegistry()
-				  .getComponent<components::Bound>(_label->getIdentifier())
-				  .getWidth()
-			: 0.0f;
+		const float iconWidth	= hasIcon
+			  ? getComponentRegistry()
+					.getComponent<components::Bound>(_icon->getIdentifier())
+					.getWidth()
+			  : 0.0f;
+		const float iconHeight	= hasIcon
+			 ? getComponentRegistry()
+				   .getComponent<components::Bound>(_icon->getIdentifier())
+				   .getHeight()
+			 : 0.0f;
+		const float labelWidth	= hasLabel
+			 ? getComponentRegistry()
+				   .getComponent<components::Bound>(_label->getIdentifier())
+				   .getWidth()
+			 : 0.0f;
 		const float labelHeight = hasLabel
 			? getComponentRegistry()
 				  .getComponent<components::Bound>(_label->getIdentifier())
@@ -691,18 +693,17 @@ namespace guillaume::entities
 		const float gap = (!_iconGlyphName.empty() && !_labelContent.empty())
 			? getSpaceBetweenIconAndLabel(_size)
 			: 0.0f;
-		const float contentWidth = iconWidth + gap + labelWidth;
+		const float contentWidth  = iconWidth + gap + labelWidth;
 		const float contentHeight = std::max(iconHeight, labelHeight);
 
 		// The label typography (labelLarge) is independent of the icon size;
 		// the container grows to the larger child and to the M3 minimums.
-		const float minHeight =
-			(_size == Size::ExtraSmall) ? 0.0f : MinHeight;
+		const float minHeight = (_size == Size::ExtraSmall) ? 0.0f : MinHeight;
 		const float buttonWidth =
 			std::max({ contentWidth + getWidthPadding(_size, _isCompact) * 2.0f,
 					   MinWidth, _minWidth });
-		const float buttonHeight = std::max(
-			contentHeight + getHeightPadding(_size) * 2.0f, minHeight);
+		const float buttonHeight =
+			std::max(contentHeight + getHeightPadding(_size) * 2.0f, minHeight);
 
 		const auto place = [&](const std::shared_ptr<ecs::Entity> &child,
 							   float x, float childHeight) {
@@ -710,10 +711,9 @@ namespace guillaume::entities
 			getComponentRegistry()
 				.getComponent<components::Transform>(child->getIdentifier())
 				.setPose(ButtonBase::applyLayerToPosition(
-					utility::graphic::PositionF(
-						buttonPose.getPosition().x + x,
-						buttonPose.getPosition().y + y,
-						buttonPose.getPosition().z),
+					utility::graphic::PositionF(buttonPose.getPosition().x + x,
+												buttonPose.getPosition().y + y,
+												buttonPose.getPosition().z),
 					buttonPose.getOrientation(),
 					static_cast<std::uint32_t>(getLayer())));
 		};

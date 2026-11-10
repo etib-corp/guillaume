@@ -133,13 +133,12 @@ namespace guillaume::systems::tests
 		ring.update(entity);
 		ring.cleanup();
 		EXPECT_EQ(_engineMock->createObjectCallCount, 1u);
-		const auto stroke = lastRenderable()->getMeshes().front();
+		const auto stroke	= lastRenderable()->getMeshes().front();
 		const auto vertices = stroke->getVertices();
 		ASSERT_FALSE(vertices.empty());
-		EXPECT_EQ(vertices.front().getColor(),
-				  getActiveScheme()
-					  .getColor(SchemeColorRole::Secondary)
-					  .getColor());
+		EXPECT_EQ(
+			vertices.front().getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Secondary).getColor());
 
 		_componentRegistry.getComponent<components::StyleState>(entity)
 			.setFocused(false);

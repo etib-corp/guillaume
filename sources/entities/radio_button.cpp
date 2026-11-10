@@ -168,8 +168,8 @@ namespace guillaume::entities
 			});
 
 		// Grow the 20 dp ring to the 40 dp target without growing it.
-		const auto margin = static_cast<unsigned int>(
-			(TouchTarget - config.fixedWidth) / 2.0f);
+		const auto margin =
+			static_cast<unsigned int>((TouchTarget - config.fixedWidth) / 2.0f);
 		getComponentRegistry()
 			.getComponent<components::MouseHoverInteraction>(getIdentifier())
 			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
@@ -264,8 +264,7 @@ namespace guillaume::entities
 
 		if (_labelEntity != nullptr) {
 			if (disabled) {
-				_labelEntity->setColor(
-					disabledContentColor());
+				_labelEntity->setColor(disabledContentColor());
 			} else if (errored) {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::Error));
 			} else {
@@ -282,8 +281,9 @@ namespace guillaume::entities
 			return;
 		}
 
-		const auto &ring = getComponentRegistry().getComponent<components::Bound>(
-			getIdentifier());
+		const auto &ring =
+			getComponentRegistry().getComponent<components::Bound>(
+				getIdentifier());
 		const auto &label =
 			getComponentRegistry().getComponent<components::Bound>(
 				_labelEntity->getIdentifier());
@@ -361,9 +361,10 @@ namespace guillaume::entities
 		this->addEntity(_dot);
 
 		if (!_label.empty()) {
-			_labelEntity = buildText(getComponentRegistry(), *this,
-									 shared_from_this(), _label, theme::TypeRole::BodyLarge,
-									 schemeColor(SchemeColorRole::OnSurface));
+			_labelEntity =
+				buildText(getComponentRegistry(), *this, shared_from_this(),
+						  _label, theme::TypeRole::BodyLarge,
+						  schemeColor(SchemeColorRole::OnSurface));
 		}
 
 		// The dot is centered and the label placed beside the ring manually;

@@ -487,9 +487,9 @@ namespace guillaume::entities
 		std::function<void(void)>
 			_onLongPress {};	///< Long-press handler (replaces the click)
 		std::chrono::steady_clock::time_point
-			_pressStart {};		 ///< When the current press started
+			_pressStart {};			  ///< When the current press started
 		bool _isLoading { false };	  ///< Whether a progress glyph is shown
-		bool _isVisible { true };	 ///< Whether the button is shown
+		bool _isVisible { true };	  ///< Whether the button is shown
 		std::optional<utility::graphic::Color32Bit>
 			_containerColorOverride {};	   ///< Custom container color
 		std::optional<utility::graphic::Color32Bit>
@@ -500,16 +500,16 @@ namespace guillaume::entities
 		 * @param color Theme-derived container color.
 		 * @return The override when set, otherwise @p color.
 		 */
-		utility::graphic::Color32Bit
-			resolveContainerColor(const utility::graphic::Color32Bit &color) const;
+		utility::graphic::Color32Bit resolveContainerColor(
+			const utility::graphic::Color32Bit &color) const;
 
 		/**
 		 * @brief Resolve the content color, honouring the override.
 		 * @param color Theme-derived content color.
 		 * @return The override when set, otherwise @p color.
 		 */
-		utility::graphic::Color32Bit
-			resolveContentColor(const utility::graphic::Color32Bit &color) const;
+		utility::graphic::Color32Bit resolveContentColor(
+			const utility::graphic::Color32Bit &color) const;
 		static constexpr float _layerDepthStep {
 			1.0f
 		};	  ///< Distance pushed toward the camera per layer.

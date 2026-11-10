@@ -49,11 +49,11 @@ namespace guillaume::entities
 
 	void View::Builder::reset(void)
 	{
-		_pose				= utility::graphic::PoseF();
-		_color				= { 0, 0, 0, 0 };	 // Transparent, like an RN View.
-		_borderRadius		= 16.0f;
-		_axis				= Axis::Horizontal;
-		_mainAxisAlignment	= MainAxisAlignment::Start;
+		_pose			   = utility::graphic::PoseF();
+		_color			   = { 0, 0, 0, 0 };	// Transparent, like an RN View.
+		_borderRadius	   = 16.0f;
+		_axis			   = Axis::Horizontal;
+		_mainAxisAlignment = MainAxisAlignment::Start;
 		_crossAxisAlignment = CrossAxisAlignment::Center;
 		_spacing			= 8.0f;
 		_padding			= 16.0f;

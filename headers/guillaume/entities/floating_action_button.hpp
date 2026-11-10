@@ -190,8 +190,8 @@ namespace guillaume::entities
 		private:
 		Variant _variant { Variant::Primary };	  ///< Color variant
 		Size _size { Size::Medium };			  ///< Size
-		Mode _mode { Mode::Elevated };	  ///< Shadow mode
-		std::optional<float> _customSize {};	///< Custom container size
+		Mode _mode { Mode::Elevated };			  ///< Shadow mode
+		std::optional<float> _customSize {};	  ///< Custom container size
 		bool _lowered { false };	///< Whether the FAB is lowered
 
 		protected:

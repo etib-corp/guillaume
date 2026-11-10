@@ -209,8 +209,8 @@ namespace guillaume::entities::tests
 		EXPECT_TRUE(loading->hidesWhenStopped());
 
 		loading->stop();
-		auto &fade =
-			registry.getComponent<components::Animation>(loading->getIdentifier());
+		auto &fade = registry.getComponent<components::Animation>(
+			loading->getIdentifier());
 		EXPECT_TRUE(fade.isPlaying());
 		EXPECT_FLOAT_EQ(fade.getDuration(),
 						getMotionDuration(theme::MotionDuration::Short4));
@@ -233,12 +233,12 @@ namespace guillaume::entities::tests
 		auto loading =
 			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
 		loading->initialize();
-		EXPECT_EQ(loading->getIndicatorColor(),
-				  getActiveScheme().getColor(SchemeColorRole::Primary).getColor());
+		EXPECT_EQ(
+			loading->getIndicatorColor(),
+			getActiveScheme().getColor(SchemeColorRole::Primary).getColor());
 
-		const auto tertiary = getActiveScheme()
-								  .getColor(SchemeColorRole::Tertiary)
-								  .getColor();
+		const auto tertiary =
+			getActiveScheme().getColor(SchemeColorRole::Tertiary).getColor();
 		loading->setIndicatorColor(tertiary);
 		EXPECT_EQ(loading->getIndicatorColor(), tertiary);
 	}

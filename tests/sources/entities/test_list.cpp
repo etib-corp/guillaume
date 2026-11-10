@@ -105,9 +105,9 @@ namespace guillaume::entities::tests
 				list->getItemIdentifier(index));
 			const auto &content = registry.getComponent<components::Bound>(
 				list->getContentIdentifier(index));
-			EXPECT_FLOAT_EQ(row.getHeight(), content.getHeight()
-												 + 2.0f
-													 * theme::SpacingScale::get(4));
+			EXPECT_FLOAT_EQ(row.getHeight(),
+							content.getHeight()
+								+ 2.0f * theme::SpacingScale::get(4));
 			rows += row.getHeight();
 		}
 
@@ -144,28 +144,28 @@ namespace guillaume::entities::tests
 	TEST_F(TestList, VariantControlsTheDescription)
 	{
 		ecs::ComponentRegistry registry;
-		auto items = makeItems(1);
+		auto items			= makeItems(1);
 		items[0].supporting = "Details";
 		auto list = makeList(registry, List::Variant::SingleLine, items);
 
 		list->initialize();
 		list->update();
-		EXPECT_EQ(registry
-					  .getComponent<components::Layout>(
-						  list->getContentIdentifier(0))
-					  .getChildren()
-					  .size(),
-				  1U);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Layout>(list->getContentIdentifier(0))
+				.getChildren()
+				.size(),
+			1U);
 
 		list->setVariant(List::Variant::TwoLine);
 		list->update();
 		EXPECT_EQ(list->getVariant(), List::Variant::TwoLine);
-		EXPECT_EQ(registry
-					  .getComponent<components::Layout>(
-						  list->getContentIdentifier(0))
-					  .getChildren()
-					  .size(),
-				  2U);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Layout>(list->getContentIdentifier(0))
+				.getChildren()
+				.size(),
+			2U);
 	}
 
 	TEST_F(TestList, DirectorBuildsAndRegisters)
@@ -189,8 +189,8 @@ namespace guillaume::entities::tests
 	TEST_F(TestList, RowsArePressableAndDisabledRowsAreInert)
 	{
 		ecs::ComponentRegistry registry;
-		int presses = 0;
-		auto items	= makeItems(2);
+		int presses		 = 0;
+		auto items		 = makeItems(2);
 		items[0].onPress = [&presses]() {
 			++presses;
 		};
@@ -234,19 +234,17 @@ namespace guillaume::entities::tests
 		list->update();
 
 		const auto row = list->getItemIdentifier(0);
-		EXPECT_EQ(registry.getComponent<components::Color>(row)
-					  .getColor()
-					  .getAlpha(),
-				  0);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(row).getColor().getAlpha(),
+			0);
 
 		auto &hover =
 			registry.getComponent<components::MouseHoverInteraction>(row);
 		hover.setHovered(true);
 		hover.getOnHoverHandler()();
-		EXPECT_EQ(registry.getComponent<components::Color>(row)
-					  .getColor()
-					  .getAlpha(),
-				  getStateLayerAlpha(theme::StateLayer::Hovered));
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(row).getColor().getAlpha(),
+			getStateLayerAlpha(theme::StateLayer::Hovered));
 	}
 
 	TEST_F(TestList, SubheadersAndDividersStructureSections)
@@ -261,12 +259,12 @@ namespace guillaume::entities::tests
 		list->update();
 
 		const auto header = list->getItemIdentifier(0);
-		EXPECT_EQ(registry.getComponent<components::Accessibility>(header)
-					  .getRole(),
-				  components::AccessibilityRole::Header);
-		EXPECT_FLOAT_EQ(registry.getComponent<components::Text>(header)
-							.getFontSize(),
-						getTypeToken(theme::TypeRole::TitleSmall).fontSize);
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(header).getRole(),
+			components::AccessibilityRole::Header);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Text>(header).getFontSize(),
+			getTypeToken(theme::TypeRole::TitleSmall).fontSize);
 		EXPECT_NE(list->getItemIdentifier(2), ecs::Entity::InvalidIdentifier);
 		EXPECT_FALSE(registry.hasComponent<components::Accessibility>(
 			list->getItemIdentifier(2)));
@@ -278,13 +276,15 @@ namespace guillaume::entities::tests
 		List::Item accordion;
 		accordion.headline = "Folders";
 		accordion.children = makeItems(2);
-		auto list = makeList(registry, List::Variant::SingleLine, { accordion });
+		auto list =
+			makeList(registry, List::Variant::SingleLine, { accordion });
 		list->initialize();
 		list->update();
 
-		const auto row = list->getItemIdentifier(0);
+		const auto row	= list->getItemIdentifier(0);
 		auto childCount = [&]() {
-			return registry.getComponent<components::Layout>(list->getIdentifier())
+			return registry
+				.getComponent<components::Layout>(list->getIdentifier())
 				.getChildren()
 				.size();
 		};
@@ -293,9 +293,7 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Accessibility>(row).getExpanded(),
 			false);
 
-		registry
-			.getComponent<components::MouseButtonInteraction>(
-				row)
+		registry.getComponent<components::MouseButtonInteraction>(row)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 

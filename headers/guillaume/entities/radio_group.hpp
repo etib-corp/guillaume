@@ -112,8 +112,8 @@ namespace guillaume::entities
 			 * @param onValueChange Handler receiving the selected index.
 			 * @return *this.
 			 */
-			Builder &
-				withOnValueChange(std::function<void(std::size_t)> onValueChange);
+			Builder &withOnValueChange(
+				std::function<void(std::size_t)> onValueChange);
 		};
 
 		/**

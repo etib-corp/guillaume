@@ -193,9 +193,11 @@ namespace guillaume::entities
 		Variant _variant { Variant::Primary };	  ///< Color variant
 		Size _size { Size::Medium };			  ///< Size
 		Mode _mode { Mode::Elevated };
-		bool _isExtended { true };	  ///< Whether the label is shown	  ///< Shadow mode
+		bool _isExtended {
+			true
+		};	  ///< Whether the label is shown	  ///< Shadow mode
 		std::optional<float> _customSize {};	///< Custom container size
-		bool _lowered { false };	///< Whether the FAB is lowered
+		bool _lowered { false };				///< Whether the FAB is lowered
 
 		protected:
 		/**

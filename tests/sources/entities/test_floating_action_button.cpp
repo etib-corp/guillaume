@@ -191,11 +191,11 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 		lowered->initialize();
 		lowered->update();
-		EXPECT_EQ(registry
-					  .getComponent<components::Elevation>(
-						  lowered->getIdentifier())
-					  .getElevationLevel(),
-				  theme::ElevationLevel::Level1);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Elevation>(lowered->getIdentifier())
+				.getElevationLevel(),
+			theme::ElevationLevel::Level1);
 
 		auto disabled = std::make_shared<FloatingActionButton>(
 			registry, "edit", components::Glyph::Style::Outlined, "",
@@ -204,10 +204,10 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 		disabled->initialize();
 		disabled->update();
-		EXPECT_FALSE(registry
-						 .getComponent<components::Elevation>(
-							 disabled->getIdentifier())
-						 .hasShadow());
+		EXPECT_FALSE(
+			registry
+				.getComponent<components::Elevation>(disabled->getIdentifier())
+				.hasShadow());
 	}
 
 	TEST_F(TestFloatingActionButton, ModeVisibilityAndCustomSize)
@@ -224,10 +224,9 @@ namespace guillaume::entities::tests
 		fab->initialize();
 		fab->update();
 
-		EXPECT_EQ(
-			registry.getComponent<components::Color>(fab->getIdentifier())
-				.getColor(),
-			getElevatedSurfaceColor(theme::ElevationLevel::Level3));
+		EXPECT_EQ(registry.getComponent<components::Color>(fab->getIdentifier())
+					  .getColor(),
+				  getElevatedSurfaceColor(theme::ElevationLevel::Level3));
 
 		fab->setMode(FloatingActionButton::Mode::Flat);
 		EXPECT_FALSE(
@@ -243,18 +242,19 @@ namespace guillaume::entities::tests
 
 		fab->setVisible(false);
 		registry
-			.getComponent<components::MouseButtonInteraction>(fab->getIdentifier())
+			.getComponent<components::MouseButtonInteraction>(
+				fab->getIdentifier())
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_EQ(clicks, 0);
-		EXPECT_EQ(
-			registry.getComponent<components::Color>(fab->getIdentifier())
-				.getColor()
-				.getAlpha(),
-			0);
+		EXPECT_EQ(registry.getComponent<components::Color>(fab->getIdentifier())
+					  .getColor()
+					  .getAlpha(),
+				  0);
 		fab->setVisible(true);
 		registry
-			.getComponent<components::MouseButtonInteraction>(fab->getIdentifier())
+			.getComponent<components::MouseButtonInteraction>(
+				fab->getIdentifier())
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_EQ(clicks, 1);
@@ -271,11 +271,10 @@ namespace guillaume::entities::tests
 		fab->initialize();
 		fab->update();
 
-		EXPECT_FLOAT_EQ(registry
-							.getComponent<components::Text>(
-								fab->getLabelIdentifier())
-							.getFontSize(),
-						getTypeToken(theme::TypeRole::LabelLarge).fontSize);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Text>(fab->getLabelIdentifier())
+				.getFontSize(),
+			getTypeToken(theme::TypeRole::LabelLarge).fontSize);
 	}
 
 }	 // namespace guillaume::entities::tests

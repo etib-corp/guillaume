@@ -211,7 +211,7 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
 		NavigationDrawer::Builder builder(registry, entityRegistry);
 		std::size_t reported = 99;
-		auto drawer = builder.addSection("Mail")
+		auto drawer			 = builder.addSection("Mail")
 						  .addDestination("inbox", "Inbox", "24")
 						  .addDestination("send", "Sent")
 						  .addDivider()
@@ -226,7 +226,8 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(drawer->getDestinationCount(), 3U);
 		EXPECT_EQ(drawer->getSectionCount(), 1U);
 		EXPECT_EQ(drawer->getDividerCount(), 1U);
-		EXPECT_NE(drawer->getRightIdentifier(0), ecs::Entity::InvalidIdentifier);
+		EXPECT_NE(drawer->getRightIdentifier(0),
+				  ecs::Entity::InvalidIdentifier);
 		EXPECT_EQ(registry
 					  .getComponent<components::Accessibility>(
 						  drawer->getSectionIdentifier(0))
@@ -266,9 +267,9 @@ namespace guillaume::entities::tests
 		const auto backdrop = drawer->getBackdropIdentifier();
 		ASSERT_NE(backdrop, ecs::Entity::InvalidIdentifier);
 		registry.getComponent<components::Animation>(backdrop).advance(1.0f);
-		EXPECT_EQ(registry.getComponent<components::Scrim>(backdrop)
-					  .getColor(),
-				  getActiveScheme().getColor(SchemeColorRole::Backdrop).getColor());
+		EXPECT_EQ(
+			registry.getComponent<components::Scrim>(backdrop).getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Backdrop).getColor());
 
 		drawer->hide();
 		EXPECT_EQ(registry.getComponent<components::Scrim>(backdrop)
@@ -280,8 +281,9 @@ namespace guillaume::entities::tests
 	TEST_F(TestNavigationDrawer, CollapsedVariantIsARail)
 	{
 		ecs::ComponentRegistry registry;
-		auto drawer = makeNavigationDrawer(registry, makeDestinations(2),
-										   NavigationDrawer::Variant::Collapsed);
+		auto drawer =
+			makeNavigationDrawer(registry, makeDestinations(2),
+								 NavigationDrawer::Variant::Collapsed);
 		drawer->initialize();
 		drawer->update();
 

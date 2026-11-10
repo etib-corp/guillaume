@@ -258,9 +258,8 @@ namespace guillaume::entities::tests
 			.advance(1.0f);
 		EXPECT_FLOAT_EQ(progress->getOpacity(), 0.0f);
 
-		const auto tertiary = getActiveScheme()
-								  .getColor(SchemeColorRole::Tertiary)
-								  .getColor();
+		const auto tertiary =
+			getActiveScheme().getColor(SchemeColorRole::Tertiary).getColor();
 		progress->setIndicatorColor(tertiary);
 		EXPECT_EQ(progress->getIndicatorColor(), tertiary);
 		EXPECT_FLOAT_EQ(ProgressIndicator::IndeterminateSegment, 0.6f);

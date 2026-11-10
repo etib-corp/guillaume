@@ -146,8 +146,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Card::Builder &
-		Card::Builder::withOnPress(std::function<void(void)> onPress)
+	Card::Builder &Card::Builder::withOnPress(std::function<void(void)> onPress)
 	{
 		_onPress = std::move(onPress);
 		return *this;
@@ -210,9 +209,9 @@ namespace guillaume::entities
 				container	  = lerpColor(
 					getElevatedSurfaceColor(theme::ElevationLevel::Level1),
 					getElevatedSurfaceColor(theme::ElevationLevel::Level2), t);
-				elevation.setElevationLevel(t >= 0.5f
-												? theme::ElevationLevel::Level2
-												: theme::ElevationLevel::Level1);
+				elevation.setElevationLevel(
+					t >= 0.5f ? theme::ElevationLevel::Level2
+							  : theme::ElevationLevel::Level1);
 				elevation
 					.setSpread(rest.shadowSpread
 							   + (raised.shadowSpread - rest.shadowSpread) * t)
@@ -243,9 +242,9 @@ namespace guillaume::entities
 		}
 
 		if (_interactive) {
-			container =
-				stateLayerColor(getComponentRegistry(), getIdentifier(),
-								container, schemeColor(SchemeColorRole::OnSurface));
+			container = stateLayerColor(
+				getComponentRegistry(), getIdentifier(), container,
+				schemeColor(SchemeColorRole::OnSurface));
 		}
 		setColor(container);
 	}
@@ -396,11 +395,11 @@ namespace guillaume::entities
 			return;
 		}
 
-		auto &registry		 = getComponentRegistry();
-		const auto self		 = shared_from_this();
-		const auto &config	 = getSurfaceConfig();
-		const float width	 = config.hasFixedWidth ? config.fixedWidth : 0.0f;
-		const float inner	 = std::max(0.0f, width - 2.0f * config.padding);
+		auto &registry	   = getComponentRegistry();
+		const auto self	   = shared_from_this();
+		const auto &config = getSurfaceConfig();
+		const float width  = config.hasFixedWidth ? config.fixedWidth : 0.0f;
+		const float inner  = std::max(0.0f, width - 2.0f * config.padding);
 
 		if (_cover == nullptr && !_coverPath.empty()) {
 			Image::Builder builder(registry, *this);
@@ -431,10 +430,10 @@ namespace guillaume::entities
 			_titleText = buildText(registry, *section, section, _title,
 								   theme::TypeRole::BodyLarge,
 								   schemeColor(SchemeColorRole::OnSurface));
-			_subtitleText = buildText(
-				registry, *section, section, _subtitle,
-				theme::TypeRole::BodyMedium,
-				schemeColor(SchemeColorRole::OnSurfaceVariant));
+			_subtitleText =
+				buildText(registry, *section, section, _subtitle,
+						  theme::TypeRole::BodyMedium,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 
 			std::vector<std::shared_ptr<ecs::Entity>> texts;
 			if (_titleText != nullptr) {
@@ -454,9 +453,10 @@ namespace guillaume::entities
 		}
 
 		if (_content == nullptr && !_contentText.empty()) {
-			_content = buildText(registry, *this, self, _contentText,
-								 theme::TypeRole::BodyMedium,
-								 schemeColor(SchemeColorRole::OnSurfaceVariant));
+			_content =
+				buildText(registry, *this, self, _contentText,
+						  theme::TypeRole::BodyMedium,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 		}
 
 		if (!_actionSpecs.empty()) {
@@ -481,11 +481,10 @@ namespace guillaume::entities
 			while (_actions.size() < _actionSpecs.size()) {
 				const auto &spec = _actionSpecs[_actions.size()];
 				Button::Builder builder(registry, *row);
-				_actions.push_back(
-					builder.withLabel(spec.label)
-						.withOnClick(spec.onPress)
-						.withColorStyle(Button::Color::Text)
-						.registerEntity(row));
+				_actions.push_back(builder.withLabel(spec.label)
+									   .withOnClick(spec.onPress)
+									   .withColorStyle(Button::Color::Text)
+									   .registerEntity(row));
 			}
 
 			std::vector<std::shared_ptr<ecs::Entity>> buttons(_actions.begin(),

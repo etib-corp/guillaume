@@ -247,7 +247,8 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(changes, 0);
 		EXPECT_TRUE(toggle->isDisabled());
 		EXPECT_FALSE(
-			registry.getComponent<components::StyleState>(toggle->getIdentifier())
+			registry
+				.getComponent<components::StyleState>(toggle->getIdentifier())
 				.isEnabled());
 	}
 
@@ -273,8 +274,10 @@ namespace guillaume::entities::tests
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
 				toggle->getIdentifier());
-		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Switch);
-		EXPECT_EQ(accessibility.getChecked(), components::CheckedState::Checked);
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Switch);
+		EXPECT_EQ(accessibility.getChecked(),
+				  components::CheckedState::Checked);
 	}
 
 }	 // namespace guillaume::entities::tests

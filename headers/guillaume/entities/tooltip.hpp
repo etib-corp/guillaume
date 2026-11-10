@@ -168,16 +168,16 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::Plain };	///< Tooltip variant.
-		std::string _text {};					///< Tooltip body text.
-		std::string _title {};					///< Tooltip title.
-		std::shared_ptr<Text> _titleEntity;		///< Title child entity.
-		std::shared_ptr<Text> _textEntity;		///< Body child entity.
-		std::weak_ptr<ecs::Entity> _anchor;		///< Trigger entity.
+		Variant _variant { Variant::Plain };		///< Tooltip variant.
+		std::string _text {};						///< Tooltip body text.
+		std::string _title {};						///< Tooltip title.
+		std::shared_ptr<Text> _titleEntity;			///< Title child entity.
+		std::shared_ptr<Text> _textEntity;			///< Body child entity.
+		std::weak_ptr<ecs::Entity> _anchor;			///< Trigger entity.
 		float _enterDelay { DefaultEnterDelay };	///< Hover-in delay.
 		float _leaveDelay { DefaultLeaveDelay };	///< Hover-out delay.
-		float _hoverTime { 0.0f };	  ///< Time the anchor has been hovered.
-		float _leaveTime { 0.0f };	  ///< Time since the anchor was left.
+		float _hoverTime { 0.0f };		 ///< Time the anchor has been hovered.
+		float _leaveTime { 0.0f };		 ///< Time since the anchor was left.
 		float _lastProgress { 0.0f };	 ///< Last ticker progress.
 		bool _visible { false };		 ///< Whether the tooltip is shown.
 		std::optional<std::pair<float, float>>

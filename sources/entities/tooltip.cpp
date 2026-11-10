@@ -113,8 +113,8 @@ namespace guillaume::entities
 					 const SurfaceConfig &config, Variant variant,
 					 const std::string &text, const std::string &title)
 		: SurfaceBase<components::Overlay, components::Elevation,
-					  components::Animation, components::Accessibility>(registry,
-															  config)
+					  components::Animation, components::Accessibility>(
+			  registry, config)
 		, _variant(variant)
 		, _text(text)
 		, _title(title)
@@ -267,7 +267,8 @@ namespace guillaume::entities
 		}
 
 		const auto anchorPose =
-			registry.getComponent<components::Transform>(anchor->getIdentifier())
+			registry
+				.getComponent<components::Transform>(anchor->getIdentifier())
 				.getPose();
 		const auto &anchorBound =
 			registry.getComponent<components::Bound>(anchor->getIdentifier());
@@ -276,7 +277,7 @@ namespace guillaume::entities
 
 		const float width  = bound.getWidth();
 		const float height = bound.getHeight();
-		float x = anchorPose.getPosition().getX()
+		float x			   = anchorPose.getPosition().getX()
 			+ (anchorBound.getWidth() - width) / 2.0f;
 		float y = anchorPose.getPosition().getY() + anchorBound.getHeight();
 
@@ -291,8 +292,7 @@ namespace guillaume::entities
 		}
 
 		setPose(utility::graphic::PoseF(
-			utility::graphic::PositionF(x, y,
-										anchorPose.getPosition().getZ()),
+			utility::graphic::PositionF(x, y, anchorPose.getPosition().getZ()),
 			anchorPose.getOrientation()));
 	}
 
@@ -343,16 +343,16 @@ namespace guillaume::entities
 			components::Layout::MainAxisAlignment::Center;
 		config.crossAxisAlignment =
 			components::Layout::CrossAxisAlignment::Start;
-		config.padding		  = 8.0f;
-		config.spacing		  = 2.0f;
+		config.padding = 8.0f;
+		config.spacing = 2.0f;
 		getComponentRegistry()
 			.getComponent<components::Elevation>(getIdentifier())
 			.setElevationLevel(_variant == Variant::Rich && _visible
 								   ? theme::ElevationLevel::Level2
 								   : theme::ElevationLevel::Level0);
 		config.borderRadius	  = (_variant == Variant::Rich)
-			? getShapeRadius(theme::ShapeRole::Medium)
-			: getShapeRadius(theme::ShapeRole::ExtraSmall);
+			  ? getShapeRadius(theme::ShapeRole::Medium)
+			  : getShapeRadius(theme::ShapeRole::ExtraSmall);
 		config.hasFixedHeight = true;
 		config.fixedHeight	  = getVariantHeight();
 
@@ -380,15 +380,15 @@ namespace guillaume::entities
 
 		if (_variant == Variant::Rich && _titleEntity == nullptr
 			&& !_title.empty()) {
-			_titleEntity = buildText(this->getComponentRegistry(), *this,
-									 this->shared_from_this(), _title, theme::TypeRole::TitleSmall,
-									 foregroundColor);
+			_titleEntity = buildText(
+				this->getComponentRegistry(), *this, this->shared_from_this(),
+				_title, theme::TypeRole::TitleSmall, foregroundColor);
 		}
 
 		if (_textEntity == nullptr && !_text.empty()) {
-			_textEntity = buildText(this->getComponentRegistry(), *this,
-									this->shared_from_this(), _text, theme::TypeRole::BodySmall,
-									foregroundColor);
+			_textEntity = buildText(
+				this->getComponentRegistry(), *this, this->shared_from_this(),
+				_text, theme::TypeRole::BodySmall, foregroundColor);
 		}
 
 		std::vector<std::shared_ptr<ecs::Entity>> children;

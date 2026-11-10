@@ -147,11 +147,10 @@ namespace guillaume::entities
 
 		float width = size;
 		if (_variant != Variant::Dot && _labelEntity != nullptr) {
-			const float labelWidth =
-				getComponentRegistry()
-					.getComponent<components::Bound>(
-						_labelEntity->getIdentifier())
-					.getWidth();
+			const float labelWidth = getComponentRegistry()
+										 .getComponent<components::Bound>(
+											 _labelEntity->getIdentifier())
+										 .getWidth();
 			width = std::max(size, labelWidth + 2.0f * HorizontalPadding);
 		}
 		config.hasFixedWidth  = true;
@@ -162,10 +161,10 @@ namespace guillaume::entities
 		setSurfaceConfig(config);
 
 		const auto fade = [this](const utility::graphic::Color32Bit &color) {
-			return withAlpha(color,
-							 static_cast<std::uint8_t>(
-								 static_cast<float>(color.getAlpha()) * _opacity
-								 + 0.5f));
+			return withAlpha(
+				color,
+				static_cast<std::uint8_t>(
+					static_cast<float>(color.getAlpha()) * _opacity + 0.5f));
 		};
 		setColor(fade(
 			_containerColor.value_or(schemeColor(SchemeColorRole::Error))));
@@ -261,10 +260,10 @@ namespace guillaume::entities
 		SurfaceBase::initialize();
 
 		if (_variant != Variant::Dot && !_label.empty()) {
-			_labelEntity = buildText(getComponentRegistry(), *this,
-									 shared_from_this(), _label,
-									 theme::TypeRole::LabelSmall,
-									 schemeColor(SchemeColorRole::OnError));
+			_labelEntity =
+				buildText(getComponentRegistry(), *this, shared_from_this(),
+						  _label, theme::TypeRole::LabelSmall,
+						  schemeColor(SchemeColorRole::OnError));
 
 			if (_labelEntity != nullptr) {
 				setChildren({ _labelEntity });

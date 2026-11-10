@@ -294,8 +294,8 @@ namespace guillaume::entities
 		 * @brief Shadow mode (Paper `mode`).
 		 */
 		enum class Mode {
-			Flat,		 ///< Tonal background only.
-			Elevated	 ///< Tonal background plus shadow.
+			Flat,		///< Tonal background only.
+			Elevated	///< Tonal background plus shadow.
 		};
 
 		/**
@@ -307,8 +307,8 @@ namespace guillaume::entities
 			SurfaceConfig _config;	  ///< Surface configuration.
 			theme::ElevationLevel _elevation {
 				theme::ElevationLevel::Level1
-			};								 ///< Elevation level.
-			Mode _mode { Mode::Elevated };	 ///< Shadow mode.
+			};	  ///< Elevation level.
+			Mode _mode { Mode::Elevated };	  ///< Shadow mode.
 
 			public:
 			/**
@@ -373,10 +373,9 @@ namespace guillaume::entities
 			 * @param mode Shadow mode.
 			 * @return The surface.
 			 */
-			std::shared_ptr<Surface>
-				makeSurface(Builder &builder, std::shared_ptr<ecs::Entity> parent,
-							theme::ElevationLevel elevation,
-							Mode mode = Mode::Elevated);
+			std::shared_ptr<Surface> makeSurface(
+				Builder &builder, std::shared_ptr<ecs::Entity> parent,
+				theme::ElevationLevel elevation, Mode mode = Mode::Elevated);
 		};
 
 		/**
@@ -418,8 +417,8 @@ namespace guillaume::entities
 		private:
 		theme::ElevationLevel _elevation {
 			theme::ElevationLevel::Level1
-		};								 ///< Elevation level.
-		Mode _mode { Mode::Elevated };	 ///< Shadow mode.
+		};	  ///< Elevation level.
+		Mode _mode { Mode::Elevated };	  ///< Shadow mode.
 
 		/**
 		 * @brief Resolve background and shadow from the elevation tokens.

@@ -45,7 +45,7 @@ namespace guillaume::components
 		};
 
 		private:
-		std::string _texturePath {};	///< Path to the image texture file
+		std::string _texturePath {};	 ///< Path to the image texture file
 		std::string _fallbackPath {};	 ///< Texture drawn when loading fails
 		LoadState _loadState { LoadState::Pending };	///< Loading state.
 		bool _usingFallback { false };	  ///< Whether the fallback is drawn.

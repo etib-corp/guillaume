@@ -86,7 +86,7 @@ namespace guillaume::entities
 			utility::graphic::PoseF _pose {};		   ///< Divider pose.
 			utility::graphic::Color32Bit _color {};	   ///< Divider color.
 			float _length { 100.0f };				   ///< Total length.
-			float _thickness { HairlineThickness };	///< Stroke thickness.
+			float _thickness { HairlineThickness };	   ///< Stroke thickness.
 			float _inset { 16.0f };	   ///< Leading/trailing inset.
 			Variant _variant { Variant::FullWidth };	///< Divider variant.
 
@@ -177,7 +177,7 @@ namespace guillaume::entities
 		utility::graphic::PoseF _appliedPose {};	///< Last applied pose.
 		utility::graphic::Color32Bit _color {};		///< Divider color.
 		float _length { 100.0f };					///< Total length.
-		float _thickness { HairlineThickness };	///< Stroke thickness.
+		float _thickness { HairlineThickness };		///< Stroke thickness.
 		float _inset { 16.0f };						///< Leading/trailing inset.
 		Variant _variant { Variant::FullWidth };	///< Divider variant.
 

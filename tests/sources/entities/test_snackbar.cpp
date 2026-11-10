@@ -166,8 +166,8 @@ namespace guillaume::entities::tests
 		auto snackbar = makeSnackbar(registry);
 		snackbar->initialize();
 
-		auto &overlay =
-			registry.getComponent<components::Overlay>(snackbar->getIdentifier());
+		auto &overlay = registry.getComponent<components::Overlay>(
+			snackbar->getIdentifier());
 		EXPECT_TRUE(snackbar->isVisible());
 		EXPECT_TRUE(overlay.isVisible());
 		EXPECT_FLOAT_EQ(overlay.getAutoDismiss(), Snackbar::DurationMedium);
@@ -180,7 +180,8 @@ namespace guillaume::entities::tests
 				.getAlpha(),
 			0);
 		EXPECT_FALSE(
-			registry.getComponent<components::Elevation>(snackbar->getIdentifier())
+			registry
+				.getComponent<components::Elevation>(snackbar->getIdentifier())
 				.hasShadow());
 
 		snackbar->show();
@@ -202,7 +203,8 @@ namespace guillaume::entities::tests
 		});
 		snackbar->setDuration(Snackbar::DurationShort);
 		EXPECT_FLOAT_EQ(
-			registry.getComponent<components::Overlay>(snackbar->getIdentifier())
+			registry
+				.getComponent<components::Overlay>(snackbar->getIdentifier())
 				.getAutoDismiss(),
 			Snackbar::DurationShort);
 		EXPECT_THROW(snackbar->setDuration(-1.0f), std::invalid_argument);
@@ -222,8 +224,8 @@ namespace guillaume::entities::tests
 	TEST_F(TestSnackbar, ActionIsPressableAndDismisses)
 	{
 		ecs::ComponentRegistry registry;
-		auto snackbar =
-			makeSnackbar(registry, Snackbar::Variant::WithAction, "Saved", "Undo");
+		auto snackbar = makeSnackbar(registry, Snackbar::Variant::WithAction,
+									 "Saved", "Undo");
 		snackbar->initialize();
 		int actions	   = 0;
 		int dismissals = 0;
@@ -259,11 +261,14 @@ namespace guillaume::entities::tests
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
 				snackbar->getIdentifier());
-		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Alert);
-		EXPECT_EQ(accessibility.getLiveRegion(), components::LiveRegion::Polite);
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Alert);
+		EXPECT_EQ(accessibility.getLiveRegion(),
+				  components::LiveRegion::Polite);
 		EXPECT_EQ(accessibility.getLabel(), "Message");
 		EXPECT_EQ(
-			registry.getComponent<components::Elevation>(snackbar->getIdentifier())
+			registry
+				.getComponent<components::Elevation>(snackbar->getIdentifier())
 				.getElevationLevel(),
 			theme::ElevationLevel::Level3);
 	}

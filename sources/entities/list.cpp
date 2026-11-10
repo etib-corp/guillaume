@@ -215,9 +215,10 @@ namespace guillaume::entities
 		Row row;
 
 		if (item.kind == ItemKind::Subheader) {
-			auto header = buildText(registry, *this, this->shared_from_this(),
-									item.headline, theme::TypeRole::TitleSmall,
-									schemeColor(SchemeColorRole::OnSurfaceVariant));
+			auto header =
+				buildText(registry, *this, this->shared_from_this(),
+						  item.headline, theme::TypeRole::TitleSmall,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 			if (header != nullptr) {
 				registry.addComponent<components::Accessibility>(
 					header->getIdentifier());
@@ -265,23 +266,22 @@ namespace guillaume::entities
 		if (!item.leadingImage.empty()) {
 			Image::Builder builder(registry, *lead);
 			Image::Director director;
-			auto image =
-				director.makeImage(builder, lead, item.leadingImage);
+			auto image = director.makeImage(builder, lead, item.leadingImage);
 			if (image != nullptr) {
 				leadChildren.push_back(image);
 			}
 		} else if (!item.leadingIcon.empty()) {
-			auto icon = buildIcon(registry, *lead, lead, item.leadingIcon,
-								  ListIconSize,
-								  schemeColor(SchemeColorRole::OnSurfaceVariant));
+			auto icon =
+				buildIcon(registry, *lead, lead, item.leadingIcon, ListIconSize,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 			if (icon != nullptr) {
 				leadChildren.push_back(icon);
 				row.icons.push_back(icon);
 			}
 		}
 
-		row.content = makeView(registry, *lead, lead,
-							   components::Layout::Axis::Vertical);
+		row.content =
+			makeView(registry, *lead, lead, components::Layout::Axis::Vertical);
 		std::vector<std::shared_ptr<ecs::Entity>> contentChildren;
 
 		if (!item.headline.empty()) {
@@ -294,10 +294,10 @@ namespace guillaume::entities
 		}
 
 		if (!item.supporting.empty() && _variant != Variant::SingleLine) {
-			row.supporting = buildText(
-				registry, *row.content, row.content, item.supporting,
-				theme::TypeRole::BodyMedium,
-				schemeColor(SchemeColorRole::OnSurfaceVariant));
+			row.supporting =
+				buildText(registry, *row.content, row.content, item.supporting,
+						  theme::TypeRole::BodyMedium,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 			if (row.supporting != nullptr) {
 				contentChildren.push_back(row.supporting);
 			}
@@ -309,15 +309,15 @@ namespace guillaume::entities
 
 		std::vector<std::shared_ptr<ecs::Entity>> rowChildren { lead };
 
-		const bool accordion = !item.children.empty();
+		const bool accordion	   = !item.children.empty();
 		const std::string trailing = accordion
 			? std::string(item.expanded ? "expand_less" : "expand_more")
 			: item.trailingIcon;
 
 		if (!trailing.empty()) {
-			auto icon = buildIcon(registry, *row.view, row.view, trailing,
-								  ListIconSize,
-								  schemeColor(SchemeColorRole::OnSurfaceVariant));
+			auto icon =
+				buildIcon(registry, *row.view, row.view, trailing, ListIconSize,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 			if (icon != nullptr) {
 				rowChildren.push_back(icon);
 				row.icons.push_back(icon);
@@ -370,14 +370,15 @@ namespace guillaume::entities
 		const auto identifier = row.view->getIdentifier();
 		const bool enabled	  = isEnabled(registry, identifier);
 
-		auto headlineColor = enabled ? schemeColor(SchemeColorRole::OnSurface)
-									 : disabledContentColor();
+		auto headlineColor	 = enabled ? schemeColor(SchemeColorRole::OnSurface)
+									   : disabledContentColor();
 		auto supportingColor = enabled
 			? schemeColor(SchemeColorRole::OnSurfaceVariant)
 			: disabledContentColor();
-		auto iconColor = supportingColor;
-		auto rowColor  = stateLayerColor(registry, identifier, transparentColor(),
-										 schemeColor(SchemeColorRole::OnSurface));
+		auto iconColor		 = supportingColor;
+		auto rowColor =
+			stateLayerColor(registry, identifier, transparentColor(),
+							schemeColor(SchemeColorRole::OnSurface));
 
 		if (row.hidden) {
 			headlineColor	= transparentColor();

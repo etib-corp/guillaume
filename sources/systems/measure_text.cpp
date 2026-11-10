@@ -94,11 +94,10 @@ namespace guillaume::systems
 			return;
 		}
 
-		utility::graphic::Text text(_ressourceProvider,
-									transformComponent.getPose(),
-									colorComponent.getColor(), cacheKey.content,
-									cacheKey.fontSize,
-									theme::fontPath(cacheKey.fontWeight));
+		utility::graphic::Text text(
+			_ressourceProvider, transformComponent.getPose(),
+			colorComponent.getColor(), cacheKey.content, cacheKey.fontSize,
+			theme::fontPath(cacheKey.fontWeight));
 		text.setColor(utility::graphic::Color32Bit());
 
 		auto textSize = _engine->measureText(text);

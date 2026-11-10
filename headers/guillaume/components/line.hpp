@@ -59,7 +59,8 @@ namespace guillaume::components
 		Placement _placement { Placement::Center };	   ///< Stroke placement.
 		bool _hasColor { false };	 ///< Whether a stroke color overrides
 									 ///< the entity fill color.
-		utility::graphic::Color32Bit _color { 0, 0, 0, 0 };	   ///< Stroke color.
+		utility::graphic::Color32Bit _color { 0, 0, 0,
+											  0 };	  ///< Stroke color.
 
 		public:
 		/**

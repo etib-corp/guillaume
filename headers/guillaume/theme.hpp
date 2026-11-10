@@ -418,9 +418,9 @@ namespace guillaume
 			_schemes;	 ///< Schemes indexed by ThemeSchemeRole
 		std::array<Palette, ThemePaletteRole::ThemePaletteCount>
 			_palettes;	  ///< Palettes indexed by ThemePaletteRole
-		theme::Typescale _typescale;	///< Material 3 typescale
-		theme::ShapeScale _shapes;		///< Material 3 shape scale
-		theme::ElevationScale _elevations;	  ///< Material 3 elevation scale
+		theme::Typescale _typescale;			///< Material 3 typescale
+		theme::ShapeScale _shapes;				///< Material 3 shape scale
+		theme::ElevationScale _elevations;		///< Material 3 elevation scale
 		theme::StateLayerScale _stateLayers;	///< Material 3 state layers
 		theme::MotionScale _motion;				///< Material 3 motion scale
 

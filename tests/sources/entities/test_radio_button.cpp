@@ -208,8 +208,10 @@ namespace guillaume::entities::tests
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
 				radio->getIdentifier());
-		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Radio);
-		EXPECT_EQ(accessibility.getChecked(), components::CheckedState::Checked);
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Radio);
+		EXPECT_EQ(accessibility.getChecked(),
+				  components::CheckedState::Checked);
 		EXPECT_EQ(accessibility.getLabel(), "Choice");
 
 		const auto margin =
@@ -236,7 +238,8 @@ namespace guillaume::entities::tests
 		EXPECT_FALSE(radio->isSelected());
 		EXPECT_TRUE(radio->isDisabled());
 		EXPECT_FALSE(
-			registry.getComponent<components::StyleState>(radio->getIdentifier())
+			registry
+				.getComponent<components::StyleState>(radio->getIdentifier())
 				.isEnabled());
 		EXPECT_EQ(
 			registry.getComponent<components::Color>(radio->getIdentifier())
@@ -264,7 +267,7 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer entityRegistry;
 		RadioGroup::Builder builder(registry, entityRegistry);
 		std::size_t reported = 99;
-		auto group = builder.addOption("A")
+		auto group			 = builder.addOption("A")
 						 .addOption("B")
 						 .addOption("C")
 						 .withValue(0)
@@ -287,11 +290,11 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(group->getValue(), 2u);
 		EXPECT_FALSE(group->getOption(0)->isSelected());
 		EXPECT_TRUE(group->getOption(2)->isSelected());
-		EXPECT_EQ(registry
-					  .getComponent<components::Accessibility>(
-						  group->getIdentifier())
-					  .getRole(),
-				  components::AccessibilityRole::RadioGroup);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Accessibility>(group->getIdentifier())
+				.getRole(),
+			components::AccessibilityRole::RadioGroup);
 		EXPECT_THROW(group->setValue(5), std::out_of_range);
 	}
 

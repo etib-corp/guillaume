@@ -236,29 +236,27 @@ namespace guillaume::entities::tests
 		segmented->update();
 
 		const auto first = segmented->getSegmentIdentifier(0);
-		registry
-			.getComponent<components::MouseButtonInteraction>(first)
+		registry.getComponent<components::MouseButtonInteraction>(first)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_TRUE(segmented->isSelected(0));
 		// Pressing the selected segment again keeps it selected.
-		registry
-			.getComponent<components::MouseButtonInteraction>(first)
+		registry.getComponent<components::MouseButtonInteraction>(first)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_TRUE(segmented->isSelected(0));
 
 		auto segment = segmented->getEntity<Button>(first);
 		ASSERT_NE(segment, nullptr);
-		EXPECT_EQ(registry
-					  .getComponent<components::Glyph>(
-						  segment->getIconIdentifier())
-					  .getName(),
-				  "check");
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Glyph>(segment->getIconIdentifier())
+				.getName(),
+			"check");
 		EXPECT_TRUE(
 			registry.getComponent<components::Borders>(first).hasStroke());
-		EXPECT_TRUE(
-			registry.getComponent<components::Accessibility>(first).isSelected());
+		EXPECT_TRUE(registry.getComponent<components::Accessibility>(first)
+						.isSelected());
 	}
 
 	TEST_F(TestSegmentedButton, SegmentsHaveEqualWidthAndPerSegmentOptions)
@@ -285,13 +283,12 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(second).getWidth());
 		EXPECT_GE(firstWidth, SegmentedButton::MinSegmentWidth);
 
-		EXPECT_EQ(registry.getComponent<components::Accessibility>(first)
-					  .getLabel(),
-				  "Sunny");
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(first).getLabel(),
+			"Sunny");
 		EXPECT_FALSE(
 			registry.getComponent<components::StyleState>(second).isEnabled());
-		registry
-			.getComponent<components::MouseButtonInteraction>(second)
+		registry.getComponent<components::MouseButtonInteraction>(second)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_FALSE(segmented->isSelected(1));

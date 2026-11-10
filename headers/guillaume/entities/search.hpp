@@ -72,9 +72,9 @@ namespace guillaume::entities
 		 * @brief Search variant.
 		 */
 		enum class Variant {
-			SearchBar,			   ///< Pill-shaped 56 dp bar.
-			FullScreen,			   ///< 72 dp inline view with a divider.
-			View = FullScreen	   ///< Paper `view` mode name.
+			SearchBar,			 ///< Pill-shaped 56 dp bar.
+			FullScreen,			 ///< 72 dp inline view with a divider.
+			View = FullScreen	 ///< Paper `view` mode name.
 		};
 
 		/**
@@ -238,7 +238,8 @@ namespace guillaume::entities
 		Search &setOnClearIconPress(std::function<void(void)> onClearIconPress);
 
 		/**
-		 * @brief Set an optional trailing icon (Paper `right`/`traileringIcon`).
+		 * @brief Set an optional trailing icon (Paper
+		 * `right`/`traileringIcon`).
 		 * @param iconGlyph Trailing glyph ("" removes it on rebuild).
 		 * @param onPress Trailing press handler.
 		 * @return Reference to this search for chaining.
@@ -337,23 +338,22 @@ namespace guillaume::entities
 		void update(void) override;
 
 		private:
-		Variant _variant { Variant::SearchBar };	///< Search variant.
-		std::string _placeholder {};				///< Placeholder text.
-		std::string _text {};						///< Query text.
-		std::string _iconGlyph { "search" };		///< Leading glyph.
-		std::string _trailingGlyph {};				///< Trailing glyph.
-		bool _loading { false };					///< Loading state.
+		Variant _variant { Variant::SearchBar };	  ///< Search variant.
+		std::string _placeholder {};				  ///< Placeholder text.
+		std::string _text {};						  ///< Query text.
+		std::string _iconGlyph { "search" };		  ///< Leading glyph.
+		std::string _trailingGlyph {};				  ///< Trailing glyph.
+		bool _loading { false };					  ///< Loading state.
 		std::function<void(void)> _onIconPress {};	  ///< Leading handler.
+		std::function<void(void)> _onClearIconPress {};	   ///< Clear handler.
 		std::function<void(void)>
-			_onClearIconPress {};	 ///< Clear handler.
-		std::function<void(void)>
-			_onTrailingIconPress {};	///< Trailing handler.
-		std::shared_ptr<Icon> _searchIcon;	 ///< Pressable leading icon.
-		std::shared_ptr<Text> _textEntity;			///< Query child.
+			_onTrailingIconPress {};		  ///< Trailing handler.
+		std::shared_ptr<Icon> _searchIcon;	  ///< Pressable leading icon.
+		std::shared_ptr<Text> _textEntity;	  ///< Query child.
 		std::shared_ptr<Text> _placeholderEntity;	 ///< Placeholder child.
-		std::shared_ptr<Icon> _clearIcon;	///< Pressable clear icon.
+		std::shared_ptr<Icon> _clearIcon;			 ///< Pressable clear icon.
 		std::shared_ptr<Icon> _loadingIcon;			 ///< Loading glyph.
-		std::shared_ptr<Icon> _trailingIcon;	 ///< Pressable trailing icon.
+		std::shared_ptr<Icon> _trailingIcon;	///< Pressable trailing icon.
 
 		/**
 		 * @brief Apply the variant geometry and colors.
@@ -382,9 +382,10 @@ namespace guillaume::entities
 		 * @param onPress Press handler.
 		 * @return The icon.
 		 */
-		std::shared_ptr<Icon> buildPressableIcon(const std::string &glyph,
-												 const std::string &label,
-												 std::function<void(void)> onPress);
+		std::shared_ptr<Icon>
+			buildPressableIcon(const std::string &glyph,
+							   const std::string &label,
+							   std::function<void(void)> onPress);
 	};
 
 }	 // namespace guillaume::entities

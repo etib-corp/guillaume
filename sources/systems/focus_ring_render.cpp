@@ -78,9 +78,10 @@ namespace guillaume::systems
 				/ 4.0f;
 		}
 
-		constexpr float grow = theme::FocusRing::Offset + theme::FocusRing::Width;
-		const float halfWidth  = bound.getWidth() / 2.0f + grow;
-		const float halfHeight = bound.getHeight() / 2.0f + grow;
+		constexpr float grow =
+			theme::FocusRing::Offset + theme::FocusRing::Width;
+		const float halfWidth	= bound.getWidth() / 2.0f + grow;
+		const float halfHeight	= bound.getHeight() / 2.0f + grow;
 		const float outerRadius = radius > 0.0f ? radius + grow : 0.0f;
 
 		const utility::graphic::PositionF lift(

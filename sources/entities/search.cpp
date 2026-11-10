@@ -278,10 +278,10 @@ namespace guillaume::entities
 			// Built even when empty so the text-input systems can edit it.
 			Text::Builder builder(this->getComponentRegistry(), *this);
 			Text::Director director;
-			_textEntity = director.makeText(
-				builder, this->shared_from_this(), _text,
-				theme::TypeRole::BodyLarge,
-				schemeColor(SchemeColorRole::OnSurface));
+			_textEntity =
+				director.makeText(builder, this->shared_from_this(), _text,
+								  theme::TypeRole::BodyLarge,
+								  schemeColor(SchemeColorRole::OnSurface));
 			_textEntity->setContent(_text);
 			this->getComponentRegistry().addComponent<components::Focus>(
 				_textEntity->getIdentifier());
@@ -316,7 +316,7 @@ namespace guillaume::entities
 				});
 		}
 
-		const bool hasQuery = !getText().empty();
+		const bool hasQuery	 = !getText().empty();
 		const auto iconColor = schemeColor(SchemeColorRole::OnSurfaceVariant);
 
 		if (_searchIcon != nullptr) {

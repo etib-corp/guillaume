@@ -331,9 +331,9 @@ namespace guillaume
 			const auto &onSurface =
 				scheme.getColor(SchemeColorRole::OnSurface).getColor();
 			const auto withAlpha = [&onSurface](std::uint8_t alpha) {
-				return utility::graphic::Color32Bit(
-					onSurface.getRed(), onSurface.getGreen(),
-					onSurface.getBlue(), alpha);
+				return utility::graphic::Color32Bit(onSurface.getRed(),
+													onSurface.getGreen(),
+													onSurface.getBlue(), alpha);
 			};
 
 			scheme.setColor(SchemeColorRole::SurfaceDisabled, withAlpha(31),

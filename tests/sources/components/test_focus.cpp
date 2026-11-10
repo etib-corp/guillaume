@@ -153,20 +153,21 @@ namespace guillaume::components::tests
 		EXPECT_EQ(accessibility.getHint(), "Accepts the terms");
 		EXPECT_EQ(accessibility.getChecked(), components::CheckedState::Mixed);
 		EXPECT_EQ(accessibility.getExpanded(), false);
-		EXPECT_EQ(accessibility.getLiveRegion(), components::LiveRegion::Polite);
+		EXPECT_EQ(accessibility.getLiveRegion(),
+				  components::LiveRegion::Polite);
 		EXPECT_TRUE(accessibility.isFocusable());
 	}
 
 	TEST(TestAccessibility, ValidatesValueAndFocusOrder)
 	{
 		components::Accessibility accessibility;
-		accessibility.setValue(components::AccessibilityValue { 0.0f, 100.0f,
-																 40.0f });
+		accessibility.setValue(
+			components::AccessibilityValue { 0.0f, 100.0f, 40.0f });
 		ASSERT_TRUE(accessibility.getValue().has_value());
 		EXPECT_FLOAT_EQ(accessibility.getValue()->now, 40.0f);
 
-		EXPECT_THROW(accessibility.setValue(components::AccessibilityValue {
-						 0.0f, 1.0f, 2.0f }),
+		EXPECT_THROW(accessibility.setValue(
+						 components::AccessibilityValue { 0.0f, 1.0f, 2.0f }),
 					 std::invalid_argument);
 		EXPECT_THROW(accessibility.setFocusOrder(-1), std::invalid_argument);
 	}

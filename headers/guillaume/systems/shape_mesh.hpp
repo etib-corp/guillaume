@@ -145,11 +145,10 @@ namespace guillaume::systems::shape
 	 * @param arcSegments Segments per corner.
 	 * @param color Vertex color.
 	 */
-	void buildRoundedStrokeMesh(utility::graphic::Mesh &mesh,
-								const utility::graphic::PositionF &center,
-								const utility::graphic::OrientationF &orientation,
-								float halfWidth, float halfHeight, float radius,
-								float width, int arcSegments,
-								const utility::graphic::Color32Bit &color);
+	void buildRoundedStrokeMesh(
+		utility::graphic::Mesh &mesh, const utility::graphic::PositionF &center,
+		const utility::graphic::OrientationF &orientation, float halfWidth,
+		float halfHeight, float radius, float width, int arcSegments,
+		const utility::graphic::Color32Bit &color);
 
 }	 // namespace guillaume::systems::shape

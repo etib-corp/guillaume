@@ -369,11 +369,11 @@ namespace guillaume::entities
 			getComponentRegistry()
 				.getComponent<components::Transform>(child->getIdentifier())
 				.setPose(ButtonBase::applyLayerToPosition(
-					utility::graphic::PositionF(
-						buttonPose.getPosition().x + x,
-						buttonPose.getPosition().y
-							+ (baseHeight - height) / 2.0f,
-						buttonPose.getPosition().z),
+					utility::graphic::PositionF(buttonPose.getPosition().x + x,
+												buttonPose.getPosition().y
+													+ (baseHeight - height)
+														/ 2.0f,
+												buttonPose.getPosition().z),
 					buttonPose.getOrientation(), getLayer()));
 		};
 
@@ -386,7 +386,7 @@ namespace guillaume::entities
 		float width			 = baseHeight;
 
 		if (showLabel) {
-			width = leading + labelWidth + trailing;
+			width		 = leading + labelWidth + trailing;
 			float cursor = leading;
 			if (iconWidth > 0.0f) {
 				place(_icon, cursor, iconHeight);
@@ -454,19 +454,22 @@ namespace guillaume::entities
 		}
 	}
 
-	ExtendedFloatingActionButton &ExtendedFloatingActionButton::setMode(Mode mode)
+	ExtendedFloatingActionButton &
+		ExtendedFloatingActionButton::setMode(Mode mode)
 	{
 		_mode = mode;
 		applyStyleState();
 		return *this;
 	}
 
-	ExtendedFloatingActionButton::Mode ExtendedFloatingActionButton::getMode(void) const
+	ExtendedFloatingActionButton::Mode
+		ExtendedFloatingActionButton::getMode(void) const
 	{
 		return _mode;
 	}
 
-	ExtendedFloatingActionButton &ExtendedFloatingActionButton::setCustomSize(std::optional<float> size)
+	ExtendedFloatingActionButton &
+		ExtendedFloatingActionButton::setCustomSize(std::optional<float> size)
 	{
 		if (size.has_value() && *size <= 0.0f) {
 			throw std::invalid_argument("FAB custom size must be positive");

@@ -74,19 +74,22 @@ namespace guillaume::components
 		/** @brief Check the hover flag. @return True when hovered. */
 		bool isHovered(void) const;
 
-		/** @brief Set the hover flag. @param hovered New flag. @return *this. */
+		/** @brief Set the hover flag. @param hovered New flag. @return *this.
+		 */
 		StyleState &setHovered(bool hovered);
 
 		/** @brief Check the press flag. @return True when pressed. */
 		bool isPressed(void) const;
 
-		/** @brief Set the press flag. @param pressed New flag. @return *this. */
+		/** @brief Set the press flag. @param pressed New flag. @return *this.
+		 */
 		StyleState &setPressed(bool pressed);
 
 		/** @brief Check the focus flag. @return True when focused. */
 		bool isFocused(void) const;
 
-		/** @brief Set the focus flag. @param focused New flag. @return *this. */
+		/** @brief Set the focus flag. @param focused New flag. @return *this.
+		 */
 		StyleState &setFocused(bool focused);
 
 		/** @brief Check the drag flag. @return True when dragged. */

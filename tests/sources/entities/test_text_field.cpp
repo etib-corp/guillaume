@@ -222,8 +222,8 @@ namespace guillaume::entities::tests
 		field->initialize();
 		field->update();
 
-		const auto &label =
-			registry.getComponent<components::Text>(field->getLabelIdentifier());
+		const auto &label = registry.getComponent<components::Text>(
+			field->getLabelIdentifier());
 		EXPECT_FALSE(field->isLabelFloating());
 		EXPECT_FLOAT_EQ(label.getFontSize(),
 						getTypeToken(theme::TypeRole::BodyLarge).fontSize);
@@ -234,7 +234,8 @@ namespace guillaume::entities::tests
 		EXPECT_FLOAT_EQ(label.getFontSize(),
 						getTypeToken(theme::TypeRole::BodySmall).fontSize);
 		EXPECT_EQ(
-			registry.getComponent<components::Color>(field->getLabelIdentifier())
+			registry
+				.getComponent<components::Color>(field->getLabelIdentifier())
 				.getColor(),
 			role(SchemeColorRole::Primary));
 
@@ -242,9 +243,9 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Line>(field->getIdentifier());
 		EXPECT_FLOAT_EQ(line.getThickness(), 2.0f);
 		EXPECT_EQ(line.getColor(), role(SchemeColorRole::Primary));
-		EXPECT_TRUE(registry.getComponent<components::TextField>(
-							   field->getIdentifier())
-						.isLabelFloating());
+		EXPECT_TRUE(
+			registry.getComponent<components::TextField>(field->getIdentifier())
+				.isLabelFloating());
 	}
 
 	TEST_F(TestTextField, OutlinedFocusUsesPrimaryTwoDpOutline)
@@ -300,11 +301,10 @@ namespace guillaume::entities::tests
 		const auto fieldPose =
 			registry.getComponent<components::Transform>(field->getIdentifier())
 				.getPose();
-		const auto supportPose =
-			registry
-				.getComponent<components::Transform>(
-					field->getSupportingIdentifier())
-				.getPose();
+		const auto supportPose = registry
+									 .getComponent<components::Transform>(
+										 field->getSupportingIdentifier())
+									 .getPose();
 		EXPECT_GE(supportPose.getPosition().getY()
 					  - fieldPose.getPosition().getY(),
 				  56.0f);

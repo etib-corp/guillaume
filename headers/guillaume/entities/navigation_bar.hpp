@@ -71,10 +71,10 @@ namespace guillaume::entities
 		 * @brief One navigation destination.
 		 */
 		struct Destination {
-			std::string icon;			 ///< Unfocused (outlined) icon glyph.
-			std::string label;			 ///< Label text.
-			std::string focusedIcon;	 ///< Icon glyph while selected.
-			std::string badge;			 ///< Badge label ("" hides it).
+			std::string icon;			///< Unfocused (outlined) icon glyph.
+			std::string label;			///< Label text.
+			std::string focusedIcon;	///< Icon glyph while selected.
+			std::string badge;			///< Badge label ("" hides it).
 		};
 
 		/**
@@ -136,7 +136,7 @@ namespace guillaume::entities
 			Builder &addDestination(const std::string &iconGlyph,
 									const std::string &label,
 									const std::string &focusedIconGlyph = "",
-									const std::string &badge = "");
+									const std::string &badge			= "");
 
 			/**
 			 * @brief Set the handler called with the new index when the user
@@ -144,8 +144,8 @@ namespace guillaume::entities
 			 * @param onIndexChange Index change handler.
 			 * @return Reference to this builder for chaining.
 			 */
-			Builder &
-				withOnIndexChange(std::function<void(std::size_t)> onIndexChange);
+			Builder &withOnIndexChange(
+				std::function<void(std::size_t)> onIndexChange);
 		};
 
 		/**
@@ -170,14 +170,14 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::WithLabels };	 ///< Bar variant.
+		Variant _variant { Variant::WithLabels };	  ///< Bar variant.
 		std::vector<Destination> _destinations {};	  ///< Destinations.
 		std::vector<std::shared_ptr<ecs::Entity>>
-			_destinationEntities {};		  ///< Destination children.
+			_destinationEntities {};	///< Destination children.
 		std::function<void(std::size_t)>
 			_onIndexChange {};	  ///< Index change handler.
 		std::function<void(std::size_t)>
-			_onTabPress {};	   ///< Destination press handler.
+			_onTabPress {};					  ///< Destination press handler.
 		bool _updatingSelection { false };	  ///< Reentrancy guard.
 
 		private:
@@ -291,7 +291,8 @@ namespace guillaume::entities
 		 * @param onTabPress Press handler.
 		 * @return Reference to this bar for chaining.
 		 */
-		NavigationBar &setOnTabPress(std::function<void(std::size_t)> onTabPress);
+		NavigationBar &
+			setOnTabPress(std::function<void(std::size_t)> onTabPress);
 
 		/**
 		 * @brief Get the active-indicator pill of a destination.

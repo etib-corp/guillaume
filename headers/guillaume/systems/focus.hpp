@@ -133,10 +133,9 @@ namespace guillaume::systems
 		 * focus order.
 		 * @param backward True for Shift-Tab.
 		 */
-		void traverse(
-			const std::vector<std::pair<ecs::Entity::Identifier, int>>
-				&candidates,
-			bool backward);
+		void traverse(const std::vector<std::pair<ecs::Entity::Identifier, int>>
+						  &candidates,
+					  bool backward);
 
 		/**
 		 * @brief Reset the per-frame focusable list and fetch key events.

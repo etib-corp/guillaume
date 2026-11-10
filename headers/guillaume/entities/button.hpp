@@ -250,9 +250,11 @@ namespace guillaume::entities
 		Color _colorStyle { Color::Text };
 		bool _isCompact { false };	  ///< Compact horizontal padding.
 		float _minWidth { 0.0f };	  ///< Extra minimum width (segments).
-		bool _isUppercase { false };	///< Upper-case label.	///< Color style of the button
-		Shape _shape { Shape::Round };			///< Shape of the button
-		Size _size { Size::Small };				///< Size of the button
+		bool _isUppercase {
+			false
+		};	  ///< Upper-case label.	///< Color style of the button
+		Shape _shape { Shape::Round };	  ///< Shape of the button
+		Size _size { Size::Small };		  ///< Size of the button
 
 		protected:
 		/**

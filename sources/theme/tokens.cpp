@@ -124,9 +124,8 @@ namespace guillaume::theme
 	}
 
 	MotionScale::MotionScale(void)
-		: _durations { 0.05f, 0.10f, 0.15f, 0.20f, 0.25f, 0.30f,
-					   0.35f, 0.40f, 0.45f, 0.50f, 0.55f, 0.60f,
-					   0.70f, 0.80f, 0.90f, 1.00f }
+		: _durations { 0.05f, 0.10f, 0.15f, 0.20f, 0.25f, 0.30f, 0.35f, 0.40f,
+					   0.45f, 0.50f, 0.55f, 0.60f, 0.70f, 0.80f, 0.90f, 1.00f }
 	{
 	}
 

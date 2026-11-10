@@ -107,19 +107,19 @@ namespace guillaume::systems
 						const components::Bound &bound,
 						const utility::math::Vector2F &margin)
 	{
-		const auto size = utility::math::Vector2F(
-			{ bound.getWidth() + 2.0f * margin[0],
-			  bound.getHeight() + 2.0f * margin[1] });
+		const auto size =
+			utility::math::Vector2F({ bound.getWidth() + 2.0f * margin[0],
+									  bound.getHeight() + 2.0f * margin[1] });
 
 		if (margin[0] == 0.0f && margin[1] == 0.0f) {
 			return ray.intersectRectangle(pose, size);
 		}
 
-		const auto &orientation = pose.getOrientation();
+		const auto &orientation				 = pose.getOrientation();
 		utility::graphic::PositionF position = pose.getPosition();
-		position.translate(utility::graphic::PositionF(
-			-(orientation.getRight() * margin[0])
-			- (orientation.getUp() * margin[1])));
+		position.translate(
+			utility::graphic::PositionF(-(orientation.getRight() * margin[0])
+										- (orientation.getUp() * margin[1])));
 
 		return ray.intersectRectangle(
 			utility::graphic::PoseF(position, orientation), size);

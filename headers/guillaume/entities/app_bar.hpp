@@ -70,10 +70,10 @@ namespace guillaume::entities
 		 * @brief A pressable app bar icon (navigation or action).
 		 */
 		struct Action {
-			std::string icon {};						///< Icon glyph.
-			std::function<void(void)> onPress {};		///< Press handler.
-			std::string accessibilityLabel {};			///< Accessible name.
-			bool disabled { false };					///< Whether disabled.
+			std::string icon {};					 ///< Icon glyph.
+			std::function<void(void)> onPress {};	 ///< Press handler.
+			std::string accessibilityLabel {};		 ///< Accessible name.
+			bool disabled { false };				 ///< Whether disabled.
 		};
 
 		/**
@@ -85,9 +85,9 @@ namespace guillaume::entities
 			SurfaceConfig _config;					///< Surface configuration.
 			Variant _variant { Variant::Small };	///< App bar variant.
 			std::string _title {};					///< Title text.
-			Action _navigation {};				 ///< Leading navigation action.
-			std::vector<Action> _actions {};	 ///< Trailing actions.
-			bool _elevated { false };			 ///< Level-2 tonal elevation.
+			Action _navigation {};				///< Leading navigation action.
+			std::vector<Action> _actions {};	///< Trailing actions.
+			bool _elevated { false };			///< Level-2 tonal elevation.
 
 			public:
 			/**
@@ -162,9 +162,9 @@ namespace guillaume::entities
 			 * @param accessibilityLabel Accessible name.
 			 * @return Reference to this builder for chaining.
 			 */
-			Builder &withOnNavigation(std::function<void(void)> onPress,
-									  const std::string &accessibilityLabel =
-										  "Navigate up");
+			Builder &withOnNavigation(
+				std::function<void(void)> onPress,
+				const std::string &accessibilityLabel = "Navigate up");
 
 			/**
 			 * @brief Use the elevated surface (Paper `elevated`).
@@ -201,14 +201,14 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::Small };	 ///< App bar variant.
-		std::string _title {};					 ///< Title text.
-		Action _navigation {};				 ///< Leading navigation action.
-		std::vector<Action> _actions {};	 ///< Trailing actions.
-		bool _elevated { false };			 ///< Level-2 tonal elevation.
+		Variant _variant { Variant::Small };	///< App bar variant.
+		std::string _title {};					///< Title text.
+		Action _navigation {};					///< Leading navigation action.
+		std::vector<Action> _actions {};		///< Trailing actions.
+		bool _elevated { false };				///< Level-2 tonal elevation.
 		std::shared_ptr<IconButton>
-			_navigationIconEntity;			 ///< Leading icon button child.
-		std::shared_ptr<Text> _titleEntity;	 ///< Title child.
+			_navigationIconEntity;			   ///< Leading icon button child.
+		std::shared_ptr<Text> _titleEntity;	   ///< Title child.
 		std::vector<std::shared_ptr<IconButton>>
 			_actionEntities {};	   ///< Trailing action children.
 

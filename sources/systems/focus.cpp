@@ -156,7 +156,7 @@ namespace guillaume::systems
 			if (this->template hasComponent<components::Accessibility>(
 					entityIdentifier)) {
 				order = this->template getComponent<components::Accessibility>(
-							entityIdentifier)
+								entityIdentifier)
 							.getFocusOrder();
 			}
 			_focusables.emplace_back(entityIdentifier, order);
@@ -243,8 +243,9 @@ namespace guillaume::systems
 		}
 		if (this->template hasComponent<components::Accessibility>(
 				entityIdentifier)) {
-			return this->template getComponent<components::Accessibility>(
-						   entityIdentifier)
+			return this
+				->template getComponent<components::Accessibility>(
+					entityIdentifier)
 				.isFocusable();
 		}
 		return true;
@@ -276,27 +277,25 @@ namespace guillaume::systems
 		auto ordered = candidates;
 		std::stable_sort(ordered.begin(), ordered.end(),
 						 [](const auto &lhs, const auto &rhs) {
-							 const int left = lhs.second > 0 ? lhs.second
-															 : INT_MAX;
+							 const int left =
+								 lhs.second > 0 ? lhs.second : INT_MAX;
 							 const int right =
 								 rhs.second > 0 ? rhs.second : INT_MAX;
 							 return left < right;
 						 });
 
-		const auto count = static_cast<std::ptrdiff_t>(ordered.size());
+		const auto count	= static_cast<std::ptrdiff_t>(ordered.size());
 		std::ptrdiff_t next = backward ? count - 1 : 0;
 
 		if (_focusedEntity.has_value()) {
-			const auto current =
-				std::find_if(ordered.begin(), ordered.end(),
-							 [this](const auto &candidate) {
-								 return candidate.first
-									 == _focusedEntity.value();
-							 });
+			const auto current = std::find_if(
+				ordered.begin(), ordered.end(), [this](const auto &candidate) {
+					return candidate.first == _focusedEntity.value();
+				});
 			if (current != ordered.end()) {
 				const auto index = std::distance(ordered.begin(), current);
-				next = backward ? (index - 1 + count) % count
-								: (index + 1) % count;
+				next			 = backward ? (index - 1 + count) % count
+											: (index + 1) % count;
 			}
 		}
 
@@ -318,8 +317,9 @@ namespace guillaume::systems
 			return;
 		}
 
-		const bool backward = keyboardEvent->isModifierSet(
-			utility::event::KeyboardEvent::KeyModifiers::LeftShift)
+		const bool backward =
+			keyboardEvent->isModifierSet(
+				utility::event::KeyboardEvent::KeyModifiers::LeftShift)
 			|| keyboardEvent->isModifierSet(
 				utility::event::KeyboardEvent::KeyModifiers::RightShift);
 

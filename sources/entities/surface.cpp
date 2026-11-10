@@ -129,9 +129,9 @@ namespace guillaume::entities
 
 	void Surface::Builder::reset(void)
 	{
-		_config	   = SurfaceConfig();
-		_elevation = theme::ElevationLevel::Level1;
-		_mode	   = Mode::Elevated;
+		_config				 = SurfaceConfig();
+		_elevation			 = theme::ElevationLevel::Level1;
+		_mode				 = Mode::Elevated;
 		_config.borderRadius = getShapeRadius(theme::ShapeRole::None);
 		_config.axis		 = components::Layout::Axis::Vertical;
 	}
@@ -162,8 +162,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	Surface::Builder &
-		Surface::Builder::withConfig(const SurfaceConfig &config)
+	Surface::Builder &Surface::Builder::withConfig(const SurfaceConfig &config)
 	{
 		const auto pose = _config.pose;
 		_config			= config;

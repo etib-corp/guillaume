@@ -205,12 +205,14 @@ namespace guillaume::entities::tests
 		entities::Icon::Builder builder(registry, entityRegistry);
 		auto icon = builder.withGlyphName("home").registerEntity(nullptr);
 
-		EXPECT_FALSE(
-			registry.hasComponent<components::Accessibility>(icon->getIdentifier()));
+		EXPECT_FALSE(registry.hasComponent<components::Accessibility>(
+			icon->getIdentifier()));
 		icon->setAccessibilityLabel("Home");
 		const auto &accessibility =
-			registry.getComponent<components::Accessibility>(icon->getIdentifier());
-		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Image);
+			registry.getComponent<components::Accessibility>(
+				icon->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Image);
 		EXPECT_EQ(accessibility.getLabel(), "Home");
 	}
 

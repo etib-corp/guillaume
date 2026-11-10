@@ -68,11 +68,11 @@ namespace guillaume::theme
 	 * @brief Resolved typography for one typescale role.
 	 */
 	struct TypeToken {
-		std::string fontFamily { "Roboto" };	///< Font family name.
+		std::string fontFamily { "Roboto" };			  ///< Font family name.
 		FontWeight fontWeight { FontWeight::Regular };	  ///< Font weight.
-		float fontSize { 14.0f };		  ///< Font size, in dp.
-		float lineHeight { 20.0f };		  ///< Line height, in dp.
-		float letterSpacing { 0.0f };	  ///< Letter spacing, in dp.
+		float fontSize { 14.0f };						  ///< Font size, in dp.
+		float lineHeight { 20.0f };		 ///< Line height, in dp.
+		float letterSpacing { 0.0f };	 ///< Letter spacing, in dp.
 	};
 
 	/**

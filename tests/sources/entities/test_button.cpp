@@ -478,11 +478,12 @@ namespace guillaume::entities::tests
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
 				button->getIdentifier());
-		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Button);
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Button);
 		EXPECT_EQ(accessibility.getLabel(), "Save");
 
-		auto &state =
-			registry.getComponent<components::StyleState>(button->getIdentifier());
+		auto &state = registry.getComponent<components::StyleState>(
+			button->getIdentifier());
 		EXPECT_FALSE(state.isEnabled());
 		EXPECT_TRUE(button->isDisabled());
 
@@ -503,7 +504,8 @@ namespace guillaume::entities::tests
 
 		EXPECT_EQ(button->getColorStyle(), Button::Color::Text);
 		EXPECT_EQ(
-			registry.getComponent<components::Color>(button->getLabelIdentifier())
+			registry
+				.getComponent<components::Color>(button->getLabelIdentifier())
 				.getColor(),
 			schemeColor(SchemeColorRole::Primary));
 	}
@@ -541,10 +543,11 @@ namespace guillaume::entities::tests
 		button->update();
 
 		button->setUppercase(true);
-		EXPECT_EQ(registry
-					  .getComponent<components::Text>(button->getLabelIdentifier())
-					  .getContent(),
-				  "SAVE");
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Text>(button->getLabelIdentifier())
+				.getContent(),
+			"SAVE");
 		button->setCompact(true);
 		EXPECT_TRUE(button->isCompact());
 
@@ -557,7 +560,8 @@ namespace guillaume::entities::tests
 				.getColor(),
 			container);
 		EXPECT_EQ(
-			registry.getComponent<components::Color>(button->getLabelIdentifier())
+			registry
+				.getComponent<components::Color>(button->getLabelIdentifier())
 				.getColor(),
 			content);
 	}
@@ -571,11 +575,11 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 		elevated->initialize();
 		elevated->update();
-		EXPECT_EQ(registry
-					  .getComponent<components::Elevation>(
-						  elevated->getIdentifier())
-					  .getElevationLevel(),
-				  theme::ElevationLevel::Level1);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Elevation>(elevated->getIdentifier())
+				.getElevationLevel(),
+			theme::ElevationLevel::Level1);
 
 		auto filled = std::make_shared<Button>(
 			registry, "", components::Glyph::Style::Outlined, "Go", false,
@@ -584,7 +588,8 @@ namespace guillaume::entities::tests
 		filled->initialize();
 		filled->update();
 		EXPECT_FALSE(
-			registry.getComponent<components::Elevation>(filled->getIdentifier())
+			registry
+				.getComponent<components::Elevation>(filled->getIdentifier())
 				.hasShadow());
 	}
 
@@ -600,15 +605,17 @@ namespace guillaume::entities::tests
 
 		button->setLoading(true);
 		EXPECT_TRUE(button->isLoading());
-		EXPECT_EQ(registry
-					  .getComponent<components::Glyph>(button->getIconIdentifier())
-					  .getName(),
-				  ButtonBase::LoadingGlyph);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Glyph>(button->getIconIdentifier())
+				.getName(),
+			ButtonBase::LoadingGlyph);
 		button->setLoading(false);
-		EXPECT_EQ(registry
-					  .getComponent<components::Glyph>(button->getIconIdentifier())
-					  .getName(),
-				  "send");
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Glyph>(button->getIconIdentifier())
+				.getName(),
+			"send");
 
 		button->setAccessibilityRole(components::AccessibilityRole::Tab);
 		EXPECT_EQ(registry

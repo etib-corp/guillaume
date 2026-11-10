@@ -187,7 +187,8 @@ namespace guillaume::entities::tests
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
 				image->getIdentifier());
-		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Image);
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Image);
 		EXPECT_EQ(accessibility.getLabel(), "Avatar");
 		EXPECT_EQ(image->getLoadState(), components::Image::LoadState::Pending);
 	}

@@ -59,11 +59,11 @@ namespace guillaume::entities
 		ensure<components::Accessibility>(registry, entityIdentifier)
 			.setRole(role);
 
-		auto press = std::make_shared<std::function<void(void)>>(
-			std::move(onPress));
+		auto press =
+			std::make_shared<std::function<void(void)>>(std::move(onPress));
 		auto restyle = std::make_shared<std::function<void(void)>>(
 			std::move(onStateChange));
-		ecs::ComponentRegistry *registryPtr = &registry;
+		ecs::ComponentRegistry *registryPtr		 = &registry;
 		const ecs::Entity::Identifier identifier = entityIdentifier;
 
 		const auto changed = [restyle]() {
@@ -182,7 +182,8 @@ namespace guillaume::entities
 		// StyleState system has not yet mirrored.
 		if (isPressed(registry, entityIdentifier)) {
 			layer = theme::StateLayer::Pressed;
-		} else if (!layer.has_value() && isHovered(registry, entityIdentifier)) {
+		} else if (!layer.has_value()
+				   && isHovered(registry, entityIdentifier)) {
 			layer = theme::StateLayer::Hovered;
 		}
 

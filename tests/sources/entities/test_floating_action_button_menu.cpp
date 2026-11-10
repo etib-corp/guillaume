@@ -130,8 +130,7 @@ namespace guillaume::entities::tests
 
 		const auto action  = menu->getActionIdentifier(0);
 		const auto trigger = menu->getTriggerIdentifier();
-		registry
-			.getComponent<components::MouseButtonInteraction>(action)
+		registry.getComponent<components::MouseButtonInteraction>(action)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_EQ(edits, 0);
@@ -141,8 +140,7 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(accessibility.getLabel(), "Create");
 		EXPECT_EQ(accessibility.getExpanded(), false);
 
-		registry
-			.getComponent<components::MouseButtonInteraction>(trigger)
+		registry.getComponent<components::MouseButtonInteraction>(trigger)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_TRUE(menu->isOpen());
@@ -150,8 +148,7 @@ namespace guillaume::entities::tests
 		ASSERT_EQ(states.size(), 1u);
 		EXPECT_TRUE(states[0]);
 
-		registry
-			.getComponent<components::MouseButtonInteraction>(action)
+		registry.getComponent<components::MouseButtonInteraction>(action)
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_EQ(edits, 1);
@@ -164,9 +161,9 @@ namespace guillaume::entities::tests
 			}
 		}
 		EXPECT_TRUE(hasLabel);
-		EXPECT_EQ(registry.getComponent<components::Accessibility>(action)
-					  .getLabel(),
-				  "Edit");
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(action).getLabel(),
+			"Edit");
 	}
 
 }	 // namespace guillaume::entities::tests

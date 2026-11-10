@@ -324,16 +324,17 @@ namespace guillaume::entities
 			schemeColor(SchemeColorRole::InverseOnSurface);
 
 		if (_messageEntity == nullptr && !_message.empty()) {
-			_messageEntity = buildText(this->getComponentRegistry(), *this,
-									   this->shared_from_this(), _message,
-									   theme::TypeRole::BodyMedium, messageColor);
+			_messageEntity = buildText(
+				this->getComponentRegistry(), *this, this->shared_from_this(),
+				_message, theme::TypeRole::BodyMedium, messageColor);
 		}
 
 		if (_variant == Variant::WithAction && _actionEntity == nullptr
 			&& !_action.empty()) {
 			_actionEntity = buildText(
 				this->getComponentRegistry(), *this, this->shared_from_this(),
-				_action, theme::TypeRole::LabelLarge, schemeColor(SchemeColorRole::InversePrimary));
+				_action, theme::TypeRole::LabelLarge,
+				schemeColor(SchemeColorRole::InversePrimary));
 			if (_actionEntity != nullptr) {
 				makeInteractive(this->getComponentRegistry(),
 								_actionEntity->getIdentifier(),

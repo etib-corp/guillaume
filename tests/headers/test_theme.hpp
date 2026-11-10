@@ -32,7 +32,7 @@ namespace guillaume::tests
 	/**
 	 * @brief Fixture restoring the light scheme after each theme test.
 	 */
-	class TestTheme : public ::testing::Test
+	class TestTheme: public ::testing::Test
 	{
 		protected:
 		void TearDown(void) override

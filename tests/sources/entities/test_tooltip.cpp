@@ -184,9 +184,10 @@ namespace guillaume::entities::tests
 		tooltip->initialize();
 
 		auto anchor = std::make_shared<ecs::Entity>();
-		registry.registerComponentsForEntity<
-			components::Transform, components::Bound,
-			components::MouseHoverInteraction>(anchor->getIdentifier());
+		registry.registerComponentsForEntity<components::Transform,
+											 components::Bound,
+											 components::MouseHoverInteraction>(
+			anchor->getIdentifier());
 		registry.getComponent<components::Bound>(anchor->getIdentifier())
 			.setWidth(40.0f)
 			.setHeight(40.0f);
@@ -203,7 +204,8 @@ namespace guillaume::entities::tests
 
 		// Placed under the anchor.
 		const auto pose =
-			registry.getComponent<components::Transform>(tooltip->getIdentifier())
+			registry
+				.getComponent<components::Transform>(tooltip->getIdentifier())
 				.getPose();
 		EXPECT_FLOAT_EQ(pose.getPosition().getY(), 40.0f);
 
@@ -221,9 +223,10 @@ namespace guillaume::entities::tests
 		tooltip->initialize();
 
 		auto anchor = std::make_shared<ecs::Entity>();
-		registry.registerComponentsForEntity<
-			components::Transform, components::Bound,
-			components::MouseHoverInteraction>(anchor->getIdentifier());
+		registry.registerComponentsForEntity<components::Transform,
+											 components::Bound,
+											 components::MouseHoverInteraction>(
+			anchor->getIdentifier());
 		registry.getComponent<components::Transform>(anchor->getIdentifier())
 			.setPose(utility::graphic::PoseF(
 				utility::graphic::PositionF(-30.0f, 280.0f, 0.0f),
@@ -238,7 +241,8 @@ namespace guillaume::entities::tests
 		const auto &bound =
 			registry.getComponent<components::Bound>(tooltip->getIdentifier());
 		const auto pose =
-			registry.getComponent<components::Transform>(tooltip->getIdentifier())
+			registry
+				.getComponent<components::Transform>(tooltip->getIdentifier())
 				.getPose();
 		EXPECT_FLOAT_EQ(pose.getPosition().getX(), 0.0f);
 		EXPECT_FLOAT_EQ(pose.getPosition().getY(), 280.0f - bound.getHeight());
@@ -252,7 +256,8 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Accessibility>(
 				tooltip->getIdentifier());
 		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Text);
-		EXPECT_EQ(accessibility.getLiveRegion(), components::LiveRegion::Polite);
+		EXPECT_EQ(accessibility.getLiveRegion(),
+				  components::LiveRegion::Polite);
 		EXPECT_THROW(tooltip->setEnterDelay(-1.0f), std::invalid_argument);
 	}
 

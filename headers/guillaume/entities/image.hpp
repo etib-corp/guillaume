@@ -126,8 +126,8 @@ namespace guillaume::entities
 		};
 
 		private:
-		std::string _texturePath;	 ///< Name of the texture to be used for
-									 ///< this Image entity
+		std::string _texturePath;		 ///< Name of the texture to be used for
+										 ///< this Image entity
 		std::string _fallbackPath {};	 ///< Texture drawn on load failure
 		float _width { 0.0f };			 ///< Requested width (0: keep).
 		float _height { 0.0f };			 ///< Requested height (0: keep).

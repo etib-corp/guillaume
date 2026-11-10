@@ -193,9 +193,8 @@ namespace guillaume::entities::tests
 			28.0f);
 		EXPECT_THROW(badge->setSize(0.0f), std::invalid_argument);
 
-		const auto tertiary = getActiveScheme()
-								  .getColor(SchemeColorRole::Tertiary)
-								  .getColor();
+		const auto tertiary =
+			getActiveScheme().getColor(SchemeColorRole::Tertiary).getColor();
 		badge->setContainerColor(tertiary);
 		EXPECT_EQ(
 			registry.getComponent<components::Color>(badge->getIdentifier())
@@ -213,8 +212,8 @@ namespace guillaume::entities::tests
 		EXPECT_FALSE(badge->isVisible());
 		EXPECT_FLOAT_EQ(badge->getOpacity(), 1.0f);
 
-		auto &animation =
-			registry.getComponent<components::Animation>(badge->getIdentifier());
+		auto &animation = registry.getComponent<components::Animation>(
+			badge->getIdentifier());
 		EXPECT_FLOAT_EQ(animation.getDuration(),
 						getMotionDuration(theme::MotionDuration::Short3));
 		animation.advance(1.0f);

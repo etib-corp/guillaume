@@ -38,9 +38,9 @@ namespace guillaume::entities
 
 	std::shared_ptr<Text> Text::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Text>(
-			this->getComponentRegistry(), _content, _typeRole, _color,
-			_fontSize);
+		auto entity =
+			std::make_shared<Text>(this->getComponentRegistry(), _content,
+								   _typeRole, _color, _fontSize);
 		return entity;
 	}
 
@@ -49,7 +49,8 @@ namespace guillaume::entities
 		_content.clear();
 		_typeRole = theme::TypeRole::BodyMedium;
 		_fontSize.reset();
-		_color = getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
+		_color =
+			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
 	}
 
 	Text::Builder &Text::Builder::withContent(const std::string &content)
@@ -154,9 +155,8 @@ namespace guillaume::entities
 
 	void Text::applyTypography(void)
 	{
-		auto &text =
-			getComponentRegistry().getComponent<components::Text>(
-				getIdentifier());
+		auto &text = getComponentRegistry().getComponent<components::Text>(
+			getIdentifier());
 		const auto &token = getTypeToken(_typeRole);
 		text.setTypeToken(token);
 		if (_fontSize.has_value()) {

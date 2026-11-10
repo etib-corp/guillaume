@@ -179,7 +179,7 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
 		Dialog::Builder builder(registry, entityRegistry);
 		int confirmed = 0;
-		auto dialog = builder.withTitle("Title")
+		auto dialog	  = builder.withTitle("Title")
 						  .withMessage("Message")
 						  .addAction("Cancel")
 						  .addAction("OK",
@@ -215,11 +215,11 @@ namespace guillaume::entities::tests
 		dialog->update();
 
 		ASSERT_NE(dialog->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(
-						  dialog->getIconIdentifier())
-					  .getColor(),
-				  getActiveScheme().getColor(SchemeColorRole::Secondary).getColor());
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Color>(dialog->getIconIdentifier())
+				.getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Secondary).getColor());
 		EXPECT_EQ(
 			registry.getComponent<components::Layout>(dialog->getIdentifier())
 				.getCrossAxisAlignment(),
@@ -240,11 +240,13 @@ namespace guillaume::entities::tests
 				  0);
 
 		dialog->show();
-		auto &animation = registry.getComponent<components::Animation>(backdrop);
+		auto &animation =
+			registry.getComponent<components::Animation>(backdrop);
 		EXPECT_TRUE(animation.isPlaying());
 		animation.advance(1.0f);
-		EXPECT_EQ(registry.getComponent<components::Scrim>(backdrop).getColor(),
-				  getActiveScheme().getColor(SchemeColorRole::Backdrop).getColor());
+		EXPECT_EQ(
+			registry.getComponent<components::Scrim>(backdrop).getColor(),
+			getActiveScheme().getColor(SchemeColorRole::Backdrop).getColor());
 	}
 
 	TEST_F(TestDialog, DismissCallsTheHandlerAndSemantics)

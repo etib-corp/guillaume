@@ -111,8 +111,7 @@ namespace guillaume::components
 		return *this;
 	}
 
-	const std::optional<AccessibilityValue> &
-		Accessibility::getValue(void) const
+	const std::optional<AccessibilityValue> &Accessibility::getValue(void) const
 	{
 		return _value;
 	}

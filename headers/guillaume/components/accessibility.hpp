@@ -35,26 +35,26 @@ namespace guillaume::components
 	 * `accessibilityRole` values.
 	 */
 	enum class AccessibilityRole {
-		None,		   ///< No semantic role (decorative or container).
-		Button,		   ///< Pressable button.
-		Checkbox,	   ///< Two- or three-state checkbox.
-		Radio,		   ///< Radio button.
-		RadioGroup,	   ///< Group of radio buttons.
-		Switch,		   ///< On/off switch.
-		Tab,		   ///< Navigation destination.
-		TabList,	   ///< Group of navigation destinations.
-		Header,		   ///< Heading (app bar title, list subheader).
-		Alert,		   ///< Live announcement (snackbar).
-		ProgressBar,   ///< Determinate or indeterminate progress.
-		Slider,		   ///< Adjustable value.
-		TextField,	   ///< Editable text.
-		Search,		   ///< Search field.
-		ListItem,	   ///< Row of a list.
-		Menu,		   ///< Menu container.
-		MenuItem,	   ///< Menu entry.
-		Dialog,		   ///< Modal dialog.
-		Image,		   ///< Image or icon with meaning.
-		Text		   ///< Static text.
+		None,			///< No semantic role (decorative or container).
+		Button,			///< Pressable button.
+		Checkbox,		///< Two- or three-state checkbox.
+		Radio,			///< Radio button.
+		RadioGroup,		///< Group of radio buttons.
+		Switch,			///< On/off switch.
+		Tab,			///< Navigation destination.
+		TabList,		///< Group of navigation destinations.
+		Header,			///< Heading (app bar title, list subheader).
+		Alert,			///< Live announcement (snackbar).
+		ProgressBar,	///< Determinate or indeterminate progress.
+		Slider,			///< Adjustable value.
+		TextField,		///< Editable text.
+		Search,			///< Search field.
+		ListItem,		///< Row of a list.
+		Menu,			///< Menu container.
+		MenuItem,		///< Menu entry.
+		Dialog,			///< Modal dialog.
+		Image,			///< Image or icon with meaning.
+		Text			///< Static text.
 	};
 
 	/**
@@ -218,9 +218,9 @@ namespace guillaume::components
 		std::string _label {};	  ///< Accessible name.
 		std::string _hint {};	  ///< Describes the result of activation.
 		AccessibilityRole _role { AccessibilityRole::None };	///< Role.
-		bool _selected { false };	 ///< Selected state.
-		std::optional<CheckedState> _checked {};	///< Checked state.
-		std::optional<bool> _expanded {};			///< Expanded state.
+		bool _selected { false };						///< Selected state.
+		std::optional<CheckedState> _checked {};		///< Checked state.
+		std::optional<bool> _expanded {};				///< Expanded state.
 		std::optional<AccessibilityValue> _value {};	///< Range value.
 		LiveRegion _liveRegion { LiveRegion::None };	///< Live region.
 		int _focusOrder { 0 };		 ///< Explicit focus order (0: tree order).

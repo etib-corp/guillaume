@@ -71,8 +71,9 @@ namespace guillaume::systems
 
 		const bool isIntersecting =
 			isInteractive(this->getComponentRegistry(), entityIdentifier)
-			&& hitTest(ray, transform.getPose(), bound,
-					hitMargin(this->getComponentRegistry(), entityIdentifier));
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
 		const bool isButtonPressed = handButtonEvent->isButtonPressed();
 
 		if (isButtonPressed && isIntersecting) {

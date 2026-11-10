@@ -163,20 +163,20 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::Assist };	 ///< Chip variant.
-		std::string _label {};					 ///< Chip label.
-		std::string _iconGlyph {};				 ///< Leading icon glyph.
-		std::shared_ptr<Icon> _leadingIcon;		 ///< Leading icon child.
-		std::shared_ptr<Icon> _trailingIcon;	 ///< Trailing icon child.
-		std::shared_ptr<Text> _labelEntity;		 ///< Label child.
-		std::shared_ptr<Icon> _checkIcon;		 ///< Selected check child.
-		Mode _mode { Mode::Flat };				 ///< Chip mode.
-		bool _compact { false };				 ///< Compact padding.
-		bool _elevated { false };				 ///< Level-1 shadow.
-		bool _showSelectedOverlay { false };	 ///< Selected state layer.
-		bool _showSelectedCheck { true };		 ///< Check when selected.
-		std::function<void(void)> _onPress {};	 ///< Activation handler.
-		std::function<void(void)> _onClose {};	 ///< Close-icon handler.
+		Variant _variant { Variant::Assist };	  ///< Chip variant.
+		std::string _label {};					  ///< Chip label.
+		std::string _iconGlyph {};				  ///< Leading icon glyph.
+		std::shared_ptr<Icon> _leadingIcon;		  ///< Leading icon child.
+		std::shared_ptr<Icon> _trailingIcon;	  ///< Trailing icon child.
+		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
+		std::shared_ptr<Icon> _checkIcon;		  ///< Selected check child.
+		Mode _mode { Mode::Flat };				  ///< Chip mode.
+		bool _compact { false };				  ///< Compact padding.
+		bool _elevated { false };				  ///< Level-1 shadow.
+		bool _showSelectedOverlay { false };	  ///< Selected state layer.
+		bool _showSelectedCheck { true };		  ///< Check when selected.
+		std::function<void(void)> _onPress {};	  ///< Activation handler.
+		std::function<void(void)> _onClose {};	  ///< Close-icon handler.
 
 		private:
 		void applyVariant(void);

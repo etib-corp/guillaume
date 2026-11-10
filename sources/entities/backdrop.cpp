@@ -55,8 +55,9 @@ namespace guillaume::entities
 		}
 		_visible = visible;
 
-		auto &animation = getComponentRegistry().getComponent<components::Animation>(
-			getIdentifier());
+		auto &animation =
+			getComponentRegistry().getComponent<components::Animation>(
+				getIdentifier());
 		if (visible) {
 			_progress = 0.0f;
 			animation.setElapsed(0.0f).play();
@@ -75,13 +76,13 @@ namespace guillaume::entities
 	void Backdrop::follow(const utility::graphic::PoseF &ownerPose,
 						  float ownerWidth, float ownerHeight)
 	{
-		const auto &orientation = ownerPose.getOrientation();
+		const auto &orientation				 = ownerPose.getOrientation();
 		utility::graphic::PositionF position = ownerPose.getPosition();
 		position.translate(utility::graphic::PositionF(
 			-(orientation.getRight() * ((Extent - ownerWidth) / 2.0f))
 			- (orientation.getUp() * ((Extent - ownerHeight) / 2.0f))
-			+ orientation.getForward() * (systems::Layout::LayerDepthStep
-										  * 0.5f)));
+			+ orientation.getForward()
+				* (systems::Layout::LayerDepthStep * 0.5f)));
 		getComponentRegistry()
 			.getComponent<components::Transform>(getIdentifier())
 			.setPose(utility::graphic::PoseF(position, orientation));

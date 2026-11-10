@@ -123,7 +123,7 @@ namespace guillaume::entities
 		{
 			private:
 			NavigationDrawer::Entry _entry {};	  ///< Destination data.
-			bool _collapsed { false };	  ///< Collapsed (rail) rendering.
+			bool _collapsed { false };		   ///< Collapsed (rail) rendering.
 			std::shared_ptr<View> _lead {};	   ///< Icon+label group / pill.
 			std::shared_ptr<Icon> _icon {};	   ///< Icon child.
 			std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
@@ -148,9 +148,9 @@ namespace guillaume::entities
 				, _entry(entry)
 				, _collapsed(collapsed)
 			{
-				auto &layout = getComponentRegistry()
-								   .getComponent<components::Layout>(
-									   getIdentifier());
+				auto &layout =
+					getComponentRegistry().getComponent<components::Layout>(
+						getIdentifier());
 				if (_collapsed) {
 					layout.setAxis(components::Layout::Axis::Vertical)
 						.setMainAxisAlignment(
@@ -168,7 +168,7 @@ namespace guillaume::entities
 							entry.right.empty()
 								? components::Layout::MainAxisAlignment::Start
 								: components::Layout::MainAxisAlignment::
-									SpaceBetween)
+									  SpaceBetween)
 						.setCrossAxisAlignment(
 							components::Layout::CrossAxisAlignment::Center)
 						.setSpacing(theme::SpacingScale::get(3))
@@ -329,9 +329,9 @@ namespace guillaume::entities
 				const auto pill		= selected && !disabled
 						? schemeColor(SchemeColorRole::SecondaryContainer)
 						: transparentColor();
-				auto content = selected
-					? schemeColor(SchemeColorRole::OnSecondaryContainer)
-					: schemeColor(SchemeColorRole::OnSurfaceVariant);
+				auto content		= selected
+						   ? schemeColor(SchemeColorRole::OnSecondaryContainer)
+						   : schemeColor(SchemeColorRole::OnSurfaceVariant);
 				if (disabled) {
 					content = disabledContentColor();
 				}
@@ -619,18 +619,17 @@ namespace guillaume::entities
 					destination->setOnPress([this, index]() {
 						this->pressDestination(index);
 					});
-					destination->setOnSelectionChanged(
-						[this, index](bool selected) {
-							if (this->_updatingSelection || !selected) {
-								return;
-							}
-							this->_updatingSelection = true;
-							this->selectEntity(
-								this->_destinationEntities[index]
-									->getIdentifier());
-							this->_updatingSelection = false;
-							this->applyVariant();
-						});
+					destination->setOnSelectionChanged([this,
+														index](bool selected) {
+						if (this->_updatingSelection || !selected) {
+							return;
+						}
+						this->_updatingSelection = true;
+						this->selectEntity(
+							this->_destinationEntities[index]->getIdentifier());
+						this->_updatingSelection = false;
+						this->applyVariant();
+					});
 					_destinationEntities.push_back(destination);
 					children.push_back(destination);
 					break;
@@ -660,16 +659,15 @@ namespace guillaume::entities
 
 		config.axis				 = components::Layout::Axis::Vertical;
 		config.mainAxisAlignment = components::Layout::MainAxisAlignment::Start;
-		config.crossAxisAlignment =
-			_variant == Variant::Collapsed
+		config.crossAxisAlignment = _variant == Variant::Collapsed
 			? components::Layout::CrossAxisAlignment::Center
 			: components::Layout::CrossAxisAlignment::Start;
-		config.padding		  = DrawerPadding;
-		config.spacing		  = theme::SpacingScale::get(1);
-		config.hasFixedWidth  = true;
-		config.fixedWidth	  = getDrawerWidth();
-		config.hasFixedHeight = true;
-		config.fixedHeight	  = DrawerHeight;
+		config.padding			  = DrawerPadding;
+		config.spacing			  = theme::SpacingScale::get(1);
+		config.hasFixedWidth	  = true;
+		config.fixedWidth		  = getDrawerWidth();
+		config.hasFixedHeight	  = true;
+		config.fixedHeight		  = DrawerHeight;
 
 		setSurfaceConfig(config);
 
@@ -715,11 +713,11 @@ namespace guillaume::entities
 			const auto &bound =
 				getComponentRegistry().getComponent<components::Bound>(
 					getIdentifier());
-			_backdrop->follow(getComponentRegistry()
-								  .getComponent<components::Transform>(
-									  getIdentifier())
-								  .getPose(),
-							  bound.getWidth(), bound.getHeight());
+			_backdrop->follow(
+				getComponentRegistry()
+					.getComponent<components::Transform>(getIdentifier())
+					.getPose(),
+				bound.getWidth(), bound.getHeight());
 		}
 	}
 
@@ -759,8 +757,8 @@ namespace guillaume::entities
 
 	NavigationDrawer &NavigationDrawer::setVariant(Variant variant)
 	{
-		const bool rebuild = (variant == Variant::Collapsed)
-			!= (_variant == Variant::Collapsed);
+		const bool rebuild =
+			(variant == Variant::Collapsed) != (_variant == Variant::Collapsed);
 		const std::size_t selected = getSelectedIndex();
 		_variant				   = variant;
 		if (rebuild && !_destinationEntities.empty()) {
@@ -805,8 +803,9 @@ namespace guillaume::entities
 		return 0;
 	}
 
-	NavigationDrawer &NavigationDrawer::setDestinationDisabled(std::size_t index,
-															   bool disabled)
+	NavigationDrawer &
+		NavigationDrawer::setDestinationDisabled(std::size_t index,
+												 bool disabled)
 	{
 		std::size_t destinationIndex = 0;
 		for (auto &entry: _entries) {

@@ -295,15 +295,13 @@ namespace guillaume::systems::tests
 
 		runFrame(false);
 		EXPECT_EQ(_focusSystem->getFocusedEntity(), first);
-		EXPECT_TRUE(
-			_componentRegistry.getComponent<components::Focus>(first)
-				.isFocused());
+		EXPECT_TRUE(_componentRegistry.getComponent<components::Focus>(first)
+						.isFocused());
 
 		runFrame(false);
 		EXPECT_EQ(_focusSystem->getFocusedEntity(), second);
-		EXPECT_FALSE(
-			_componentRegistry.getComponent<components::Focus>(first)
-				.isFocused());
+		EXPECT_FALSE(_componentRegistry.getComponent<components::Focus>(first)
+						 .isFocused());
 
 		runFrame(false);
 		EXPECT_EQ(_focusSystem->getFocusedEntity(), first);
@@ -359,8 +357,8 @@ namespace guillaume::systems::tests
 		_focusSystem->update(entity);
 		EXPECT_FALSE(_focusSystem->getFocusedEntity().has_value());
 
-		_componentRegistry.getComponent<components::MouseButtonInteraction>(
-			entity)
+		_componentRegistry
+			.getComponent<components::MouseButtonInteraction>(entity)
 			.setButtonPressed(utility::event::MouseButtonEvent::Button::Left,
 							  true);
 		_focusSystem->update(entity);

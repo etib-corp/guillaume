@@ -93,7 +93,8 @@ namespace guillaume::entities
 			/** @brief Set the pose. @param pose Pose. @return *this. */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
-			/** @brief Set the variant. @param variant Variant. @return *this. */
+			/** @brief Set the variant. @param variant Variant. @return *this.
+			 */
 			Builder &withVariant(Variant variant);
 
 			/** @brief Set the label. @param label Label. @return *this. */

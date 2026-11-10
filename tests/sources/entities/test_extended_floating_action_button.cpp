@@ -110,11 +110,10 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Borders>(fab->getIdentifier())
 				.getTopLeftRadius(),
 			getShapeRadius(theme::ShapeRole::Large));
-		EXPECT_FLOAT_EQ(registry
-							.getComponent<components::Text>(
-								fab->getLabelIdentifier())
-							.getFontSize(),
-						getTypeToken(theme::TypeRole::LabelLarge).fontSize);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Text>(fab->getLabelIdentifier())
+				.getFontSize(),
+			getTypeToken(theme::TypeRole::LabelLarge).fontSize);
 		EXPECT_TRUE(
 			registry.getComponent<components::Elevation>(fab->getIdentifier())
 				.hasShadow());
@@ -124,11 +123,11 @@ namespace guillaume::entities::tests
 		const auto &bound =
 			registry.getComponent<components::Bound>(fab->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), bound.getHeight());
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(fab->getLabelIdentifier())
-					  .getColor()
-					  .getAlpha(),
-				  0);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(fab->getLabelIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
 	}
 
 }	 // namespace guillaume::entities::tests

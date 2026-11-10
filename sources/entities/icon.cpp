@@ -48,8 +48,9 @@ namespace guillaume::entities
 	{
 		_glyphName.clear();
 		_fontSize = 24.0f;
-		_color = getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
-		_style	  = components::Glyph::Style::Outlined;
+		_color =
+			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
+		_style = components::Glyph::Style::Outlined;
 	}
 
 	Icon::Builder &Icon::Builder::withGlyphName(const std::string &glyphName)
@@ -143,7 +144,8 @@ namespace guillaume::entities
 	Icon &Icon::setAccessibilityLabel(const std::string &label)
 	{
 		auto &registry = getComponentRegistry();
-		if (!registry.hasComponent<components::Accessibility>(getIdentifier())) {
+		if (!registry.hasComponent<components::Accessibility>(
+				getIdentifier())) {
 			if (label.empty()) {
 				return *this;
 			}

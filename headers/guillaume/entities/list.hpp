@@ -92,8 +92,8 @@ namespace guillaume::entities
 			std::function<void(void)> onPress {};	 ///< Press handler.
 			bool disabled { false };	///< Whether the row is disabled.
 			ItemKind kind { ItemKind::Item };	 ///< Entry kind.
-			std::vector<Item> children {};	  ///< Accordion children.
-			bool expanded { false };		  ///< Accordion expanded state.
+			std::vector<Item> children {};		 ///< Accordion children.
+			bool expanded { false };			 ///< Accordion expanded state.
 		};
 
 		/**
@@ -242,8 +242,8 @@ namespace guillaume::entities
 		 * @param childIndex Child index.
 		 * @return The identifier, or InvalidIdentifier.
 		 */
-		ecs::Entity::Identifier getChildIdentifier(std::size_t index,
-												   std::size_t childIndex) const;
+		ecs::Entity::Identifier
+			getChildIdentifier(std::size_t index, std::size_t childIndex) const;
 
 		/**
 		 * @brief Get the content column of a top-level row.
@@ -292,13 +292,13 @@ namespace guillaume::entities
 		struct Row {
 			std::shared_ptr<ecs::Entity> entity;	///< Row root.
 			std::shared_ptr<View> view;				///< Pressable row.
-			std::shared_ptr<View> content;	  ///< Title/description column.
-			std::shared_ptr<Text> headline;	  ///< Title child.
+			std::shared_ptr<View> content;		 ///< Title/description column.
+			std::shared_ptr<Text> headline;		 ///< Title child.
 			std::shared_ptr<Text> supporting;	 ///< Description child.
 			std::vector<std::shared_ptr<Icon>> icons;	 ///< Icon children.
-			std::shared_ptr<Icon> chevron;	  ///< Accordion chevron.
-			std::vector<Row> children;		  ///< Accordion child rows.
-			bool hidden { false };			  ///< Collapsed accordion child.
+			std::shared_ptr<Icon> chevron;				 ///< Accordion chevron.
+			std::vector<Row> children;	  ///< Accordion child rows.
+			bool hidden { false };		  ///< Collapsed accordion child.
 		};
 
 		Variant _variant { Variant::SingleLine };	 ///< List variant.

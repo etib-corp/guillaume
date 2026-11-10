@@ -231,16 +231,14 @@ namespace guillaume::entities
 
 		if (_icon != nullptr) {
 			_icon->setColor(
-				disabled
-					? disabledContentColor()
-					: schemeColor(on ? SchemeColorRole::OnPrimary
-									 : SchemeColorRole::OnSurfaceVariant));
+				disabled ? disabledContentColor()
+						 : schemeColor(on ? SchemeColorRole::OnPrimary
+										  : SchemeColorRole::OnSurfaceVariant));
 		}
 
 		if (_labelEntity != nullptr) {
 			if (disabled) {
-				_labelEntity->setColor(
-					disabledContentColor());
+				_labelEntity->setColor(disabledContentColor());
 			} else {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::OnSurface));
 			}
@@ -377,9 +375,10 @@ namespace guillaume::entities
 		}
 
 		if (!_label.empty()) {
-			_labelEntity = buildText(getComponentRegistry(), *this,
-									 shared_from_this(), _label, theme::TypeRole::BodyLarge,
-									 schemeColor(SchemeColorRole::OnSurface));
+			_labelEntity =
+				buildText(getComponentRegistry(), *this, shared_from_this(),
+						  _label, theme::TypeRole::BodyLarge,
+						  schemeColor(SchemeColorRole::OnSurface));
 		}
 
 		// The thumb and the label are positioned manually; neither is a

@@ -99,8 +99,8 @@ namespace guillaume::entities
 		void update(void) override;
 
 		private:
-		bool _visible { false };	///< Whether the backdrop is shown.
-		float _progress { 0.0f };	///< Fade-in progress in [0, 1].
+		bool _visible { false };	 ///< Whether the backdrop is shown.
+		float _progress { 0.0f };	 ///< Fade-in progress in [0, 1].
 
 		/**
 		 * @brief Push the faded Backdrop color to the Scrim component.

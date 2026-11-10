@@ -39,9 +39,9 @@ namespace guillaume::components
 			std::function<void(void)>;	  ///< Focus event handler type
 
 		private:
-		Handler _onFocusGained;	   ///< Focus gained event handler
-		Handler _onFocusLost;	   ///< Focus lost event handler
-		bool _focused { false };   ///< Whether the entity owns the focus
+		Handler _onFocusGained;		///< Focus gained event handler
+		Handler _onFocusLost;		///< Focus lost event handler
+		bool _focused { false };	///< Whether the entity owns the focus
 
 		public:
 		/**

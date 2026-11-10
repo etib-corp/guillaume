@@ -260,11 +260,11 @@ namespace guillaume::entities
 			const auto &bound =
 				getComponentRegistry().getComponent<components::Bound>(
 					getIdentifier());
-			_backdrop->follow(getComponentRegistry()
-								  .getComponent<components::Transform>(
-									  getIdentifier())
-								  .getPose(),
-							  bound.getWidth(), bound.getHeight());
+			_backdrop->follow(
+				getComponentRegistry()
+					.getComponent<components::Transform>(getIdentifier())
+					.getPose(),
+				bound.getWidth(), bound.getHeight());
 		}
 	}
 

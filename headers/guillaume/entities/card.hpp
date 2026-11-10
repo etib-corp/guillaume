@@ -114,13 +114,15 @@ namespace guillaume::entities
 			/** @brief Set the pose. @param pose Pose. @return *this. */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
-			/** @brief Set the variant. @param variant Variant. @return *this. */
+			/** @brief Set the variant. @param variant Variant. @return *this.
+			 */
 			Builder &withVariant(Variant variant);
 
 			/** @brief Set a fixed width. @param width Width. @return *this. */
 			Builder &withWidth(float width);
 
-			/** @brief Set a fixed height. @param height Height. @return *this. */
+			/** @brief Set a fixed height. @param height Height. @return *this.
+			 */
 			Builder &withHeight(float height);
 
 			/**
@@ -275,8 +277,8 @@ namespace guillaume::entities
 		 * @brief Composition data of one action.
 		 */
 		struct ActionSpec {
-			std::string label;					///< Button label.
-			std::function<void(void)> onPress;	///< Button handler.
+			std::string label;					  ///< Button label.
+			std::function<void(void)> onPress;	  ///< Button handler.
 		};
 
 		Variant _variant { Variant::Elevated };	   ///< Card variant.
@@ -284,18 +286,18 @@ namespace guillaume::entities
 		std::function<void(void)> _onPress {};	   ///< Press handler.
 		bool _pressed { false };				   ///< Last pressed state.
 		float _pressProgress { 0.0f };			   ///< Elevation progress.
-		float _pressFrom { 0.0f };	  ///< Progress when the motion began.
+		float _pressFrom { 0.0f };		///< Progress when the motion began.
 		bool _initialized { false };	///< Whether children may be built.
 		std::string _coverPath {};		///< Cover texture.
 		std::string _title {};			///< Title text.
 		std::string _subtitle {};		///< Subtitle text.
 		std::string _contentText {};	///< Content text.
-		std::vector<ActionSpec> _actionSpecs {};	///< Requested actions.
-		std::shared_ptr<Image> _cover;				///< Cover image.
-		std::shared_ptr<ecs::Entity> _titleSection;	   ///< Title section.
-		std::shared_ptr<Text> _titleText;			   ///< Title text.
-		std::shared_ptr<Text> _subtitleText;		   ///< Subtitle text.
-		std::shared_ptr<Text> _content;				   ///< Content text.
+		std::vector<ActionSpec> _actionSpecs {};		 ///< Requested actions.
+		std::shared_ptr<Image> _cover;					 ///< Cover image.
+		std::shared_ptr<ecs::Entity> _titleSection;		 ///< Title section.
+		std::shared_ptr<Text> _titleText;				 ///< Title text.
+		std::shared_ptr<Text> _subtitleText;			 ///< Subtitle text.
+		std::shared_ptr<Text> _content;					 ///< Content text.
 		std::shared_ptr<ecs::Entity> _actionsSection;	 ///< Actions row.
 		std::vector<std::shared_ptr<Button>> _actions;	  ///< Action buttons.
 

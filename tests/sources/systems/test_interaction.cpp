@@ -54,8 +54,8 @@ namespace guillaume::systems::tests
 	{
 		ecs::ComponentRegistry registry;
 		ecs::Entity entity;
-		registry.registerComponentsForEntity<
-			components::MouseHoverInteraction>(entity.getIdentifier());
+		registry.registerComponentsForEntity<components::MouseHoverInteraction>(
+			entity.getIdentifier());
 		registry
 			.getComponent<components::MouseHoverInteraction>(
 				entity.getIdentifier())
@@ -104,8 +104,9 @@ namespace guillaume::systems::tests
 		entities::setEnabled(registry, id, false);
 		release();
 		EXPECT_EQ(presses, 1);
-		EXPECT_EQ(registry.getComponent<components::Accessibility>(id).getRole(),
-				  components::AccessibilityRole::ListItem);
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(id).getRole(),
+			components::AccessibilityRole::ListItem);
 	}
 
 	TEST_F(TestInteraction, StateLayerColorFollowsInteraction)
@@ -153,7 +154,8 @@ namespace guillaume::systems::tests
 		registry.getComponent<components::MouseHoverInteraction>(id).setHovered(
 			true);
 		system.update(id);
-		EXPECT_TRUE(registry.getComponent<components::StyleState>(id).isHovered());
+		EXPECT_TRUE(
+			registry.getComponent<components::StyleState>(id).isHovered());
 
 		registry.getComponent<components::MouseHoverInteraction>(id).setHovered(
 			false);
