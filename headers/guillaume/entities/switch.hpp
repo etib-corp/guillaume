@@ -253,6 +253,11 @@ namespace guillaume::entities
 		bool isDisabled(void) const;
 
 		/**
+		 * @brief Gap between the track and the label.
+		 */
+		static constexpr float LabelGap = 16.0f;
+
+		/**
 		 * @brief Set the switch label.
 		 * @param label The new label.
 		 * @return Reference to this switch for chaining.

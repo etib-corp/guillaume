@@ -276,6 +276,23 @@ namespace guillaume::entities
 			}
 		}
 
+		if (_labelEntity != nullptr) {
+			// The label sits beside the 52 dp track instead of inside it.
+			const auto &track =
+				getComponentRegistry().getComponent<components::Bound>(
+					getIdentifier());
+			const auto &label =
+				getComponentRegistry().getComponent<components::Bound>(
+					_labelEntity->getIdentifier());
+			placeChild(getComponentRegistry(), getIdentifier(),
+					   _labelEntity->getIdentifier(),
+					   utility::graphic::PositionF(
+						   track.getWidth() + LabelGap,
+						   (track.getHeight() - label.getHeight()) / 2.0f,
+						   0.0f),
+					   static_cast<std::uint32_t>(getLayer()));
+		}
+
 		applyVariant();
 	}
 
@@ -365,13 +382,9 @@ namespace guillaume::entities
 									 schemeColor(SchemeColorRole::OnSurface));
 		}
 
-		// The thumb is positioned manually; only the label participates in
-		// the surface layout.
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-		if (_labelEntity != nullptr) {
-			children.push_back(_labelEntity);
-		}
-		setChildren(children);
+		// The thumb and the label are positioned manually; neither is a
+		// layout child of the track.
+		setChildren({});
 
 		applyState();
 	}

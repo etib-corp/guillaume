@@ -22,6 +22,20 @@
 
 #include "entities/test_segmented_button.hpp"
 
+#include <guillaume/entities/button.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/glyph.hpp>
+
+#include <guillaume/components/bound.hpp>
+
+#include <guillaume/components/borders.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -211,4 +225,76 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(segmented->getParent(), parent);
 		EXPECT_EQ(segmented->getSegmentCount(), 3U);
 	}
+	TEST_F(TestSegmentedButton, SingleSelectCommitsAndShowsCheck)
+	{
+		ecs::ComponentRegistry registry;
+		auto segmented = std::make_shared<SegmentedButton>(
+			registry, std::vector<std::string> { "Day", "Week" },
+			SegmentedButton::SelectionMode::Single,
+			std::function<void(std::size_t)>());
+		segmented->initialize();
+		segmented->update();
+
+		const auto first = segmented->getSegmentIdentifier(0);
+		registry
+			.getComponent<components::MouseButtonInteraction>(first)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_TRUE(segmented->isSelected(0));
+		// Pressing the selected segment again keeps it selected.
+		registry
+			.getComponent<components::MouseButtonInteraction>(first)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_TRUE(segmented->isSelected(0));
+
+		auto segment = segmented->getEntity<Button>(first);
+		ASSERT_NE(segment, nullptr);
+		EXPECT_EQ(registry
+					  .getComponent<components::Glyph>(
+						  segment->getIconIdentifier())
+					  .getName(),
+				  "check");
+		EXPECT_TRUE(
+			registry.getComponent<components::Borders>(first).hasStroke());
+		EXPECT_TRUE(
+			registry.getComponent<components::Accessibility>(first).isSelected());
+	}
+
+	TEST_F(TestSegmentedButton, SegmentsHaveEqualWidthAndPerSegmentOptions)
+	{
+		ecs::ComponentRegistry registry;
+		auto segmented = std::make_shared<SegmentedButton>(
+			registry,
+			std::vector<SegmentedButton::Segment> {
+				{ "A", "sunny", false, "Sunny" },
+				{ "Longer label", "", true, "" },
+			},
+			SegmentedButton::SelectionMode::Multi,
+			std::function<void(std::size_t)>());
+		segmented->initialize();
+		segmented->update();
+		segmented->update();
+
+		const auto first  = segmented->getSegmentIdentifier(0);
+		const auto second = segmented->getSegmentIdentifier(1);
+		const float firstWidth =
+			registry.getComponent<components::Bound>(first).getWidth();
+		EXPECT_FLOAT_EQ(
+			firstWidth,
+			registry.getComponent<components::Bound>(second).getWidth());
+		EXPECT_GE(firstWidth, SegmentedButton::MinSegmentWidth);
+
+		EXPECT_EQ(registry.getComponent<components::Accessibility>(first)
+					  .getLabel(),
+				  "Sunny");
+		EXPECT_FALSE(
+			registry.getComponent<components::StyleState>(second).isEnabled());
+		registry
+			.getComponent<components::MouseButtonInteraction>(second)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_FALSE(segmented->isSelected(1));
+	}
+
 }	 // namespace guillaume::entities::tests
