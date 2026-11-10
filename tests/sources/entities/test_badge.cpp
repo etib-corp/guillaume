@@ -50,9 +50,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Badge::Builder builder(registry, entityRegistry);
-			Badge::Director director;
 
-			return director.makeBadge(builder, nullptr, label, variant);
+			return builder.makeBadge(nullptr, label, variant);
 		}
 	}	 // namespace
 
@@ -143,17 +142,15 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(badge->getVariant(), Badge::Variant::Large);
 	}
 
-	TEST_F(TestBadge, DirectorBuildsAndRegisters)
+	TEST_F(TestBadge, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Badge::Builder builder(registry, entityRegistry);
-		Badge::Director director;
 
-		auto badge =
-			director.makeBadge(builder, parent, "5", Badge::Variant::Small);
+		auto badge = builder.makeBadge(parent, "5", Badge::Variant::Small);
 
 		ASSERT_NE(badge, nullptr);
 		EXPECT_EQ(badge->getParent(), parent);

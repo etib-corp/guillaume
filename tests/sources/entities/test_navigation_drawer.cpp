@@ -80,10 +80,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			NavigationDrawer::Builder builder(registry, entityRegistry);
-			NavigationDrawer::Director director;
 
-			return director.makeNavigationDrawer(builder, nullptr, variant,
-												 destinations);
+			return builder.makeNavigationDrawer(nullptr, variant, destinations);
 		}
 	}	 // namespace
 
@@ -165,18 +163,16 @@ namespace guillaume::entities::tests
 		EXPECT_FALSE(drawer->isOpen());
 	}
 
-	TEST_F(TestNavigationDrawer, DirectorBuildsAndRegisters)
+	TEST_F(TestNavigationDrawer, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		NavigationDrawer::Builder builder(registry, entityRegistry);
-		NavigationDrawer::Director director;
 
-		auto drawer = director.makeNavigationDrawer(
-			builder, parent, NavigationDrawer::Variant::Modal,
-			makeDestinations(3));
+		auto drawer = builder.makeNavigationDrawer(
+			parent, NavigationDrawer::Variant::Modal, makeDestinations(3));
 
 		ASSERT_NE(drawer, nullptr);
 		EXPECT_EQ(drawer->getParent(), parent);

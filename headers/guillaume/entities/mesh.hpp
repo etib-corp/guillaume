@@ -24,7 +24,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
@@ -92,19 +91,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withTexturePath(const std::string &texturePath);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Mesh::Builder` to create
-		 * preconfigured model entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a default model entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the default model.
 			 * @param parent The parent entity to which the new model entity
 			 * will be attached.
 			 * @param meshPath The model name to assign to the created entity.
@@ -113,8 +102,7 @@ namespace guillaume::entities
 			 * @return The entity identifier of the newly created model entity.
 			 * @see components::Glyph::getName
 			 */
-			std::shared_ptr<Mesh> makeMesh(Builder &builder,
-										   std::shared_ptr<Entity> parent,
+			std::shared_ptr<Mesh> makeMesh(std::shared_ptr<Entity> parent,
 										   const std::string &meshPath,
 										   const std::string &texturePath = "");
 		};

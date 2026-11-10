@@ -126,11 +126,11 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Snackbar> Snackbar::Director::makeSnackbar(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	std::shared_ptr<Snackbar> Snackbar::Builder::makeSnackbar(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::string &message, const std::string &action)
 	{
-		return builder.withVariant(variant)
+		return withVariant(variant)
 			.withMessage(message)
 			.withAction(action)
 			.registerEntity(parent);

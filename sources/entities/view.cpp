@@ -136,22 +136,19 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<View> View::Director::makeDefaultView(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const utility::graphic::PoseF &pose,
+	std::shared_ptr<View> View::Builder::makeDefaultView(
+		std::shared_ptr<Entity> parent, const utility::graphic::PoseF &pose,
 		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
-		return builder.withPose(pose).withEntities(entities).registerEntity(
-			parent);
+		return withPose(pose).withEntities(entities).registerEntity(parent);
 	}
 
-	std::shared_ptr<View> View::Director::makeColorView(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const utility::graphic::PoseF &pose,
+	std::shared_ptr<View> View::Builder::makeColorView(
+		std::shared_ptr<Entity> parent, const utility::graphic::PoseF &pose,
 		const utility::graphic::Color32Bit &color,
 		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
-		return builder.withPose(pose)
+		return withPose(pose)
 			.withColor(color)
 			.withEntities(entities)
 			.registerEntity(parent);

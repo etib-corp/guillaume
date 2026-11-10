@@ -87,12 +87,12 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<SegmentedButton>
-		SegmentedButton::Director::makeSegmentedButton(
-			Builder &builder, std::shared_ptr<Entity> parent,
+		SegmentedButton::Builder::makeSegmentedButton(
+			std::shared_ptr<Entity> parent,
 			const std::vector<std::string> &labels, SelectionMode selectionMode,
 			std::function<void(std::size_t)> onChange)
 	{
-		return builder.withLabels(labels)
+		return withLabels(labels)
 			.withSelectionMode(selectionMode)
 			.withOnChange(onChange)
 			.registerEntity(parent);
@@ -318,11 +318,10 @@ namespace guillaume::entities
 	void SegmentedButton::initialize(void)
 	{
 		Button::Builder buttonBuilder(getComponentRegistry(), *this);
-		Button::Director buttonDirector;
 
 		for (std::size_t i = 0; i < _labels.size(); ++i) {
-			auto segment = buttonDirector.makeButton(
-				buttonBuilder, shared_from_this(), _labels[i],
+			auto segment = buttonBuilder.makeButton(
+				shared_from_this(), _labels[i],
 				std::bind(&SegmentedButton::segmentChangeHandler, this, i),
 				Button::Color::Segmented, Button::Shape::Square,
 				Button::Size::Medium, false);

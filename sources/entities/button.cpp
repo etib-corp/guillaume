@@ -141,12 +141,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Button> Button::Director::makeButton(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &labelContent, std::function<void(void)> onClick,
-		Color colorStyle, Shape shape, Size size, bool isMorph)
+	std::shared_ptr<Button> Button::Builder::makeButton(
+		std::shared_ptr<Entity> parent, const std::string &labelContent,
+		std::function<void(void)> onClick, Color colorStyle, Shape shape,
+		Size size, bool isMorph)
 	{
-		return builder.withLabel(labelContent)
+		return withLabel(labelContent)
 			.withOnClick(onClick)
 			.withColorStyle(colorStyle)
 			.withShape(shape)
@@ -155,14 +155,14 @@ namespace guillaume::entities
 			.registerEntity(parent);
 	}
 
-	std::shared_ptr<Button> Button::Director::makeIconButton(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &labelContent, const std::string &iconGlyphName,
+	std::shared_ptr<Button> Button::Builder::makeIconButton(
+		std::shared_ptr<Entity> parent, const std::string &labelContent,
+		const std::string &iconGlyphName,
 		const components::Glyph::Style &iconStyle,
 		std::function<void(void)> onClick, Color colorStyle, Shape shape,
 		Size size, bool isMorph)
 	{
-		return builder.withIcon(iconGlyphName)
+		return withIcon(iconGlyphName)
 			.withIconStyle(iconStyle)
 			.withLabel(labelContent)
 			.withOnClick(onClick)

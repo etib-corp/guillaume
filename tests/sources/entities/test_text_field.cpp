@@ -65,11 +65,9 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			TextField::Builder builder(registry, entityRegistry);
-			TextField::Director director;
 
-			return director.makeTextField(builder, nullptr, variant, "Name",
-										  "person", "clear", "Support", false,
-										  "value");
+			return builder.makeTextField(nullptr, variant, "Name", "person",
+										 "clear", "Support", false, "value");
 		}
 	}	 // namespace
 
@@ -178,18 +176,17 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(field->getVariant(), TextField::Variant::Outlined);
 	}
 
-	TEST_F(TestTextField, DirectorBuildsAndRegisters)
+	TEST_F(TestTextField, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		TextField::Builder builder(registry, entityRegistry);
-		TextField::Director director;
 
-		auto field = director.makeTextField(
-			builder, parent, TextField::Variant::Outlined, "Name", "person",
-			"clear", "Support", true, "value");
+		auto field =
+			builder.makeTextField(parent, TextField::Variant::Outlined, "Name",
+								  "person", "clear", "Support", true, "value");
 
 		ASSERT_NE(field, nullptr);
 		EXPECT_EQ(field->getParent(), parent);

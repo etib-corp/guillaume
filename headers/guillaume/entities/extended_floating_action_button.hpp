@@ -29,7 +29,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/entities/button_base.hpp"
@@ -164,18 +163,9 @@ namespace guillaume::entities
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `ExtendedFloatingActionButton`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create an extended FAB using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the extended FAB.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param labelContent The label content to attach.
@@ -184,7 +174,7 @@ namespace guillaume::entities
 			 */
 			std::shared_ptr<ExtendedFloatingActionButton>
 				makeExtendedFloatingActionButton(
-					Builder &builder, std::shared_ptr<Entity> parent,
+					std::shared_ptr<Entity> parent,
 					const std::string &labelContent,
 					std::function<void(void)> onClick);
 		};

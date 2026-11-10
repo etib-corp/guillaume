@@ -79,9 +79,8 @@ namespace guillaume::entities::detail
 										components::Layout::Axis axis)
 		{
 			View::Builder builder(registry, entityRegistry);
-			View::Director director;
-			auto view = director.makeDefaultView(builder, parent,
-												 utility::graphic::PoseF(), {});
+			auto view =
+				builder.makeDefaultView(parent, utility::graphic::PoseF(), {});
 			view->setColor(transparentColor());
 			view->setAxis(axis);
 			view->setMainAxisAlignment(

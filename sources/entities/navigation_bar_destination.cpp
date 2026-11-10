@@ -123,9 +123,8 @@ namespace guillaume::entities::detail
 	void BarDestination::initialize(void)
 	{
 		View::Builder pillBuilder(getComponentRegistry(), *this);
-		View::Director pillDirector;
-		_pill = pillDirector.makeDefaultView(pillBuilder, shared_from_this(),
-											 utility::graphic::PoseF(), {});
+		_pill = pillBuilder.makeDefaultView(shared_from_this(),
+											utility::graphic::PoseF(), {});
 		_pill->setColor(transparentColor());
 		_pill->setBorderRadius(getShapeRadius(theme::ShapeRole::Full));
 		_pill->setAxis(components::Layout::Axis::Horizontal);

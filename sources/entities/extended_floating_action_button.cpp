@@ -135,12 +135,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<ExtendedFloatingActionButton> ExtendedFloatingActionButton::
-		Director::makeExtendedFloatingActionButton(
-			Builder &builder, std::shared_ptr<Entity> parent,
-			const std::string &labelContent, std::function<void(void)> onClick)
+	std::shared_ptr<ExtendedFloatingActionButton>
+		ExtendedFloatingActionButton::Builder::makeExtendedFloatingActionButton(
+			std::shared_ptr<Entity> parent, const std::string &labelContent,
+			std::function<void(void)> onClick)
 	{
-		return builder.withLabel(labelContent)
+		return withLabel(labelContent)
 			.withOnClick(onClick)
 			.registerEntity(parent);
 	}

@@ -52,9 +52,6 @@ set(GUILLAUME_SOURCES
     sources/ecs/entity_builder.cpp
     sources/ecs/entity_builder_manager.cpp
     sources/ecs/entity_builder_manager_filler.cpp
-    sources/ecs/entity_director.cpp
-    sources/ecs/entity_director_manager.cpp
-    sources/ecs/entity_director_manager_filler.cpp
     sources/ecs/entity_filler.cpp
     sources/ecs/entity_registry.cpp
     sources/ecs/entity_registry_container.cpp
@@ -69,7 +66,6 @@ set(GUILLAUME_SOURCES
     sources/entities/button.cpp
     sources/entities/button_base.cpp
     sources/entities/button_style.cpp
-    sources/entities/builder_base.cpp
     sources/entities/app_bar.cpp
     sources/entities/backdrop.cpp
     sources/entities/badge.cpp

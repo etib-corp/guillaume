@@ -53,8 +53,8 @@ to the role line height.
 restyles existing texts:
 
 ```cpp
-director.makeText(builder, parent, "Title", theme::TypeRole::TitleLarge,
-                  schemeColor(SchemeColorRole::OnSurface));
+builder.makeText(parent, "Title", theme::TypeRole::TitleLarge,
+                 schemeColor(SchemeColorRole::OnSurface));
 text->setTypeRole(theme::TypeRole::LabelLarge);   // explicit sizes still win
 ```
 

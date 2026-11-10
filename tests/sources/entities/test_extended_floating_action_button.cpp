@@ -78,17 +78,16 @@ namespace guillaume::entities::tests
 	}
 
 	TEST_F(TestExtendedFloatingActionButton,
-		   DirectorBuildsAndRegistersExtendedFab)
+		   BuilderPresetBuildsAndRegistersExtendedFab)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		ExtendedFloatingActionButton::Builder builder(registry, entityRegistry);
-		ExtendedFloatingActionButton::Director director;
 
-		auto fab = director.makeExtendedFloatingActionButton(
-			builder, parent, "Compose", std::function<void(void)>());
+		auto fab = builder.makeExtendedFloatingActionButton(
+			parent, "Compose", std::function<void(void)>());
 
 		ASSERT_NE(fab, nullptr);
 		EXPECT_EQ(fab->getParent(), parent);

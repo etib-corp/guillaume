@@ -155,11 +155,11 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Switch> Switch::Director::makeSwitch(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
-		bool checked, const std::string &iconGlyph, const std::string &label)
+	std::shared_ptr<Switch> Switch::Builder::makeSwitch(
+		std::shared_ptr<ecs::Entity> parent, Variant variant, bool checked,
+		const std::string &iconGlyph, const std::string &label)
 	{
-		return builder.withVariant(variant)
+		return withVariant(variant)
 			.withChecked(checked)
 			.withIcon(iconGlyph)
 			.withLabel(label)

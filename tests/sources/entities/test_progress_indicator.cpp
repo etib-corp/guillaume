@@ -52,10 +52,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			ProgressIndicator::Builder builder(registry, entityRegistry);
-			ProgressIndicator::Director director;
 
-			return director.makeProgressIndicator(builder, nullptr, variant,
-												  value);
+			return builder.makeProgressIndicator(nullptr, variant, value);
 		}
 
 		std::shared_ptr<ecs::Entity>
@@ -193,18 +191,16 @@ namespace guillaume::entities::tests
 				  ProgressIndicator::Variant::LinearIndeterminate);
 	}
 
-	TEST_F(TestProgressIndicator, DirectorBuildsAndRegisters)
+	TEST_F(TestProgressIndicator, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		ProgressIndicator::Builder builder(registry, entityRegistry);
-		ProgressIndicator::Director director;
 
-		auto progress = director.makeProgressIndicator(
-			builder, parent, ProgressIndicator::Variant::LinearDeterminate,
-			0.75f);
+		auto progress = builder.makeProgressIndicator(
+			parent, ProgressIndicator::Variant::LinearDeterminate, 0.75f);
 
 		ASSERT_NE(progress, nullptr);
 		EXPECT_EQ(progress->getParent(), parent);

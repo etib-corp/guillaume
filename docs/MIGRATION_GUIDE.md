@@ -3,6 +3,28 @@
 This guide documents breaking API changes introduced for v1.0 and how to
 update existing code.
 
+## Entity `Director` classes are folded into their `Builder`
+
+**Before:** every entity had a `Builder` and a `Director`; presets were called
+as `director.makeButton(builder, parent, ...)`, and scenes fetched directors
+with `getDirectorManager().getDirector<X::Director>()`.
+
+**After:** the presets are `Builder` members with the same names and the same
+remaining arguments: `builder.makeButton(parent, ...)`. `X::Director`,
+`ecs::EntityDirector`, `ecs::EntityDirectorManager` and
+`Scene::getDirectorManager()` are removed.
+
+**Update:** Drop the director variable and the `builder` argument:
+
+```cpp
+// Before
+auto &director = getDirectorManager().getDirector<Button::Director>();
+auto button = director.makeButton(builder, parent, "Save", onClick);
+
+// After
+auto button = builder.makeButton(parent, "Save", onClick);
+```
+
 ## `Application` takes its engine in the constructor
 
 **Before:** `Application<MyScene, MyScene> app(resources);` followed by

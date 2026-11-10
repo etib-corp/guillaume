@@ -503,20 +503,18 @@ namespace guillaume::entities
 	{
 		if (usesIcon()) {
 			Icon::Builder iconBuilder(getComponentRegistry(), *this);
-			Icon::Director iconDirector;
 
-			_icon = iconDirector.makeIcon(iconBuilder, shared_from_this(),
-										  _iconGlyphName, getIconFontSize(),
-										  getInitialContentColor(), _iconStyle);
+			_icon = iconBuilder.makeIcon(shared_from_this(), _iconGlyphName,
+										 getIconFontSize(),
+										 getInitialContentColor(), _iconStyle);
 		}
 
 		if (usesLabel()) {
 			Text::Builder labelBuilder(getComponentRegistry(), *this);
-			Text::Director labelDirector;
 
-			_label = labelDirector.makeText(
-				labelBuilder, shared_from_this(), _labelContent,
-				theme::TypeRole::LabelLarge, getInitialContentColor());
+			_label = labelBuilder.makeText(shared_from_this(), _labelContent,
+										   theme::TypeRole::LabelLarge,
+										   getInitialContentColor());
 		}
 
 		getComponentRegistry()

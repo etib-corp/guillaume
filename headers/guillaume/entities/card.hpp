@@ -32,7 +32,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/animation.hpp"
 #include "guillaume/components/elevation.hpp"
@@ -145,23 +144,14 @@ namespace guillaume::entities
 			 * @return *this.
 			 */
 			Builder &withDisabled(bool disabled);
-		};
 
-		/**
-		 * @brief Director for Card entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a card.
-			 * @param builder Builder.
 			 * @param parent Parent entity.
 			 * @param variant Variant.
 			 * @return The card.
 			 */
-			std::shared_ptr<Card> makeCard(Builder &builder,
-										   std::shared_ptr<ecs::Entity> parent,
+			std::shared_ptr<Card> makeCard(std::shared_ptr<ecs::Entity> parent,
 										   Variant variant);
 		};
 

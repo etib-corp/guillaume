@@ -31,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/ring.hpp"
 #include "guillaume/components/selection.hpp"
@@ -116,25 +115,16 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
-		};
 
-		/**
-		 * @brief Director that orchestrates `RadioButton::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a radio button using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The radio button variant.
 			 * @param label The radio button label.
 			 * @return The newly created radio button.
 			 */
 			std::shared_ptr<RadioButton>
-				makeRadioButton(Builder &builder,
-								std::shared_ptr<ecs::Entity> parent,
+				makeRadioButton(std::shared_ptr<ecs::Entity> parent,
 								Variant variant, const std::string &label);
 		};
 

@@ -29,7 +29,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/entities/button_base.hpp"
@@ -161,18 +160,9 @@ namespace guillaume::entities
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `FloatingActionButton::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a FAB entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the FAB.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param iconGlyphName The icon glyph name to attach.
@@ -181,10 +171,11 @@ namespace guillaume::entities
 			 * @param size The size.
 			 * @return A shared pointer to the newly created FAB entity.
 			 */
-			std::shared_ptr<FloatingActionButton> makeFloatingActionButton(
-				Builder &builder, std::shared_ptr<Entity> parent,
-				const std::string &iconGlyphName,
-				std::function<void(void)> onClick, Variant variant, Size size);
+			std::shared_ptr<FloatingActionButton>
+				makeFloatingActionButton(std::shared_ptr<Entity> parent,
+										 const std::string &iconGlyphName,
+										 std::function<void(void)> onClick,
+										 Variant variant, Size size);
 		};
 
 		private:

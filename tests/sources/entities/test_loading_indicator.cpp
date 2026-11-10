@@ -49,9 +49,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			LoadingIndicator::Builder builder(registry, entityRegistry);
-			LoadingIndicator::Director director;
 
-			return director.makeLoadingIndicator(builder, nullptr, variant);
+			return builder.makeLoadingIndicator(nullptr, variant);
 		}
 	}	 // namespace
 
@@ -161,17 +160,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(loading->getVariant(), LoadingIndicator::Variant::Linear);
 	}
 
-	TEST_F(TestLoadingIndicator, DirectorBuildsAndRegisters)
+	TEST_F(TestLoadingIndicator, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		LoadingIndicator::Builder builder(registry, entityRegistry);
-		LoadingIndicator::Director director;
 
-		auto loading = director.makeLoadingIndicator(
-			builder, parent, LoadingIndicator::Variant::Linear);
+		auto loading = builder.makeLoadingIndicator(
+			parent, LoadingIndicator::Variant::Linear);
 
 		ASSERT_NE(loading, nullptr);
 		EXPECT_EQ(loading->getParent(), parent);

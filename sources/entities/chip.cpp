@@ -97,11 +97,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Chip> Chip::Director::makeChip(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
-		const std::string &label, const std::string &iconGlyph, bool selected)
+	std::shared_ptr<Chip>
+		Chip::Builder::makeChip(std::shared_ptr<ecs::Entity> parent,
+								Variant variant, const std::string &label,
+								const std::string &iconGlyph, bool selected)
 	{
-		return builder.withVariant(variant)
+		return withVariant(variant)
 			.withLabel(label)
 			.withIcon(iconGlyph)
 			.withSelected(selected)

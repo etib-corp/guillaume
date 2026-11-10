@@ -170,11 +170,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<LoadingIndicator>
-		LoadingIndicator::Director::makeLoadingIndicator(
-			Builder &builder, std::shared_ptr<ecs::Entity> parent,
-			Variant variant)
+		LoadingIndicator::Builder::makeLoadingIndicator(
+			std::shared_ptr<ecs::Entity> parent, Variant variant)
 	{
-		return builder.withVariant(variant).registerEntity(parent);
+		return withVariant(variant).registerEntity(parent);
 	}
 
 	LoadingIndicator::LoadingIndicator(ecs::ComponentRegistry &registry,

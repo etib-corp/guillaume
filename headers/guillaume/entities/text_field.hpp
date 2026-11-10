@@ -32,7 +32,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/text_field.hpp"
@@ -176,17 +175,9 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withText(const std::string &text);
-		};
 
-		/**
-		 * @brief Director building text fields.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a text field.
-			 * @param builder Text field builder.
 			 * @param parent Parent entity.
 			 * @param variant Field variant.
 			 * @param placeholder Label text.
@@ -197,12 +188,13 @@ namespace guillaume::entities
 			 * @param text Input text.
 			 * @return The registered text field.
 			 */
-			std::shared_ptr<TextField> makeTextField(
-				Builder &builder, std::shared_ptr<ecs::Entity> parent,
-				Variant variant, const std::string &placeholder,
-				const std::string &leadingIcon, const std::string &trailingIcon,
-				const std::string &supportingText, bool error,
-				const std::string &text = "");
+			std::shared_ptr<TextField>
+				makeTextField(std::shared_ptr<ecs::Entity> parent,
+							  Variant variant, const std::string &placeholder,
+							  const std::string &leadingIcon,
+							  const std::string &trailingIcon,
+							  const std::string &supportingText, bool error,
+							  const std::string &text = "");
 		};
 
 		/**

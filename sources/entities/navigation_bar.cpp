@@ -138,17 +138,17 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<NavigationBar> NavigationBar::Director::makeNavigationBar(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	std::shared_ptr<NavigationBar> NavigationBar::Builder::makeNavigationBar(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::vector<std::pair<std::string, std::string>> &destinations)
 	{
-		builder.withVariant(variant);
+		withVariant(variant);
 
 		for (const auto &destination: destinations) {
-			builder.addDestination(destination.first, destination.second);
+			addDestination(destination.first, destination.second);
 		}
 
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	NavigationBar::NavigationBar(

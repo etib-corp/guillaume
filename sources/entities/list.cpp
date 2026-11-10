@@ -71,9 +71,8 @@ namespace guillaume::entities
 									   components::Layout::Axis axis)
 		{
 			View::Builder builder(registry, entityRegistry);
-			View::Director director;
-			auto view = director.makeDefaultView(builder, parent,
-												 utility::graphic::PoseF(), {});
+			auto view =
+				builder.makeDefaultView(parent, utility::graphic::PoseF(), {});
 			view->setColor(transparentColor());
 			view->setAxis(axis);
 			view->setMainAxisAlignment(
@@ -143,12 +142,11 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<List> List::Director::makeList(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
-		const std::vector<Item> &items)
+	std::shared_ptr<List>
+		List::Builder::makeList(std::shared_ptr<ecs::Entity> parent,
+								Variant variant, const std::vector<Item> &items)
 	{
-		return builder.withVariant(variant).withItems(items).registerEntity(
-			parent);
+		return withVariant(variant).withItems(items).registerEntity(parent);
 	}
 
 	List::Item List::subheader(const std::string &title)
@@ -235,10 +233,9 @@ namespace guillaume::entities
 
 		if (item.kind == ItemKind::Divider) {
 			Divider::Builder builder(registry, *this);
-			Divider::Director director;
-			row.entity = director.makeDivider(builder, this->shared_from_this(),
-											  getListWidth(),
-											  Divider::Variant::FullWidth);
+			row.entity =
+				builder.makeDivider(this->shared_from_this(), getListWidth(),
+									Divider::Variant::FullWidth);
 			return row;
 		}
 
@@ -265,8 +262,7 @@ namespace guillaume::entities
 
 		if (!item.leadingImage.empty()) {
 			Image::Builder builder(registry, *lead);
-			Image::Director director;
-			auto image = director.makeImage(builder, lead, item.leadingImage);
+			auto image = builder.makeImage(lead, item.leadingImage);
 			if (image != nullptr) {
 				leadChildren.push_back(image);
 			}

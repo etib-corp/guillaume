@@ -357,25 +357,18 @@ namespace guillaume::entities
 			 * @return *this.
 			 */
 			Builder &withConfig(const SurfaceConfig &config);
-		};
 
-		/**
-		 * @brief Director for Surface entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a surface.
-			 * @param builder Builder.
 			 * @param parent Parent entity.
 			 * @param elevation Elevation level.
 			 * @param mode Shadow mode.
 			 * @return The surface.
 			 */
-			std::shared_ptr<Surface> makeSurface(
-				Builder &builder, std::shared_ptr<ecs::Entity> parent,
-				theme::ElevationLevel elevation, Mode mode = Mode::Elevated);
+			std::shared_ptr<Surface>
+				makeSurface(std::shared_ptr<ecs::Entity> parent,
+							theme::ElevationLevel elevation,
+							Mode mode = Mode::Elevated);
 		};
 
 		/**

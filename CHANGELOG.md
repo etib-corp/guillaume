@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and is no longer repeated (`Application<MyScene>`).
 - **Breaking:** removed `Application::pollEvents/update/clear/present`;
   engine-backed systems and `SceneManager` take `utility::Engine &`.
+- **Breaking:** entity `Director` classes are folded into their `Builder`
+  (`builder.makeXxx(parent, ...)`); the director manager is removed.
 - `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
 - Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 - Moved include paths onto the `guillaume` target (target-scoped includes).

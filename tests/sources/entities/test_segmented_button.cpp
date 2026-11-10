@@ -206,18 +206,16 @@ namespace guillaume::entities::tests
 		EXPECT_FALSE(segmented->isSelected(0));
 	}
 
-	TEST_F(TestSegmentedButton, DirectorBuildsAndRegistersSegmentedButton)
+	TEST_F(TestSegmentedButton, BuilderPresetBuildsAndRegistersSegmentedButton)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		SegmentedButton::Builder builder(registry, entityRegistry);
-		SegmentedButton::Director director;
 
-		auto segmented = director.makeSegmentedButton(
-			builder, parent,
-			std::vector<std::string> { "Day", "Week", "Month" },
+		auto segmented = builder.makeSegmentedButton(
+			parent, std::vector<std::string> { "Day", "Week", "Month" },
 			SegmentedButton::SelectionMode::Multi,
 			std::function<void(std::size_t)>());
 

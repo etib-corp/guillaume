@@ -29,7 +29,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/parent_entity_filler.hpp"
 
@@ -137,18 +136,9 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withSegments(const std::vector<Segment> &segments);
-		};
 
-		/**
-		 * @brief Director that orchestrates `SegmentedButton::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a segmented button entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the segmented button.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param labels The labels of the segments.
@@ -158,8 +148,7 @@ namespace guillaume::entities
 			 * group entity.
 			 */
 			std::shared_ptr<SegmentedButton>
-				makeSegmentedButton(Builder &builder,
-									std::shared_ptr<Entity> parent,
+				makeSegmentedButton(std::shared_ptr<Entity> parent,
 									const std::vector<std::string> &labels,
 									SelectionMode selectionMode,
 									std::function<void(std::size_t)> onChange);

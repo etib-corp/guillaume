@@ -94,11 +94,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Checkbox> Checkbox::Director::makeCheckbox(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, State state,
-		Variant variant, const std::string &label)
+	std::shared_ptr<Checkbox>
+		Checkbox::Builder::makeCheckbox(std::shared_ptr<ecs::Entity> parent,
+										State state, Variant variant,
+										const std::string &label)
 	{
-		return builder.withState(state)
+		return withState(state)
 			.withVariant(variant)
 			.withLabel(label)
 			.registerEntity(parent);

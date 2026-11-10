@@ -78,7 +78,7 @@ flowchart LR
 | Observer | `event::EventBus`, `event::EventSubscriber` | Engine events fan out to subscribed systems. |
 | Strategy | `ecs::LevelOrderTraveler`, `ecs::ReverseLevelOrderTraveler` | Each phase picks its tree traversal order. |
 | Template Method | `ecs::System::routine` (`prepare` / `update` / `cleanup`), `EntityBuilderBase::buildEntity` | Fixed skeleton, per-type hooks. |
-| Builder | `entities::X::Builder` | Fluent configuration of an entity before it is registered. |
+| Builder | `entities::X::Builder` | Fluent configuration of an entity before it is registered; `makeXxx()` presets cover the common cases. |
 
 ## Where Things Are Registered
 

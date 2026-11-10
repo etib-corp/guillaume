@@ -33,7 +33,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
@@ -162,17 +161,9 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withOnDismiss(std::function<void(void)> onDismiss);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Dialog::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a dialog using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The dialog variant.
 			 * @param title The dialog title.
@@ -181,8 +172,7 @@ namespace guillaume::entities
 			 * @return The newly created dialog.
 			 */
 			std::shared_ptr<Dialog>
-				makeDialog(Builder &builder,
-						   std::shared_ptr<ecs::Entity> parent, Variant variant,
+				makeDialog(std::shared_ptr<ecs::Entity> parent, Variant variant,
 						   const std::string &title, const std::string &message,
 						   const std::vector<std::string> &actions = {});
 		};

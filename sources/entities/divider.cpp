@@ -93,12 +93,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<Divider>
-		Divider::Director::makeDivider(Builder &builder,
-									   std::shared_ptr<Entity> parent,
-									   float length, Variant variant)
+		Divider::Builder::makeDivider(std::shared_ptr<Entity> parent,
+									  float length, Variant variant)
 	{
-		return builder.withLength(length).withVariant(variant).registerEntity(
-			parent);
+		return withLength(length).withVariant(variant).registerEntity(parent);
 	}
 
 	Divider::Divider(ecs::ComponentRegistry &registry,

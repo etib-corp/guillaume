@@ -74,9 +74,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Menu::Builder builder(registry, entityRegistry);
-			Menu::Director director;
 
-			return director.makeMenu(builder, nullptr, variant, items);
+			return builder.makeMenu(nullptr, variant, items);
 		}
 	}	 // namespace
 
@@ -162,17 +161,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(menu->getVariant(), Menu::Variant::Context);
 	}
 
-	TEST_F(TestMenu, DirectorBuildsAndRegisters)
+	TEST_F(TestMenu, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Menu::Builder builder(registry, entityRegistry);
-		Menu::Director director;
 
-		auto menu = director.makeMenu(builder, parent, Menu::Variant::Cascading,
-									  makeItems(4));
+		auto menu =
+			builder.makeMenu(parent, Menu::Variant::Cascading, makeItems(4));
 
 		ASSERT_NE(menu, nullptr);
 		EXPECT_EQ(menu->getParent(), parent);

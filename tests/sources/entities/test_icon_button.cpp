@@ -179,17 +179,16 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(button->getAccessibilityLabel(), "Favorite");
 	}
 
-	TEST_F(TestIconButton, DirectorBuildsAndRegistersIconButton)
+	TEST_F(TestIconButton, BuilderPresetBuildsAndRegistersIconButton)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		IconButton::Builder builder(registry, entityRegistry);
-		IconButton::Director director;
 
-		auto button = director.makeIconButton(
-			builder, parent, "favorite", std::function<void(void)>(),
+		auto button = builder.makeIconButton(
+			parent, "favorite", std::function<void(void)>(),
 			IconButton::Variant::Filled, IconButton::Size::Large);
 
 		ASSERT_NE(button, nullptr);

@@ -131,12 +131,11 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<FloatingActionButton>
-		FloatingActionButton::Director::makeFloatingActionButton(
-			Builder &builder, std::shared_ptr<Entity> parent,
-			const std::string &iconGlyphName, std::function<void(void)> onClick,
-			Variant variant, Size size)
+		FloatingActionButton::Builder::makeFloatingActionButton(
+			std::shared_ptr<Entity> parent, const std::string &iconGlyphName,
+			std::function<void(void)> onClick, Variant variant, Size size)
 	{
-		return builder.withIcon(iconGlyphName)
+		return withIcon(iconGlyphName)
 			.withOnClick(onClick)
 			.withVariant(variant)
 			.withSize(size)

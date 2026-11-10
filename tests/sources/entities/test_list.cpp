@@ -70,9 +70,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			List::Builder builder(registry, entityRegistry);
-			List::Director director;
 
-			return director.makeList(builder, nullptr, variant, items);
+			return builder.makeList(nullptr, variant, items);
 		}
 	}	 // namespace
 
@@ -168,17 +167,16 @@ namespace guillaume::entities::tests
 			2U);
 	}
 
-	TEST_F(TestList, DirectorBuildsAndRegisters)
+	TEST_F(TestList, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		List::Builder builder(registry, entityRegistry);
-		List::Director director;
 
-		auto list = director.makeList(builder, parent, List::Variant::TwoLine,
-									  makeItems(4));
+		auto list =
+			builder.makeList(parent, List::Variant::TwoLine, makeItems(4));
 
 		ASSERT_NE(list, nullptr);
 		EXPECT_EQ(list->getParent(), parent);

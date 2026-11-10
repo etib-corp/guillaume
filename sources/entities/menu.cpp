@@ -129,17 +129,17 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Menu> Menu::Director::makeMenu(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
-		const std::vector<Item> &items)
+	std::shared_ptr<Menu>
+		Menu::Builder::makeMenu(std::shared_ptr<ecs::Entity> parent,
+								Variant variant, const std::vector<Item> &items)
 	{
-		builder.withVariant(variant);
+		withVariant(variant);
 
 		for (const auto &item: items) {
-			builder.addItem(item);
+			addItem(item);
 		}
 
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	Menu::Menu(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
@@ -211,10 +211,9 @@ namespace guillaume::entities
 		Row row;
 
 		View::Builder builder(this->getComponentRegistry(), *this);
-		View::Director director;
 
-		row.view = director.makeDefaultView(builder, this->shared_from_this(),
-											utility::graphic::PoseF(), {});
+		row.view = builder.makeDefaultView(this->shared_from_this(),
+										   utility::graphic::PoseF(), {});
 
 		if (row.view == nullptr) {
 			return row;

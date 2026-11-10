@@ -31,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/line.hpp"
@@ -135,17 +134,9 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withText(const std::string &text);
-		};
 
-		/**
-		 * @brief Director building search fields.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a search field.
-			 * @param builder Search builder.
 			 * @param parent Parent entity.
 			 * @param variant Search variant.
 			 * @param placeholder Placeholder text.
@@ -153,8 +144,7 @@ namespace guillaume::entities
 			 * @return The registered search field.
 			 */
 			std::shared_ptr<Search>
-				makeSearch(Builder &builder,
-						   std::shared_ptr<ecs::Entity> parent, Variant variant,
+				makeSearch(std::shared_ptr<ecs::Entity> parent, Variant variant,
 						   const std::string &placeholder,
 						   const std::string &text = "");
 		};

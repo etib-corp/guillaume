@@ -33,7 +33,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
@@ -169,24 +168,15 @@ namespace guillaume::entities
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &addItem(const Item &item);
-		};
 
-		/**
-		 * @brief Director building menus from item lists.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Build a menu.
-			 * @param builder Menu builder.
 			 * @param parent Parent entity.
 			 * @param variant Menu variant.
 			 * @param items Menu items.
 			 * @return The registered menu.
 			 */
-			std::shared_ptr<Menu> makeMenu(Builder &builder,
-										   std::shared_ptr<ecs::Entity> parent,
+			std::shared_ptr<Menu> makeMenu(std::shared_ptr<ecs::Entity> parent,
 										   Variant variant,
 										   const std::vector<Item> &items);
 		};
