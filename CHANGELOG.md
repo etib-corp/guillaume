@@ -34,6 +34,9 @@ Versions follow the calendar scheme described in
 ### Fixed
 
 - `systems::Overlay` was registered twice and ran twice per frame.
+- `systems::GlyphRender` and `systems::MeasureGlyph` no longer crash when the
+  Material Symbols font or code point table is missing from the resource
+  root; icons are skipped and an error is logged.
 - `-DBUILD_DOCS=ON` now enables the documentation target; `BUILD_ALL_DOCS` is
   kept as a deprecated alias.
 - GoogleTest is no longer installed by `cmake --install`; the bundled fonts

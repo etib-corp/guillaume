@@ -61,6 +61,7 @@ namespace guillaume::systems
 		std::string _defaultFontPath;	 ///< Default font for glyph rendering
 		std::string _glyphCodePath;		 ///< Path to glyph code mapping file
 		std::shared_ptr<utility::graphic::CodePoints> _codePoints;
+		bool _hasFont { false };	///< Whether the icon font could be loaded
 
 		public:
 		/**

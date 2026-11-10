@@ -130,6 +130,7 @@ namespace guillaume::systems
 			_defaultFontPath;	 ///< Default font used for text measurement
 		std::string _glyphCodePath;	   ///< Path to glyph code mapping file
 		std::shared_ptr<utility::graphic::CodePoints> _codePoints;
+		bool _hasFont { false };	///< Whether the icon font could be loaded
 
 		public:
 		/**
