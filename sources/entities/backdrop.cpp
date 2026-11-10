@@ -24,89 +24,52 @@
 
 #include <cmath>
 
-#include "guillaume/systems/layout.hpp"
+#include "guillaume/systems/backdrop.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
 	Backdrop::Backdrop(ecs::ComponentRegistry &registry)
 		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Scrim, components::Animation>(registry)
+							components::Scrim, components::Animation,
+							components::Backdrop>(registry)
 	{
-		getComponentRegistry()
-			.getComponent<components::Bound>(getIdentifier())
+		// The fade-in handler outlives this constructor: capture the
+		// registry and the identifier, never the entity object.
+		const auto identifier = getIdentifier();
+
+		registry.getComponent<components::Bound>(identifier)
 			.setWidth(Extent)
 			.setHeight(Extent);
-		getComponentRegistry()
-			.getComponent<components::Animation>(getIdentifier())
+		registry.getComponent<components::Animation>(identifier)
 			.setDuration(getMotionDuration(theme::MotionDuration::Medium2))
 			.setEasing(theme::MotionScale::enter())
-			.setOnSampleHandler([this](float progress) {
-				_progress = progress;
-				applyColor();
+			.setOnSampleHandler([&registry, identifier](float progress) {
+				registry.getComponent<components::Backdrop>(identifier)
+					.setProgress(progress);
+				systems::Backdrop::apply(registry, identifier);
 			});
-		applyColor();
+		systems::Backdrop::apply(registry, identifier);
 	}
 
 	void Backdrop::setVisible(bool visible)
 	{
-		if (_visible == visible) {
-			return;
-		}
-		_visible = visible;
-
-		auto &animation =
-			getComponentRegistry().getComponent<components::Animation>(
-				getIdentifier());
-		if (visible) {
-			_progress = 0.0f;
-			animation.setElapsed(0.0f).play();
-		} else {
-			animation.stop();
-			_progress = 0.0f;
-		}
-		applyColor();
+		systems::Backdrop::setVisible(getComponentRegistry(), getIdentifier(),
+									  visible);
 	}
 
 	bool Backdrop::isVisible(void) const
 	{
-		return _visible;
+		return getComponentRegistry()
+			.getComponent<components::Backdrop>(getIdentifier())
+			.isVisible();
 	}
 
 	void Backdrop::follow(const utility::graphic::PoseF &ownerPose,
 						  float ownerWidth, float ownerHeight)
 	{
-		const auto &orientation				 = ownerPose.getOrientation();
-		utility::graphic::PositionF position = ownerPose.getPosition();
-		position.translate(utility::graphic::PositionF(
-			-(orientation.getRight() * ((Extent - ownerWidth) / 2.0f))
-			- (orientation.getUp() * ((Extent - ownerHeight) / 2.0f))
-			+ orientation.getForward()
-				* (systems::Layout::LayerDepthStep * 0.5f)));
-		getComponentRegistry()
-			.getComponent<components::Transform>(getIdentifier())
-			.setPose(utility::graphic::PoseF(position, orientation));
-	}
-
-	void Backdrop::initialize(void)
-	{
-	}
-
-	void Backdrop::update(void)
-	{
-		applyColor();
-	}
-
-	void Backdrop::applyColor(void)
-	{
-		const auto backdrop = getActiveColor(SchemeColorRole::Backdrop);
-		const float alpha	= _visible
-			  ? static_cast<float>(backdrop.getAlpha()) * _progress
-			  : 0.0f;
-		getComponentRegistry()
-			.getComponent<components::Scrim>(getIdentifier())
-			.setColor(backdrop.withAlpha(
-				static_cast<std::uint8_t>(std::lround(alpha))));
+		systems::Backdrop::follow(getComponentRegistry(), getIdentifier(),
+								  ownerPose, ownerWidth, ownerHeight);
 	}
 
 }	 // namespace guillaume::entities
