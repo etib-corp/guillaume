@@ -6,8 +6,8 @@ readable, and maintainable code.
 ## General Rules
 
 - Use clear and descriptive names.
-- Keep indentation consistent (4 spaces unless file style differs).
-- Target line length around 80 to 100 characters.
+- Formatting is defined by `.clang-format` (tabs, 80 columns) and is not a
+  matter of taste: run `./scripts/run-clang-format.sh` before committing.
 - Prefer small, focused functions over large monolithic blocks.
 - Avoid duplicated logic (DRY principle).
 - Add comments only when intent is not obvious.
@@ -43,4 +43,4 @@ Within each section, keep this order:
 - Class and method order is consistent.
 - No obvious duplication.
 - Error handling is present where needed.
-- Formatting is clean and consistent.
+- `./scripts/run-clang-format.sh` was run.
