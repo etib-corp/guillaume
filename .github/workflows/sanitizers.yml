@@ -95,7 +95,7 @@ jobs:
           --base-directory ${{ github.workspace }}
           --output-file coverage.info
           --no-external
-          --ignore-errors unused
+          --ignore-errors unused,inconsistent,mismatch
           --exclude '*/_deps/*'
           --exclude '*/third_party/*'
           --exclude '*/tests/*'
