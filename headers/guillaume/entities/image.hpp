@@ -28,6 +28,7 @@
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/image.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/transform.hpp"
@@ -40,7 +41,7 @@ namespace guillaume::entities
 	 */
 	class Image:
 		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Image>
+								 components::Image, components::Accessibility>
 	{
 		public:
 		/**
@@ -51,6 +52,9 @@ namespace guillaume::entities
 			private:
 			std::string _texturePath;	 ///< Name of the texture to be used for
 										 ///< this Image entity
+			std::string _fallbackPath;	  ///< Texture drawn on load failure
+			float _width { 0.0f };		  ///< Requested width (0: keep).
+			float _height { 0.0f };		  ///< Requested height (0: keep).
 
 			public:
 			/**
@@ -82,6 +86,21 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withTexturePath(const std::string &texturePath);
+
+			/**
+			 * @brief Set the texture drawn when the main one fails to load.
+			 * @param fallbackPath Fallback texture path.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withFallbackPath(const std::string &fallbackPath);
+
+			/**
+			 * @brief Set the displayed size.
+			 * @param width Width in dp.
+			 * @param height Height in dp.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withSize(float width, float height);
 		};
 
 		/**
@@ -109,6 +128,14 @@ namespace guillaume::entities
 		private:
 		std::string _texturePath;	 ///< Name of the texture to be used for
 									 ///< this Image entity
+		std::string _fallbackPath {};	 ///< Texture drawn on load failure
+		float _width { 0.0f };			 ///< Requested width (0: keep).
+		float _height { 0.0f };			 ///< Requested height (0: keep).
+
+		/**
+		 * @brief Push the requested size to the Bound component.
+		 */
+		void applySize(void);
 
 		public:
 		/**
@@ -131,6 +158,51 @@ namespace guillaume::entities
 		 * @return Reference to this Image for chaining.
 		 */
 		Image &setTexturePath(const std::string &texturePath);
+
+		/**
+		 * @brief Get the texture path.
+		 * @return The texture path.
+		 */
+		const std::string &getTexturePath(void) const;
+
+		/**
+		 * @brief Set the texture drawn when the main one fails to load.
+		 * @param fallbackPath Fallback texture path (empty to disable).
+		 * @return Reference to this image for chaining.
+		 */
+		Image &setFallbackPath(const std::string &fallbackPath);
+
+		/**
+		 * @brief Set the displayed size.
+		 * @param width Width in dp, must be positive.
+		 * @param height Height in dp, must be positive.
+		 * @return Reference to this image for chaining.
+		 * @throws std::invalid_argument If a dimension is not positive.
+		 */
+		Image &setSize(float width, float height);
+
+		/**
+		 * @brief Set the height from the width and an aspect ratio
+		 * (width / height).
+		 * @param width Width in dp, must be positive.
+		 * @param aspectRatio Width-to-height ratio, must be positive.
+		 * @return Reference to this image for chaining.
+		 * @throws std::invalid_argument If an argument is not positive.
+		 */
+		Image &setAspectRatio(float width, float aspectRatio);
+
+		/**
+		 * @brief Get the loading state reported by systems::ImageRender.
+		 * @return The loading state.
+		 */
+		components::Image::LoadState getLoadState(void) const;
+
+		/**
+		 * @brief Set the accessibility label (role Image).
+		 * @param label The label.
+		 * @return Reference to this image for chaining.
+		 */
+		Image &setAccessibilityLabel(const std::string &label);
 
 		/**
 		 * @brief Initialize the image entity's derived state.

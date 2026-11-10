@@ -140,6 +140,22 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	Icon &Icon::setAccessibilityLabel(const std::string &label)
+	{
+		auto &registry = getComponentRegistry();
+		if (!registry.hasComponent<components::Accessibility>(getIdentifier())) {
+			if (label.empty()) {
+				return *this;
+			}
+			registry.addComponent<components::Accessibility>(getIdentifier());
+		}
+		registry.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(label.empty() ? components::AccessibilityRole::None
+								   : components::AccessibilityRole::Image)
+			.setLabel(label);
+		return *this;
+	}
+
 	Icon &Icon::setStyle(const components::Glyph::Style &style)
 	{
 		_style = style;

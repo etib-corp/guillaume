@@ -111,3 +111,122 @@ namespace guillaume::entities
 	}
 
 }	 // namespace guillaume::entities
+
+namespace guillaume::entities
+{
+	Surface::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+							  ecs::EntityRegistry &entityRegistry)
+		: EntityBuilderBase<Surface>(componentRegistry, entityRegistry)
+	{
+		reset();
+	}
+
+	std::shared_ptr<Surface> Surface::Builder::buildEntity(void)
+	{
+		return std::make_shared<Surface>(this->getComponentRegistry(), _config,
+										 _elevation, _mode);
+	}
+
+	void Surface::Builder::reset(void)
+	{
+		_config	   = SurfaceConfig();
+		_elevation = theme::ElevationLevel::Level1;
+		_mode	   = Mode::Elevated;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::None);
+		_config.axis		 = components::Layout::Axis::Vertical;
+	}
+
+	Surface::Builder &
+		Surface::Builder::withPose(const utility::graphic::PoseF &pose)
+	{
+		_config.pose = pose;
+		return *this;
+	}
+
+	Surface::Builder &
+		Surface::Builder::withElevation(theme::ElevationLevel elevation)
+	{
+		_elevation = elevation;
+		return *this;
+	}
+
+	Surface::Builder &Surface::Builder::withMode(Mode mode)
+	{
+		_mode = mode;
+		return *this;
+	}
+
+	Surface::Builder &Surface::Builder::withShape(theme::ShapeRole role)
+	{
+		_config.borderRadius = getShapeRadius(role);
+		return *this;
+	}
+
+	Surface::Builder &
+		Surface::Builder::withConfig(const SurfaceConfig &config)
+	{
+		const auto pose = _config.pose;
+		_config			= config;
+		_config.pose	= pose;
+		return *this;
+	}
+
+	std::shared_ptr<Surface> Surface::Director::makeSurface(
+		Builder &builder, std::shared_ptr<ecs::Entity> parent,
+		theme::ElevationLevel elevation, Mode mode)
+	{
+		return builder.withElevation(elevation).withMode(mode).registerEntity(
+			parent);
+	}
+
+	Surface::Surface(ecs::ComponentRegistry &registry,
+					 const SurfaceConfig &config,
+					 theme::ElevationLevel elevation, Mode mode)
+		: SurfaceBase<components::Elevation>(registry, config)
+		, _elevation(elevation)
+		, _mode(mode)
+	{
+		applyElevation();
+	}
+
+	void Surface::applyElevation(void)
+	{
+		setColor(getElevatedSurfaceColor(_elevation));
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(_mode == Mode::Elevated
+								   ? _elevation
+								   : theme::ElevationLevel::Level0);
+	}
+
+	Surface &Surface::setElevation(theme::ElevationLevel elevation)
+	{
+		_elevation = elevation;
+		applyElevation();
+		return *this;
+	}
+
+	theme::ElevationLevel Surface::getElevation(void) const
+	{
+		return _elevation;
+	}
+
+	Surface &Surface::setMode(Mode mode)
+	{
+		_mode = mode;
+		applyElevation();
+		return *this;
+	}
+
+	Surface::Mode Surface::getMode(void) const
+	{
+		return _mode;
+	}
+
+	void Surface::update(void)
+	{
+		SurfaceBase::update();
+		applyElevation();
+	}
+
+}	 // namespace guillaume::entities

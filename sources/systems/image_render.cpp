@@ -67,19 +67,30 @@ namespace guillaume::systems
 			getComponent<components::Transform>(entityIdentifier);
 		const auto &boundComponent =
 			getComponent<components::Bound>(entityIdentifier);
-		const auto &imageComponent =
+		auto &imageComponent =
 			getComponent<components::Image>(entityIdentifier);
 
-		const std::string &texturePath = imageComponent.getTexturePath();
+		std::string texturePath = imageComponent.getTexturePath();
 
 		getLogger().debug() << "Rendering image '" << texturePath
 							<< "' for entity " << entityIdentifier;
 
+		bool usingFallback = false;
 		if (!_ressourceProvider->loadImageMaterial(texturePath)) {
 			getLogger().warning()
 				<< "Failed to load image material for texture: " << texturePath;
-			return;
+			const std::string &fallback = imageComponent.getFallbackPath();
+			if (fallback.empty()
+				|| !_ressourceProvider->loadImageMaterial(fallback)) {
+				imageComponent.setLoadState(
+					components::Image::LoadState::Failed);
+				return;
+			}
+			texturePath	  = fallback;
+			usingFallback = true;
 		}
+		imageComponent.setLoadState(components::Image::LoadState::Loaded,
+									usingFallback);
 
 		const float halfWidth  = boundComponent.getWidth() / 2.0f;
 		const float halfHeight = boundComponent.getHeight() / 2.0f;

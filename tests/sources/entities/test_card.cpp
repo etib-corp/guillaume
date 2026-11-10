@@ -22,6 +22,22 @@
 
 #include "entities/test_card.hpp"
 
+#include <guillaume/entities/text.hpp>
+
+#include <guillaume/entities/image.hpp>
+
+#include <guillaume/entities/button.hpp>
+
+#include <guillaume/components/text.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/animation.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <memory>
 
 #include <guillaume/components/borders.hpp>
@@ -93,7 +109,7 @@ namespace guillaume::entities::tests
 		EXPECT_FLOAT_EQ(elevation.getLevel(), 0.0f);
 	}
 
-	TEST_F(TestCard, OutlinedUsesTransparentFillAndOutlineBorder)
+	TEST_F(TestCard, OutlinedUsesSurfaceFillAndOutlineBorder)
 	{
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry, Card::Variant::Outlined);
@@ -103,7 +119,8 @@ namespace guillaume::entities::tests
 
 		const auto &color =
 			registry.getComponent<components::Color>(card->getIdentifier());
-		EXPECT_EQ(color.getColor().getAlpha(), 0);
+		EXPECT_EQ(color.getColor(),
+				  getActiveScheme().getColor(SchemeColorRole::Surface).getColor());
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(card->getIdentifier());
@@ -125,7 +142,8 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(card->getVariant(), Card::Variant::Outlined);
 		const auto &color =
 			registry.getComponent<components::Color>(card->getIdentifier());
-		EXPECT_EQ(color.getColor().getAlpha(), 0);
+		EXPECT_EQ(color.getColor(),
+				  getActiveScheme().getColor(SchemeColorRole::Surface).getColor());
 	}
 
 	TEST_F(TestCard, DirectorBuildsAndRegisters)
@@ -142,6 +160,142 @@ namespace guillaume::entities::tests
 		ASSERT_NE(card, nullptr);
 		EXPECT_EQ(card->getParent(), parent);
 		EXPECT_EQ(card->getVariant(), Card::Variant::Filled);
+	}
+
+	TEST_F(TestCard, VariantColorRolesMatchPaper)
+	{
+		ecs::ComponentRegistry registry;
+		auto elevated = makeCard(registry, Card::Variant::Elevated);
+		auto filled	  = makeCard(registry, Card::Variant::Filled);
+
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(elevated->getIdentifier())
+				.getColor(),
+			getElevatedSurfaceColor(theme::ElevationLevel::Level1));
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(filled->getIdentifier())
+				.getColor(),
+			getActiveScheme()
+				.getColor(SchemeColorRole::SurfaceVariant)
+				.getColor());
+	}
+
+	TEST_F(TestCard, PressRaisesElevationAndCallsHandler)
+	{
+		ecs::ComponentRegistry registry;
+		auto card	= makeCard(registry);
+		int presses = 0;
+		card->setOnPress([&presses]() {
+			++presses;
+		});
+		card->initialize();
+
+		EXPECT_TRUE(card->isInteractive());
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(card->getIdentifier())
+				.getRole(),
+			components::AccessibilityRole::Button);
+
+		auto &mouse = registry.getComponent<components::MouseButtonInteraction>(
+			card->getIdentifier());
+		mouse.setButtonPressed(utility::event::MouseButtonEvent::Button::Left,
+							   true);
+		mouse.getOnButtonPressHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+
+		auto &animation =
+			registry.getComponent<components::Animation>(card->getIdentifier());
+		EXPECT_TRUE(animation.isPlaying());
+		EXPECT_FLOAT_EQ(animation.getDuration(),
+						getMotionDuration(theme::MotionDuration::Short3));
+		animation.advance(1.0f);
+		EXPECT_FLOAT_EQ(card->getPressProgress(), 1.0f);
+		const auto &elevation =
+			registry.getComponent<components::Elevation>(card->getIdentifier());
+		EXPECT_EQ(elevation.getElevationLevel(), theme::ElevationLevel::Level2);
+		EXPECT_FLOAT_EQ(
+			elevation.getSpread(),
+			getElevationToken(theme::ElevationLevel::Level2).shadowSpread);
+
+		mouse.setButtonPressed(utility::event::MouseButtonEvent::Button::Left,
+							   false);
+		mouse.getOnButtonReleaseHandler(
+			utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(presses, 1);
+		animation.advance(1.0f);
+		EXPECT_FLOAT_EQ(card->getPressProgress(), 0.0f);
+	}
+
+	TEST_F(TestCard, DisabledCardIgnoresPress)
+	{
+		ecs::ComponentRegistry registry;
+		auto card	= makeCard(registry);
+		int presses = 0;
+		card->setOnPress([&presses]() {
+			++presses;
+		});
+		card->setDisabled(true);
+		card->initialize();
+
+		EXPECT_TRUE(card->isDisabled());
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				card->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(presses, 0);
+		EXPECT_FALSE(
+			registry.getComponent<components::StyleState>(card->getIdentifier())
+				.isEnabled());
+	}
+
+	TEST_F(TestCard, ComposesCoverTitleContentActionsInOrder)
+	{
+		ecs::ComponentRegistry registry;
+		auto card = makeCard(registry);
+		card->initialize();
+
+		int actionPresses = 0;
+		card->addAction("Ok", [&actionPresses]() {
+			++actionPresses;
+		});
+		card->setContent("Body");
+		card->setTitle("Title", "Subtitle");
+		card->setCover("images/cover.png");
+
+		const auto &children = card->getChildren();
+		ASSERT_EQ(children.size(), 4u);
+		EXPECT_EQ(children[0], card->getCover());
+		EXPECT_EQ(children[1], card->getTitleSection());
+		EXPECT_EQ(children[2], card->getContent());
+		EXPECT_EQ(children[3], card->getActionsSection());
+
+		EXPECT_FLOAT_EQ(
+			registry
+				.getComponent<components::Bound>(card->getCover()->getIdentifier())
+				.getHeight(),
+			Card::CoverHeight);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  card->getTitleSection()->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::Header);
+		// Text entities push their content on update (as the systems do).
+		card->getContent()->update();
+		EXPECT_EQ(registry
+					  .getComponent<components::Text>(
+						  card->getContent()->getIdentifier())
+					  .getContent(),
+				  "Body");
+
+		ASSERT_EQ(card->getActions().size(), 1u);
+		EXPECT_EQ(card->getActions().front()->getAccessibilityLabel(), "Ok");
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				card->getActions().front()->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(actionPresses, 1);
 	}
 
 }	 // namespace guillaume::entities::tests
