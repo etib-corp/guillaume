@@ -153,13 +153,13 @@ namespace guillaume::entities
 		overlay.setDismissOnEscape(true);
 	}
 
-	std::shared_ptr<Layout> Menu::buildRow(const Item &item)
+	std::shared_ptr<View> Menu::buildRow(const Item &item)
 	{
-		Layout::Builder builder(this->getComponentRegistry(), *this);
-		Layout::Director director;
+		View::Builder builder(this->getComponentRegistry(), *this);
+		View::Director director;
 
-		auto row = director.makeDefaultLayout(builder, this->shared_from_this(),
-											  utility::graphic::PoseF(), {});
+		auto row = director.makeDefaultView(builder, this->shared_from_this(),
+											utility::graphic::PoseF(), {});
 
 		if (row == nullptr) {
 			return nullptr;

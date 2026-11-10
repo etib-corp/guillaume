@@ -24,8 +24,8 @@
 
 #include <functional>
 
-#include "guillaume/systems/measure_model.hpp"
-#include "guillaume/systems/model_render.hpp"
+#include "guillaume/systems/measure_mesh.hpp"
+#include "guillaume/systems/mesh_render.hpp"
 #include "guillaume/systems/image_render.hpp"
 
 namespace guillaume
@@ -119,11 +119,10 @@ namespace guillaume
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::TextField>());
 		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeasureModel>(_ressourceProvider,
-													_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ModelRender>(_ressourceProvider,
+			std::make_unique<systems::MeasureMesh>(_ressourceProvider,
 												   _engine));
+		_systemRegistry.registerNewSystem(
+			std::make_unique<systems::MeshRender>(_ressourceProvider, _engine));
 		_systemRegistry.registerNewSystem(
 			std::make_unique<systems::ImageRender>(_ressourceProvider,
 												   _engine));
