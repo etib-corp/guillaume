@@ -323,11 +323,29 @@ namespace guillaume
 	namespace
 	{
 		ThemeSchemeRole activeSchemeRole = ThemeSchemeRole::Light;
+
+		/// Theme read by every accessor below. Built on first use so it does
+		/// not depend on the initialization order of defaultTheme.
+		Theme &activeTheme(void)
+		{
+			static Theme theme = initializeDefaultTheme();
+			return theme;
+		}
+	}	 // namespace
+
+	const Theme &getActiveTheme(void)
+	{
+		return activeTheme();
+	}
+
+	void setActiveTheme(const Theme &theme)
+	{
+		activeTheme() = theme;
 	}
 
 	const Scheme &getActiveScheme(void)
 	{
-		return defaultTheme.getScheme(activeSchemeRole);
+		return getActiveTheme().getScheme(activeSchemeRole);
 	}
 
 	void setActiveScheme(ThemeSchemeRole role)
@@ -337,7 +355,7 @@ namespace guillaume
 
 	const theme::Typescale &getActiveTypescale(void)
 	{
-		return defaultTheme.getTypescale();
+		return getActiveTheme().getTypescale();
 	}
 
 	utility::graphic::Color32Bit getActiveColor(SchemeColorRole role)
@@ -352,31 +370,31 @@ namespace guillaume
 
 	float getShapeRadius(theme::ShapeRole role)
 	{
-		return defaultTheme.getShapes().getRadius(role);
+		return getActiveTheme().getShapes().getRadius(role);
 	}
 
 	std::uint8_t getStateLayerAlpha(theme::StateLayer layer)
 	{
-		return defaultTheme.getStateLayers().getAlpha(layer);
+		return getActiveTheme().getStateLayers().getAlpha(layer);
 	}
 
 	const theme::ElevationToken &getElevationToken(theme::ElevationLevel level)
 	{
-		return defaultTheme.getElevations().get(level);
+		return getActiveTheme().getElevations().get(level);
 	}
 
 	utility::graphic::Color32Bit
 		getElevatedSurfaceColor(theme::ElevationLevel level)
 	{
 		const auto &scheme = getActiveScheme();
-		return defaultTheme.getElevations().tint(
+		return getActiveTheme().getElevations().tint(
 			scheme.getColor(SchemeColorRole::Surface).getColor(),
 			scheme.getColor(SchemeColorRole::SurfaceTint).getColor(), level);
 	}
 
 	float getMotionDuration(theme::MotionDuration duration)
 	{
-		return defaultTheme.getMotion().getDuration(duration);
+		return getActiveTheme().getMotion().getDuration(duration);
 	}
 
 }	 // namespace guillaume

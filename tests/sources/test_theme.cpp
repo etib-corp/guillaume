@@ -329,4 +329,22 @@ namespace guillaume::tests
 		EXPECT_FLOAT_EQ(theme::SpacingScale::touchMargin(56.0f), 0.0f);
 	}
 
+	TEST_F(TestTheme, ActiveThemeCanBeReplaced)
+	{
+		const float defaultRadius = getShapeRadius(theme::ShapeRole::Medium);
+
+		Theme custom = defaultTheme;
+		custom.getShapes().setRoundness(custom.getShapes().getRoundness()
+										* 2.0f);
+		setActiveTheme(custom);
+
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::Medium),
+						defaultRadius * 2.0f);
+
+		setActiveTheme(defaultTheme);
+
+		EXPECT_FLOAT_EQ(getShapeRadius(theme::ShapeRole::Medium),
+						defaultRadius);
+	}
+
 }	 // namespace guillaume::tests
