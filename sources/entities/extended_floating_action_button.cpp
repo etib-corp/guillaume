@@ -26,6 +26,7 @@
 
 #include "guillaume/entities/extended_floating_action_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/fab_style.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
@@ -144,106 +145,15 @@ namespace guillaume::entities
 			.registerEntity(parent);
 	}
 
-	static float getContainerSize(ExtendedFloatingActionButton::Size size)
-	{
-		switch (size) {
-			case ExtendedFloatingActionButton::Size::Small:
-				return 40.0f;
-			case ExtendedFloatingActionButton::Size::Medium:
-				return 56.0f;
-			case ExtendedFloatingActionButton::Size::Large:
-				return 96.0f;
-			default:
-				throw std::runtime_error("Invalid extended FAB size");
-		}
-	}
-
-	static float getFontSize(ExtendedFloatingActionButton::Size size)
-	{
-		switch (size) {
-			case ExtendedFloatingActionButton::Size::Small:
-				return 18.0f;
-			case ExtendedFloatingActionButton::Size::Medium:
-				return 24.0f;
-			case ExtendedFloatingActionButton::Size::Large:
-				return 36.0f;
-			default:
-				throw std::runtime_error("Invalid extended FAB size");
-		}
-	}
-
-	static float getBorderRadius(ExtendedFloatingActionButton::Size size)
-	{
-		switch (size) {
-			case ExtendedFloatingActionButton::Size::Small:
-				return getShapeRadius(theme::ShapeRole::Medium);
-			case ExtendedFloatingActionButton::Size::Medium:
-				return getShapeRadius(theme::ShapeRole::Large);
-			case ExtendedFloatingActionButton::Size::Large:
-				return getShapeRadius(theme::ShapeRole::ExtraLarge);
-			default:
-				throw std::runtime_error("Invalid extended FAB size");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getContainerColor(ExtendedFloatingActionButton::Variant variant,
-						  bool lowered)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (variant) {
-			case ExtendedFloatingActionButton::Variant::Surface:
-				// Paper's surface FAB uses the tonal elevation.level3 color
-				// (level1 when lowered).
-				return getElevatedSurfaceColor(
-					lowered ? theme::ElevationLevel::Level1
-							: theme::ElevationLevel::Level3);
-			case ExtendedFloatingActionButton::Variant::Primary:
-				return scheme.getColor(SchemeColorRole::PrimaryContainer)
-					.getColor();
-			case ExtendedFloatingActionButton::Variant::Secondary:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-			case ExtendedFloatingActionButton::Variant::Tertiary:
-				return scheme.getColor(SchemeColorRole::TertiaryContainer)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid extended FAB variant");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getContentColor(ExtendedFloatingActionButton::Variant variant)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (variant) {
-			case ExtendedFloatingActionButton::Variant::Surface:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-			case ExtendedFloatingActionButton::Variant::Primary:
-				return scheme.getColor(SchemeColorRole::OnPrimaryContainer)
-					.getColor();
-			case ExtendedFloatingActionButton::Variant::Secondary:
-				return scheme.getColor(SchemeColorRole::OnSecondaryContainer)
-					.getColor();
-			case ExtendedFloatingActionButton::Variant::Tertiary:
-				return scheme.getColor(SchemeColorRole::OnTertiaryContainer)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid extended FAB variant");
-		}
-	}
-
 	utility::graphic::Color32Bit
 		ExtendedFloatingActionButton::getInitialContentColor(void) const
 	{
-		return resolveContentColor(getContentColor(_variant));
+		return resolveContentColor(fab_style::getContentColor(_variant));
 	}
 
 	float ExtendedFloatingActionButton::getIconFontSize(void) const
 	{
-		return ::guillaume::entities::getFontSize(_size);
+		return fab_style::getLabelFontSize(_size);
 	}
 
 	void ExtendedFloatingActionButton::applyElevation(void)
@@ -296,10 +206,10 @@ namespace guillaume::entities
 			return;
 		}
 
-		const auto baseContainerColor =
-			resolveContainerColor(getContainerColor(_variant, _lowered));
+		const auto baseContainerColor = resolveContainerColor(
+			fab_style::getContainerColor(_variant, _lowered));
 		const auto contentColor =
-			resolveContentColor(getContentColor(_variant));
+			resolveContentColor(fab_style::getContentColor(_variant));
 
 		utility::graphic::Color32Bit containerColor = baseContainerColor;
 
@@ -326,13 +236,15 @@ namespace guillaume::entities
 
 	void ExtendedFloatingActionButton::applyGeometry(void)
 	{
-		const float baseHeight = _customSize.value_or(getContainerSize(_size));
-		const float fontHeight = getFontSize(_size);
+		const float baseHeight =
+			_customSize.value_or(fab_style::getContainerSize(_size));
+		const float fontHeight = fab_style::getLabelFontSize(_size);
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
-			.setBorderRadius(_customSize.has_value() ? *_customSize / 3.5f
-													 : getBorderRadius(_size));
+			.setBorderRadius(_customSize.has_value()
+								 ? *_customSize / 3.5f
+								 : fab_style::getBorderRadius(_size));
 
 		if (!_icon && !_label) {
 			return;
@@ -406,7 +318,7 @@ namespace guillaume::entities
 		if (_label) {
 			// A collapsed FAB keeps its label child but hides it.
 			const auto contentColor =
-				resolveContentColor(getContentColor(_variant));
+				resolveContentColor(fab_style::getContentColor(_variant));
 			if (!showLabel) {
 				_label->setColor(transparentColor());
 			} else if (!isDisabled() && isVisible()) {

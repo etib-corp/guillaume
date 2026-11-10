@@ -40,41 +40,6 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Exception thrown when a requested system is not found in the
-	 * registry.
-	 * @tparam SystemType The type of the missing system.
-	 */
-	template<InheritFromSystem SystemType> class SystemNotFoundException:
-		public std::exception
-	{
-		private:
-		std::type_index _systemIndex { typeid(
-			SystemType) };	  ///< Type index of the missing system
-		std::string _systemName {
-			_systemIndex.name()
-		};	  ///< Name of the missing system type
-		mutable std::string _message;	 ///< Cached exception message
-
-		public:
-		/**
-		 * @brief Construct a new System Not Found Exception object.
-		 */
-		SystemNotFoundException(void) = default;
-
-		/**
-		 * @brief Get the exception message.
-		 * @return The exception message.
-		 */
-		const char *what(void) const noexcept override;
-
-		/**
-		 * @brief Get the type index of the missing system.
-		 * @return The type index of the missing system.
-		 */
-		std::type_index getSystemTypeIndex(void) const;
-	};
-
-	/**
 	 * @brief Non-template base class for managing systems within the ECS
 	 * architecture.
 	 *

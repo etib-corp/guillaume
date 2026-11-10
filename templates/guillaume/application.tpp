@@ -24,9 +24,6 @@
 
 #include <functional>
 
-#include "guillaume/systems/measure_mesh.hpp"
-#include "guillaume/systems/mesh_render.hpp"
-#include "guillaume/systems/image_render.hpp"
 
 namespace guillaume
 {
@@ -52,86 +49,8 @@ namespace guillaume
 		requires IsOneOf<DefaultSceneType, SceneTypes...>
 	void Application<DefaultSceneType, SceneTypes...>::registerCoreSystems()
 	{
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeasureText>(_ressourceProvider,
-												   _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeasureGlyph>(_ressourceProvider,
-													_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MouseMotion>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MouseButton>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Drag>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Scroll>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Selection>());
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandMotion>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandButton>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandPinch>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandPoke>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandSqueeze>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandThumbRest>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandThumbStick>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandTrigger>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextRender>(_ressourceProvider, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::GlyphRender>(_ressourceProvider,
-												   _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::KeyboardControl>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextInput>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::RectangleRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::EllipseRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::RingRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ArcRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::LineRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ElevationRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ScrimRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Clip>(_engine));
-		_systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Focus>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::StyleState>());
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Overlay>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::FocusRingRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Animation>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Overlay>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextField>());
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeasureMesh>(_ressourceProvider,
-												   _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeshRender>(_ressourceProvider, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ImageRender>(_ressourceProvider,
-												   _engine));
+		systems::registerCoreSystems(_systemRegistry, _eventBus, _engine,
+									 _ressourceProvider);
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>

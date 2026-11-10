@@ -38,10 +38,6 @@ namespace guillaume
 		, _activeSceneType(typeid(void))
 		, _engine(nullptr)
 	{
-		if constexpr (sizeof...(SceneTypes) == 0) {
-			throw std::invalid_argument(
-				"SceneManager requires at least one scene type");
-		}
 		(addScene<SceneTypes>(), ...);
 		_activeSceneType = std::type_index(typeid(DefaultSceneType));
 		this->getLogger().info() << "SceneManager initialized";

@@ -25,28 +25,10 @@
 namespace guillaume::systems
 {
 	HandThumbStick::HandThumbStick(event::EventBus &eventBus)
-		: ecs::SystemFiller<components::HandThumbStickInteraction,
-							components::Transform, components::Bound>(
-			  ecs::Phase::Event)
-		, event::EventManager<utility::event::HandThumbStickEvent>(eventBus)
+		: HandEventSystem<components::HandThumbStickInteraction,
+						  utility::event::HandThumbStickEvent>(eventBus)
 	{
 	}
 
-	HandThumbStick::~HandThumbStick(void)
-	{
-	}
-
-	void HandThumbStick::prepare(void)
-	{
-		consumeNextEvent();
-	}
-
-	void HandThumbStick::cleanup(void)
-	{
-	}
-
-	void HandThumbStick::update(const ecs::Entity::Identifier &entityIdentifier)
-	{
-	}
-
+	HandThumbStick::~HandThumbStick(void) = default;
 }	 // namespace guillaume::systems

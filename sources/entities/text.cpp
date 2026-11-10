@@ -49,8 +49,7 @@ namespace guillaume::entities
 		_content.clear();
 		_typeRole = theme::TypeRole::BodyMedium;
 		_fontSize.reset();
-		_color =
-			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
+		_color = getActiveColor(SchemeColorRole::OnSurface);
 	}
 
 	Text::Builder &Text::Builder::withContent(const std::string &content)

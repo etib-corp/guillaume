@@ -562,6 +562,13 @@ namespace guillaume
 	const Scheme &getActiveScheme(void);
 
 	/**
+	 * @brief Get a color role from the active scheme.
+	 * @param role The scheme color role.
+	 * @return The role color.
+	 */
+	utility::graphic::Color32Bit getActiveColor(SchemeColorRole role);
+
+	/**
 	 * @brief Set the currently active color scheme.
 	 * @param role The scheme role to activate.
 	 */

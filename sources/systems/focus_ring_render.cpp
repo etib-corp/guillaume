@@ -96,7 +96,7 @@ namespace guillaume::systems
 		shape::buildRoundedStrokeMesh(
 			mesh, center, pose.getOrientation(), halfWidth, halfHeight,
 			outerRadius, theme::FocusRing::Width, 16,
-			getActiveScheme().getColor(SchemeColorRole::Secondary).getColor());
+			getActiveColor(SchemeColorRole::Secondary));
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");

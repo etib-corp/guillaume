@@ -68,6 +68,7 @@ set(GUILLAUME_SOURCES
     sources/ecs/system_registry.cpp
     sources/entities/button.cpp
     sources/entities/button_base.cpp
+    sources/entities/button_style.cpp
     sources/entities/builder_base.cpp
     sources/entities/app_bar.cpp
     sources/entities/backdrop.cpp
@@ -85,6 +86,7 @@ set(GUILLAUME_SOURCES
     sources/entities/search.cpp
     sources/entities/segmented_button.cpp
     sources/entities/extended_floating_action_button.cpp
+    sources/entities/fab_style.cpp
     sources/entities/floating_action_button.cpp
     sources/entities/floating_action_button_menu.cpp
     sources/entities/icon.cpp
@@ -117,6 +119,7 @@ set(GUILLAUME_SOURCES
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
     sources/systems/clip.cpp
+    sources/systems/core_systems.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/elevation_render.cpp
@@ -153,6 +156,7 @@ set(GUILLAUME_SOURCES
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
     sources/theme.cpp
+    sources/theme/default_theme.cpp
     sources/theme/tokens.cpp
     sources/theme/typescale.cpp
 )

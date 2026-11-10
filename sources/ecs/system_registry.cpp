@@ -26,21 +26,6 @@
 
 namespace guillaume::ecs
 {
-	template<InheritFromSystem SystemType>
-	const char *SystemNotFoundException<SystemType>::what(void) const noexcept
-	{
-		if (_message.empty()) {
-			_message = "System of type " + _systemName + " not found";
-		}
-		return _message.c_str();
-	}
-
-	template<InheritFromSystem SystemType> std::type_index
-		SystemNotFoundException<SystemType>::getSystemTypeIndex(void) const
-	{
-		return _systemIndex;
-	}
-
 	void SystemRegistry::registerNewSystem(std::unique_ptr<System> system)
 	{
 		_systems[system->getPhase()].push_back(std::move(system));

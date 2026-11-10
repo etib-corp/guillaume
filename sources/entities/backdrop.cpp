@@ -99,11 +99,10 @@ namespace guillaume::entities
 
 	void Backdrop::applyColor(void)
 	{
-		const auto backdrop =
-			getActiveScheme().getColor(SchemeColorRole::Backdrop).getColor();
-		const float alpha = _visible
-			? static_cast<float>(backdrop.getAlpha()) * _progress
-			: 0.0f;
+		const auto backdrop = getActiveColor(SchemeColorRole::Backdrop);
+		const float alpha	= _visible
+			  ? static_cast<float>(backdrop.getAlpha()) * _progress
+			  : 0.0f;
 		getComponentRegistry()
 			.getComponent<components::Scrim>(getIdentifier())
 			.setColor(backdrop.withAlpha(

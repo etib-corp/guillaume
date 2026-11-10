@@ -22,14 +22,9 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include "guillaume/systems/hand_event_system.hpp"
 
-#include "guillaume/event/event_manager.hpp"
-#include "guillaume/event/event_bus.hpp"
-
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/hand_squeeze_interaction.hpp"
-#include "guillaume/components/transform.hpp"
 
 #include <utility/event/hand_squeeze_event.hpp>
 
@@ -39,40 +34,21 @@ namespace guillaume::systems
 	 * @brief System handling hand squeeze interactions.
 	 */
 	class HandSqueeze:
-		public ecs::SystemFiller<components::HandSqueezeInteraction,
-								 components::Transform, components::Bound>,
-		public event::EventManager<utility::event::HandSqueezeEvent>
+		public HandEventSystem<components::HandSqueezeInteraction,
+							   utility::event::HandSqueezeEvent>
 	{
 		public:
 		/**
-		 * @brief Construct a new HandSqueeze system.
+		 * @brief Construct the HandSqueeze system and subscribe to hand
+		 * squeeze events.
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 */
-		HandSqueeze(event::EventBus &eventBus);
+		explicit HandSqueeze(event::EventBus &eventBus);
 
 		/**
-		 * @brief Destructor for the HandSqueeze system.
+		 * @brief Default destructor for the HandSqueeze system.
 		 */
-		~HandSqueeze(void);
-
-		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
-		 */
-		void prepare(void) override;
-
-		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
-		 */
-		void cleanup(void) override;
-
-		/**
-		 * @brief Update the system for a given entity identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
-		 */
-		virtual void
-			update(const ecs::Entity::Identifier &entityIdentifier) override;
+		~HandSqueeze(void) override;
 	};
 
 }	 // namespace guillaume::systems

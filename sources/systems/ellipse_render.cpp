@@ -22,6 +22,7 @@
 
 #include "guillaume/systems/ellipse_render.hpp"
 #include "guillaume/mesh_renderable.hpp"
+#include "guillaume/systems/shape_mesh.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -29,37 +30,6 @@
 
 namespace guillaume::systems
 {
-	utility::graphic::PositionF EllipseRender::rotatePositionByQuaternion(
-		const utility::graphic::PositionF &position,
-		const utility::graphic::OrientationF &orientation) const
-	{
-		const auto normalizedOrientation = orientation.normalized();
-		const float qx					 = normalizedOrientation.x;
-		const float qy					 = normalizedOrientation.y;
-		const float qz					 = normalizedOrientation.z;
-		const float qw					 = normalizedOrientation.w;
-
-		const float positionX = position[0];
-		const float positionY = position[1];
-		const float positionZ = position[2];
-
-		const float crossX = (qy * positionZ) - (qz * positionY);
-		const float crossY = (qz * positionX) - (qx * positionZ);
-		const float crossZ = (qx * positionY) - (qy * positionX);
-
-		const float tX = 2.0f * crossX;
-		const float tY = 2.0f * crossY;
-		const float tZ = 2.0f * crossZ;
-
-		const float crossTX = (qy * tZ) - (qz * tY);
-		const float crossTY = (qz * tX) - (qx * tZ);
-		const float crossTZ = (qx * tY) - (qy * tX);
-
-		return utility::graphic::PositionF(positionX + (qw * tX) + crossTX,
-										   positionY + (qw * tY) + crossTY,
-										   positionZ + (qw * tZ) + crossTZ);
-	}
-
 	std::vector<utility::math::Vector2F>
 		EllipseRender::buildLocalEllipseVertices(const float halfWidth,
 												 const float halfHeight,
@@ -88,26 +58,6 @@ namespace guillaume::systems
 	}
 
 	std::vector<utility::graphic::PositionF>
-		EllipseRender::transformToWorldVertices(
-			const std::vector<utility::math::Vector2F> &localVertices,
-			const utility::graphic::PositionF &center,
-			const utility::graphic::OrientationF &orientation) const
-	{
-		std::vector<utility::graphic::PositionF> worldVertices;
-		worldVertices.reserve(localVertices.size());
-		for (const auto &localVertex: localVertices) {
-			const utility::graphic::PositionF localPosition(
-				localVertex[0], localVertex[1], 0.0f);
-			const auto rotatedPosition =
-				rotatePositionByQuaternion(localPosition, orientation);
-			worldVertices.push_back(utility::graphic::PositionF(
-				center[0] + rotatedPosition[0], center[1] + rotatedPosition[1],
-				center[2] + rotatedPosition[2]));
-		}
-		return worldVertices;
-	}
-
-	std::vector<utility::graphic::PositionF>
 		EllipseRender::buildEllipseVertices(
 			const utility::graphic::PositionF &center,
 			const utility::graphic::OrientationF &orientation,
@@ -118,61 +68,8 @@ namespace guillaume::systems
 		const float halfHeight = (size.getHeight() / 2.0f) * std::abs(scale[1]);
 		const auto localVertices =
 			buildLocalEllipseVertices(halfWidth, halfHeight, segments);
-		return transformToWorldVertices(localVertices, center, orientation);
-	}
-
-	void EllipseRender::buildTriangleFanVertices(
-		utility::graphic::Mesh &mesh, const utility::graphic::PositionF &center,
-		const std::vector<utility::graphic::PositionF> &outline,
-		const utility::graphic::Color32Bit &color)
-	{
-		// Add center vertex as the fan anchor (index 0)
-		mesh.addVertex(createVertex(center, color));
-
-		// Add all outline vertices
-		for (const auto &outlineVertex: outline) {
-			mesh.addVertex(createVertex(outlineVertex, color));
-		}
-
-		// Build indices for triangle fan
-		// Triangle fan: center vertex (0) + two consecutive outline vertices
-		// For N outline vertices, we need N triangles
-		// Indices pattern: (0,1,2), (0,2,3), (0,3,4), ..., (0,N,N+1),
-		// (0,N+1,1)
-		if (outline.size() >= 2) {
-			// First triangle: (0, 1, 2)
-			mesh.addIndex(0);
-			mesh.addIndex(1);
-			mesh.addIndex(2);
-
-			// Remaining triangles: (0, i, i+1) for i from 2 to N
-			for (size_t i = 2; i < outline.size(); ++i) {
-				mesh.addIndex(0);
-				mesh.addIndex(static_cast<uint32_t>(i));
-				mesh.addIndex(static_cast<uint32_t>(i + 1));
-			}
-
-			// Close the fan: connect last vertex back to first outline vertex
-			mesh.addIndex(0);
-			mesh.addIndex(static_cast<uint32_t>(outline.size()));
-			mesh.addIndex(1);
-		} else if (outline.size() == 1) {
-			// Degenerate case: single outline vertex, create a degenerate
-			// triangle
-			mesh.addIndex(0);
-			mesh.addIndex(1);
-			mesh.addIndex(1);
-		}
-	}
-
-	utility::graphic::VertexF EllipseRender::createVertex(
-		const utility::graphic::PositionF &position,
-		const utility::graphic::Color32Bit &color) const
-	{
-		utility::graphic::VertexF vertex;
-		vertex.setPosition(position);
-		vertex.setColor(color);
-		return vertex;
+		return shape::transformToWorldVertices(localVertices, center,
+											   orientation);
 	}
 
 	EllipseRender::EllipseRender(std::unique_ptr<utility::Engine> &engine)
@@ -240,7 +137,7 @@ namespace guillaume::systems
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
-		buildTriangleFanVertices(mesh, center, ellipseVertices, color);
+		shape::buildTriangleFanVertices(mesh, center, ellipseVertices, color);
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");

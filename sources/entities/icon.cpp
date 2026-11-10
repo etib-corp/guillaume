@@ -48,9 +48,8 @@ namespace guillaume::entities
 	{
 		_glyphName.clear();
 		_fontSize = 24.0f;
-		_color =
-			getActiveScheme().getColor(SchemeColorRole::OnSurface).getColor();
-		_style = components::Glyph::Style::Outlined;
+		_color	  = getActiveColor(SchemeColorRole::OnSurface);
+		_style	  = components::Glyph::Style::Outlined;
 	}
 
 	Icon::Builder &Icon::Builder::withGlyphName(const std::string &glyphName)
