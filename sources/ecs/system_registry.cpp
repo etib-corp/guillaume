@@ -23,21 +23,28 @@
 #include "guillaume/ecs/system_registry.hpp"
 
 #include <functional>
+#include <stdexcept>
 
 namespace guillaume::ecs
 {
 	void SystemRegistry::registerNewSystem(std::unique_ptr<System> system)
 	{
-		_systems[system->getPhase()].push_back(std::move(system));
+		const auto index = static_cast<std::size_t>(system->getPhase());
+		if (index >= _systems.size()) {
+			throw std::out_of_range(
+				"SystemRegistry::registerNewSystem: invalid phase");
+		}
+		_systems[index].push_back(std::move(system));
 	}
 
 	const std::vector<std::unique_ptr<System>> &
 		SystemRegistry::getSystemsByPhase(Phase phase) const
 	{
-		if (phase >= Phase::Count) {
+		const auto index = static_cast<std::size_t>(phase);
+		if (index >= _systems.size()) {
 			throw std::out_of_range(
 				"SystemRegistry::getSystemsByPhase: invalid phase");
 		}
-		return _systems[phase];
+		return _systems[index];
 	}
 }	 // namespace guillaume::ecs

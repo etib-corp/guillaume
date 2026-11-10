@@ -62,32 +62,6 @@ namespace guillaume
 			SceneManager<DefaultSceneType, SceneTypes...>,
 			utility::logging::DefaultLogger>
 	{
-		private:
-		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   ///< Shared pointer to the resource provider
-		std::map<std::type_index, std::unique_ptr<Scene>>
-			_scenes;	///< Registered scenes in the manager
-		std::type_index
-			_activeSceneType;	 ///< Type index of the currently active scene
-		LocalStorage _localStorage;	   ///< Local storage for persistent data
-		SessionStorage
-			_sessionStorage;		 ///< Session storage for temporary data
-		utility::Engine &_engine;	 ///< Application engine (non-owning)
-
-		/**
-		 * @brief Leave the active scene and enter another registered scene.
-		 * @param nextType Type index of the scene to activate.
-		 * @throws std::runtime_error If the scene type is not registered.
-		 */
-		void transitionTo(std::type_index nextType);
-
-		protected:
-		/**
-		 * @brief Add a scene to the scene manager.
-		 * @tparam SceneType The type of the scene to be added.
-		 */
-		template<InheritFromScene SceneType> void addScene(void);
-
 		public:
 		/**
 		 * @brief Construct the manager and create every scene.
@@ -167,6 +141,32 @@ namespace guillaume
 		 * @return Vector of type indices for all registered scenes.
 		 */
 		std::vector<std::type_index> getRegisteredSceneTypes(void) const;
+
+		protected:
+		/**
+		 * @brief Add a scene to the scene manager.
+		 * @tparam SceneType The type of the scene to be added.
+		 */
+		template<InheritFromScene SceneType> void addScene(void);
+
+		private:
+		std::shared_ptr<utility::RessourceProvider>
+			_ressourceProvider;	   ///< Shared pointer to the resource provider
+		std::map<std::type_index, std::unique_ptr<Scene>>
+			_scenes;	///< Registered scenes in the manager
+		std::type_index
+			_activeSceneType;	 ///< Type index of the currently active scene
+		LocalStorage _localStorage;	   ///< Local storage for persistent data
+		SessionStorage
+			_sessionStorage;		 ///< Session storage for temporary data
+		utility::Engine &_engine;	 ///< Application engine (non-owning)
+
+		/**
+		 * @brief Leave the active scene and enter another registered scene.
+		 * @param nextType Type index of the scene to activate.
+		 * @throws std::runtime_error If the scene type is not registered.
+		 */
+		void transitionTo(std::type_index nextType);
 	};
 }	 // namespace guillaume
 

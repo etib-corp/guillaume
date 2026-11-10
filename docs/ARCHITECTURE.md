@@ -68,6 +68,28 @@ flowchart LR
     D --> F[Call onEnter on new scene]
 ```
 
+## How the ECS Is Used
+
+Guillaume stores state the ECS way and composes UI the widget way:
+
+- **Components** are plain state (`Bound`, `Transform`, `Color`, `Layout`,
+  interaction flags…), stored per type in the scene's
+  `ecs::ComponentRegistry`. Storage for a component type is created the first
+  time it is added; there is no central list to register a new component in.
+- **Systems** own everything that happens every frame for a kind of
+  component: input hit-testing, measuring, layout, rendering. Each system
+  declares the components it needs and a phase.
+- **Entities are not bare identifiers.** An entity such as `Button` or
+  `NavigationDrawer` is a class that creates its components and child
+  entities and overrides `update()` to restyle and re-arrange itself. When a
+  system visits an entity whose components changed, `ecs::System::routine`
+  calls that entity's `update()`, then its parent's, so a change propagates up
+  the tree within the same system pass.
+
+So an entity behaves like a retained widget that keeps its state in
+components. Keep per-frame, cross-entity work in systems; keep
+"how this widget is built and styled" in the entity.
+
 ## Patterns Used
 
 | Pattern | Where | Role |

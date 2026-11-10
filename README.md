@@ -17,7 +17,9 @@ model, scene management, event dispatching, and storage helpers.
 - **Events** — an `EventBus` routes typed events to subscribed listeners and
   systems.
 - **Storage** — `LocalStorage` (SQLite-backed, persistent) and
-  `SessionStorage` (in-memory) key-value helpers.
+  `SessionStorage` (in-memory) key-value helpers. If the storage file cannot
+  be opened, `LocalStorage` keeps working in memory and
+  `isPersistent()` returns `false`.
 - **Theme & metadata** — component metadata and theming support.
 
 ## Quickstart

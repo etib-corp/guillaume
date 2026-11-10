@@ -28,6 +28,11 @@ Versions follow the calendar scheme described in
   engine-backed systems and `SceneManager` take `utility::Engine &`.
 - **Breaking:** entity `Director` classes are folded into their `Builder`
   (`builder.makeXxx(parent, ...)`); the director manager is removed.
+- **Breaking:** `ecs::Phase` is a scoped enum (`enum class`); cast it
+  explicitly where it was used as an integer.
+- `LocalStorage` logs an error and reports `isPersistent() == false` when it
+  falls back to in-memory storage; a parent directory that cannot be created
+  now takes the same fallback instead of throwing.
 - `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
 - Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 
