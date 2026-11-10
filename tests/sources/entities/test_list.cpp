@@ -22,6 +22,16 @@
 
 #include "entities/test_list.hpp"
 
+#include <guillaume/components/text.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -87,9 +97,23 @@ namespace guillaume::entities::tests
 		list->initialize();
 		list->update();
 
+		// Heights follow the content: each row is its content column plus
+		// the 16 dp M3 padding on both edges.
+		float rows = 0.0f;
+		for (std::size_t index = 0; index < 2; ++index) {
+			const auto &row = registry.getComponent<components::Bound>(
+				list->getItemIdentifier(index));
+			const auto &content = registry.getComponent<components::Bound>(
+				list->getContentIdentifier(index));
+			EXPECT_FLOAT_EQ(row.getHeight(), content.getHeight()
+												 + 2.0f
+													 * theme::SpacingScale::get(4));
+			rows += row.getHeight();
+		}
+
 		const auto &bound =
 			registry.getComponent<components::Bound>(list->getIdentifier());
-		EXPECT_FLOAT_EQ(bound.getHeight(), 96.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), rows);
 	}
 
 	TEST_F(TestList, ItemCountMatchesInput)
@@ -117,20 +141,31 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(list->getItemIdentifier(10), ecs::Entity::InvalidIdentifier);
 	}
 
-	TEST_F(TestList, VariantRoundTripChangesRowHeight)
+	TEST_F(TestList, VariantControlsTheDescription)
 	{
 		ecs::ComponentRegistry registry;
-		auto list = makeList(registry, List::Variant::SingleLine, makeItems(2));
+		auto items = makeItems(1);
+		items[0].supporting = "Details";
+		auto list = makeList(registry, List::Variant::SingleLine, items);
 
-		list->setVariant(List::Variant::ThreeLine);
 		list->initialize();
 		list->update();
+		EXPECT_EQ(registry
+					  .getComponent<components::Layout>(
+						  list->getContentIdentifier(0))
+					  .getChildren()
+					  .size(),
+				  1U);
 
-		EXPECT_EQ(list->getVariant(), List::Variant::ThreeLine);
-
-		const auto &bound =
-			registry.getComponent<components::Bound>(list->getIdentifier());
-		EXPECT_FLOAT_EQ(bound.getHeight(), 176.0f);
+		list->setVariant(List::Variant::TwoLine);
+		list->update();
+		EXPECT_EQ(list->getVariant(), List::Variant::TwoLine);
+		EXPECT_EQ(registry
+					  .getComponent<components::Layout>(
+						  list->getContentIdentifier(0))
+					  .getChildren()
+					  .size(),
+				  2U);
 	}
 
 	TEST_F(TestList, DirectorBuildsAndRegisters)
@@ -149,6 +184,137 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(list->getParent(), parent);
 		EXPECT_EQ(list->getVariant(), List::Variant::TwoLine);
 		EXPECT_EQ(list->getItemCount(), 4U);
+	}
+
+	TEST_F(TestList, RowsArePressableAndDisabledRowsAreInert)
+	{
+		ecs::ComponentRegistry registry;
+		int presses = 0;
+		auto items	= makeItems(2);
+		items[0].onPress = [&presses]() {
+			++presses;
+		};
+		items[1].onPress = [&presses]() {
+			++presses;
+		};
+		items[1].disabled = true;
+		auto list = makeList(registry, List::Variant::SingleLine, items);
+		list->initialize();
+		list->update();
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				list->getItemIdentifier(0))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				list->getItemIdentifier(1))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(presses, 1);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  list->getItemIdentifier(0))
+					  .getRole(),
+				  components::AccessibilityRole::ListItem);
+		EXPECT_FALSE(registry
+						 .getComponent<components::StyleState>(
+							 list->getItemIdentifier(1))
+						 .isEnabled());
+	}
+
+	TEST_F(TestList, HoverPaintsTheStateLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto list = makeList(registry, List::Variant::SingleLine, makeItems(1));
+		list->initialize();
+		list->update();
+
+		const auto row = list->getItemIdentifier(0);
+		EXPECT_EQ(registry.getComponent<components::Color>(row)
+					  .getColor()
+					  .getAlpha(),
+				  0);
+
+		auto &hover =
+			registry.getComponent<components::MouseHoverInteraction>(row);
+		hover.setHovered(true);
+		hover.getOnHoverHandler()();
+		EXPECT_EQ(registry.getComponent<components::Color>(row)
+					  .getColor()
+					  .getAlpha(),
+				  getStateLayerAlpha(theme::StateLayer::Hovered));
+	}
+
+	TEST_F(TestList, SubheadersAndDividersStructureSections)
+	{
+		ecs::ComponentRegistry registry;
+		std::vector<List::Item> items { List::subheader("Recent") };
+		auto rows = makeItems(1);
+		items.insert(items.end(), rows.begin(), rows.end());
+		items.push_back(List::divider());
+		auto list = makeList(registry, List::Variant::SingleLine, items);
+		list->initialize();
+		list->update();
+
+		const auto header = list->getItemIdentifier(0);
+		EXPECT_EQ(registry.getComponent<components::Accessibility>(header)
+					  .getRole(),
+				  components::AccessibilityRole::Header);
+		EXPECT_FLOAT_EQ(registry.getComponent<components::Text>(header)
+							.getFontSize(),
+						getTypeToken(theme::TypeRole::TitleSmall).fontSize);
+		EXPECT_NE(list->getItemIdentifier(2), ecs::Entity::InvalidIdentifier);
+		EXPECT_FALSE(registry.hasComponent<components::Accessibility>(
+			list->getItemIdentifier(2)));
+	}
+
+	TEST_F(TestList, AccordionTogglesItsChildren)
+	{
+		ecs::ComponentRegistry registry;
+		List::Item accordion;
+		accordion.headline = "Folders";
+		accordion.children = makeItems(2);
+		auto list = makeList(registry, List::Variant::SingleLine, { accordion });
+		list->initialize();
+		list->update();
+
+		const auto row = list->getItemIdentifier(0);
+		auto childCount = [&]() {
+			return registry.getComponent<components::Layout>(list->getIdentifier())
+				.getChildren()
+				.size();
+		};
+		EXPECT_EQ(childCount(), 1U);
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(row).getExpanded(),
+			false);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				row)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_TRUE(list->isExpanded(0));
+		EXPECT_EQ(childCount(), 3U);
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(row).getExpanded(),
+			true);
+		EXPECT_TRUE(registry
+						.getComponent<components::StyleState>(
+							list->getChildIdentifier(0, 1))
+						.isEnabled());
+
+		list->setExpanded(0, false);
+		EXPECT_EQ(childCount(), 1U);
+		EXPECT_FALSE(registry
+						 .getComponent<components::StyleState>(
+							 list->getChildIdentifier(0, 1))
+						 .isEnabled());
 	}
 
 }	 // namespace guillaume::entities::tests

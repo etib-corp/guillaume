@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -36,7 +38,10 @@
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
 
+#include "guillaume/entities/backdrop.hpp"
+#include "guillaume/entities/button.hpp"
 #include "guillaume/entities/icon.hpp"
+#include "guillaume/entities/view.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
 #include "guillaume/entities/text.hpp"
@@ -67,6 +72,14 @@ namespace guillaume::entities
 		enum class Variant { Alert, Simple, Confirmation, FullScreen };
 
 		/**
+		 * @brief One dialog action, rendered as a text button.
+		 */
+		struct Action {
+			std::string label;				   ///< Button label.
+			std::function<void(void)> onPress;	  ///< Press handler.
+		};
+
+		/**
 		 * @brief Builder used to configure and create `Dialog` entities.
 		 */
 		class Builder: public EntityBuilderBase<Dialog>
@@ -76,7 +89,9 @@ namespace guillaume::entities
 			Variant _variant { Variant::Alert };	 ///< Dialog variant.
 			std::string _title {};					 ///< Dialog title.
 			std::string _message {};				 ///< Dialog message.
-			std::vector<std::string> _actions {};	 ///< Dialog actions.
+			std::vector<Action> _actions {};	///< Dialog actions.
+			std::string _icon {};				///< Hero icon glyph.
+			std::function<void(void)> _onDismiss {};	///< Dismiss handler.
 
 			public:
 			/**
@@ -131,7 +146,22 @@ namespace guillaume::entities
 			 * @param label The action label.
 			 * @return Reference to the builder for chaining.
 			 */
-			Builder &addAction(const std::string &label);
+			Builder &addAction(const std::string &label,
+							   std::function<void(void)> onPress = {});
+
+			/**
+			 * @brief Set the hero icon shown centred above the title.
+			 * @param iconGlyph Icon glyph name.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withIcon(const std::string &iconGlyph);
+
+			/**
+			 * @brief Set the handler called when the dialog is dismissed.
+			 * @param onDismiss Dismiss handler.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withOnDismiss(std::function<void(void)> onDismiss);
 		};
 
 		/**
@@ -161,12 +191,15 @@ namespace guillaume::entities
 		Variant _variant { Variant::Alert };	 ///< Dialog variant.
 		std::string _title {};					 ///< Dialog title.
 		std::string _message {};				 ///< Dialog message.
-		std::vector<std::string> _actions {};	 ///< Dialog actions.
-		std::shared_ptr<Icon> _iconEntity;		 ///< Leading icon child.
+		std::vector<Action> _actions {};		 ///< Dialog actions.
+		std::string _icon {};					 ///< Hero icon glyph.
+		std::shared_ptr<Icon> _iconEntity;		 ///< Hero icon child.
 		std::shared_ptr<Text> _titleEntity;		 ///< Title child.
 		std::shared_ptr<Text> _messageEntity;	 ///< Message child.
-		std::vector<std::shared_ptr<Text>>
-			_actionEntities {};	   ///< Action children.
+		std::vector<std::shared_ptr<Button>>
+			_actionEntities {};	   ///< Action buttons.
+		std::shared_ptr<View> _actionRow;	  ///< Right-aligned action row.
+		std::shared_ptr<Backdrop> _backdrop;	///< Modal backdrop.
 
 		private:
 		/**
@@ -198,6 +231,23 @@ namespace guillaume::entities
 			   Variant variant, const std::string &title,
 			   const std::string &message,
 			   const std::vector<std::string> &actions);
+
+		/**
+		 * @brief Construct a dialog with pressable actions and a hero icon.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param variant Dialog variant.
+		 * @param title Title (headlineSmall).
+		 * @param message Supporting text (bodyMedium).
+		 * @param actions Actions, rendered right-aligned in a row.
+		 * @param icon Hero icon glyph (Confirmation defaults to "info").
+		 * @param onDismiss Dismiss handler.
+		 */
+		Dialog(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			   Variant variant, const std::string &title,
+			   const std::string &message, const std::vector<Action> &actions,
+			   const std::string &icon,
+			   std::function<void(void)> onDismiss = {});
 
 		/**
 		 * @brief Default destructor.
@@ -266,6 +316,53 @@ namespace guillaume::entities
 		 * @return True when visible.
 		 */
 		bool isOpen(void) const;
+
+		/**
+		 * @brief Hide the dialog as a user dismissal and call the dismiss
+		 * handler.
+		 * @return Reference to this dialog for chaining.
+		 */
+		Dialog &dismiss(void);
+
+		/**
+		 * @brief Set the handler called when the dialog is dismissed
+		 * (Paper `onDismiss`); it is also given to the Overlay component so
+		 * outside clicks and Escape report it.
+		 * @param onDismiss Dismiss handler.
+		 * @return Reference to this dialog for chaining.
+		 */
+		Dialog &setOnDismiss(std::function<void(void)> onDismiss);
+
+		/**
+		 * @brief Get the number of actions.
+		 * @return The action count.
+		 */
+		std::size_t getActionCount(void) const;
+
+		/**
+		 * @brief Get the identifier of an action button.
+		 * @param index Action index.
+		 * @return The identifier, or InvalidIdentifier when out of range.
+		 */
+		ecs::Entity::Identifier getActionIdentifier(std::size_t index) const;
+
+		/**
+		 * @brief Get the identifier of the action row.
+		 * @return The identifier, or InvalidIdentifier before initialization.
+		 */
+		ecs::Entity::Identifier getActionRowIdentifier(void) const;
+
+		/**
+		 * @brief Get the identifier of the modal backdrop.
+		 * @return The identifier, or InvalidIdentifier before initialization.
+		 */
+		ecs::Entity::Identifier getBackdropIdentifier(void) const;
+
+		/**
+		 * @brief Get the identifier of the hero icon.
+		 * @return The identifier, or InvalidIdentifier when there is none.
+		 */
+		ecs::Entity::Identifier getIconIdentifier(void) const;
 
 		/**
 		 * @brief Initialize the dialog derived state and children.

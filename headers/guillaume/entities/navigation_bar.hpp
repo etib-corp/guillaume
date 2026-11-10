@@ -23,6 +23,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -67,6 +68,16 @@ namespace guillaume::entities
 		enum class Variant { WithLabels, WithoutLabels };
 
 		/**
+		 * @brief One navigation destination.
+		 */
+		struct Destination {
+			std::string icon;			 ///< Unfocused (outlined) icon glyph.
+			std::string label;			 ///< Label text.
+			std::string focusedIcon;	 ///< Icon glyph while selected.
+			std::string badge;			 ///< Badge label ("" hides it).
+		};
+
+		/**
 		 * @brief Builder used to configure and create `NavigationBar`
 		 * entities.
 		 */
@@ -77,6 +88,9 @@ namespace guillaume::entities
 			Variant _variant { Variant::WithLabels };	 ///< Bar variant.
 			std::vector<std::pair<std::string, std::string>>
 				_destinations {};	 ///< Destination (icon, label) pairs.
+			std::vector<Destination> _specs {};	   ///< Full destinations.
+			std::function<void(std::size_t)>
+				_onIndexChange {};	  ///< Index change handler.
 
 			public:
 			/**
@@ -120,7 +134,18 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &addDestination(const std::string &iconGlyph,
-									const std::string &label);
+									const std::string &label,
+									const std::string &focusedIconGlyph = "",
+									const std::string &badge = "");
+
+			/**
+			 * @brief Set the handler called with the new index when the user
+			 * selects another destination (Paper `onIndexChange`).
+			 * @param onIndexChange Index change handler.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &
+				withOnIndexChange(std::function<void(std::size_t)> onIndexChange);
 		};
 
 		/**
@@ -146,10 +171,13 @@ namespace guillaume::entities
 
 		private:
 		Variant _variant { Variant::WithLabels };	 ///< Bar variant.
-		std::vector<std::pair<std::string, std::string>>
-			_destinations {};	 ///< Destination (icon, label) pairs.
+		std::vector<Destination> _destinations {};	  ///< Destinations.
 		std::vector<std::shared_ptr<ecs::Entity>>
 			_destinationEntities {};		  ///< Destination children.
+		std::function<void(std::size_t)>
+			_onIndexChange {};	  ///< Index change handler.
+		std::function<void(std::size_t)>
+			_onTabPress {};	   ///< Destination press handler.
 		bool _updatingSelection { false };	  ///< Reentrancy guard.
 
 		private:
@@ -174,6 +202,12 @@ namespace guillaume::entities
 		 */
 		void applySelection(void);
 
+		/**
+		 * @brief Handle a user press on a destination.
+		 * @param index Pressed destination index.
+		 */
+		void pressDestination(std::size_t index);
+
 		public:
 		/**
 		 * @brief Construct a NavigationBar entity.
@@ -186,6 +220,19 @@ namespace guillaume::entities
 					  const SurfaceConfig &config, Variant variant,
 					  const std::vector<std::pair<std::string, std::string>>
 						  &destinations);
+
+		/**
+		 * @brief Construct a NavigationBar from full destinations.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The navigation bar variant.
+		 * @param destinations The destinations.
+		 * @param onIndexChange Index change handler.
+		 */
+		NavigationBar(ecs::ComponentRegistry &registry,
+					  const SurfaceConfig &config, Variant variant,
+					  const std::vector<Destination> &destinations,
+					  std::function<void(std::size_t)> onIndexChange);
 
 		/**
 		 * @brief Default destructor.
@@ -213,6 +260,66 @@ namespace guillaume::entities
 		 */
 		NavigationBar &addDestination(const std::string &iconGlyph,
 									  const std::string &label);
+
+		/**
+		 * @brief Append a destination with a focused icon and a badge.
+		 * @param destination The destination.
+		 * @return Reference to this bar for chaining.
+		 */
+		NavigationBar &addDestination(const Destination &destination);
+
+		/**
+		 * @brief Set the badge of a destination.
+		 * @param index Destination index.
+		 * @param badge Badge label ("" hides the badge).
+		 * @return Reference to this bar for chaining.
+		 */
+		NavigationBar &setBadge(std::size_t index, const std::string &badge);
+
+		/**
+		 * @brief Set the handler called with the new index when the user
+		 * selects another destination (Paper `onIndexChange`).
+		 * @param onIndexChange Index change handler.
+		 * @return Reference to this bar for chaining.
+		 */
+		NavigationBar &
+			setOnIndexChange(std::function<void(std::size_t)> onIndexChange);
+
+		/**
+		 * @brief Set the handler called on every destination press, even on
+		 * the selected one (Paper `onTabPress`).
+		 * @param onTabPress Press handler.
+		 * @return Reference to this bar for chaining.
+		 */
+		NavigationBar &setOnTabPress(std::function<void(std::size_t)> onTabPress);
+
+		/**
+		 * @brief Get the active-indicator pill of a destination.
+		 * @param index Destination index.
+		 * @return The pill identifier, or InvalidIdentifier.
+		 */
+		ecs::Entity::Identifier getIndicatorIdentifier(std::size_t index) const;
+
+		/**
+		 * @brief Get the icon of a destination.
+		 * @param index Destination index.
+		 * @return The icon identifier, or InvalidIdentifier.
+		 */
+		ecs::Entity::Identifier getIconIdentifier(std::size_t index) const;
+
+		/**
+		 * @brief Get the label of a destination.
+		 * @param index Destination index.
+		 * @return The label identifier, or InvalidIdentifier.
+		 */
+		ecs::Entity::Identifier getLabelIdentifier(std::size_t index) const;
+
+		/**
+		 * @brief Get the badge of a destination.
+		 * @param index Destination index.
+		 * @return The badge identifier, or InvalidIdentifier.
+		 */
+		ecs::Entity::Identifier getBadgeIdentifier(std::size_t index) const;
 
 		/**
 		 * @brief Select a destination by index.
