@@ -64,10 +64,9 @@ namespace guillaume::systems
 	 * systems::Button::setSelected(registry, identifier, true);
 	 * @endcode
 	 *
-	 * @note registerCoreSystems does not register this system, so `update`
-	 * does not run each frame in a default application. syncContent is
-	 * reached through release, setSelected and the callers that invoke it
-	 * directly.
+	 * Each frame, in the Event phase, `update` calls syncContent, so a glyph
+	 * or selection written straight to components::Button reaches the icon
+	 * child and Accessibility without going through an action.
 	 *
 	 * @see guillaume::components::Button, guillaume::systems::CommonButton,
 	 * guillaume::systems::IconButton, guillaume::entities::ButtonBase
