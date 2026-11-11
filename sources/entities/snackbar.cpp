@@ -43,8 +43,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<Snackbar> Snackbar::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Snackbar>(
-			this->getComponentRegistry(), _config, _variant, _message, _action);
+		auto entity = Snackbar::create(this->getComponentRegistry(), _config,
+									   _variant, _message, _action);
 		entity->setDuration(_duration);
 		entity->setOnDismiss(_onDismiss);
 		entity->setOnAction(_onAction);
@@ -253,7 +253,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void Snackbar::initialize(void)
+	void Snackbar::build(void)
 	{
 		buildContent();
 		systems::Snackbar::apply(getComponentRegistry(), getIdentifier());

@@ -42,8 +42,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<Badge> Badge::Builder::buildEntity(void)
 	{
-		return std::make_shared<Badge>(this->getComponentRegistry(), _config,
-									   _variant, _label);
+		return Badge::create(this->getComponentRegistry(), _config, _variant,
+							 _label);
 	}
 
 	void Badge::Builder::reset(void)
@@ -191,7 +191,7 @@ namespace guillaume::entities
 			.getOpacity();
 	}
 
-	void Badge::initialize(void)
+	void Badge::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		auto &badge = registry.getComponent<components::Badge>(getIdentifier());

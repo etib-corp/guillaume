@@ -105,7 +105,7 @@ namespace guillaume::entities::detail
 													getIdentifier());
 	}
 
-	void DrawerDestination::initialize(void)
+	void DrawerDestination::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		// Copy: building children may move the component storage.

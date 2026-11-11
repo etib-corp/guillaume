@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -180,20 +181,6 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a Dialog entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The dialog variant.
-		 * @param title The dialog title.
-		 * @param message The dialog message.
-		 * @param actions The dialog action labels.
-		 */
-		Dialog(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			   Variant variant, const std::string &title,
-			   const std::string &message,
-			   const std::vector<std::string> &actions);
-
-		/**
 		 * @brief Construct a dialog with pressable actions and a hero icon.
 		 * @param registry Component registry.
 		 * @param config Surface configuration.
@@ -209,6 +196,25 @@ namespace guillaume::entities
 			   const std::string &message, const std::vector<Action> &actions,
 			   const std::string &icon,
 			   std::function<void(void)> onDismiss = {});
+
+		/**
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
+		 */
+		template<typename... Arguments>
+		static std::shared_ptr<Dialog> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Dialog> entity(
+				new Dialog(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -325,11 +331,6 @@ namespace guillaume::entities
 		 */
 		ecs::Entity::Identifier getIconIdentifier(void) const;
 
-		/**
-		 * @brief Build the child entities and style the dialog.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build the backdrop, icon, title, message and action
@@ -345,6 +346,29 @@ namespace guillaume::entities
 		 * record their identifiers in components::Dialog.
 		 */
 		void buildActionRow(void);
+
+		private:
+		/**
+		 * @brief Construct a Dialog entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The dialog variant.
+		 * @param title The dialog title.
+		 * @param message The dialog message.
+		 * @param actions The dialog action labels.
+		 */
+		Dialog(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			   Variant variant, const std::string &title,
+			   const std::string &message,
+			   const std::vector<std::string> &actions);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

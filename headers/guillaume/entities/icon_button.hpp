@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -194,25 +195,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Default constructor for the IconButton entity.
-		 * @param registry Reference to the component registry.
-		 * @param iconGlyphName Icon glyph name to attach.
-		 * @param selectedIconGlyphName Icon glyph name shown when selected.
-		 * @param iconStyle Style of the icon to attach.
-		 * @param isToggle Whether the button should be a toggle button.
-		 * @param variant Initial color variant.
-		 * @param size Initial size.
-		 * @param isDisabled Initial disabled state.
-		 * @param accessibilityLabel Initial accessibility label.
-		 * @param onClick Click event handler.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		IconButton(ecs::ComponentRegistry &registry,
-				   const std::string &iconGlyphName,
-				   const std::string &selectedIconGlyphName,
-				   const components::Glyph::Style &iconStyle, bool isToggle,
-				   Variant variant, Size size, bool isDisabled,
-				   const std::string &accessibilityLabel,
-				   std::function<void(void)> onClick);
+		template<typename... Arguments>
+		static std::shared_ptr<IconButton> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<IconButton> entity(
+				new IconButton(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the IconButton entity.
@@ -244,6 +243,28 @@ namespace guillaume::entities
 		 * @return The size.
 		 */
 		Size getSize(void) const;
+
+		private:
+		/**
+		 * @brief Default constructor for the IconButton entity.
+		 * @param registry Reference to the component registry.
+		 * @param iconGlyphName Icon glyph name to attach.
+		 * @param selectedIconGlyphName Icon glyph name shown when selected.
+		 * @param iconStyle Style of the icon to attach.
+		 * @param isToggle Whether the button should be a toggle button.
+		 * @param variant Initial color variant.
+		 * @param size Initial size.
+		 * @param isDisabled Initial disabled state.
+		 * @param accessibilityLabel Initial accessibility label.
+		 * @param onClick Click event handler.
+		 */
+		IconButton(ecs::ComponentRegistry &registry,
+				   const std::string &iconGlyphName,
+				   const std::string &selectedIconGlyphName,
+				   const components::Glyph::Style &iconStyle, bool isToggle,
+				   Variant variant, Size size, bool isDisabled,
+				   const std::string &accessibilityLabel,
+				   std::function<void(void)> onClick);
 	};
 
 }	 // namespace guillaume::entities

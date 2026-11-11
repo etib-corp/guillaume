@@ -43,8 +43,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Chip> Chip::Builder::buildEntity(void)
 	{
-		auto entity =
-			std::make_shared<Chip>(this->getComponentRegistry(), _config,
+		auto entity = Chip::create(this->getComponentRegistry(), _config,
 								   _variant, _label, _iconGlyph, _selected);
 		return entity;
 	}
@@ -258,7 +257,7 @@ namespace guillaume::entities
 										 getIdentifier());
 	}
 
-	void Chip::initialize(void)
+	void Chip::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		auto &chip = registry.getComponent<components::Chip>(getIdentifier());

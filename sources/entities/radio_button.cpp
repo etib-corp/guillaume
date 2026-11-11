@@ -91,8 +91,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<RadioButton> RadioButton::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<RadioButton>(
-			this->getComponentRegistry(), _config, _variant, _label);
+		auto entity = RadioButton::create(this->getComponentRegistry(), _config,
+										  _variant, _label);
 		return entity;
 	}
 
@@ -214,7 +214,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void RadioButton::initialize(void)
+	void RadioButton::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		auto &radio =

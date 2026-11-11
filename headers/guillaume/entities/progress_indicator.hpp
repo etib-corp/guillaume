@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <memory>
 #include <optional>
 
@@ -156,15 +157,24 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a ProgressIndicator entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The visual variant.
-		 * @param value The initial normalized value, in `[0, 1]`.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		ProgressIndicator(ecs::ComponentRegistry &registry,
-						  const SurfaceConfig &config, Variant variant,
-						  float value);
+		template<typename... Arguments>
+		static std::shared_ptr<ProgressIndicator>
+			create(Arguments &&...arguments)
+		{
+			std::shared_ptr<ProgressIndicator> entity(
+				new ProgressIndicator(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -245,17 +255,32 @@ namespace guillaume::entities
 		static constexpr float IndeterminateSegment =
 			components::ProgressIndicator::IndeterminateSegment;
 
-		/**
-		 * @brief Build the track and fill children of the progress indicator.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build (and attach) the track and fill children of the
 		 * current variant, unless they already exist.
 		 */
 		void buildChildren(void);
+
+		private:
+		/**
+		 * @brief Construct a ProgressIndicator entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The visual variant.
+		 * @param value The initial normalized value, in `[0, 1]`.
+		 */
+		ProgressIndicator(ecs::ComponentRegistry &registry,
+						  const SurfaceConfig &config, Variant variant,
+						  float value);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

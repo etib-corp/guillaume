@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <utility>
+#include <memory>
 #include <utility/graphic/color.hpp>
 
 #include "guillaume/ecs/component_registry.hpp"
@@ -134,21 +136,22 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Default constructor for the Icon component.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param glyphName The name of the glyph to be used for this Icon
-		 * entity.
-		 * @param fontSize The font size of the icon to be used for this Icon
-		 * entity.
-		 * @param color The color of the icon to be used for this Icon entity
-		 * (RGBA).
-		 * @param style The style of the icon to be used for this Icon entity.
-		 * @see components::Glyph::getName
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,
-			 const float &fontSize, const utility::graphic::Color32Bit &color,
-			 const components::Glyph::Style &style);
+		template<typename... Arguments>
+		static std::shared_ptr<Icon> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Icon> entity(
+				new Icon(std::forward<Arguments>(arguments)...));
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the Icon component.
@@ -194,6 +197,24 @@ namespace guillaume::entities
 		 * @return Reference to this icon for chaining.
 		 */
 		Icon &setAccessibilityLabel(const std::string &label);
+
+		private:
+		/**
+		 * @brief Default constructor for the Icon component.
+		 * @param registry Reference to the component registry for initializing
+		 * components.
+		 * @param glyphName The name of the glyph to be used for this Icon
+		 * entity.
+		 * @param fontSize The font size of the icon to be used for this Icon
+		 * entity.
+		 * @param color The color of the icon to be used for this Icon entity
+		 * (RGBA).
+		 * @param style The style of the icon to be used for this Icon entity.
+		 * @see components::Glyph::getName
+		 */
+		Icon(ecs::ComponentRegistry &registry, const std::string &glyphName,
+			 const float &fontSize, const utility::graphic::Color32Bit &color,
+			 const components::Glyph::Style &style);
 	};
 
 }	 // namespace guillaume::entities

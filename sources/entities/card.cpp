@@ -76,8 +76,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<Card> Card::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Card>(this->getComponentRegistry(),
-											 _config, _variant);
+		auto entity =
+			Card::create(this->getComponentRegistry(), _config, _variant);
 		if (_onPress) {
 			entity->setOnPress(_onPress);
 		}
@@ -457,7 +457,7 @@ namespace guillaume::entities
 		setChildren(children);
 	}
 
-	void Card::initialize(void)
+	void Card::build(void)
 	{
 		buildComposition();
 		systems::Card::apply(getComponentRegistry(), getIdentifier());

@@ -219,8 +219,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<List> List::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<List>(this->getComponentRegistry(),
-											 _config, _variant, _items);
+		auto entity = List::create(this->getComponentRegistry(), _config,
+								   _variant, _items);
 		return entity;
 	}
 
@@ -386,7 +386,7 @@ namespace guillaume::entities
 										 getIdentifier(), index);
 	}
 
-	void List::initialize(void)
+	void List::build(void)
 	{
 		buildItems();
 		systems::List::apply(getComponentRegistry(), getIdentifier());

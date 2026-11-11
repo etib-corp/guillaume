@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -54,7 +55,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is
 	 * components::RadioButton and systems::RadioButton styles the ring and
-	 * places the dot and the label. `initialize()` only builds the child
+	 * places the dot and the label. `build()` only builds the child
 	 * entities.
 	 *
 	 * @see SurfaceBase
@@ -135,15 +136,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a RadioButton entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The visual variant.
-		 * @param label The label content.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		RadioButton(ecs::ComponentRegistry &registry,
-					const SurfaceConfig &config, Variant variant,
-					const std::string &label);
+		template<typename... Arguments>
+		static std::shared_ptr<RadioButton> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<RadioButton> entity(
+				new RadioButton(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -213,10 +222,25 @@ namespace guillaume::entities
 		 */
 		static constexpr float LabelGap = components::RadioButton::LabelGap;
 
+		private:
 		/**
-		 * @brief Initialize the radio button derived state and children.
+		 * @brief Construct a RadioButton entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The visual variant.
+		 * @param label The label content.
 		 */
-		void initialize(void) override;
+		RadioButton(ecs::ComponentRegistry &registry,
+					const SurfaceConfig &config, Variant variant,
+					const std::string &label);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

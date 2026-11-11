@@ -93,8 +93,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto radio = makeRadio(registry);
 
-		radio->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(radio->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 20.0f);
@@ -146,8 +144,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto radio = makeRadio(registry);
 
-		radio->initialize();
-
 		EXPECT_FALSE(radio->isSelected());
 		radio->select(true);
 		EXPECT_TRUE(radio->isSelected());
@@ -161,7 +157,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto radio = makeRadio(registry);
 
-		radio->initialize();
 		radio->select(true);
 
 		const auto &color =
@@ -175,8 +170,6 @@ namespace guillaume::entities::tests
 		auto radio =
 			makeRadio(registry, RadioButton::Variant::Enabled, "Choice");
 
-		radio->initialize();
-
 		EXPECT_TRUE(radio->getChildren().empty());
 		EXPECT_GE(labelOffsetX(registry, radio),
 				  (20.0f + RadioButton::TouchTarget) / 2.0f);
@@ -187,7 +180,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto radio =
 			makeRadio(registry, RadioButton::Variant::Enabled, "Choice");
-		radio->initialize();
 
 		int presses = 0;
 		radio->setOnPress([&presses]() {
@@ -223,7 +215,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto radio = makeRadio(registry, RadioButton::Variant::Disabled, "No");
-		radio->initialize();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -247,7 +238,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto radio = makeRadio(registry);
-		radio->initialize();
 		radio->select(true);
 
 		EXPECT_EQ(

@@ -98,8 +98,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Switch> Switch::Builder::buildEntity(void)
 	{
-		auto entity =
-			std::make_shared<Switch>(this->getComponentRegistry(), _config,
+		auto entity = Switch::create(this->getComponentRegistry(), _config,
 									 _variant, _checked, _iconGlyph, _label);
 		return entity;
 	}
@@ -248,7 +247,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void Switch::initialize(void)
+	void Switch::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		auto &config =

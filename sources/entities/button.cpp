@@ -43,7 +43,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Button> Button::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Button>(
+		auto entity = Button::create(
 			this->getComponentRegistry(), _iconGlyphName, _iconStyle,
 			_labelContent, _isToggle, _colorStyle, _shape, _size, _isMorph,
 			_isDisabled, _isTrailingIcon, _accessibilityLabel, _onClick);

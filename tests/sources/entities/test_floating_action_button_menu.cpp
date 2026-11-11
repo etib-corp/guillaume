@@ -45,10 +45,8 @@ namespace guillaume::entities::tests
 			FloatingActionButtonMenu::Action { "Edit", "edit",
 											   std::function<void(void)>() },
 		};
-		auto menu = std::make_shared<FloatingActionButtonMenu>(registry, "menu",
-															   actions, "Menu");
-
-		menu->initialize();
+		auto menu =
+			FloatingActionButtonMenu::create(registry, "menu", actions, "Menu");
 
 		EXPECT_EQ(menu->getActionCount(), 2);
 		EXPECT_NE(menu->getTriggerIdentifier(), ecs::Entity::InvalidIdentifier);
@@ -59,11 +57,9 @@ namespace guillaume::entities::tests
 	TEST_F(TestFloatingActionButtonMenu, StartsClosedAndOpens)
 	{
 		ecs::ComponentRegistry registry;
-		auto menu = std::make_shared<FloatingActionButtonMenu>(
+		auto menu = FloatingActionButtonMenu::create(
 			registry, "menu", std::vector<FloatingActionButtonMenu::Action>(),
 			"Menu");
-
-		menu->initialize();
 
 		EXPECT_FALSE(menu->isOpen());
 
@@ -77,11 +73,9 @@ namespace guillaume::entities::tests
 	TEST_F(TestFloatingActionButtonMenu, ToggleFlipsOpenState)
 	{
 		ecs::ComponentRegistry registry;
-		auto menu = std::make_shared<FloatingActionButtonMenu>(
+		auto menu = FloatingActionButtonMenu::create(
 			registry, "menu", std::vector<FloatingActionButtonMenu::Action>(),
 			"Menu");
-
-		menu->initialize();
 
 		menu->toggle();
 		EXPECT_TRUE(menu->isOpen());

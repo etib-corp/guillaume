@@ -172,15 +172,6 @@ namespace guillaume::ecs
 		 * @return The parent entity, or nullptr if there is no parent.
 		 */
 		std::shared_ptr<Entity> getParent(void) const noexcept;
-
-		/**
-		 * @brief Initialize the entity's derived state.
-		 *
-		 * This method is called after the entity is constructed and its
-		 * components are set up. Derived entities can override this method to
-		 * perform any necessary initialization based on their components.
-		 */
-		virtual void initialize(void);
 	};
 
 	/**

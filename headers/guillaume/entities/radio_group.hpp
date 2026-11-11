@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -131,18 +132,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a radio group.
-		 * @param registry Component registry.
-		 * @param config Surface configuration.
-		 * @param options Option labels.
-		 * @param value Initially selected option.
-		 * @param onValueChange Value-change handler.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		RadioGroup(ecs::ComponentRegistry &registry,
-				   const SurfaceConfig &config,
-				   const std::vector<std::string> &options,
-				   std::optional<std::size_t> value,
-				   std::function<void(std::size_t)> onValueChange);
+		template<typename... Arguments>
+		static std::shared_ptr<RadioGroup> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<RadioGroup> entity(
+				new RadioGroup(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -172,7 +178,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Get an option radio button.
 		 * @param index Option index.
-		 * @return The radio button, or nullptr before initialize().
+		 * @return The radio button, or nullptr before the group is built.
 		 */
 		std::shared_ptr<RadioButton> getOption(std::size_t index) const;
 
@@ -185,16 +191,33 @@ namespace guillaume::entities
 			setOnValueChange(std::function<void(std::size_t)> onValueChange);
 
 		/**
-		 * @brief Build the option radio buttons and record their identifiers
-		 * in components::RadioGroup.
-		 */
-		void initialize(void) override;
-
-		/**
 		 * @brief Vertical space between 20 dp rings so their 40 dp targets
 		 * do not overlap.
 		 */
 		static constexpr float RowSpacing = components::RadioGroup::RowSpacing;
+
+		private:
+		/**
+		 * @brief Construct a radio group.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param options Option labels.
+		 * @param value Initially selected option.
+		 * @param onValueChange Value-change handler.
+		 */
+		RadioGroup(ecs::ComponentRegistry &registry,
+				   const SurfaceConfig &config,
+				   const std::vector<std::string> &options,
+				   std::optional<std::size_t> value,
+				   std::function<void(std::size_t)> onValueChange);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

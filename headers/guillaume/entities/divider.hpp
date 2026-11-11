@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <memory>
 
 #include <utility/graphic/color.hpp>
@@ -168,19 +169,22 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a Divider entity.
-		 * @param registry The component registry.
-		 * @param pose The divider pose.
-		 * @param color The divider color.
-		 * @param length The total length.
-		 * @param thickness The stroke thickness.
-		 * @param inset The leading/trailing inset.
-		 * @param variant The divider variant.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Divider(ecs::ComponentRegistry &registry,
-				const utility::graphic::PoseF &pose,
-				const utility::graphic::Color32Bit &color, float length,
-				float thickness, float inset, Variant variant);
+		template<typename... Arguments>
+		static std::shared_ptr<Divider> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Divider> entity(
+				new Divider(std::forward<Arguments>(arguments)...));
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -259,6 +263,22 @@ namespace guillaume::entities
 		 * @brief Run systems::Divider on this entity right now.
 		 */
 		void apply(void);
+
+		private:
+		/**
+		 * @brief Construct a Divider entity.
+		 * @param registry The component registry.
+		 * @param pose The divider pose.
+		 * @param color The divider color.
+		 * @param length The total length.
+		 * @param thickness The stroke thickness.
+		 * @param inset The leading/trailing inset.
+		 * @param variant The divider variant.
+		 */
+		Divider(ecs::ComponentRegistry &registry,
+				const utility::graphic::PoseF &pose,
+				const utility::graphic::Color32Bit &color, float length,
+				float thickness, float inset, Variant variant);
 	};
 
 }	 // namespace guillaume::entities

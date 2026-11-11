@@ -87,8 +87,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry);
 
-		toggle->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(toggle->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 52.0f);
@@ -104,8 +102,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry);
 
-		toggle->initialize();
-
 		EXPECT_FALSE(toggle->isChecked());
 		toggle->setChecked(true);
 		EXPECT_TRUE(toggle->isChecked());
@@ -118,8 +114,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, true);
-
-		toggle->initialize();
 
 		const auto &value =
 			registry.getComponent<components::Value>(toggle->getIdentifier());
@@ -185,8 +179,6 @@ namespace guillaume::entities::tests
 		auto toggle =
 			makeSwitch(registry, Switch::Variant::Enabled, false, "", "Wifi");
 
-		toggle->initialize();
-
 		const float trackWidth =
 			registry.getComponent<components::Bound>(toggle->getIdentifier())
 				.getWidth();
@@ -220,7 +212,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Disabled);
-		toggle->initialize();
 
 		int changes = 0;
 		toggle->setOnValueChange([&changes](bool) {
@@ -247,7 +238,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry);
-		toggle->initialize();
 
 		bool reported = false;
 		toggle->setOnValueChange([&reported](bool value) {

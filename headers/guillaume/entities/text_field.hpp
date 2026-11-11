@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -202,23 +203,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a text field.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The variant.
-		 * @param placeholder The label text.
-		 * @param leadingIcon The leading icon glyph.
-		 * @param trailingIcon The trailing icon glyph.
-		 * @param supportingText The supporting text.
-		 * @param error The error state.
-		 * @param text The input text.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		TextField(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-				  Variant variant, const std::string &placeholder,
-				  const std::string &leadingIcon,
-				  const std::string &trailingIcon,
-				  const std::string &supportingText, bool error,
-				  const std::string &text);
+		template<typename... Arguments>
+		static std::shared_ptr<TextField> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<TextField> entity(
+				new TextField(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -388,11 +389,6 @@ namespace guillaume::entities
 		 */
 		ecs::Entity::Identifier getErrorIconIdentifier(void) const;
 
-		/**
-		 * @brief Build the children, which needs the owning handle.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Create the child entities the current state requires and
@@ -424,6 +420,34 @@ namespace guillaume::entities
 		 * the field.
 		 */
 		void refresh(void);
+
+		private:
+		/**
+		 * @brief Construct a text field.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The variant.
+		 * @param placeholder The label text.
+		 * @param leadingIcon The leading icon glyph.
+		 * @param trailingIcon The trailing icon glyph.
+		 * @param supportingText The supporting text.
+		 * @param error The error state.
+		 * @param text The input text.
+		 */
+		TextField(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+				  Variant variant, const std::string &placeholder,
+				  const std::string &leadingIcon,
+				  const std::string &trailingIcon,
+				  const std::string &supportingText, bool error,
+				  const std::string &text);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

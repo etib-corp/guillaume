@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -149,17 +150,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a Switch entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The visual variant.
-		 * @param checked The initial checked state.
-		 * @param iconGlyph The thumb icon glyph.
-		 * @param label The label content.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Switch(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			   Variant variant, bool checked, const std::string &iconGlyph,
-			   const std::string &label);
+		template<typename... Arguments>
+		static std::shared_ptr<Switch> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Switch> entity(
+				new Switch(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -232,10 +239,27 @@ namespace guillaume::entities
 		 */
 		Switch &setLabel(const std::string &label);
 
+		private:
 		/**
-		 * @brief Initialize the switch derived state and children.
+		 * @brief Construct a Switch entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The visual variant.
+		 * @param checked The initial checked state.
+		 * @param iconGlyph The thumb icon glyph.
+		 * @param label The label content.
 		 */
-		void initialize(void) override;
+		Switch(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			   Variant variant, bool checked, const std::string &iconGlyph,
+			   const std::string &label);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

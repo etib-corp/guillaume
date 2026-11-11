@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -230,33 +231,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a View entity.
-		 * @param registry Reference to the component registry.
-		 * @param pose The pose to initialize the container with.
-		 * @param color The surface color to initialize the container with.
-		 * @param borderRadius The border radius to initialize the container
-		 * with.
-		 * @param axis The axis along which children are arranged.
-		 * @param mainAxisAlignment The main axis alignment.
-		 * @param crossAxisAlignment The cross axis alignment.
-		 * @param spacing The spacing between children.
-		 * @param padding The padding around the children.
-		 * @param hasFixedWidth Whether the width is forced.
-		 * @param fixedWidth The forced width.
-		 * @param hasFixedHeight Whether the height is forced.
-		 * @param fixedHeight The forced height.
-		 * @param entities The entities to attach to the container. Their
-		 * identifiers are recorded as layout children at once; they are
-		 * parented to the view by initialize().
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		View(ecs::ComponentRegistry &registry,
-			 const utility::graphic::PoseF &pose,
-			 const utility::graphic::Color32Bit &color, float borderRadius,
-			 Axis axis, MainAxisAlignment mainAxisAlignment,
-			 CrossAxisAlignment crossAxisAlignment, float spacing,
-			 float padding, bool hasFixedWidth, float fixedWidth,
-			 bool hasFixedHeight, float fixedHeight,
-			 const std::vector<std::shared_ptr<ecs::Entity>> &entities);
+		template<typename... Arguments>
+		static std::shared_ptr<View> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<View> entity(
+				new View(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the View entity.
@@ -357,15 +348,6 @@ namespace guillaume::entities
 		View &setEntities(
 			const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 
-		/**
-		 * @brief Parent the entities given to the constructor and arrange
-		 * them.
-		 *
-		 * This holds no rule: parenting needs `shared_from_this()`, which
-		 * the constructor cannot use.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Arrange the layout children now with `systems::Layout`.
@@ -374,6 +356,44 @@ namespace guillaume::entities
 		 * visible immediately while a scene is being built.
 		 */
 		void applyGeometry(void);
+
+		private:
+		/**
+		 * @brief Construct a View entity.
+		 * @param registry Reference to the component registry.
+		 * @param pose The pose to initialize the container with.
+		 * @param color The surface color to initialize the container with.
+		 * @param borderRadius The border radius to initialize the container
+		 * with.
+		 * @param axis The axis along which children are arranged.
+		 * @param mainAxisAlignment The main axis alignment.
+		 * @param crossAxisAlignment The cross axis alignment.
+		 * @param spacing The spacing between children.
+		 * @param padding The padding around the children.
+		 * @param hasFixedWidth Whether the width is forced.
+		 * @param fixedWidth The forced width.
+		 * @param hasFixedHeight Whether the height is forced.
+		 * @param fixedHeight The forced height.
+		 * @param entities The entities to attach to the container. Their
+		 * identifiers are recorded as layout children at once; they are
+		 * parented to the view by build().
+		 */
+		View(ecs::ComponentRegistry &registry,
+			 const utility::graphic::PoseF &pose,
+			 const utility::graphic::Color32Bit &color, float borderRadius,
+			 Axis axis, MainAxisAlignment mainAxisAlignment,
+			 CrossAxisAlignment crossAxisAlignment, float spacing,
+			 float padding, bool hasFixedWidth, float fixedWidth,
+			 bool hasFixedHeight, float fixedHeight,
+			 const std::vector<std::shared_ptr<ecs::Entity>> &entities);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

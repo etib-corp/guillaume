@@ -69,8 +69,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto appBar = makeAppBar(registry, AppBar::Variant::Small);
 
-		appBar->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(appBar->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 360.0f);
@@ -109,10 +107,8 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto smallEntity = makeAppBar(registry, AppBar::Variant::Small);
-		smallEntity->initialize();
 
 		auto largeEntity = makeAppBar(registry, AppBar::Variant::Large);
-		largeEntity->initialize();
 
 		const float smallHeight =
 			registry
@@ -150,7 +146,6 @@ namespace guillaume::entities::tests
 
 		auto appBar = builder.makeAppBar(nullptr, AppBar::Variant::Small);
 		appBar->setTitle("Title");
-		appBar->initialize();
 
 		EXPECT_EQ(appBar->getChildren().size(), 1U);
 		EXPECT_NE(appBar->getChildren()[0]->getIdentifier(),
@@ -170,7 +165,6 @@ namespace guillaume::entities::tests
 			.addAction("more_vert");
 
 		auto appBar = builder.registerEntity(nullptr);
-		appBar->initialize();
 
 		EXPECT_EQ(appBar->getChildren().size(), 4U);
 
@@ -183,8 +177,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto appBar = makeAppBar(registry, AppBar::Variant::Small);
-
-		appBar->initialize();
 
 		const auto &color =
 			registry.getComponent<components::Color>(appBar->getIdentifier());

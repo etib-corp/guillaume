@@ -44,7 +44,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<IconButton> IconButton::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<IconButton>(
+		auto entity = IconButton::create(
 			this->getComponentRegistry(), _iconGlyphName,
 			_selectedIconGlyphName, _iconStyle, _isToggle, _variant, _size,
 			_isDisabled, _accessibilityLabel, _onClick);

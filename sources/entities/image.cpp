@@ -38,8 +38,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Image> Image::Builder::buildEntity(void)
 	{
-		auto entity =
-			std::make_shared<Image>(this->getComponentRegistry(), _texturePath);
+		auto entity = Image::create(this->getComponentRegistry(), _texturePath);
 		entity->setTexturePath(_texturePath);
 		entity->setFallbackPath(_fallbackPath);
 		if (_width > 0.0f && _height > 0.0f) {

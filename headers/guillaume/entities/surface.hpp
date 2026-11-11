@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <memory>
 #include <vector>
 
@@ -373,14 +374,22 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a surface.
-		 * @param registry Component registry.
-		 * @param config Surface configuration.
-		 * @param elevation Elevation level.
-		 * @param mode Shadow mode.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Surface(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-				theme::ElevationLevel elevation, Mode mode);
+		template<typename... Arguments>
+		static std::shared_ptr<Surface> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Surface> entity(
+				new Surface(std::forward<Arguments>(arguments)...));
+			return entity;
+		}
 
 		/**
 		 * @brief Destructor.
@@ -402,6 +411,17 @@ namespace guillaume::entities
 
 		/** @brief Get the shadow mode. @return The mode. */
 		Mode getMode(void) const;
+
+		private:
+		/**
+		 * @brief Construct a surface.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param elevation Elevation level.
+		 * @param mode Shadow mode.
+		 */
+		Surface(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+				theme::ElevationLevel elevation, Mode mode);
 	};
 
 }	 // namespace guillaume::entities

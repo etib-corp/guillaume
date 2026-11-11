@@ -84,8 +84,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<Menu> Menu::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Menu>(this->getComponentRegistry(),
-											 _config, _variant, _items);
+		auto entity = Menu::create(this->getComponentRegistry(), _config,
+								   _variant, _items);
 		return entity;
 	}
 
@@ -309,7 +309,7 @@ namespace guillaume::entities
 			.isVisible();
 	}
 
-	void Menu::initialize(void)
+	void Menu::build(void)
 	{
 		buildItems();
 		systems::Menu::apply(getComponentRegistry(), getIdentifier());

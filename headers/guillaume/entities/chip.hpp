@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -57,7 +58,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is components::Chip
 	 * and systems::Chip styles the chip and arranges its children.
-	 * `initialize()` only builds the child entities. `getChildren()` returns
+	 * `build()` only builds the child entities. `getChildren()` returns
 	 * every child built there; the ones currently laid out (the check
 	 * replaces the leading icon while selected) are the children of the
 	 * chip's components::Layout.
@@ -160,17 +161,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a Chip entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The chip variant.
-		 * @param label The chip label.
-		 * @param iconGlyph The leading icon glyph.
-		 * @param selected The selected state.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Chip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			 Variant variant, const std::string &label,
-			 const std::string &iconGlyph, bool selected);
+		template<typename... Arguments>
+		static std::shared_ptr<Chip> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Chip> entity(
+				new Chip(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -277,10 +284,27 @@ namespace guillaume::entities
 		 */
 		ecs::Entity::Identifier getCloseIconIdentifier(void) const;
 
+		private:
 		/**
-		 * @brief Build the icon and label children.
+		 * @brief Construct a Chip entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The chip variant.
+		 * @param label The chip label.
+		 * @param iconGlyph The leading icon glyph.
+		 * @param selected The selected state.
 		 */
-		void initialize(void) override;
+		Chip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			 Variant variant, const std::string &label,
+			 const std::string &iconGlyph, bool selected);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

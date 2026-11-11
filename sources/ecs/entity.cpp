@@ -208,8 +208,4 @@ namespace guillaume::ecs
 	{
 		return _parent.lock();
 	}
-
-	void Entity::initialize(void)
-	{
-	}
 }	 // namespace guillaume::ecs

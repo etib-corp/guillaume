@@ -34,17 +34,11 @@ namespace guillaume::ecs::tests
 	class DummyEntity: public Entity
 	{
 		public:
-		void initialize(void) override
-		{
-		}
 	};
 
 	class DummyParentEntity: public ParentEntity
 	{
 		public:
-		void initialize(void) override
-		{
-		}
 	};
 
 	class TestEntityRegistryContainer final: public EntityRegistry

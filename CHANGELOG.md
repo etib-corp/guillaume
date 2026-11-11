@@ -106,6 +106,11 @@ Versions follow the calendar scheme described in
   - **Breaking:** a view no longer keeps the entities passed to
     `setEntities()` alive; they must be owned by an entity registry (which is
     what the builders do) or by the caller.
+- **Breaking:** widgets are created with a static `create()` that returns
+  them fully built; their constructors are private and
+  `ecs::Entity::initialize()` is removed (`EntityRegistry::addEntity()` no
+  longer calls it). Replace `std::make_shared<Widget>(...)` followed by
+  `initialize()` with `Widget::create(...)`. Builders are unchanged.
 - **Breaking:** `ecs::Entity::update()` is removed. `ecs::System::routine` no
   longer calls back into entities, and no library entity had an `update()`
   left. See `docs/MIGRATION_GUIDE.md`.

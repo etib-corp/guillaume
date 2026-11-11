@@ -123,8 +123,8 @@ namespace guillaume::entities
 			_config.borderRadius = LinearRadius;
 		}
 
-		auto entity = std::make_shared<LoadingIndicator>(
-			this->getComponentRegistry(), _config, _variant);
+		auto entity = LoadingIndicator::create(this->getComponentRegistry(),
+											   _config, _variant);
 		return entity;
 	}
 
@@ -354,7 +354,7 @@ namespace guillaume::entities
 													getIdentifier());
 	}
 
-	void LoadingIndicator::initialize(void)
+	void LoadingIndicator::build(void)
 	{
 		buildChild();
 		systems::LoadingIndicator::apply(getComponentRegistry(),

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <utility>
+#include <memory>
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
@@ -109,14 +111,22 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Default constructor for the Mesh component.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param meshPath The name of the model to be used for this Mesh
-		 * entity.
-		 * @see components::Mesh::getName
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Mesh(ecs::ComponentRegistry &registry, const std::string &meshPath);
+		template<typename... Arguments>
+		static std::shared_ptr<Mesh> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Mesh> entity(
+				new Mesh(std::forward<Arguments>(arguments)...));
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the Mesh component.
@@ -136,6 +146,17 @@ namespace guillaume::entities
 		 * @return Reference to this Mesh for chaining.
 		 */
 		Mesh &setTexturePath(const std::string &texturePath);
+
+		private:
+		/**
+		 * @brief Default constructor for the Mesh component.
+		 * @param registry Reference to the component registry for initializing
+		 * components.
+		 * @param meshPath The name of the model to be used for this Mesh
+		 * entity.
+		 * @see components::Mesh::getName
+		 */
+		Mesh(ecs::ComponentRegistry &registry, const std::string &meshPath);
 	};
 
 }	 // namespace guillaume::entities

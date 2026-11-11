@@ -74,7 +74,7 @@ namespace guillaume::entities::tests
 				textRender = std::make_unique<guillaume::systems::TextRender>(
 					ressourceProvider, *engine);
 
-				text = std::make_shared<entities::Text>(
+				text = entities::Text::create(
 					componentRegistry, "Hello", 24.0f,
 					utility::graphic::Color32Bit(255, 255, 255, 255));
 				entityRegistry.addEntity(text);
@@ -203,7 +203,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestText, ExplicitSizeOverridesRole)
 	{
 		ecs::ComponentRegistry registry;
-		auto text = std::make_shared<entities::Text>(
+		auto text = entities::Text::create(
 			registry, "Hi", theme::TypeRole::TitleMedium,
 			utility::graphic::Color32Bit(0, 0, 0, 255), 30.0f);
 

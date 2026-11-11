@@ -96,7 +96,7 @@ namespace guillaume::entities::tests
 				glyphRender = std::make_unique<guillaume::systems::GlyphRender>(
 					ressourceProvider, *engine);
 
-				icon = std::make_shared<entities::Icon>(
+				icon = entities::Icon::create(
 					componentRegistry, "home", 24.0f,
 					utility::graphic::Color32Bit(255, 255, 255, 255),
 					components::Glyph::Style::Outlined);

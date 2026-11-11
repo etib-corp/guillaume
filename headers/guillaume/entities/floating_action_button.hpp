@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <optional>
 #include <memory>
@@ -201,25 +202,25 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Default constructor for the FloatingActionButton entity.
-		 * @param registry Reference to the component registry.
-		 * @param iconGlyphName Icon glyph name to attach.
-		 * @param iconStyle Style of the icon to attach.
-		 * @param labelContent Label content to attach.
-		 * @param variant Initial color variant.
-		 * @param size Initial size.
-		 * @param lowered Initial lowered state.
-		 * @param isDisabled Initial disabled state.
-		 * @param accessibilityLabel Initial accessibility label.
-		 * @param onClick Click event handler.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		FloatingActionButton(ecs::ComponentRegistry &registry,
-							 const std::string &iconGlyphName,
-							 const components::Glyph::Style &iconStyle,
-							 const std::string &labelContent, Variant variant,
-							 Size size, bool lowered, bool isDisabled,
-							 const std::string &accessibilityLabel,
-							 std::function<void(void)> onClick);
+		template<typename... Arguments>
+		static std::shared_ptr<FloatingActionButton>
+			create(Arguments &&...arguments)
+		{
+			std::shared_ptr<FloatingActionButton> entity(
+				new FloatingActionButton(
+					std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -285,6 +286,28 @@ namespace guillaume::entities
 		 * @return True when lowered, false otherwise.
 		 */
 		bool isLowered(void) const;
+
+		private:
+		/**
+		 * @brief Default constructor for the FloatingActionButton entity.
+		 * @param registry Reference to the component registry.
+		 * @param iconGlyphName Icon glyph name to attach.
+		 * @param iconStyle Style of the icon to attach.
+		 * @param labelContent Label content to attach.
+		 * @param variant Initial color variant.
+		 * @param size Initial size.
+		 * @param lowered Initial lowered state.
+		 * @param isDisabled Initial disabled state.
+		 * @param accessibilityLabel Initial accessibility label.
+		 * @param onClick Click event handler.
+		 */
+		FloatingActionButton(ecs::ComponentRegistry &registry,
+							 const std::string &iconGlyphName,
+							 const components::Glyph::Style &iconStyle,
+							 const std::string &labelContent, Variant variant,
+							 Size size, bool lowered, bool isDisabled,
+							 const std::string &accessibilityLabel,
+							 std::function<void(void)> onClick);
 	};
 
 }	 // namespace guillaume::entities

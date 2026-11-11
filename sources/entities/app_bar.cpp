@@ -42,9 +42,9 @@ namespace guillaume::entities
 
 	std::shared_ptr<AppBar> AppBar::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<AppBar>(
-			this->getComponentRegistry(), _config, _variant, _title,
-			_navigation, _actions, _elevated);
+		auto entity =
+			AppBar::create(this->getComponentRegistry(), _config, _variant,
+						   _title, _navigation, _actions, _elevated);
 		return entity;
 	}
 
@@ -332,7 +332,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void AppBar::initialize(void)
+	void AppBar::build(void)
 	{
 		buildContent();
 		systems::AppBar::apply(getComponentRegistry(), getIdentifier());

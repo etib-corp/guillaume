@@ -65,8 +65,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::SingleLine);
 
-		snackbar->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(snackbar->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getHeight(), 48.0f);
@@ -76,8 +74,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::MultiLine);
-
-		snackbar->initialize();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(snackbar->getIdentifier());
@@ -89,8 +85,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::SingleLine);
 
-		snackbar->initialize();
-
 		const auto &color =
 			registry.getComponent<components::Color>(snackbar->getIdentifier());
 		EXPECT_EQ(color.getColor(),
@@ -101,8 +95,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::SingleLine);
-
-		snackbar->initialize();
 
 		const auto &overlay = registry.getComponent<components::Overlay>(
 			snackbar->getIdentifier());
@@ -116,8 +108,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::WithAction,
 									 "Message", "Undo");
-
-		snackbar->initialize();
 
 		EXPECT_EQ(snackbar->getChildren().size(), 2U);
 	}
@@ -156,7 +146,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto snackbar = makeSnackbar(registry);
-		snackbar->initialize();
 
 		auto &overlay = registry.getComponent<components::Overlay>(
 			snackbar->getIdentifier());
@@ -187,8 +176,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestSnackbar, OverlayDismissCallsOnDismissAndHides)
 	{
 		ecs::ComponentRegistry registry;
-		auto snackbar = makeSnackbar(registry);
-		snackbar->initialize();
+		auto snackbar  = makeSnackbar(registry);
 		int dismissals = 0;
 		snackbar->setOnDismiss([&dismissals]() {
 			++dismissals;
@@ -216,9 +204,8 @@ namespace guillaume::entities::tests
 	TEST_F(TestSnackbar, ActionIsPressableAndDismisses)
 	{
 		ecs::ComponentRegistry registry;
-		auto snackbar = makeSnackbar(registry, Snackbar::Variant::WithAction,
-									 "Saved", "Undo");
-		snackbar->initialize();
+		auto snackbar  = makeSnackbar(registry, Snackbar::Variant::WithAction,
+									  "Saved", "Undo");
 		int actions	   = 0;
 		int dismissals = 0;
 		snackbar->setOnAction([&actions]() {

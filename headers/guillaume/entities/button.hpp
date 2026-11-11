@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -251,29 +252,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Default constructor for the Button entity.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param iconGlyphName Icon glyph name to attach to the button.
-		 * @param iconStyle Style of the icon to attach to the button.
-		 * @param labelContent Label content to attach to the button.
-		 * @param isToggle Whether the button should be a toggle button.
-		 * @param colorStyle Initial color style for the button.
-		 * @param shape Initial shape for the button.
-		 * @param size Initial size for the button.
-		 * @param isMorph Initial morph state for the button.
-		 * @param isDisabled Initial disabled state for the button.
-		 * @param isTrailingIcon Initial trailing icon state for the button.
-		 * @param accessibilityLabel Initial accessibility label for the button.
-		 * @param onClick Click event handler for the button.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Button(ecs::ComponentRegistry &registry,
-			   const std::string &iconGlyphName,
-			   const components::Glyph::Style &iconStyle,
-			   const std::string &labelContent, bool isToggle, Color colorStyle,
-			   Shape shape, Size size, bool isMorph, bool isDisabled,
-			   bool isTrailingIcon, const std::string &accessibilityLabel,
-			   std::function<void(void)> onClick);
+		template<typename... Arguments>
+		static std::shared_ptr<Button> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Button> entity(
+				new Button(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the Button entity.
@@ -362,6 +357,32 @@ namespace guillaume::entities
 		 * @return The size.
 		 */
 		Size getSize(void) const;
+
+		private:
+		/**
+		 * @brief Default constructor for the Button entity.
+		 * @param registry Reference to the component registry for initializing
+		 * components.
+		 * @param iconGlyphName Icon glyph name to attach to the button.
+		 * @param iconStyle Style of the icon to attach to the button.
+		 * @param labelContent Label content to attach to the button.
+		 * @param isToggle Whether the button should be a toggle button.
+		 * @param colorStyle Initial color style for the button.
+		 * @param shape Initial shape for the button.
+		 * @param size Initial size for the button.
+		 * @param isMorph Initial morph state for the button.
+		 * @param isDisabled Initial disabled state for the button.
+		 * @param isTrailingIcon Initial trailing icon state for the button.
+		 * @param accessibilityLabel Initial accessibility label for the button.
+		 * @param onClick Click event handler for the button.
+		 */
+		Button(ecs::ComponentRegistry &registry,
+			   const std::string &iconGlyphName,
+			   const components::Glyph::Style &iconStyle,
+			   const std::string &labelContent, bool isToggle, Color colorStyle,
+			   Shape shape, Size size, bool isMorph, bool isDisabled,
+			   bool isTrailingIcon, const std::string &accessibilityLabel,
+			   std::function<void(void)> onClick);
 	};
 
 }	 // namespace guillaume::entities

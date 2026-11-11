@@ -66,7 +66,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestMesh, ConstructorConfiguresModelComponent)
 	{
 		ecs::ComponentRegistry registry;
-		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
+		auto model = entities::Mesh::create(registry, "teapot.obj");
 
 		const auto &component =
 			registry.getComponent<components::Mesh>(model->getIdentifier());
@@ -77,7 +77,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestMesh, SetPathsUpdateComponent)
 	{
 		ecs::ComponentRegistry registry;
-		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
+		auto model = entities::Mesh::create(registry, "teapot.obj");
 
 		model->setMeshPath("other.obj");
 		model->setTexturePath("skin.png");
@@ -92,7 +92,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestMesh, ComponentIsTheSourceOfTruthForThePaths)
 	{
 		ecs::ComponentRegistry registry;
-		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
+		auto model = entities::Mesh::create(registry, "teapot.obj");
 		model->setTexturePath("skin.png");
 
 		// The entity keeps no copy: the paths are in the component from
@@ -145,7 +145,7 @@ namespace guillaume::entities::tests
 
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
-		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
+		auto model = entities::Mesh::create(registry, "teapot.obj");
 		entityRegistry.addEntity(model);
 
 		ecs::LevelOrderTraveler traveler;
@@ -173,7 +173,7 @@ namespace guillaume::entities::tests
 		guillaume::systems::MeshRender modelRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
-		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
+		auto model = entities::Mesh::create(registry, "teapot.obj");
 
 		modelRender.bindComponentRegistry(registry);
 		modelRender.update(model->getIdentifier());
@@ -195,7 +195,7 @@ namespace guillaume::entities::tests
 		guillaume::systems::MeshRender modelRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
-		auto model = std::make_shared<entities::Mesh>(registry, "missing.obj");
+		auto model = entities::Mesh::create(registry, "missing.obj");
 
 		modelRender.bindComponentRegistry(registry);
 		modelRender.update(model->getIdentifier());

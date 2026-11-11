@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -152,36 +153,31 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Default constructor for the SegmentedButton entity.
-		 * @param registry Reference to the component registry.
-		 * @param labels The labels of the segments.
-		 * @param selectionMode The selection mode.
-		 * @param onChange The change event handler.
-		 */
-		SegmentedButton(ecs::ComponentRegistry &registry,
-						const std::vector<std::string> &labels,
-						SelectionMode selectionMode,
-						std::function<void(std::size_t)> onChange);
-
-		/**
-		 * @brief Construct a segmented button from segment configurations.
-		 * @param registry Component registry.
-		 * @param segments Segment configurations.
-		 * @param selectionMode Selection mode.
-		 * @param onChange Change handler.
-		 */
-		SegmentedButton(ecs::ComponentRegistry &registry,
-						const std::vector<Segment> &segments,
-						SelectionMode selectionMode,
-						std::function<void(std::size_t)> onChange);
-
-		/**
 		 * @brief Enable or disable one segment.
 		 * @param index Segment index.
 		 * @param disabled True to disable.
 		 * @return Reference to this segmented button for chaining.
 		 */
 		SegmentedButton &setSegmentDisabled(std::size_t index, bool disabled);
+
+		/**
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
+		 */
+		template<typename... Arguments>
+		static std::shared_ptr<SegmentedButton> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<SegmentedButton> entity(
+				new SegmentedButton(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the SegmentedButton entity.
@@ -229,11 +225,38 @@ namespace guillaume::entities
 		 */
 		ecs::Entity::Identifier getSegmentIdentifier(std::size_t index) const;
 
+		private:
 		/**
-		 * @brief Build the segment button children and record their
-		 * identifiers in components::SegmentedButton.
+		 * @brief Default constructor for the SegmentedButton entity.
+		 * @param registry Reference to the component registry.
+		 * @param labels The labels of the segments.
+		 * @param selectionMode The selection mode.
+		 * @param onChange The change event handler.
 		 */
-		void initialize(void) override;
+		SegmentedButton(ecs::ComponentRegistry &registry,
+						const std::vector<std::string> &labels,
+						SelectionMode selectionMode,
+						std::function<void(std::size_t)> onChange);
+
+		/**
+		 * @brief Construct a segmented button from segment configurations.
+		 * @param registry Component registry.
+		 * @param segments Segment configurations.
+		 * @param selectionMode Selection mode.
+		 * @param onChange Change handler.
+		 */
+		SegmentedButton(ecs::ComponentRegistry &registry,
+						const std::vector<Segment> &segments,
+						SelectionMode selectionMode,
+						std::function<void(std::size_t)> onChange);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

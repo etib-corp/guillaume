@@ -43,8 +43,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Search> Search::Builder::buildEntity(void)
 	{
-		auto entity =
-			std::make_shared<Search>(this->getComponentRegistry(), _config,
+		auto entity = Search::create(this->getComponentRegistry(), _config,
 									 _variant, _placeholder, _text);
 		return entity;
 	}
@@ -293,7 +292,7 @@ namespace guillaume::entities
 		return isVisible();
 	}
 
-	void Search::initialize(void)
+	void Search::build(void)
 	{
 		buildChildren();
 		systems::Search::apply(getComponentRegistry(), getIdentifier());

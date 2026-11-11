@@ -144,16 +144,25 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a FloatingActionButtonMenu entity.
-		 * @param registry Reference to the component registry.
-		 * @param iconGlyphName Trigger icon glyph name.
-		 * @param actions The menu actions.
-		 * @param accessibilityLabel Trigger accessibility label.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		FloatingActionButtonMenu(ecs::ComponentRegistry &registry,
-								 const std::string &iconGlyphName,
-								 const std::vector<Action> &actions,
-								 const std::string &accessibilityLabel);
+		template<typename... Arguments>
+		static std::shared_ptr<FloatingActionButtonMenu>
+			create(Arguments &&...arguments)
+		{
+			std::shared_ptr<FloatingActionButtonMenu> entity(
+				new FloatingActionButtonMenu(
+					std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -213,12 +222,6 @@ namespace guillaume::entities
 		 */
 		ecs::Entity::Identifier getActionIdentifier(std::size_t index) const;
 
-		/**
-		 * @brief Build the trigger and action button children and record
-		 * their identifiers in components::FloatingActionButtonMenu.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Access the menu state.
@@ -231,6 +234,27 @@ namespace guillaume::entities
 		 * @return The components::FloatingActionButtonMenu of this entity.
 		 */
 		const components::FloatingActionButtonMenu &state(void) const;
+
+		private:
+		/**
+		 * @brief Construct a FloatingActionButtonMenu entity.
+		 * @param registry Reference to the component registry.
+		 * @param iconGlyphName Trigger icon glyph name.
+		 * @param actions The menu actions.
+		 * @param accessibilityLabel Trigger accessibility label.
+		 */
+		FloatingActionButtonMenu(ecs::ComponentRegistry &registry,
+								 const std::string &iconGlyphName,
+								 const std::vector<Action> &actions,
+								 const std::string &accessibilityLabel);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

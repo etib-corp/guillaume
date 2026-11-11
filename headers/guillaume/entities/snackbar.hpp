@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -56,7 +57,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is
 	 * components::Snackbar and systems::Snackbar styles the bar and runs its
-	 * dismissal. `initialize()` only builds the child entities.
+	 * dismissal. `build()` only builds the child entities.
 	 *
 	 * @see SurfaceBase
 	 * @see components::Overlay
@@ -194,16 +195,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a Snackbar entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The snackbar variant.
-		 * @param message The snackbar message.
-		 * @param action The snackbar action label.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Snackbar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-				 Variant variant, const std::string &message,
-				 const std::string &action);
+		template<typename... Arguments>
+		static std::shared_ptr<Snackbar> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Snackbar> entity(
+				new Snackbar(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -290,11 +298,6 @@ namespace guillaume::entities
 		 */
 		std::shared_ptr<Text> getActionEntity(void) const;
 
-		/**
-		 * @brief Build the message and action children.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build the message and action child entities that are
@@ -303,6 +306,27 @@ namespace guillaume::entities
 		 * Does nothing until the snackbar is owned by a shared pointer.
 		 */
 		void buildContent(void);
+
+		private:
+		/**
+		 * @brief Construct a Snackbar entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The snackbar variant.
+		 * @param message The snackbar message.
+		 * @param action The snackbar action label.
+		 */
+		Snackbar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+				 Variant variant, const std::string &message,
+				 const std::string &action);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

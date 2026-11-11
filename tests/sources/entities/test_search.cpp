@@ -76,8 +76,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry, Search::Variant::SearchBar);
 
-		search->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(search->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getHeight(), 56.0f);
@@ -92,8 +90,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry, Search::Variant::FullScreen);
-
-		search->initialize();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(search->getIdentifier());
@@ -119,7 +115,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
 
-		search->initialize();
 		search->setPlaceholder("Find");
 
 		const auto &textField = registry.getComponent<components::TextField>(
@@ -132,7 +127,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
 
-		search->initialize();
 		search->setText("hello");
 
 		EXPECT_EQ(search->getText(), "hello");
@@ -142,8 +136,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry, Search::Variant::FullScreen);
-
-		search->initialize();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(search->getIdentifier());
@@ -155,8 +147,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
-
-		search->initialize();
 
 		EXPECT_FALSE(search->isOpen());
 		search->open();
@@ -185,7 +175,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
-		search->initialize();
 		search->setText("query");
 
 		bool cleared = false;
@@ -220,7 +209,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
-		search->initialize();
 
 		int presses = 0;
 		search->setOnIconPress([&presses]() {
@@ -244,7 +232,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
-		search->initialize();
 		search->setText("");
 
 		const auto &children =
@@ -266,7 +253,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
-		search->initialize();
 		search->setLoading(true);
 		search->setElevation(theme::ElevationLevel::Level3);
 
@@ -286,7 +272,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
-		search->initialize();
 
 		EXPECT_EQ(registry
 					  .getComponent<components::Accessibility>(
