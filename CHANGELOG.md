@@ -47,6 +47,12 @@ Versions follow the calendar scheme described in
   (with their destinations) follow the strict ECS. `TextField`'s
   configuration is `components::TextFieldConfiguration`; the existing
   `systems::TextField` holds its rules and moved to the Layout phase.
+- `ecs::EntityRegistry::removeEntity()` and `clearEntities()` remove an
+  entity with everything it owns, delete its components
+  (`ecs::ComponentRegistry::removeEntity()`) and unlink it from its parent's
+  `components::Hierarchy`. `List`, `Menu`, `NavigationDrawer` and the
+  indicators use it when they rebuild their children, so replaced children no
+  longer stay registered.
 - `systems::Layout::layerOf()` returns an entity's tree depth from its
   `components::Hierarchy`.
 
@@ -99,9 +105,11 @@ Versions follow the calendar scheme described in
   - **Breaking:** a view no longer keeps the entities passed to
     `setEntities()` alive; they must be owned by an entity registry (which is
     what the builders do) or by the caller.
-- **Breaking:** `ecs::System::routine` no longer calls `Entity::update()` on
-  a changed entity or on its parent. No library entity overrides `update()`
-  any more; it remains as a deprecated no-op. See `docs/MIGRATION_GUIDE.md`.
+- **Breaking:** `ecs::Entity::update()` is removed. `ecs::System::routine` no
+  longer calls back into entities, and no library entity had an `update()`
+  left. See `docs/MIGRATION_GUIDE.md`.
+- **Breaking:** removed the unused `components::Parent`; use
+  `components::Hierarchy`.
 - `entities::List`, `Search`, `TextField`, `NavigationBar` and
   `NavigationDrawer` are facades without fields. Visible differences:
   - Setters apply immediately instead of on the next update, and build a
@@ -128,6 +136,13 @@ Versions follow the calendar scheme described in
 - `ecs::Entity::setParent()` now updates the layer of every descendant when a
   subtree is attached, and throws `std::invalid_argument` when the new parent
   is the entity itself or one of its descendants.
+
+### Fixed
+
+- `LocalStorage` waits for a concurrent writer instead of failing when
+  several processes open the same storage file for the first time.
+- An extended FAB with a hidden label no longer has its label color
+  rewritten twice per frame.
 
 ## [2026.3.2] - 2026-11-11
 
