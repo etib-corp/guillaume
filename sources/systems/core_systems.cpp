@@ -68,12 +68,14 @@
 #include "guillaume/systems/scroll.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/systems/radio_button.hpp"
+#include "guillaume/systems/snackbar.hpp"
 #include "guillaume/systems/style_state.hpp"
 #include "guillaume/systems/surface_tone.hpp"
 #include "guillaume/systems/switch.hpp"
 #include "guillaume/systems/text_field.hpp"
 #include "guillaume/systems/text_input.hpp"
 #include "guillaume/systems/text_render.hpp"
+#include "guillaume/systems/tooltip.hpp"
 #include "guillaume/systems/typography.hpp"
 
 namespace guillaume::systems
@@ -166,6 +168,8 @@ namespace guillaume::systems
 			std::make_unique<systems::LoadingIndicator>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::ProgressIndicator>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Tooltip>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Snackbar>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

@@ -23,7 +23,6 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <string>
 
 #include <utility/graphic/color.hpp>
@@ -36,6 +35,7 @@
 #include "guillaume/components/animation.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
+#include "guillaume/components/tooltip.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
@@ -54,28 +54,34 @@ namespace guillaume::entities
 	 * - `Rich`: a larger title (font 16) followed by a supporting text
 	 *   (font 14), corner radius 12.
 	 *
+	 * The class is a facade without fields: its state is
+	 * components::Tooltip and systems::Tooltip styles the tooltip, runs the
+	 * hover delays and places it. `initialize()` only builds the child
+	 * entities.
+	 *
 	 * @see SurfaceBase
 	 * @see components::Overlay
 	 */
 	class Tooltip:
 		public SurfaceBase<components::Overlay, components::Elevation,
-						   components::Animation, components::Accessibility>
+						   components::Animation, components::Accessibility,
+						   components::Tooltip>
 	{
 		public:
-		/**
-		 * @brief Tooltip variant.
-		 */
-		enum class Variant { Plain, Rich };
+		/// Tooltip variant.
+		using Variant = components::Tooltip::Variant;
 
 		/**
 		 * @brief Paper `enterTouchDelay`, in seconds.
 		 */
-		static constexpr float DefaultEnterDelay = 0.5f;
+		static constexpr float DefaultEnterDelay =
+			components::Tooltip::DefaultEnterDelay;
 
 		/**
 		 * @brief Paper `leaveTouchDelay`, in seconds.
 		 */
-		static constexpr float DefaultLeaveDelay = 1.5f;
+		static constexpr float DefaultLeaveDelay =
+			components::Tooltip::DefaultLeaveDelay;
 
 		/**
 		 * @brief Builder used to configure and create `Tooltip` entities.
@@ -157,49 +163,6 @@ namespace guillaume::entities
 							const std::string &title = "");
 		};
 
-		private:
-		Variant _variant { Variant::Plain };		///< Tooltip variant.
-		std::string _text {};						///< Tooltip body text.
-		std::string _title {};						///< Tooltip title.
-		std::shared_ptr<Text> _titleEntity;			///< Title child entity.
-		std::shared_ptr<Text> _textEntity;			///< Body child entity.
-		std::weak_ptr<ecs::Entity> _anchor;			///< Trigger entity.
-		float _enterDelay { DefaultEnterDelay };	///< Hover-in delay.
-		float _leaveDelay { DefaultLeaveDelay };	///< Hover-out delay.
-		float _hoverTime { 0.0f };		 ///< Time the anchor has been hovered.
-		float _leaveTime { 0.0f };		 ///< Time since the anchor was left.
-		float _lastProgress { 0.0f };	 ///< Last ticker progress.
-		bool _visible { false };		 ///< Whether the tooltip is shown.
-		std::optional<std::pair<float, float>>
-			_viewport {};	 ///< Clamping area (width, height).
-
-		/**
-		 * @brief Mirror visibility on the overlay and the visuals.
-		 */
-		void applyVisibility(void);
-
-		private:
-		/**
-		 * @brief Get the fixed height for the current variant.
-		 * @return The tooltip height.
-		 */
-		float getVariantHeight(void) const;
-
-		/**
-		 * @brief Apply the variant-specific geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Build the title and body child entities when needed.
-		 */
-		void buildContent(void);
-
-		/**
-		 * @brief Configure the overlay component for a tooltip.
-		 */
-		void applyOverlay(void);
-
 		public:
 		/**
 		 * @brief Construct a Tooltip entity.
@@ -216,7 +179,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~Tooltip(void) override;
+		~Tooltip(void) override = default;
 
 		/**
 		 * @brief Set the tooltip variant.
@@ -306,14 +269,18 @@ namespace guillaume::entities
 		void place(void);
 
 		/**
-		 * @brief Initialize the tooltip derived state.
+		 * @brief Build the title and body children.
 		 */
 		void initialize(void) override;
 
+		private:
 		/**
-		 * @brief Recompute the tooltip derived state.
+		 * @brief Build the title and body child entities that are missing
+		 * and record their identifiers in components::Tooltip.
+		 *
+		 * Does nothing until the tooltip is owned by a shared pointer.
 		 */
-		void update(void) override;
+		void buildContent(void);
 	};
 
 }	 // namespace guillaume::entities

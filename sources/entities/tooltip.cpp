@@ -20,19 +20,16 @@
  SOFTWARE.
  */
 
-#include <memory>
-
 #include "guillaume/entities/tooltip.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/motion/easing.hpp"
 
-#include <algorithm>
-#include <stdexcept>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/tooltip.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -114,339 +111,171 @@ namespace guillaume::entities
 					 const SurfaceConfig &config, Variant variant,
 					 const std::string &text, const std::string &title)
 		: SurfaceBase<components::Overlay, components::Elevation,
-					  components::Animation, components::Accessibility>(
-			  registry, config)
-		, _variant(variant)
-		, _text(text)
-		, _title(title)
-		, _titleEntity()
-		, _textEntity()
+					  components::Animation, components::Accessibility,
+					  components::Tooltip>(registry, config)
 	{
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setRole(components::AccessibilityRole::Text)
-			.setLiveRegion(components::LiveRegion::Polite)
-			.setLabel(text);
-		getComponentRegistry()
-			.getComponent<components::Animation>(getIdentifier())
-			.setDuration(1.0f)
-			.setEasing(motion::Easing::Linear)
-			.setLooping(true)
-			.setOnSampleHandler([this](float progress) {
-				float delta = progress - _lastProgress;
-				if (delta < 0.0f) {
-					delta += 1.0f;
-				}
-				_lastProgress = progress;
-				advance(delta);
-			});
-		getComponentRegistry()
-			.getComponent<components::Overlay>(getIdentifier())
-			.setOnDismissHandler([this]() {
-				if (_visible) {
-					_visible = false;
-					applyVisibility();
-				}
-			});
-		applyVariant();
-		applyOverlay();
-		applyVisibility();
+			.getComponent<components::Tooltip>(getIdentifier())
+			.setVariant(variant)
+			.setText(text)
+			.setTitle(title);
+		systems::Tooltip::install(getComponentRegistry(), getIdentifier());
+		systems::Tooltip::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Tooltip &Tooltip::setAnchor(std::shared_ptr<ecs::Entity> anchor)
 	{
-		_anchor		  = anchor;
-		_hoverTime	  = 0.0f;
-		_leaveTime	  = 0.0f;
-		_lastProgress = 0.0f;
-		auto &ticker =
-			getComponentRegistry().getComponent<components::Animation>(
-				getIdentifier());
-		if (anchor != nullptr) {
-			ticker.play();
-		} else {
-			ticker.stop();
-		}
+		systems::Tooltip::setAnchor(getComponentRegistry(), getIdentifier(),
+									anchor != nullptr
+										? anchor->getIdentifier()
+										: ecs::Entity::InvalidIdentifier);
 		return *this;
 	}
 
 	Tooltip &Tooltip::setEnterDelay(float seconds)
 	{
-		if (seconds < 0.0f) {
-			throw std::invalid_argument("Tooltip delay must be >= 0");
-		}
-		_enterDelay = seconds;
+		getComponentRegistry()
+			.getComponent<components::Tooltip>(getIdentifier())
+			.setEnterDelay(seconds);
 		return *this;
 	}
 
 	Tooltip &Tooltip::setLeaveDelay(float seconds)
 	{
-		if (seconds < 0.0f) {
-			throw std::invalid_argument("Tooltip delay must be >= 0");
-		}
-		_leaveDelay = seconds;
+		getComponentRegistry()
+			.getComponent<components::Tooltip>(getIdentifier())
+			.setLeaveDelay(seconds);
 		return *this;
 	}
 
 	float Tooltip::getEnterDelay(void) const
 	{
-		return _enterDelay;
+		return getComponentRegistry()
+			.getComponent<components::Tooltip>(getIdentifier())
+			.getEnterDelay();
 	}
 
 	float Tooltip::getLeaveDelay(void) const
 	{
-		return _leaveDelay;
+		return getComponentRegistry()
+			.getComponent<components::Tooltip>(getIdentifier())
+			.getLeaveDelay();
 	}
 
 	Tooltip &Tooltip::setViewport(float width, float height)
 	{
-		_viewport = std::make_pair(width, height);
-		if (_visible) {
-			place();
-		}
+		systems::Tooltip::setViewport(getComponentRegistry(), getIdentifier(),
+									  width, height);
 		return *this;
 	}
 
 	Tooltip &Tooltip::show(void)
 	{
-		_visible = true;
-		place();
-		applyVisibility();
+		systems::Tooltip::show(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Tooltip &Tooltip::hide(void)
 	{
-		_visible = false;
-		applyVisibility();
+		systems::Tooltip::hide(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	bool Tooltip::isVisible(void) const
 	{
-		return _visible;
+		return getComponentRegistry()
+			.getComponent<components::Tooltip>(getIdentifier())
+			.isVisible();
 	}
 
 	void Tooltip::advance(float deltaTime)
 	{
-		const auto anchor = _anchor.lock();
-		if (anchor == nullptr) {
-			return;
-		}
-
-		if (isHovered(getComponentRegistry(), anchor->getIdentifier())) {
-			_leaveTime = 0.0f;
-			_hoverTime += deltaTime;
-			if (!_visible && _hoverTime >= _enterDelay) {
-				show();
-			}
-			return;
-		}
-
-		_hoverTime = 0.0f;
-		if (_visible) {
-			_leaveTime += deltaTime;
-			if (_leaveTime >= _leaveDelay) {
-				_leaveTime = 0.0f;
-				hide();
-			}
-		}
+		systems::Tooltip::advance(getComponentRegistry(), getIdentifier(),
+								  deltaTime);
 	}
 
 	void Tooltip::place(void)
 	{
-		const auto anchor = _anchor.lock();
-		if (anchor == nullptr) {
-			return;
-		}
-		auto &registry = getComponentRegistry();
-		if (!registry.hasComponent<components::Transform>(
-				anchor->getIdentifier())
-			|| !registry.hasComponent<components::Bound>(
-				anchor->getIdentifier())) {
-			return;
-		}
-
-		const auto anchorPose =
-			registry
-				.getComponent<components::Transform>(anchor->getIdentifier())
-				.getPose();
-		const auto &anchorBound =
-			registry.getComponent<components::Bound>(anchor->getIdentifier());
-		const auto &bound =
-			registry.getComponent<components::Bound>(getIdentifier());
-
-		const float width  = bound.getWidth();
-		const float height = bound.getHeight();
-		float x			   = anchorPose.getPosition().getX()
-			+ (anchorBound.getWidth() - width) / 2.0f;
-		float y = anchorPose.getPosition().getY() + anchorBound.getHeight();
-
-		if (_viewport.has_value()) {
-			const float viewportWidth  = _viewport->first;
-			const float viewportHeight = _viewport->second;
-			if (y + height > viewportHeight) {
-				y = anchorPose.getPosition().getY() - height;
-			}
-			x = std::clamp(x, 0.0f, std::max(0.0f, viewportWidth - width));
-			y = std::clamp(y, 0.0f, std::max(0.0f, viewportHeight - height));
-		}
-
-		setPose(utility::graphic::PoseF(
-			utility::graphic::PositionF(x, y, anchorPose.getPosition().getZ()),
-			anchorPose.getOrientation()));
-	}
-
-	void Tooltip::applyVisibility(void)
-	{
-		auto &overlay =
-			getComponentRegistry().getComponent<components::Overlay>(
-				getIdentifier());
-		if (overlay.isVisible() != _visible) {
-			overlay.setVisible(_visible);
-		}
-		applyVariant();
-		const bool rich = (_variant == Variant::Rich);
-		if (_titleEntity != nullptr) {
-			_titleEntity->setColor(_visible
-									   ? schemeColor(SchemeColorRole::OnSurface)
-									   : transparentColor());
-		}
-		if (_textEntity != nullptr) {
-			const auto role = rich ? SchemeColorRole::OnSurfaceVariant
-								   : SchemeColorRole::InverseOnSurface;
-			_textEntity->setColor(_visible ? schemeColor(role)
-										   : transparentColor());
-		}
-	}
-
-	Tooltip::~Tooltip(void)
-	{
-	}
-
-	float Tooltip::getVariantHeight(void) const
-	{
-		switch (_variant) {
-			case Variant::Rich:
-				return 64.0f;
-			case Variant::Plain:
-			default:
-				return 32.0f;
-		}
-	}
-
-	void Tooltip::applyVariant(void)
-	{
-		auto config = getSurfaceConfig();
-
-		config.axis = components::Layout::Axis::Vertical;
-		config.mainAxisAlignment =
-			components::Layout::MainAxisAlignment::Center;
-		config.crossAxisAlignment =
-			components::Layout::CrossAxisAlignment::Start;
-		config.padding = 8.0f;
-		config.spacing = 2.0f;
-		getComponentRegistry()
-			.getComponent<components::Elevation>(getIdentifier())
-			.setElevationLevel(_variant == Variant::Rich && _visible
-								   ? theme::ElevationLevel::Level2
-								   : theme::ElevationLevel::Level0);
-		config.borderRadius	  = (_variant == Variant::Rich)
-			  ? getShapeRadius(theme::ShapeRole::Medium)
-			  : getShapeRadius(theme::ShapeRole::ExtraSmall);
-		config.hasFixedHeight = true;
-		config.fixedHeight	  = getVariantHeight();
-
-		setSurfaceConfig(config);
-		const auto container = (_variant == Variant::Rich)
-			? schemeColor(SchemeColorRole::SurfaceContainer)
-			: schemeColor(SchemeColorRole::InverseSurface);
-		setColor(_visible ? container : transparentColor());
-	}
-
-	void Tooltip::applyOverlay(void)
-	{
-		auto &overlay =
-			this->getComponentRegistry().getComponent<components::Overlay>(
-				this->getIdentifier());
-
-		overlay.setModal(false);
-		overlay.setDismissOnOutsideClick(false);
-		overlay.setDismissOnEscape(true);
-	}
-
-	void Tooltip::buildContent(void)
-	{
-		const auto foregroundColor = transparentColor();
-
-		if (_variant == Variant::Rich && _titleEntity == nullptr
-			&& !_title.empty()) {
-			_titleEntity = buildText(
-				this->getComponentRegistry(), *this, this->shared_from_this(),
-				_title, theme::TypeRole::TitleSmall, foregroundColor);
-		}
-
-		if (_textEntity == nullptr && !_text.empty()) {
-			_textEntity = buildText(
-				this->getComponentRegistry(), *this, this->shared_from_this(),
-				_text, theme::TypeRole::BodySmall, foregroundColor);
-		}
-
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-
-		if (_variant == Variant::Rich && _titleEntity != nullptr) {
-			children.push_back(_titleEntity);
-		}
-
-		if (_textEntity != nullptr) {
-			children.push_back(_textEntity);
-		}
-
-		setChildren(children);
+		systems::Tooltip::place(getComponentRegistry(), getIdentifier());
 	}
 
 	Tooltip &Tooltip::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Tooltip>(getIdentifier())
+			.setVariant(variant);
+		buildContent();
+		systems::Tooltip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Tooltip::Variant Tooltip::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::Tooltip>(getIdentifier())
+			.getVariant();
 	}
 
 	Tooltip &Tooltip::setText(const std::string &text)
 	{
-		_text = text;
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setLabel(text);
-
-		if (_textEntity != nullptr) {
-			_textEntity->setContent(text);
-		}
-
+			.getComponent<components::Tooltip>(getIdentifier())
+			.setText(text);
+		buildContent();
+		systems::Tooltip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	void Tooltip::initialize(void)
 	{
-		update();
-		applyVariant();
-		applyOverlay();
 		buildContent();
-		applyVisibility();
+		systems::Tooltip::apply(getComponentRegistry(), getIdentifier());
 	}
 
-	void Tooltip::update(void)
+	void Tooltip::buildContent(void)
 	{
-		applyGeometry();
-		applyVariant();
-		applyOverlay();
-		buildContent();
-		applyVisibility();
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
+		auto &registry = getComponentRegistry();
+		auto &tooltip =
+			registry.getComponent<components::Tooltip>(getIdentifier());
+
+		// Children are built transparent: systems::Tooltip colors them once
+		// the tooltip is shown.
+		if (tooltip.getVariant() == Variant::Rich
+			&& tooltip.getTitleEntity() == ecs::Entity::InvalidIdentifier) {
+			const auto title = buildText(
+				registry, *this, shared_from_this(), tooltip.getTitle(),
+				theme::TypeRole::TitleSmall, transparentColor());
+			if (title != nullptr) {
+				tooltip.setTitleEntity(title->getIdentifier());
+			}
+		}
+
+		if (tooltip.getTextEntity() == ecs::Entity::InvalidIdentifier) {
+			const auto text = buildText(
+				registry, *this, shared_from_this(), tooltip.getText(),
+				theme::TypeRole::BodySmall, transparentColor());
+			if (text != nullptr) {
+				tooltip.setTextEntity(text->getIdentifier());
+			}
+		}
+
+		// Hand the layout children to the surface: the title only takes part
+		// in the layout of a rich tooltip.
+		std::vector<std::shared_ptr<ecs::Entity>> children;
+		if (tooltip.getVariant() == Variant::Rich) {
+			if (auto title = getEntity<Text>(tooltip.getTitleEntity())) {
+				children.push_back(std::move(title));
+			}
+		}
+		if (auto text = getEntity<Text>(tooltip.getTextEntity())) {
+			children.push_back(std::move(text));
+		}
+		setChildren(children);
 	}
 
 }	 // namespace guillaume::entities
