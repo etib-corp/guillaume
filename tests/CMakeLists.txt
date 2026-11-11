@@ -60,6 +60,8 @@ set(TEST_SOURCES
     sources/systems/test_focus.cpp
     sources/systems/test_backdrop.cpp
     sources/systems/test_divider.cpp
+    sources/systems/test_loading_indicator.cpp
+    sources/systems/test_progress_indicator.cpp
     sources/systems/test_radio_button.cpp
     sources/systems/test_switch.cpp
     sources/systems/test_typography.cpp

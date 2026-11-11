@@ -53,6 +53,7 @@
 #include "guillaume/systems/keyboard_control.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/line_render.hpp"
+#include "guillaume/systems/loading_indicator.hpp"
 #include "guillaume/systems/measure_glyph.hpp"
 #include "guillaume/systems/measure_mesh.hpp"
 #include "guillaume/systems/measure_text.hpp"
@@ -60,6 +61,7 @@
 #include "guillaume/systems/mouse_button.hpp"
 #include "guillaume/systems/mouse_motion.hpp"
 #include "guillaume/systems/overlay.hpp"
+#include "guillaume/systems/progress_indicator.hpp"
 #include "guillaume/systems/rectangle_render.hpp"
 #include "guillaume/systems/ring_render.hpp"
 #include "guillaume/systems/scrim_render.hpp"
@@ -160,6 +162,10 @@ namespace guillaume::systems
 			std::make_unique<systems::ExtendedFloatingActionButton>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Badge>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Chip>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::LoadingIndicator>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::ProgressIndicator>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

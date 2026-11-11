@@ -33,6 +33,7 @@
 
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/animation.hpp"
+#include "guillaume/components/loading_indicator.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
@@ -50,20 +51,21 @@ namespace guillaume::entities
 	 * - `Linear`: a 200x4 sliding bar.
 	 * - `Circular`: a 48x48 rotating arc.
 	 *
+	 * This class is a facade without fields: the state lives in
+	 * `components::LoadingIndicator` and the rules in
+	 * `systems::LoadingIndicator`.
+	 *
 	 * @see SurfaceBase
-	 * @see components::Animation
+	 * @see components::LoadingIndicator
+	 * @see systems::LoadingIndicator
 	 */
 	class LoadingIndicator:
-		public SurfaceBase<components::Animation, components::Accessibility>
+		public SurfaceBase<components::Animation, components::Accessibility,
+						   components::LoadingIndicator>
 	{
 		public:
-		/**
-		 * @brief Loading indicator visual variant.
-		 */
-		enum class Variant {
-			Linear,		///< Linear sliding bar.
-			Circular	///< Circular rotating arc.
-		};
+		/// Variant (see components::LoadingIndicator).
+		using Variant = components::LoadingIndicator::Variant;
 
 		/**
 		 * @brief Builder used to configure and create `LoadingIndicator`
@@ -128,35 +130,6 @@ namespace guillaume::entities
 				makeLoadingIndicator(std::shared_ptr<ecs::Entity> parent,
 									 Variant variant);
 		};
-
-		private:
-		Variant _variant { Variant::Circular };		///< Visual variant.
-		float _diameter { 48.0f };					///< Circular diameter.
-		std::shared_ptr<ecs::Entity> _animation;	///< Animated child.
-		bool _built { false };		 ///< Whether the child exists.
-		float _progress { 0.0f };	 ///< Latest eased animation progress.
-		bool _hidesWhenStopped { true };	///< Paper `hidesWhenStopped`.
-		float _opacity { 1.0f };			///< Current fade opacity.
-		float _opacityFrom { 1.0f };		///< Opacity when the fade began.
-		float _opacityTarget { 1.0f };		///< Opacity the fade moves to.
-		std::optional<utility::graphic::Color32Bit>
-			_indicatorColor {};	   ///< Indicator color override.
-
-		/**
-		 * @brief Fade toward the opacity implied by the running state.
-		 */
-		void startFade(void);
-
-		private:
-		/**
-		 * @brief Build (and attach) the animated child.
-		 */
-		void buildChild(void);
-
-		/**
-		 * @brief Refresh the animated child geometry from the variant.
-		 */
-		void applyState(void);
 
 		public:
 		/**
@@ -259,14 +232,16 @@ namespace guillaume::entities
 		float getStrokeWidth(void) const;
 
 		/**
-		 * @brief Initialize the loading indicator derived state and child.
+		 * @brief Build the animated child of the loading indicator.
 		 */
 		void initialize(void) override;
 
+		private:
 		/**
-		 * @brief Recompute the loading indicator derived state.
+		 * @brief Build (and attach) the animated child of the current
+		 * variant, unless it already exists.
 		 */
-		void update(void) override;
+		void buildChild(void);
 	};
 
 }	 // namespace guillaume::entities

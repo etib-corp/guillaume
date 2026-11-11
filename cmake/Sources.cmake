@@ -40,10 +40,12 @@ set(GUILLAUME_SOURCES
     sources/components/image.cpp
     sources/components/layout.cpp
     sources/components/line.cpp
+    sources/components/loading_indicator.cpp
     sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
+    sources/components/progress_indicator.cpp
     sources/components/radio_button.cpp
     sources/components/range.cpp
     sources/components/ring.cpp
@@ -161,6 +163,7 @@ set(GUILLAUME_SOURCES
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp
     sources/systems/line_render.cpp
+    sources/systems/loading_indicator.cpp
     sources/systems/measure_glyph.cpp
     sources/systems/measure_mesh.cpp
     sources/systems/measure_text.cpp
@@ -168,6 +171,7 @@ set(GUILLAUME_SOURCES
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
     sources/systems/overlay.cpp
+    sources/systems/progress_indicator.cpp
     sources/systems/radio_button.cpp
     sources/systems/rectangle_render.cpp
     sources/systems/ring_render.cpp

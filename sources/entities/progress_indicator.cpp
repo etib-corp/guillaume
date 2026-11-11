@@ -37,23 +37,23 @@
 #include "guillaume/components/ring.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/entities/placement_helpers.hpp"
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/style_helpers.hpp"
-#include "guillaume/motion/easing.hpp"
+#include "guillaume/systems/progress_indicator.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
 	namespace
 	{
-		constexpr float LinearHeight  = 4.0f;
-		const float LinearRadius	  = getShapeRadius(theme::ShapeRole::Full);
-		constexpr float CircularSize  = 48.0f;
-		constexpr float RingThickness = 4.0f;
-		constexpr float TwoPi		  = 6.28318530717958647692f;
-		constexpr float HalfPi		  = 1.57079632679489661923f;
+		constexpr float LinearHeight =
+			components::ProgressIndicator::LinearHeight;
+		const float LinearRadius = getShapeRadius(theme::ShapeRole::Full);
+		constexpr float CircularSize =
+			components::ProgressIndicator::DefaultDiameter;
+		constexpr float TrackLength =
+			components::ProgressIndicator::DefaultTrackLength;
 
 		/**
 		 * @brief Linear track child of a progress indicator.
@@ -189,7 +189,7 @@ namespace guillaume::entities
 		_config	 = SurfaceConfig();
 		_variant = Variant::LinearDeterminate;
 		_value	 = 0.0f;
-		_width	 = 200.0f;
+		_width	 = TrackLength;
 		_size	 = CircularSize;
 
 		_config.borderRadius = LinearRadius;
@@ -249,363 +249,156 @@ namespace guillaume::entities
 										 const SurfaceConfig &config,
 										 Variant variant, float value)
 		: SurfaceBase<components::Value, components::Animation,
-					  components::Accessibility>(registry, config)
-		, _variant(variant)
-		, _trackLength((variant == Variant::LinearDeterminate
-						|| variant == Variant::LinearIndeterminate)
-							   && config.hasFixedWidth
-						   ? config.fixedWidth
-						   : 200.0f)
-		, _diameter((variant == Variant::CircularDeterminate
-					 || variant == Variant::CircularIndeterminate)
-							&& config.hasFixedHeight
-						? config.fixedHeight
-						: CircularSize)
-		, _track()
-		, _fill()
-		, _built(false)
+					  components::Accessibility, components::ProgressIndicator>(
+			  registry, config)
 	{
-		auto &valueComponent =
-			getComponentRegistry().getComponent<components::Value>(
+		auto &state =
+			getComponentRegistry().getComponent<components::ProgressIndicator>(
 				getIdentifier());
-		valueComponent.setMin(0.0f).setMax(1.0f).setStep(0.0f);
-		valueComponent.setValue(std::clamp(value, 0.0f, 1.0f));
-		_displayed = valueComponent.getValue();
-		_valueFrom = _displayed;
-		valueComponent.setOnChangedHandler([this](float) {
-			startTransition();
-		});
 
+		state.setVariant(variant);
+		state
+			.setTrackLength(!state.isCircular() && config.hasFixedWidth
+								? config.fixedWidth
+								: TrackLength)
+			.setDiameter(state.isCircular() && config.hasFixedHeight
+							 ? config.fixedHeight
+							 : CircularSize);
+		// Set before the system is installed, so the initial value is drawn
+		// as is instead of being animated from zero.
 		getComponentRegistry()
-			.getComponent<components::Animation>(getIdentifier())
-			.setDuration(getMotionDuration(theme::MotionDuration::Short4))
-			.setEasing(theme::MotionScale::standard())
-			.setOnSampleHandler([this](float progress) {
-				const float target = getValue();
-				_displayed = _valueFrom + (target - _valueFrom) * progress;
-				const float opacityTarget = _visible ? 1.0f : 0.0f;
-				_opacity =
-					_opacityFrom + (opacityTarget - _opacityFrom) * progress;
-				applyState();
-			});
-
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setRole(components::AccessibilityRole::ProgressBar);
-	}
-
-	void ProgressIndicator::startTransition(void)
-	{
-		_valueFrom	 = _displayed;
-		_opacityFrom = _opacity;
-		getComponentRegistry()
-			.getComponent<components::Animation>(getIdentifier())
-			.play();
-		applyState();
-	}
-
-	utility::graphic::Color32Bit ProgressIndicator::faded(
-		const utility::graphic::Color32Bit &color) const
-	{
-		return withAlpha(
-			color,
-			static_cast<std::uint8_t>(
-				static_cast<float>(color.getAlpha()) * _opacity + 0.5f));
+			.getComponent<components::Value>(getIdentifier())
+			.setValue(std::clamp(value, 0.0f, 1.0f));
+		systems::ProgressIndicator::install(getComponentRegistry(),
+											getIdentifier());
+		systems::ProgressIndicator::apply(getComponentRegistry(),
+										  getIdentifier());
 	}
 
 	float ProgressIndicator::getDisplayedValue(void) const
 	{
-		return _displayed;
+		return getComponentRegistry()
+			.getComponent<components::ProgressIndicator>(getIdentifier())
+			.getDisplayed();
 	}
 
 	ProgressIndicator &ProgressIndicator::setVisible(bool visible)
 	{
-		if (_visible == visible) {
-			return *this;
-		}
-		_visible = visible;
-		startTransition();
+		systems::ProgressIndicator::setVisible(getComponentRegistry(),
+											   getIdentifier(), visible);
 		return *this;
 	}
 
 	bool ProgressIndicator::isVisible(void) const
 	{
-		return _visible;
+		return getComponentRegistry()
+			.getComponent<components::ProgressIndicator>(getIdentifier())
+			.isVisible();
 	}
 
 	float ProgressIndicator::getOpacity(void) const
 	{
-		return _opacity;
+		return getComponentRegistry()
+			.getComponent<components::ProgressIndicator>(getIdentifier())
+			.getOpacity();
 	}
 
 	ProgressIndicator &ProgressIndicator::setIndicatorColor(
 		const utility::graphic::Color32Bit &color)
 	{
-		_indicatorColor = color;
-		applyState();
+		getComponentRegistry()
+			.getComponent<components::ProgressIndicator>(getIdentifier())
+			.setIndicatorColor(color);
+		systems::ProgressIndicator::apply(getComponentRegistry(),
+										  getIdentifier());
 		return *this;
 	}
 
 	utility::graphic::Color32Bit
 		ProgressIndicator::getIndicatorColor(void) const
 	{
-		return _indicatorColor.value_or(schemeColor(SchemeColorRole::Primary));
+		return systems::ProgressIndicator::indicatorColor(
+			getComponentRegistry(), getIdentifier());
 	}
 
 	ProgressIndicator::~ProgressIndicator(void)
 	{
 	}
 
-	bool ProgressIndicator::isCircular(void) const
-	{
-		return _variant == Variant::CircularDeterminate
-			|| _variant == Variant::CircularIndeterminate;
-	}
-
-	bool ProgressIndicator::isIndeterminate(void) const
-	{
-		return _variant == Variant::LinearIndeterminate
-			|| _variant == Variant::CircularIndeterminate;
-	}
-
 	void ProgressIndicator::buildChildren(void)
 	{
-		if (_built) {
+		auto &registry = getComponentRegistry();
+		auto &state	   = registry.getComponent<components::ProgressIndicator>(
+			   getIdentifier());
+
+		if (state.isBuilt()) {
 			return;
 		}
 
-		// Remove any children left over from a previous variant.
+		// Remove any children left over from a previous variant, and silence
+		// the fill animation so it no longer drives this indicator.
+		if (registry.hasComponent<components::Animation>(state.getFill())) {
+			registry.getComponent<components::Animation>(state.getFill())
+				.setOnSampleHandler(components::Animation::SampleHandler {})
+				.stop();
+		}
 		this->accessDirectEntities().clear();
 
-		auto config = getSurfaceConfig();
-
-		config.padding = 0.0f;
-		config.spacing = 0.0f;
-
-		if (isCircular()) {
-			config.borderRadius	  = _diameter * 0.5f;
-			config.hasFixedWidth  = true;
-			config.fixedWidth	  = _diameter;
-			config.hasFixedHeight = true;
-			config.fixedHeight	  = _diameter;
+		std::shared_ptr<ecs::Entity> track;
+		std::shared_ptr<ecs::Entity> fill;
+		if (state.isCircular()) {
+			track = std::make_shared<CircularTrack>(registry);
+			fill  = std::make_shared<CircularFill>(registry);
 		} else {
-			config.borderRadius	  = LinearRadius;
-			config.hasFixedWidth  = true;
-			config.fixedWidth	  = _trackLength;
-			config.hasFixedHeight = true;
-			config.fixedHeight	  = LinearHeight;
+			track = std::make_shared<LinearTrack>(registry);
+			fill  = std::make_shared<LinearFill>(registry);
 		}
+		track->setParent(shared_from_this());
+		this->addEntity(track);
+		fill->setParent(shared_from_this());
+		this->addEntity(fill);
+		state.setTrack(track->getIdentifier())
+			.setFill(fill->getIdentifier())
+			.setCycle(0.0f)
+			.setBuilt(true);
+		systems::ProgressIndicator::installChildren(registry, getIdentifier());
 
-		setSurfaceConfig(config);
-		setColor(transparentColor());
-
-		if (isCircular()) {
-			auto track =
-				std::make_shared<CircularTrack>(getComponentRegistry());
-			track->setParent(shared_from_this());
-			this->addEntity(track);
-			_track = track;
-
-			auto fill = std::make_shared<CircularFill>(getComponentRegistry());
-			fill->setParent(shared_from_this());
-			this->addEntity(fill);
-			_fill = fill;
-
-			getComponentRegistry()
-				.getComponent<components::Ring>(_track->getIdentifier())
-				.setThickness(RingThickness);
-
-			getComponentRegistry()
-				.getComponent<components::Arc>(_fill->getIdentifier())
-				.setThickness(RingThickness)
-				.setStartAngle(-HalfPi)
-				.setSweepAngle(0.0f);
-
-			if (isIndeterminate()) {
-				auto &animation =
-					getComponentRegistry().getComponent<components::Animation>(
-						_fill->getIdentifier());
-				animation.setDuration(theme::MotionScale::IndeterminateCycle)
-					.setEasing(motion::Easing::Standard)
-					.setLooping(true)
-					.setOnSampleHandler([this](float progress) {
-						if (_fill == nullptr) {
-							return;
-						}
-						auto &arc = getComponentRegistry()
-										.getComponent<components::Arc>(
-											_fill->getIdentifier());
-						arc.setStartAngle(-HalfPi + progress * TwoPi)
-							.setSweepAngle(TwoPi * 0.25f);
-					});
-				animation.play();
-			}
-		} else {
-			auto track = std::make_shared<LinearTrack>(getComponentRegistry());
-			track->setParent(shared_from_this());
-			this->addEntity(track);
-			_track = track;
-
-			auto fill = std::make_shared<LinearFill>(getComponentRegistry());
-			fill->setParent(shared_from_this());
-			this->addEntity(fill);
-			_fill = fill;
-
-			getComponentRegistry()
-				.getComponent<components::Bound>(_fill->getIdentifier())
-				.setHeight(LinearHeight);
-
-			getComponentRegistry()
-				.getComponent<components::Borders>(_fill->getIdentifier())
-				.setBorderRadius(LinearRadius);
-
-			if (isIndeterminate()) {
-				auto &animation =
-					getComponentRegistry().getComponent<components::Animation>(
-						_fill->getIdentifier());
-				animation.setDuration(theme::MotionScale::IndeterminateCycle)
-					.setEasing(motion::Easing::Standard)
-					.setLooping(true)
-					.setOnSampleHandler([this](float progress) {
-						if (_fill == nullptr || _track == nullptr) {
-							return;
-						}
-						const float segment =
-							_trackLength * IndeterminateSegment;
-
-						placeChild(getComponentRegistry(), getIdentifier(),
-								   _fill->getIdentifier(),
-								   utility::graphic::PositionF(
-									   progress * (_trackLength - segment),
-									   0.0f, 0.0f),
-								   static_cast<std::uint32_t>(getLayer()));
-
-						getComponentRegistry()
-							.getComponent<components::Bound>(
-								_fill->getIdentifier())
-							.setWidth(segment)
-							.setHeight(LinearHeight);
-					});
-				animation.play();
-			}
-		}
-
-		// Track and fill are positioned manually, so they are not registered
-		// as layout children of the surface.
+		// Track and fill are positioned by systems::ProgressIndicator, so
+		// they are not registered as layout children of the surface.
 		setChildren({});
-
-		_built = true;
-	}
-
-	void ProgressIndicator::applyState(void)
-	{
-		if (!_built || _track == nullptr || _fill == nullptr) {
-			return;
-		}
-
-		const float normalized = std::clamp(_displayed, 0.0f, 1.0f);
-
-		auto &accessibility =
-			getComponentRegistry().getComponent<components::Accessibility>(
-				getIdentifier());
-		if (isIndeterminate()) {
-			accessibility.setValue(std::nullopt);
-		} else {
-			accessibility.setValue(components::AccessibilityValue {
-				0.0f, 100.0f, std::clamp(getValue(), 0.0f, 1.0f) * 100.0f });
-		}
-
-		if (isCircular()) {
-			placeChild(getComponentRegistry(), getIdentifier(),
-					   _track->getIdentifier(),
-					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-					   static_cast<std::uint32_t>(getLayer()));
-			placeChild(getComponentRegistry(), getIdentifier(),
-					   _fill->getIdentifier(),
-					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-					   static_cast<std::uint32_t>(getLayer()));
-
-			getComponentRegistry()
-				.getComponent<components::Bound>(_track->getIdentifier())
-				.setWidth(_diameter)
-				.setHeight(_diameter);
-			getComponentRegistry()
-				.getComponent<components::Bound>(_fill->getIdentifier())
-				.setWidth(_diameter)
-				.setHeight(_diameter);
-
-			getComponentRegistry()
-				.getComponent<components::Color>(_track->getIdentifier())
-				.setColor(faded(schemeColor(SchemeColorRole::SurfaceVariant)));
-			getComponentRegistry()
-				.getComponent<components::Color>(_fill->getIdentifier())
-				.setColor(faded(getIndicatorColor()));
-
-			if (!isIndeterminate()) {
-				getComponentRegistry()
-					.getComponent<components::Arc>(_fill->getIdentifier())
-					.setStartAngle(-HalfPi)
-					.setSweepAngle(normalized * TwoPi);
-			}
-			return;
-		}
-
-		placeChild(getComponentRegistry(), getIdentifier(),
-				   _track->getIdentifier(),
-				   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-				   static_cast<std::uint32_t>(getLayer()));
-		getComponentRegistry()
-			.getComponent<components::Bound>(_track->getIdentifier())
-			.setWidth(_trackLength)
-			.setHeight(LinearHeight);
-		getComponentRegistry()
-			.getComponent<components::Color>(_track->getIdentifier())
-			.setColor(faded(schemeColor(SchemeColorRole::SurfaceVariant)));
-
-		placeChild(getComponentRegistry(), getIdentifier(),
-				   _fill->getIdentifier(),
-				   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-				   static_cast<std::uint32_t>(getLayer()));
-		getComponentRegistry()
-			.getComponent<components::Color>(_fill->getIdentifier())
-			.setColor(faded(getIndicatorColor()));
-
-		if (!isIndeterminate()) {
-			getComponentRegistry()
-				.getComponent<components::Bound>(_fill->getIdentifier())
-				.setWidth(_trackLength * normalized)
-				.setHeight(LinearHeight);
-		}
 	}
 
 	ProgressIndicator &ProgressIndicator::setVariant(Variant variant)
 	{
-		if (_variant == variant) {
+		auto &state =
+			getComponentRegistry().getComponent<components::ProgressIndicator>(
+				getIdentifier());
+
+		if (state.getVariant() == variant) {
 			return *this;
 		}
 
-		_variant = variant;
-
-		// Children are built lazily from the variant; force a rebuild so the
-		// new shape (bar vs. ring) is adopted.
-		_built = false;
-
+		// Children are built from the variant: rebuild them so the new shape
+		// (bar vs. ring) is adopted.
+		state.setVariant(variant).setBuilt(false);
 		buildChildren();
-		applyState();
+		systems::ProgressIndicator::apply(getComponentRegistry(),
+										  getIdentifier());
 
 		return *this;
 	}
 
 	ProgressIndicator::Variant ProgressIndicator::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::ProgressIndicator>(getIdentifier())
+			.getVariant();
 	}
 
 	ProgressIndicator &ProgressIndicator::setValue(float value)
 	{
-		getComponentRegistry()
-			.getComponent<components::Value>(getIdentifier())
-			.setNormalizedValue(std::clamp(value, 0.0f, 1.0f));
+		systems::ProgressIndicator::setValue(getComponentRegistry(),
+											 getIdentifier(), value);
 		return *this;
 	}
 
@@ -618,16 +411,9 @@ namespace guillaume::entities
 
 	void ProgressIndicator::initialize(void)
 	{
-		update();
 		buildChildren();
-		applyState();
-	}
-
-	void ProgressIndicator::update(void)
-	{
-		applyGeometry();
-		buildChildren();
-		applyState();
+		systems::ProgressIndicator::apply(getComponentRegistry(),
+										  getIdentifier());
 	}
 
 }	 // namespace guillaume::entities
