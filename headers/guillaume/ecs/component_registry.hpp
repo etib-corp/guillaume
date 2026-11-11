@@ -166,6 +166,12 @@ namespace guillaume::ecs
 		void removeComponent(const Entity::Identifier &entityIdentifier);
 
 		/**
+		 * @brief Remove every component of an entity.
+		 * @param entityIdentifier The identifier of the entity.
+		 */
+		void removeEntity(const Entity::Identifier &entityIdentifier);
+
+		/**
 		 * @brief Check whether any component stored for an entity has changed.
 		 * @param entityIdentifier The entity identifier.
 		 * @return True if at least one stored component is marked as changed.

@@ -227,6 +227,15 @@ namespace guillaume::entities
 				.setBackdrop(backdrop->getIdentifier());
 		}
 
+		// Remove the entries of a previous build (a rail and a sheet use
+		// different children); the backdrop is kept.
+		const auto previousEntries =
+			registry.getComponent<components::NavigationDrawer>(getIdentifier())
+				.getEntryEntities();
+		for (const auto previous: previousEntries) {
+			removeEntity(previous);
+		}
+
 		Children children;
 		std::vector<ecs::Entity::Identifier> entryIdentifiers;
 		std::vector<ecs::Entity::Identifier> destinationIdentifiers;

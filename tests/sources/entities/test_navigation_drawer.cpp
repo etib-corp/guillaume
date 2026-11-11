@@ -52,6 +52,8 @@
 #include <guillaume/components/selection.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/components/navigation_drawer.hpp>
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -286,6 +288,32 @@ namespace guillaume::entities::tests
 						  drawer->getDestinationIdentifier(0))
 					  .getAxis(),
 				  components::Layout::Axis::Vertical);
+	}
+
+	TEST_F(TestNavigationDrawer, SwitchingToARailRemovesTheSheetEntries)
+	{
+		ecs::ComponentRegistry registry;
+		auto drawer = makeNavigationDrawer(registry, makeDestinations(3));
+		drawer->initialize();
+		const auto previous = registry
+								  .getComponent<components::NavigationDrawer>(
+									  drawer->getIdentifier())
+								  .getEntryEntities();
+		ASSERT_EQ(previous.size(), 3U);
+
+		drawer->setVariant(NavigationDrawer::Variant::Collapsed);
+
+		// A stale destination must not stay selectable next to the new ones.
+		for (const auto entry: previous) {
+			EXPECT_FALSE(registry.hasComponent<components::Selectable>(entry));
+			EXPECT_FALSE(registry.hasComponent<components::Transform>(entry));
+		}
+		EXPECT_EQ(registry
+					  .getComponent<components::NavigationDrawer>(
+						  drawer->getIdentifier())
+					  .getEntryEntities()
+					  .size(),
+				  3U);
 	}
 
 }	 // namespace guillaume::entities::tests

@@ -280,15 +280,16 @@ namespace guillaume::entities
 			return;
 		}
 
-		// Remove any child left over from a previous variant, and silence
-		// its animation so it no longer drives this indicator.
+		// Remove any child left over from a previous variant with its
+		// components, and silence its animation first so it no longer
+		// drives this indicator.
 		if (registry.hasComponent<components::Animation>(
 				state.getIndicator())) {
 			registry.getComponent<components::Animation>(state.getIndicator())
 				.setOnSampleHandler(components::Animation::SampleHandler {})
 				.stop();
 		}
-		this->accessDirectEntities().clear();
+		this->clearEntities();
 
 		std::shared_ptr<ecs::Entity> child;
 		if (state.getVariant() == Variant::Circular) {

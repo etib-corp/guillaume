@@ -22,6 +22,8 @@
 
 #include "guillaume/ecs/entity_registry.hpp"
 
+#include <algorithm>
+
 #include "guillaume/ecs/level_order_traveler.hpp"
 
 namespace guillaume::ecs
@@ -44,6 +46,53 @@ namespace guillaume::ecs
 	{
 		entity->initialize();
 		accessDirectEntities().push_back(entity);
+		++getTreeVersion();
+	}
+
+	bool EntityRegistry::removeEntity(Entity::Identifier identifier)
+	{
+		if (identifier == Entity::InvalidIdentifier) {
+			return false;
+		}
+
+		auto &entities = accessDirectEntities();
+		const auto iterator =
+			std::find_if(entities.begin(), entities.end(),
+						 [identifier](const std::shared_ptr<Entity> &entity) {
+							 return entity->getIdentifier() == identifier;
+						 });
+		if (iterator == entities.end()) {
+			for (auto &entity: entities) {
+				auto *nested = dynamic_cast<EntityRegistry *>(entity.get());
+				if (nested != nullptr && nested->removeEntity(identifier)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Keep the entity alive until it is fully released.
+		const std::shared_ptr<Entity> entity = *iterator;
+		if (auto *nested = dynamic_cast<EntityRegistry *>(entity.get())) {
+			nested->clearEntities();
+		}
+		entity->releaseComponents();
+		entities.erase(iterator);
+		++getTreeVersion();
+		return true;
+	}
+
+	void EntityRegistry::clearEntities(void)
+	{
+		auto &entities = accessDirectEntities();
+
+		for (auto &entity: entities) {
+			if (auto *nested = dynamic_cast<EntityRegistry *>(entity.get())) {
+				nested->clearEntities();
+			}
+			entity->releaseComponents();
+		}
+		entities.clear();
 		++getTreeVersion();
 	}
 

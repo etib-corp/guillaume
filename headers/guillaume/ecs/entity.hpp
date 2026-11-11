@@ -156,6 +156,16 @@ namespace guillaume::ecs
 		Entity &setParent(std::shared_ptr<Entity> parent);
 
 		/**
+		 * @brief Drop the entity's place in the tree and all its components.
+		 *
+		 * Removes the entity from its parent's components::Hierarchy and
+		 * deletes every component stored for it. Called by
+		 * EntityRegistry::removeEntity; the entity must not be used
+		 * afterwards.
+		 */
+		void releaseComponents(void);
+
+		/**
 		 * @brief Get the parent entity.
 		 * @return The parent entity, or nullptr if there is no parent.
 		 */

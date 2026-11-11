@@ -44,4 +44,14 @@ namespace guillaume::ecs
 			storage->resetChangedFlags();
 		}
 	}
+
+	void ComponentRegistry::removeEntity(
+		const Entity::Identifier &entityIdentifier)
+	{
+		for (auto &[type, storage]: _storages) {
+			if (storage->has(entityIdentifier)) {
+				storage->remove(entityIdentifier);
+			}
+		}
+	}
 }	 // namespace guillaume::ecs

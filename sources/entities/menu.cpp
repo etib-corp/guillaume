@@ -329,6 +329,10 @@ namespace guillaume::entities
 			return;
 		}
 
+		// The rows are rebuilt from scratch: remove the previous generation
+		// with its components. Everything the menu owns is a row.
+		clearEntities();
+
 		std::vector<components::Menu::Row> rows;
 		Children children;
 

@@ -342,7 +342,7 @@ namespace guillaume::entities
 				.setOnSampleHandler(components::Animation::SampleHandler {})
 				.stop();
 		}
-		this->accessDirectEntities().clear();
+		this->clearEntities();
 
 		std::shared_ptr<ecs::Entity> track;
 		std::shared_ptr<ecs::Entity> fill;

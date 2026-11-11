@@ -44,6 +44,9 @@
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/entities/style_helpers.hpp>
 #include <guillaume/theme.hpp>
+#include <guillaume/components/hierarchy.hpp>
+#include <guillaume/components/list.hpp>
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -302,6 +305,29 @@ namespace guillaume::entities::tests
 						 .getComponent<components::StyleState>(
 							 list->getChildIdentifier(0, 1))
 						 .isEnabled());
+	}
+
+	TEST_F(TestList, ReplacingItemsRemovesThePreviousRows)
+	{
+		ecs::ComponentRegistry registry;
+		auto list = makeList(registry, List::Variant::SingleLine, makeItems(3));
+		list->initialize();
+		const auto previous =
+			registry.getComponent<components::List>(list->getIdentifier())
+				.getRows();
+		ASSERT_FALSE(previous.empty());
+
+		list->setItems(makeItems(1));
+
+		for (const auto &row: previous) {
+			EXPECT_FALSE(
+				registry.hasComponent<components::Transform>(row.entity));
+		}
+		const auto &hierarchy =
+			registry.getComponent<components::Hierarchy>(list->getIdentifier());
+		for (const auto &row: previous) {
+			EXPECT_FALSE(hierarchy.hasChild(row.entity));
+		}
 	}
 
 }	 // namespace guillaume::entities::tests

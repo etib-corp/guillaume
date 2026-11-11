@@ -171,6 +171,27 @@ namespace guillaume::ecs
 		return *this;
 	}
 
+	void Entity::releaseComponents(void)
+	{
+		_parent.reset();
+		if (_hierarchyRegistry == nullptr) {
+			return;
+		}
+
+		auto &registry = *_hierarchyRegistry;
+		if (registry.hasComponent<components::Hierarchy>(_identifier)) {
+			const Identifier parent =
+				registry.getComponent<components::Hierarchy>(_identifier)
+					.getParentIdentifier();
+			if (registry.hasComponent<components::Hierarchy>(parent)) {
+				registry.getComponent<components::Hierarchy>(parent)
+					.removeChild(_identifier);
+			}
+		}
+		registry.removeEntity(_identifier);
+		_hierarchyRegistry = nullptr;
+	}
+
 	std::shared_ptr<Entity> Entity::getParent(void) const noexcept
 	{
 		return _parent.lock();

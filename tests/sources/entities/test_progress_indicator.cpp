@@ -38,6 +38,8 @@
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/systems/layout.hpp>
+#include <guillaume/components/progress_indicator.hpp>
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -253,6 +255,26 @@ namespace guillaume::entities::tests
 		progress->setIndicatorColor(tertiary);
 		EXPECT_EQ(progress->getIndicatorColor(), tertiary);
 		EXPECT_FLOAT_EQ(ProgressIndicator::IndeterminateSegment, 0.6f);
+	}
+
+	TEST_F(TestProgressIndicator, ChangingVariantRemovesThePreviousChildren)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+		const auto &state =
+			registry.getComponent<components::ProgressIndicator>(
+				progress->getIdentifier());
+		const auto track = state.getTrack();
+		const auto fill	 = state.getFill();
+		ASSERT_TRUE(registry.hasComponent<components::Transform>(track));
+
+		progress->setVariant(ProgressIndicator::Variant::CircularDeterminate);
+
+		EXPECT_FALSE(registry.hasComponent<components::Transform>(track));
+		EXPECT_FALSE(registry.hasComponent<components::Transform>(fill));
+		EXPECT_TRUE(
+			registry.hasComponent<components::Transform>(state.getFill()));
 	}
 
 }	 // namespace guillaume::entities::tests

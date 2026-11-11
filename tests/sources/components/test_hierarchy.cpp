@@ -28,6 +28,8 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
+#include "guillaume/ecs/entity_registry_container.hpp"
+#include "guillaume/ecs/parent_entity_filler.hpp"
 
 namespace guillaume::components::tests
 {
@@ -179,6 +181,68 @@ namespace guillaume::components::tests
 		EXPECT_THROW(root->setParent(leaf), std::invalid_argument);
 		EXPECT_FALSE(hierarchyOf(registry, root).hasParent());
 		EXPECT_EQ(leaf->getLayer(), 2);
+	}
+
+	TEST_F(TestHierarchy, RemovingAnEntityDropsItsComponentsAndTreeLink)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entities;
+		auto root				   = std::make_shared<Node>(registry);
+		auto child				   = std::make_shared<Node>(registry);
+		const auto childIdentifier = child->getIdentifier();
+		entities.addEntity(root);
+		entities.addEntity(child);
+		child->setParent(root);
+
+		EXPECT_TRUE(entities.removeEntity(childIdentifier));
+
+		EXPECT_FALSE(registry.hasComponent<Hierarchy>(childIdentifier));
+		EXPECT_FALSE(registry.hasComponent<components::Bound>(childIdentifier));
+		EXPECT_FALSE(hierarchyOf(registry, root).hasChild(childIdentifier));
+		EXPECT_EQ(entities.getEntities().size(), 1U);
+		EXPECT_FALSE(entities.removeEntity(childIdentifier));
+	}
+
+	TEST_F(TestHierarchy, RemovingAnOwnerRemovesWhatItOwns)
+	{
+		using Owner = ecs::ParentEntityFiller<components::Bound>;
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entities;
+		auto owner					= std::make_shared<Owner>(registry);
+		auto nested					= std::make_shared<Owner>(registry);
+		auto leaf					= std::make_shared<Node>(registry);
+		const auto nestedIdentifier = nested->getIdentifier();
+		const auto leafIdentifier	= leaf->getIdentifier();
+		entities.addEntity(owner);
+		owner->addEntity(nested);
+		nested->addEntity(leaf);
+
+		// Found through the nested registries, not only the top one.
+		EXPECT_TRUE(entities.removeEntity(nestedIdentifier));
+
+		EXPECT_FALSE(
+			registry.hasComponent<components::Bound>(nestedIdentifier));
+		EXPECT_FALSE(registry.hasComponent<components::Bound>(leafIdentifier));
+		EXPECT_TRUE(owner->getEntities().empty());
+		EXPECT_TRUE(
+			registry.hasComponent<components::Bound>(owner->getIdentifier()));
+	}
+
+	TEST_F(TestHierarchy, RemovedEntitiesLeaveTheTraversal)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entities;
+		auto first	= std::make_shared<Node>(registry);
+		auto second = std::make_shared<Node>(registry);
+		entities.addEntity(first);
+		entities.addEntity(second);
+		ASSERT_EQ(entities.getEntitiesBreadthFirst().size(), 2U);
+
+		entities.removeEntity(first->getIdentifier());
+
+		const auto traversal = entities.getEntitiesBreadthFirst();
+		ASSERT_EQ(traversal.size(), 1U);
+		EXPECT_EQ(traversal.front(), second);
 	}
 
 }	 // namespace guillaume::components::tests

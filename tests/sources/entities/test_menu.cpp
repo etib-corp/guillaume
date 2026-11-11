@@ -47,6 +47,8 @@
 #include <guillaume/components/overlay.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/components/hierarchy.hpp>
+#include <guillaume/components/menu.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -305,6 +307,37 @@ namespace guillaume::entities::tests
 
 		EXPECT_TRUE(dismissed);
 		EXPECT_FALSE(menu->isVisible());
+	}
+
+	TEST_F(TestMenu, ReplacingItemsRemovesThePreviousRows)
+	{
+		ecs::ComponentRegistry registry;
+		auto menu = makeMenu(registry, makeItems(3));
+		menu->initialize();
+		const auto previous =
+			registry.getComponent<components::Menu>(menu->getIdentifier())
+				.getRows();
+		ASSERT_EQ(previous.size(), 3U);
+
+		menu->setItems(makeItems(2));
+
+		for (const auto &row: previous) {
+			EXPECT_FALSE(
+				registry.hasComponent<components::Transform>(row.view));
+			EXPECT_FALSE(
+				registry.hasComponent<components::Hierarchy>(row.view));
+			for (const auto content: row.content) {
+				EXPECT_FALSE(
+					registry.hasComponent<components::Transform>(content));
+			}
+		}
+		// Each row owns a container, an icon and a label.
+		EXPECT_EQ(menu->getEntities().size(), 6U);
+		EXPECT_EQ(
+			registry.getComponent<components::Hierarchy>(menu->getIdentifier())
+				.getChildIdentifiers()
+				.size(),
+			2U);
 	}
 
 }	 // namespace guillaume::entities::tests

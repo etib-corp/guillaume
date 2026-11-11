@@ -90,6 +90,24 @@ namespace guillaume::ecs
 		void addEntity(std::shared_ptr<Entity> entity);
 
 		/**
+		 * @brief Remove an entity from this registry hierarchy.
+		 *
+		 * The entity is searched in this registry and in the registries of
+		 * the entities it owns. Everything the removed entity owns is removed
+		 * with it, its components are deleted and it leaves its parent's
+		 * components::Hierarchy. Render systems drop its graphics on the next
+		 * frame.
+		 * @param identifier The identifier of the entity to remove.
+		 * @return True when the entity was found and removed.
+		 */
+		bool removeEntity(Entity::Identifier identifier);
+
+		/**
+		 * @brief Remove every entity owned by this registry, recursively.
+		 */
+		void clearEntities(void);
+
+		/**
 		 * @brief Get all registered entities.
 		 * @return Const reference to registered entities.
 		 */
