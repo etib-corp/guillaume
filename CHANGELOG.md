@@ -7,6 +7,8 @@ Versions follow the calendar scheme described in
 [docs/VERSIONING.md](docs/VERSIONING.md); breaking changes are marked
 **Breaking**.
 
+## [2026.3.2] - 2026-11-11
+
 ## [Unreleased]
 
 ### Changed
