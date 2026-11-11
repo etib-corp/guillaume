@@ -31,7 +31,22 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand pinch interactions.
+	 * @brief Marks the entities an XR hand pinches (thumb and index
+	 * brought together while pointing at them).
+	 *
+	 * Runs in the Event phase on entities that have a
+	 * components::HandPinchInteraction, a Transform and a Bound. The hit
+	 * test and the handler call are those of systems::HandRaySystem; this
+	 * class only says that the result is written to the pinching flag of
+	 * the component. An entity is therefore pinching while the hand ray of
+	 * the current pinch event hits it, and its event handler is called on
+	 * every frame that is true.
+	 *
+	 * systems::Focus and systems::StyleState read the flag later in the
+	 * same phase: a pinch focuses an entity and shows it pressed.
+	 *
+	 * @see components::HandPinchInteraction
+	 * @see systems::HandRaySystem
 	 */
 	class HandPinch:
 		public HandRaySystem<components::HandPinchInteraction,
@@ -39,22 +54,23 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandPinch system and subscribe to hand
-		 * pinch events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand pinch events.
+		 * @param eventBus The event bus delivering the hand pinch events.
 		 */
 		explicit HandPinch(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandPinch system.
+		 * @brief Destructor.
 		 */
 		~HandPinch(void) override;
 
 		protected:
 		/**
-		 * @brief Store the pinch state on the interaction component.
-		 * @param interaction Interaction component of the entity.
-		 * @param engaged True when the hand ray hits the entity.
+		 * @brief Write the pinching flag of the interaction component.
+		 * @param interaction The pinch interaction component of the entity.
+		 * @param engaged True when the hand ray of the current pinch event
+		 * hits the entity.
 		 */
 		void setEngaged(components::HandPinchInteraction &interaction,
 						bool engaged) override;

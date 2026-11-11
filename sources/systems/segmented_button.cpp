@@ -257,7 +257,7 @@ namespace guillaume::systems
 			}
 		}
 
-		// Restyling a button resets its corners: connect them again.
+		// Lay the row out again so the change shows before the next frame.
 		apply(componentRegistry, entityIdentifier);
 	}
 
@@ -345,8 +345,8 @@ namespace guillaume::systems
 				isLast ? radius : 0.0f, isFirst ? radius : 0.0f
 			};
 
-			// The segment's own system writes these to Borders; apply it now
-			// so the result is visible at once.
+			// systems::CommonButton copies these to Borders; run its
+			// geometry here so the result is visible at once.
 			componentRegistry
 				.getComponent<components::CommonButton>(buttons[index])
 				.setCorners(corners);

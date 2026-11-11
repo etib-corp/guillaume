@@ -42,15 +42,21 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Structure representing a cache key for measuring models.
+	 * @brief Key of the size cache of MeasureMesh: the path of the model
+	 * file.
+	 *
+	 * Two entities showing the same file share one measurement. The
+	 * ordering operator exists so the key can be used in the ordered map of
+	 * utility::Cache.
+	 * @see MeasureMesh
 	 */
 	struct MeasureMeshCacheKey {
-		std::string meshPath;	 ///< The path of the model to be measured
+		std::string meshPath;	 ///< Path of the model file that was measured
 
 		/**
-		 * @brief Equality operator for MeasureMeshCacheKey.
-		 * @param other The other MeasureMeshCacheKey to compare with.
-		 * @return True if the keys are equal, false otherwise.
+		 * @brief Compare two keys.
+		 * @param other The key to compare with.
+		 * @return True when both keys hold the same path.
 		 */
 		bool operator==(const MeasureMeshCacheKey &other) const
 		{
@@ -61,9 +67,9 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Inequality operator for MeasureMeshCacheKey.
-		 * @param other The other MeasureMeshCacheKey to compare with.
-		 * @return True if the keys are not equal, false otherwise.
+		 * @brief Negation of operator==.
+		 * @param other The key to compare with.
+		 * @return True when the paths differ.
 		 */
 		bool operator!=(const MeasureMeshCacheKey &other) const
 		{
@@ -71,9 +77,9 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Less-than operator for MeasureMeshCacheKey.
-		 * @param other The other MeasureMeshCacheKey to compare with.
-		 * @return True if this key is less than the other, false otherwise.
+		 * @brief Order two keys by path.
+		 * @param other The key to compare with.
+		 * @return True when this path sorts before the path of @p other.
 		 */
 		bool operator<(const MeasureMeshCacheKey &other) const
 		{
@@ -85,10 +91,26 @@ namespace guillaume::systems
 	};
 
 	/**
-	 * @brief System measuring models and synchronizing them to bound sizes.
-	 * @see components::Mesh
-	 * @see components::Bound
-	 * @see components::Transform
+	 * @brief Computes the size of every 3D model and writes it into its
+	 * Bound, so the layout knows how much room the model takes.
+	 *
+	 * Runs in the Measure phase on entities with Mesh, Bound and Transform.
+	 * - Reads: the model path of components::Mesh.
+	 * - Writes: the width and height of components::Bound, taken from the
+	 *   bounding size of the model
+	 *   (utility::graphic::Model::computeBoundingSize).
+	 *
+	 * A model file is loaded and measured once per distinct path and the
+	 * size is kept for the life of the system; later frames only copy the
+	 * cached size.
+	 *
+	 * Things to know:
+	 * - The Bound of a model entity is overwritten every frame.
+	 * - The model must exist: the result of the load is used without a
+	 *   check, unlike in systems::MeshRender.
+	 *
+	 * @see components::Mesh, systems::MeshRender
+	 * @see MeasureMeshCacheKey
 	 */
 	class MeasureMesh:
 		public utility::Cache<MeasureMeshCacheKey, utility::graphic::SizeF>,
@@ -97,46 +119,42 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   ///< Shared resource provider for loading
-								   ///< fonts and models
-		utility::Engine
-			&_engine;	 ///< utility::Engine instance for text measurement
+			_ressourceProvider;		 ///< Provider the models are loaded from
+		utility::Engine &_engine;	 ///< Engine handle. Not used by the
+									 ///< measurement
 
 		public:
 		/**
-		 * @brief Construct a model measuring system.
-		 * @param ressourceProvider Shared resource provider for loading fonts
-		 * and models.
-		 * @param engine The engine used to measure text.
+		 * @brief Create the system in the Measure phase, with an empty
+		 * cache.
+		 * @param ressourceProvider Provider used to load the models. Must
+		 * not be null.
+		 * @param engine The engine handle. It must outlive the system.
 		 */
 		MeasureMesh(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
 			utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system and its cache.
 		 */
 		~MeasureMesh(void);
 
 		/**
-		 * @brief Prepare the MeasureMesh system before measurement.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Does nothing: the system needs no per-frame setup.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the MeasureMesh system after measurement.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Does nothing: the cache is kept from one frame to the next.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the MeasureMesh system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Write the size of one model into its components::Bound,
+		 * loading and measuring the file when it is not in the cache yet.
+		 * @param entityIdentifier The model entity. It is skipped, with a
+		 * log message, when one of the three components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

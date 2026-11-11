@@ -35,20 +35,30 @@
 
 namespace guillaume::systems
 {
-
 	/**
-	 * @brief System resolving clip rectangles for `components::Clip`.
+	 * @brief Turns the bound of an entity into the rectangle the engine
+	 * clips drawing to.
 	 *
-	 * For every entity carrying a `components::Clip`, the system derives a
-	 * rectangle from the entity `components::Transform` and `components::Bound`
-	 * (inset by the clip margin), stores it on the component and pushes it to
-	 * the engine through `Engine::setScissor`. The scissor is cleared once per
-	 * frame in `prepare`, so all render systems that run after the Layout phase
-	 * draw with the active clip rectangle.
+	 * Runs in the Layout phase on entities with Transform, Bound and Clip.
+	 * - Reads: components::Transform (top-left corner), components::Bound
+	 *   (size) and the margin and enabled flag of components::Clip.
+	 * - Writes: the resolved rectangle into components::Clip
+	 *   (components::Clip::setRect), and the engine scissor through
+	 *   utility::Engine::setScissor.
 	 *
-	 * @note A single engine scissor is active per frame; when several clip
-	 * entities are present the last one processed wins. Per-object clipping
-	 * would need engine support for scoped scissors.
+	 * The scissor is cleared once per frame in prepare(), then set by each
+	 * enabled clip entity. The render systems that run later in the frame
+	 * draw with whatever scissor is left.
+	 *
+	 * Things to know:
+	 * - The engine has one scissor. With several enabled clip entities the
+	 *   last one visited wins, and it applies to everything drawn, not only
+	 *   to the descendants of that entity.
+	 * - The rectangle is axis-aligned: it is built from the X and Y of the
+	 *   position and ignores the orientation.
+	 * - This system is registered before systems::Layout, which runs in the
+	 *   same phase. It therefore reads the Transform and Bound as the
+	 *   previous frame left them.
 	 *
 	 * @see components::Clip
 	 */
@@ -57,38 +67,49 @@ namespace guillaume::systems
 								 components::Clip>
 	{
 		private:
-		utility::Engine &_engine;	 ///< Engine instance.
+		utility::Engine &_engine;	 ///< Engine whose scissor is set
 
 		public:
 		/**
-		 * @brief Construct a clip system running in the Layout phase.
-		 * @param engine The engine receiving the scissor rectangle.
+		 * @brief Create the system in the Layout phase.
+		 * @param engine The engine that receives the scissor rectangle. It
+		 * must outlive the system.
 		 */
 		Clip(utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. The engine scissor is left as it is.
 		 */
 		~Clip(void) override = default;
 
 		/**
-		 * @brief Clear the scissor before resolving this frame's clips.
+		 * @brief Clear the engine scissor. Called once per frame before the
+		 * entities are visited, so a frame without any enabled clip draws
+		 * unclipped.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Resolve the clip rectangle of one entity and apply it.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Resolve the clip rectangle of one entity, store it in its
+		 * components::Clip and make it the engine scissor.
+		 * @param entityIdentifier The entity to resolve. It is skipped when
+		 * its clip is disabled, and skipped with a log message when one of
+		 * the three components is missing.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 
 		/**
-		 * @brief Compute a clip rectangle from a pose and a size.
-		 * @param pose The entity pose.
-		 * @param width The entity bound width.
-		 * @param height The entity bound height.
-		 * @param margin The inset applied to the rectangle.
-		 * @return The resolved rectangle.
+		 * @brief Compute a clip rectangle from the pose and size of a bound.
+		 *
+		 * The rectangle starts at the X and Y of the pose and is shrunk by
+		 * @p margin on its four sides. The orientation is ignored.
+		 * @param pose Pose of the top-left corner of the bound.
+		 * @param width Width of the bound, in dp.
+		 * @param height Height of the bound, in dp.
+		 * @param margin Inset applied to each side, in dp. A negative value
+		 * grows the rectangle.
+		 * @return The rectangle. Its width or height is negative when the
+		 * margin exceeds half the matching size.
 		 */
 		static components::Clip::Rect
 			computeRect(const utility::graphic::PoseF &pose, float width,

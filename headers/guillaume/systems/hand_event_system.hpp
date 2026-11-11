@@ -35,15 +35,29 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Shared base of the hand input systems.
+	 * @brief Base of the XR hand input systems: the wiring they share.
 	 *
-	 * Every hand input system matches entities carrying its interaction
-	 * component plus a Transform and a Bound, runs in the Event phase and
-	 * consumes one event of its type per frame. This base holds that common
-	 * wiring; the per-entity reaction is left to update(), which does nothing
-	 * by default.
-	 * @tparam InteractionType Interaction component the system reacts on.
-	 * @tparam EventType Hand event consumed by the system.
+	 * A hand input system pairs one hand event type with one interaction
+	 * component. This base runs in the Event phase on entities that have
+	 * that component, a Transform and a Bound, and takes one event of its
+	 * type per frame. What is done with the event is left to update(),
+	 * which does nothing here: systems::HandSqueeze, HandThumbRest,
+	 * HandThumbStick and HandTrigger use the base as is and therefore only
+	 * subscribe to their event.
+	 *
+	 * @code
+	 * class HandSqueeze:
+	 * 	public HandEventSystem<components::HandSqueezeInteraction,
+	 * 						   utility::event::HandSqueezeEvent>
+	 * {
+	 * 	// constructor forwarding the event bus
+	 * };
+	 * @endcode
+	 *
+	 * @tparam InteractionType The interaction component an entity must have
+	 * to be visited.
+	 * @tparam EventType The hand event the system subscribes to.
+	 * @see systems::HandRaySystem
 	 */
 	template<ecs::InheritFromComponent InteractionType,
 			 utility::event::InheritFromEvent EventType>
@@ -54,8 +68,9 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the system and subscribe to its hand event.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * events of type `EventType`.
+		 * @param eventBus The event bus delivering the hand events.
 		 */
 		explicit HandEventSystem(event::EventBus &eventBus);
 
@@ -65,30 +80,46 @@ namespace guillaume::systems
 		~HandEventSystem(void) override = default;
 
 		/**
-		 * @brief Consume the next pending event before entities are updated.
+		 * @brief Take the next pending event, once per frame.
+		 *
+		 * When none is pending, the previous event stays the current one.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Called after every entity was updated. Does nothing.
+		 * @brief Does nothing.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update one matching entity. Does nothing by default.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief React to the current event for one entity. Does nothing
+		 * here; a derived system overrides it.
+		 * @param entityIdentifier The entity holding the interaction
+		 * component.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};
 
 	/**
-	 * @brief Hand input system that hit-tests the hand ray against the entity.
+	 * @brief Base of the hand input systems that point at an entity: a
+	 * gesture counts for the entity the hand ray hits.
 	 *
-	 * The event type must expose the hand pose through getPose(). When the
-	 * ray hits an interactive entity the interaction is engaged and its event
-	 * handler is invoked; otherwise the interaction is released.
-	 * @tparam InteractionType Interaction component the system reacts on.
-	 * @tparam EventType Hand event consumed by the system.
+	 * For each visited entity, a ray is cast from the hand position of the
+	 * current event along the forward axis of the hand pose and tested
+	 * against the rectangle of the entity, grown by its accessibility
+	 * margin (a disabled entity is never hit). The result is stored on the
+	 * interaction component through setEngaged(), and on a hit the
+	 * component's event handler is called. Nothing happens until a first
+	 * event has been received.
+	 *
+	 * systems::HandPinch and systems::HandPoke derive from it and only say
+	 * which flag setEngaged() writes.
+	 *
+	 * @tparam InteractionType The interaction component an entity must have
+	 * to be visited. It must provide `getOnEventHandler()`.
+	 * @tparam EventType The hand event the system subscribes to. It must
+	 * provide the hand pose through `getPose()`.
+	 * @see systems::hitTest
 	 */
 	template<ecs::InheritFromComponent InteractionType,
 			 utility::event::InheritFromEvent EventType>
@@ -98,16 +129,21 @@ namespace guillaume::systems
 		using HandEventSystem<InteractionType, EventType>::HandEventSystem;
 
 		/**
-		 * @brief Hit-test the entity against the hand ray of the last event.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief Test the hand ray of the current event against one entity,
+		 * store the result with setEngaged() and call the event handler of
+		 * the interaction component on a hit.
+		 * @param entityIdentifier The entity holding the interaction
+		 * component.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 
 		protected:
 		/**
-		 * @brief Store the engaged state on the interaction component.
-		 * @param interaction Interaction component of the entity.
-		 * @param engaged True when the hand ray hits the entity.
+		 * @brief Write the result of the hit test on the interaction
+		 * component. Called for every visited entity, hit or not.
+		 * @param interaction The interaction component of the entity.
+		 * @param engaged True when the hand ray of the current event hits
+		 * the entity.
 		 */
 		virtual void setEngaged(InteractionType &interaction, bool engaged) = 0;
 	};

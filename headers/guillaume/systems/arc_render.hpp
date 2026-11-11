@@ -38,8 +38,25 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling arc rendering from ECS components.
-	 * @see components::Arc
+	 * @brief Draws a part of a ring (an arc with a thickness and flat ends)
+	 * for every entity that has a components::Arc.
+	 *
+	 * Runs in the Render phase on entities with Transform, Bound, Color and
+	 * Arc. It reads the four and writes no component: its output is one
+	 * engine object per entity, rebuilt and uploaded every frame.
+	 * - components::Transform gives the top-left corner of the bound and the
+	 *   orientation.
+	 * - components::Bound gives the outer diameters, in dp, of the ring the
+	 *   arc is cut from.
+	 * - components::Color gives the color of the arc.
+	 * - components::Arc gives the thickness, the start angle and the sweep
+	 *   angle (both in radians) and the number of segments.
+	 *
+	 * A circular progress indicator animates by changing the angles of its
+	 * components::Arc; this system picks the new values up on the next frame.
+	 *
+	 * @see RenderHandleMap, shape::buildRingMesh
+	 * @see components::Arc, systems::RingRender
 	 */
 	class ArcRender:
 		public RenderHandleMap,
@@ -47,33 +64,39 @@ namespace guillaume::systems
 								 components::Color, components::Arc>
 	{
 		private:
-		utility::Engine &_engine;	 ///< utility::Engine.
+		utility::Engine &_engine;	 ///< Engine the arcs are uploaded to
 
 		public:
 		/**
-		 * @brief Construct an arc rendering system.
-		 * @param engine The engine used to draw arcs.
+		 * @brief Create the system in the Render phase.
+		 * @param engine The engine the arcs are uploaded to. It must outlive
+		 * the system.
 		 */
 		ArcRender(utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. The engine objects it created are left
+		 * in the engine.
 		 */
 		~ArcRender(void) override = default;
 
 		/**
-		 * @brief Prepare the system before rendering.
+		 * @brief Mark every engine object as not drawn yet. Called once per
+		 * frame before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the system after rendering.
+		 * @brief Remove the engine objects of the entities that were not
+		 * drawn this frame. Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Rebuild the mesh of one arc and upload it, creating the
+		 * engine object on the first frame.
+		 * @param entityIdentifier The entity to draw. It is skipped, with a
+		 * log message, when one of the four components is missing.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

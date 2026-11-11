@@ -34,58 +34,97 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Drives modal backdrops.
+	 * @brief Fades the backdrop of a modal widget in and keeps it behind
+	 * its owner.
 	 *
-	 * Each frame it resolves the Scrim color of every entity carrying a
-	 * components::Backdrop from the theme's Backdrop role, the visibility and
-	 * the fade-in progress. The static helpers hold the rest of the backdrop
-	 * behavior (showing, hiding and following an owner), so the entity is
-	 * only an identifier with components.
+	 * A backdrop is the dimmed layer shown behind a dialog or a modal
+	 * navigation drawer. Its state is a components::Backdrop (shown or not,
+	 * fade-in progress from 0 to 1); what is drawn is a components::Scrim.
+	 *
+	 * Runs in the Layout phase on entities with Backdrop and Scrim. Each
+	 * frame it reads the Backdrop and the Backdrop color of the active theme
+	 * and writes the Scrim color: the theme color with its alpha multiplied
+	 * by the progress, or fully transparent while the backdrop is hidden.
+	 * systems::ScrimRender draws the result in the Render phase.
+	 *
+	 * The progress itself is advanced by systems::Animation, through the
+	 * sample handler that entities::Backdrop installs on its
+	 * components::Animation.
+	 *
+	 * The static functions are called by the system of the owner
+	 * (systems::Dialog, systems::NavigationDrawer) when it opens, closes or
+	 * moves:
+	 * @code
+	 * systems::Backdrop::setVisible(registry, backdrop, true);
+	 * systems::Backdrop::follow(registry, backdrop, ownerPose, ownerWidth,
+	 * 	ownerHeight);
+	 * @endcode
+	 *
+	 * There is no fade-out: hiding a backdrop makes it transparent at once.
+	 *
+	 * @see components::Backdrop, components::Scrim
+	 * @see entities::Backdrop, systems::ScrimRender
 	 */
 	class Backdrop:
 		public ecs::SystemFiller<components::Backdrop, components::Scrim>
 	{
 		public:
-		/// Width and height of a backdrop, large enough to cover any view.
+		/// Width and height given to a backdrop, in dp: large enough to
+		/// cover the view wherever its owner is.
 		static constexpr float Extent = 8192.0f;
 
 		/**
-		 * @brief Construct the system.
+		 * @brief Create the system in the Layout phase.
 		 */
 		Backdrop(void);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. It owns no resource.
 		 */
 		~Backdrop(void) override = default;
 
 		/**
-		 * @brief Write the Scrim color for the current state right now.
-		 * @param componentRegistry Registry holding the components.
-		 * @param entityIdentifier Identifier of the backdrop entity.
+		 * @brief Write the Scrim color that matches the current state of a
+		 * backdrop.
+		 *
+		 * Call it after changing components::Backdrop by hand when the new
+		 * color must be in place before the next frame.
+		 * @param componentRegistry The registry holding the components.
+		 * @param entityIdentifier The backdrop entity. It must have Backdrop
+		 * and Scrim.
 		 */
 		static void apply(ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Show or hide a backdrop and start or stop its fade-in.
+		 * @brief Show or hide a backdrop.
 		 *
-		 * The entity must also carry a components::Animation.
-		 * @param componentRegistry Registry holding the components.
-		 * @param entityIdentifier Identifier of the backdrop entity.
-		 * @param visible True to show the backdrop.
+		 * Showing resets the progress to 0 and starts the fade-in animation
+		 * from its beginning. Hiding resets the progress, stops the
+		 * animation and makes the scrim transparent at once. Nothing happens
+		 * when the backdrop is already in the requested state.
+		 * @param componentRegistry The registry holding the components.
+		 * @param entityIdentifier The backdrop entity. It must have
+		 * Backdrop, Scrim and components::Animation.
+		 * @param visible True to show the backdrop, false to hide it.
 		 */
 		static void setVisible(ecs::ComponentRegistry &componentRegistry,
 							   const ecs::Entity::Identifier &entityIdentifier,
 							   bool visible);
 
 		/**
-		 * @brief Center a backdrop on its owner, just behind it.
-		 * @param componentRegistry Registry holding the components.
-		 * @param entityIdentifier Identifier of the backdrop entity.
-		 * @param ownerPose Pose of the owner (its top-left corner).
-		 * @param ownerWidth Width of the owner.
-		 * @param ownerHeight Height of the owner.
+		 * @brief Center a backdrop on its owner and place it half a layer
+		 * behind it.
+		 *
+		 * Writes the backdrop's components::Transform, with the orientation
+		 * of the owner. The computation assumes the backdrop is Extent wide
+		 * and high. Call it whenever the owner moves or is resized.
+		 * @param componentRegistry The registry holding the components.
+		 * @param entityIdentifier The backdrop entity. It must have a
+		 * Transform.
+		 * @param ownerPose Pose of the top-left corner of the owner.
+		 * @param ownerWidth Width of the owner, in dp.
+		 * @param ownerHeight Height of the owner, in dp.
 		 */
 		static void follow(ecs::ComponentRegistry &componentRegistry,
 						   const ecs::Entity::Identifier &entityIdentifier,
@@ -93,8 +132,9 @@ namespace guillaume::systems
 						   float ownerWidth, float ownerHeight);
 
 		/**
-		 * @brief Resolve the Scrim color of one backdrop entity.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief Write the Scrim color of one backdrop for this frame, so a
+		 * theme change is picked up without any call.
+		 * @param entityIdentifier The backdrop entity.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

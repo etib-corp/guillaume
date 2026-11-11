@@ -38,7 +38,29 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling mouse button interactions.
+	 * @brief Tracks which mouse buttons are held on which entities.
+	 *
+	 * Runs in the Event phase on entities that have a
+	 * components::MouseButtonInteraction, a Transform and a Bound. It turns
+	 * the position of the current mouse button event into a world ray and
+	 * tests it against the rectangle of the entity, grown by its
+	 * accessibility margin (a disabled entity is never hit). Then, for the
+	 * button of the event:
+	 * - button down on the entity: the button is marked pressed and its
+	 *   press handler is called;
+	 * - button up on the entity while it was pressed there: the button is
+	 *   marked released and its release handler is called. This is what a
+	 *   widget treats as a click;
+	 * - button up elsewhere: the button is marked released, no handler is
+	 *   called, so dragging the pointer off a widget cancels the click.
+	 *
+	 * Every entity is tested on its own: overlapping entities under the
+	 * pointer all receive the press. systems::Drag, systems::Focus and
+	 * systems::StyleState read the pressed flags later in the same phase.
+	 *
+	 * @see components::MouseButtonInteraction
+	 * @see systems::interaction::makeInteractive
+	 * @see systems::hitTest
 	 */
 	class MouseButton:
 
@@ -47,40 +69,44 @@ namespace guillaume::systems
 		public event::EventManager<utility::event::MouseButtonEvent>
 	{
 		private:
-		utility::Engine &_engine;	 ///< Reference to the engine for potential
-									 ///< visual feedback on button interactions
+		utility::Engine &_engine;	 ///< Engine whose view converts a pointer
+									 ///< position into a world ray
 
 		public:
 		/**
-		 * @brief Construct the MouseButton system and subscribe to mouse button
-		 * events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
-		 * @param engine Reference to the game engine.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * mouse button events.
+		 * @param eventBus The event bus delivering the mouse button events.
+		 * @param engine The engine whose view converts the pointer position
+		 * into a world ray. It must outlive the system.
 		 */
 		MouseButton(event::EventBus &eventBus, utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor for the MouseButton system.
+		 * @brief Destructor.
 		 */
 		~MouseButton(void);
 
 		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
+		 * @brief Take the next pending mouse button event, once per frame.
+		 *
+		 * When none is pending, the previous event stays the current one.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
+		 * @brief Does nothing.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update method called for each entity with the relevant
-		 * components. Processes mouse button events and updates interaction
-		 * states accordingly.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief Apply the current mouse button event to one entity.
+		 *
+		 * Events with an unknown button are ignored. When the view cannot
+		 * convert the pointer position (it throws `std::out_of_range`), a
+		 * warning is logged and the entity is left as it was.
+		 * @param entityIdentifier The entity holding the
+		 * components::MouseButtonInteraction.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

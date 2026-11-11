@@ -39,22 +39,29 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Structure representing a cache key for measuring text.
+	 * @brief Key of the size cache of MeasureText: everything a measured
+	 * size is looked up by.
+	 *
+	 * Two texts with equal keys share one measurement. The ordering
+	 * operator exists so the key can be used in the ordered map of
+	 * utility::Cache.
+	 * @see MeasureText
 	 */
 	struct MeasureTextCacheKey {
-		std::string content;	///< The text content to be measured
-		float fontSize;			///< The font size used for measuring the text
+		std::string content;	///< The string that was measured
+		float fontSize;			///< Font size the string was measured at
 		utility::graphic::Color32Bit
-			color;	  ///< The color of the text, which may affect its rendering
-					  ///< and measurement
+			color;	  ///< Color of the text. It does not change the size,
+					  ///< but two colors give two cache entries
 		theme::FontWeight fontWeight {
 			theme::FontWeight::Regular
-		};	  ///< The font weight, which selects the measured font file
+		};	  ///< Font weight, which selects the font file measured with
 
 		/**
-		 * @brief Equality operator for MeasureTextCacheKey.
-		 * @param other The other MeasureTextCacheKey to compare with.
-		 * @return True if the keys are equal, false otherwise.
+		 * @brief Compare two keys field by field.
+		 * @param other The key to compare with.
+		 * @return True when content, font size, color and font weight are
+		 * all equal.
 		 */
 		bool operator==(const MeasureTextCacheKey &other) const
 		{
@@ -74,9 +81,9 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Inequality operator for MeasureTextCacheKey.
-		 * @param other The other MeasureTextCacheKey to compare with.
-		 * @return True if the keys are not equal, false otherwise.
+		 * @brief Negation of operator==.
+		 * @param other The key to compare with.
+		 * @return True when at least one field differs.
 		 */
 		bool operator!=(const MeasureTextCacheKey &other) const
 		{
@@ -84,9 +91,10 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Less-than operator for MeasureTextCacheKey.
-		 * @param other The other MeasureTextCacheKey to compare with.
-		 * @return True if this key is less than the other, false otherwise.
+		 * @brief Order two keys by content, then font size, then color,
+		 * then font weight.
+		 * @param other The key to compare with.
+		 * @return True when this key sorts before @p other.
 		 */
 		bool operator<(const MeasureTextCacheKey &other) const
 		{
@@ -104,10 +112,33 @@ namespace guillaume::systems
 	};
 
 	/**
-	 * @brief System measuring text and synchronizing it to bound sizes.
-	 * @see components::Text
-	 * @see components::Bound
-	 * @see components::Transform
+	 * @brief Computes the size of every text and writes it into its Bound,
+	 * so the layout knows how much room a label takes.
+	 *
+	 * Runs in the Measure phase on entities with Text, Bound, Transform and
+	 * Color.
+	 * - Reads: the string, font size, font weight and line height of
+	 *   components::Text.
+	 * - Writes: components::Bound. The width is the measured width; the
+	 *   height is the measured height or the line height of the Text,
+	 *   whichever is larger.
+	 *
+	 * The measurement is asked to the engine
+	 * (utility::Engine::measureText) once per distinct
+	 * MeasureTextCacheKey and kept for the life of the system; later frames
+	 * only copy the cached size.
+	 *
+	 * Things to know:
+	 * - The Bound of a text entity is overwritten every frame: a size set by
+	 *   hand does not survive.
+	 * - systems::Typography is registered before this system, in the same
+	 *   phase, so a text styled by a type-scale role is measured with the
+	 *   font size and weight of that role.
+	 * - The cache is never emptied. A text whose content changes every
+	 *   frame (a counter, a clock) adds one entry per distinct string.
+	 *
+	 * @see components::Text, systems::Typography, systems::TextRender
+	 * @see MeasureTextCacheKey
 	 */
 	class MeasureText:
 		public utility::Cache<MeasureTextCacheKey, utility::graphic::SizeF>,
@@ -116,48 +147,45 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   ///< Shared resource provider for loading
-								   ///< fonts and glyphs
-		utility::Engine
-			&_engine;	 ///< utility::Engine instance for text measurement
-		std::string
-			_defaultFontPath;	 ///< Default font used for text measurement
+			_ressourceProvider;			 ///< Provider the measured texts load
+										 ///< their font from
+		utility::Engine &_engine;		 ///< Engine asked to measure the texts
+		std::string _defaultFontPath;	 ///< Path of the regular text font. The
+										 ///< font actually measured comes from
+										 ///< theme::fontPath
 
 		public:
 		/**
-		 * @brief Construct a text measuring system.
-		 * @param ressourceProvider Shared resource provider for loading fonts
-		 * and glyphs.
-		 * @param engine The engine used to measure text.
+		 * @brief Create the system in the Measure phase, with an empty
+		 * cache.
+		 * @param ressourceProvider Provider used to load the fonts.
+		 * @param engine The engine asked to measure the texts. It must
+		 * outlive the system.
 		 */
 		MeasureText(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
 			utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system and its cache.
 		 */
 		~MeasureText(void);
 
 		/**
-		 * @brief Prepare the MeasureText system before measurement.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Does nothing: the system needs no per-frame setup.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the MeasureText system after measurement.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Does nothing: the cache is kept from one frame to the next.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the MeasureText system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Write the size of one text into its components::Bound,
+		 * measuring it with the engine when it is not in the cache yet.
+		 * @param entityIdentifier The text entity. It is skipped, with a log
+		 * message, when one of the four components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

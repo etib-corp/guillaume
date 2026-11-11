@@ -35,20 +35,46 @@
 
 #include "guillaume/systems/layout.hpp"
 
+/**
+ * @file
+ * @brief Placement helpers for the children systems::Layout does not
+ * arrange.
+ *
+ * Some widgets position a child by hand instead of through a
+ * components::Layout: the label beside a checkbox or a radio button, the
+ * handle of a switch, the badge of a navigation bar destination, the
+ * supporting text of a text field, the parts of a progress or a loading
+ * indicator. Their systems call the inline functions of
+ * guillaume::systems::placement from `apply`, in the Layout phase, once
+ * systems::Layout has resolved the bound of the parent.
+ * `guillaume/entities/placement_helpers.hpp` re-exports the same names in
+ * guillaume::entities for the widget classes.
+ *
+ * Every function writes the components::Transform of the child and nothing
+ * else, and does nothing when a component it needs is missing, so an
+ * optional child can be passed as ecs::Entity::InvalidIdentifier. Offsets
+ * are in dp, measured from the position of the parent's
+ * components::Transform.
+ */
+
+/**
+ * @namespace guillaume::systems::placement
+ * @brief Helpers that position a child relative to its parent by writing
+ * the child's components::Transform.
+ * @see guillaume::systems::Layout, guillaume::systems::style
+ */
 namespace guillaume::systems::placement
 {
 
 	/**
-	 * @brief Extract the origin pose of an entity.
+	 * @brief Read the pose (position and orientation) of an entity.
 	 *
-	 * Component families that position children absolutely (sliders, switches,
-	 * indicators, clock faces) need the parent pose without going through
-	 * `systems::Layout`. This helper centralizes that lookup and returns a
-	 * default pose when the transform is missing.
-	 *
-	 * @param registry The component registry.
-	 * @param identifier The entity identifier.
-	 * @return The entity pose, or a default pose when absent.
+	 * The other helpers use it to get the pose of the parent a child is
+	 * placed against.
+	 * @param registry The registry holding the components.
+	 * @param identifier The entity whose components::Transform is read.
+	 * @return The pose of the entity, or a default-constructed pose when the
+	 * entity has no components::Transform.
 	 */
 	inline utility::graphic::PoseF
 		poseOf(ecs::ComponentRegistry &registry,
@@ -63,16 +89,29 @@ namespace guillaume::systems::placement
 	}
 
 	/**
-	 * @brief Place a child entity at an absolute position offset from a parent.
+	 * @brief Place a child at an offset from the position of its parent.
 	 *
-	 * The child is lifted by the container content layer so it never z-fights
-	 * with the parent surface.
+	 * Writes the pose of the child: the parent position plus the offset,
+	 * with the parent orientation, moved toward the viewer by
+	 * systems::Layout::contentLayerPose so the child never z-fights with
+	 * the surface of the parent. Does nothing when the child has no
+	 * components::Transform.
 	 *
-	 * @param registry The component registry.
-	 * @param parentIdentifier The parent entity identifier.
-	 * @param childIdentifier The child entity identifier.
-	 * @param offset The offset applied to the parent position.
-	 * @param parentLayer The layer of the parent container.
+	 * @code
+	 * // Put a label 8 dp right of and 4 dp below the parent position.
+	 * placement::placeChild(registry, parent, label,
+	 * 	utility::graphic::PositionF(8.0f, 4.0f, 0.0f),
+	 * 	Layout::layerOf(registry, parent));
+	 * @endcode
+	 * @param registry The registry holding the components.
+	 * @param parentIdentifier The entity the child is placed against. Without
+	 * a components::Transform it counts as a default pose.
+	 * @param childIdentifier The entity whose components::Transform is
+	 * written.
+	 * @param offset The offset from the parent position, in dp. Only x and y
+	 * are used; the depth comes from `parentLayer`.
+	 * @param parentLayer The tree depth of the parent, as returned by
+	 * systems::Layout::layerOf.
 	 */
 	inline void placeChild(ecs::ComponentRegistry &registry,
 						   const ecs::Entity::Identifier &parentIdentifier,
@@ -99,12 +138,17 @@ namespace guillaume::systems::placement
 	}
 
 	/**
-	 * @brief Center a child entity inside its parent bound.
+	 * @brief Center a child inside the bound of its parent, on both axes.
 	 *
-	 * @param registry The component registry.
-	 * @param parentIdentifier The parent entity identifier.
-	 * @param childIdentifier The child entity identifier.
-	 * @param parentLayer The layer of the parent container.
+	 * Does nothing when the parent or the child has no components::Bound.
+	 * Both bounds must be up to date: call it after the child has been
+	 * measured and the parent laid out.
+	 * @param registry The registry holding the components.
+	 * @param parentIdentifier The entity the child is centered in.
+	 * @param childIdentifier The entity whose components::Transform is
+	 * written.
+	 * @param parentLayer The tree depth of the parent, as returned by
+	 * systems::Layout::layerOf.
 	 */
 	inline void centerChild(ecs::ComponentRegistry &registry,
 							const ecs::Entity::Identifier &parentIdentifier,
@@ -131,17 +175,23 @@ namespace guillaume::systems::placement
 	}
 
 	/**
-	 * @brief Place a child at a normalized position along the parent width.
+	 * @brief Place a child along the width of its parent from a 0 to 1
+	 * value, vertically centered.
 	 *
-	 * Used by sliders and switches to place a thumb or fill between the
-	 * left/right edges of the parent based on a `[0, 1]` value.
-	 *
-	 * @param registry The component registry.
-	 * @param parentIdentifier The parent entity identifier.
-	 * @param childIdentifier The child entity identifier.
-	 * @param normalized The normalized `[0, 1]` position along the width.
-	 * @param inset The horizontal inset reserved on both edges.
-	 * @param parentLayer The layer of the parent container.
+	 * 0 puts the child against the left inset, 1 against the right inset.
+	 * systems::Switch places its handle this way (0 when off, 1 when on).
+	 * Does nothing when the parent or the child has no components::Bound.
+	 * @param registry The registry holding the components.
+	 * @param parentIdentifier The entity the child travels in.
+	 * @param childIdentifier The entity whose components::Transform is
+	 * written.
+	 * @param normalized The position along the available travel, 0 to 1.
+	 * The value is not clamped.
+	 * @param inset The space kept free at the left and right edges of the
+	 * parent, in dp. When the child is wider than what remains, it stays
+	 * against the left inset.
+	 * @param parentLayer The tree depth of the parent, as returned by
+	 * systems::Layout::layerOf.
 	 */
 	inline void placeNormalized(ecs::ComponentRegistry &registry,
 								const ecs::Entity::Identifier &parentIdentifier,

@@ -36,11 +36,20 @@ namespace guillaume::systems
 {
 
 	/**
-	 * @brief System handling scrollable content from the mouse wheel.
+	 * @brief Scrolls content with the mouse wheel.
 	 *
-	 * Consumes mouse wheel events, advances the `components::Scrollable`
-	 * content offset by the wheel delta scaled by the scroll step, then clamps
-	 * the offset to the entity `components::Bound` viewport.
+	 * Runs in the Event phase on entities that have a components::Scrollable
+	 * and a components::Bound. It reads the wheel offset of the current
+	 * mouse wheel event and the scroll step of the component, adds
+	 * `offset * step` (per axis) to the content offset of
+	 * components::Scrollable, then clamps the result with the Bound as the
+	 * viewport size.
+	 *
+	 * @note The system does not test where the pointer is: every scrollable
+	 * entity of the scene receives the wheel event.
+	 * @note The current event is the last one received. It is not cleared
+	 * when a frame brings no new wheel event, so its offset is applied
+	 * again on that frame.
 	 *
 	 * @see components::Scrollable
 	 */
@@ -50,24 +59,29 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the Scroll system and subscribe to wheel events.
-		 * @param eventBus The event bus to subscribe to.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * mouse wheel events.
+		 * @param eventBus The event bus delivering the mouse wheel events.
 		 */
 		Scroll(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the Scroll system.
+		 * @brief Destructor.
 		 */
 		~Scroll(void);
 
 		/**
-		 * @brief Consume the pending wheel event before the pass.
+		 * @brief Take the next pending mouse wheel event, once per frame.
+		 *
+		 * When none is pending, the previous event stays the current one.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Update the Scroll system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Scroll one entity by the current wheel event and clamp its
+		 * content offset to its Bound.
+		 * @param entityIdentifier The entity holding the
+		 * components::Scrollable.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

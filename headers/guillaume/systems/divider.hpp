@@ -33,15 +33,34 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Turns a components::Divider into geometry.
+	 * @brief Turns the configuration of a divider (a thin horizontal
+	 * separator line) into the geometry that is drawn.
 	 *
-	 * For every entity carrying a Divider configuration it writes the
-	 * Transform (origin shifted by the leading inset), the Bound (length
-	 * minus the insets, by the thickness), the Line thickness and the Color.
-	 * It runs in the Measure phase so the size is known before layout.
+	 * Runs in the Measure phase on entities with Divider, Transform, Bound,
+	 * Color and Line, so the size is known before the layout.
+	 * - Reads: components::Divider (length, thickness, leading and trailing
+	 *   insets, color, origin pose).
+	 * - Writes: components::Transform (the origin moved right by the
+	 *   leading inset), components::Bound (the length minus both insets, by
+	 *   the thickness), the thickness of components::Line and
+	 *   components::Color. systems::LineRender draws the result.
+	 * - It also writes back into components::Divider the pose it applied,
+	 *   to detect on the next call that something else moved the entity.
 	 *
-	 * All the behavior of a divider lives here; the entity is only an
-	 * identifier with components.
+	 * This is the reference example of the widget shape used across the
+	 * library: components::Divider holds the state, this system holds the
+	 * rules, and entities::Divider only creates the entity. The system can
+	 * be driven on a bare identifier:
+	 * @code
+	 * registry.getComponent<components::Divider>(divider).setLength(240.0f);
+	 * systems::Divider::apply(registry, divider);
+	 * @endcode
+	 *
+	 * Transform, Bound, the Line thickness and Color of a divider are
+	 * overwritten every frame: change components::Divider, not them.
+	 *
+	 * @see components::Divider, entities::Divider
+	 * @see systems::LineRender
 	 */
 	class Divider:
 		public ecs::SystemFiller<components::Divider, components::Transform,
@@ -50,35 +69,39 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the system.
+		 * @brief Create the system in the Measure phase.
 		 */
 		Divider(void);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. It owns no resource.
 		 */
 		~Divider(void) override = default;
 
 		/**
-		 * @brief Apply a divider configuration to its entity right now.
+		 * @brief Write the geometry of one divider from its configuration.
 		 *
 		 * update() calls this every frame. Call it directly when the result
 		 * is needed before the next frame, for example right after changing
-		 * the configuration while building a scene. The entity must carry
-		 * the Divider, Transform, Bound, Color and Line components.
+		 * the configuration while building a scene.
 		 *
-		 * If the Transform was moved by something else since the last call
-		 * (a layout or a scene placing the entity), the new position is
-		 * adopted as the divider's origin.
-		 * @param componentRegistry Registry holding the components.
-		 * @param entityIdentifier Identifier of the divider entity.
+		 * When the Transform differs from the pose this function applied
+		 * last (a layout or a scene moved the entity), the divider stays
+		 * where it was put: the origin stored in components::Divider is
+		 * recomputed as that position minus the leading inset.
+		 * @param componentRegistry The registry holding the components.
+		 * @param entityIdentifier The divider entity. It must have Divider,
+		 * Transform, Bound, Color and Line.
+		 * @throws ecs::EntityComponentNotFoundException When one of the five
+		 * components is missing.
 		 */
 		static void apply(ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Apply the configuration of one divider entity.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief Write the geometry of one divider for this frame.
+		 * @param entityIdentifier The divider entity. It is skipped, with a
+		 * log message, when one of the five components is missing.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

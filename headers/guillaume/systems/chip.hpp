@@ -31,19 +31,47 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Styles a chip and arranges its children.
+	 * @brief The rules of a chip: pressing it, selecting it, closing it,
+	 * coloring it and arranging its icons and label.
 	 *
-	 * Reads components::Chip, components::Selectable, the interaction state
-	 * and the active theme, and writes the chip's Color, Borders, Elevation,
-	 * Layout, Bound and Accessibility, plus the content and color of its
-	 * icon and label children. Runs in the Layout phase, after the children
-	 * have been measured.
+	 * The chip entity is the rounded container, a horizontal layout. Its
+	 * leading icon, selected check, label and trailing close icon are
+	 * optional child entities, recorded by identifier in components::Chip.
+	 * Whether it is selected is the flag of components::Selectable; whether
+	 * it is disabled is the enabled flag of components::StyleState.
+	 *
+	 * - **Reads**: components::Chip (variant, mode, label, options, child
+	 *   identifiers), components::Selectable, the hover, press and enabled
+	 *   state, the active theme.
+	 * - **Writes**: the chip's components::Color, components::Borders,
+	 *   components::Elevation, components::Accessibility (label and
+	 *   selected state), the padding and the children of its
+	 *   components::Layout, which it then arranges through
+	 *   systems::Layout::apply; the components::Color of each child and
+	 *   the text of the label. The actions also write
+	 *   components::Selectable and the enabled flag.
+	 * - **Phase**: Layout, registered after systems::Layout. The children
+	 *   were measured in the Measure phase of the same frame.
+	 *
+	 * @code
+	 * // Select a filter chip from code; the press callback is not called.
+	 * systems::Chip::setSelected(registry, identifier, true);
+	 * @endcode
+	 *
+	 * This system never creates a child: leadingGlyph, needsCheckIcon and
+	 * needsCloseIcon tell the widget class (entities::Chip) which children
+	 * to build. While the selected check is shown, it takes the place of
+	 * the leading icon in the layout.
+	 *
+	 * @see guillaume::components::Chip, guillaume::entities::Chip,
+	 * guillaume::systems::interaction
 	 */
 	class Chip: public ecs::SystemFiller<components::Chip>
 	{
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the system for the Layout phase, matching entities
+		 * that have a components::Chip.
 		 */
 		Chip(void);
 
@@ -55,12 +83,18 @@ namespace guillaume::systems
 		/**
 		 * @brief Make an entity behave as a chip.
 		 *
-		 * Adds the interaction components and wires press and selection
-		 * changes to this system. Call once, after the entity has its
-		 * components::Chip, Selectable, Elevation, Borders, Color, Layout,
-		 * Transform and Bound.
-		 * @param componentRegistry The registry holding the components.
-		 * @param entityIdentifier The chip entity.
+		 * Calls systems::interaction::makeInteractive with the Button
+		 * accessibility role, so a click or a hand press calls press and
+		 * any hover or press change calls `apply`, and sets the selection
+		 * handler of components::Selectable so a selection written from
+		 * outside is drawn at once.
+		 *
+		 * Call it once when the entity is built; entities::Chip does it for
+		 * you. It does not style anything: call `apply` after it.
+		 * @param componentRegistry The registry holding the components. The
+		 * handlers keep its address, so it must outlive the entity.
+		 * @param entityIdentifier The chip entity. It must already have a
+		 * components::Selectable.
 		 */
 		static void install(ecs::ComponentRegistry &componentRegistry,
 							const ecs::Entity::Identifier &entityIdentifier);
@@ -68,27 +102,62 @@ namespace guillaume::systems
 		/**
 		 * @brief Make the trailing icon of a chip a close button.
 		 *
-		 * Adds the interaction components to the trailing icon recorded in
-		 * components::Chip and wires its press to close(). Does nothing
-		 * without a trailing icon.
-		 * @param componentRegistry The registry holding the components.
-		 * @param entityIdentifier The chip entity.
+		 * Makes the trailing icon recorded in components::Chip interactive
+		 * on its own (Button role, accessibility label "Close") so that
+		 * pressing it calls close on the chip instead of pressing the chip.
+		 * Call it after the trailing icon child has been created and
+		 * recorded. Does nothing when the chip has no trailing icon.
+		 * @param componentRegistry The registry holding the components. The
+		 * handler keeps its address, so it must outlive the entity.
+		 * @param entityIdentifier The chip entity, not the icon.
 		 */
 		static void
 			installCloseIcon(ecs::ComponentRegistry &componentRegistry,
 							 const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Style one chip and arrange its children.
+		 * @brief Draw one chip from its components and arrange its
+		 * children.
+		 *
+		 * - Container: SecondaryContainer for a Flat chip and for any
+		 *   selected chip; transparent with a 1 dp Outline border for an
+		 *   unselected Outlined chip. A selected chip gets an extra tint
+		 *   when the component asks for the selected overlay, and the
+		 *   hover or press tint comes on top.
+		 * - Content: the label and trailing icon use the content color of
+		 *   that container; the leading icon and the check are Primary, or
+		 *   the content color when selected.
+		 * - Disabled: disabled container and content colors, no tint.
+		 * - Elevation: level 1 for an elevated, enabled chip, else level 0.
+		 * - Layout: padding of components::Chip::Padding, or
+		 *   CompactPadding for a compact chip; children in the order check
+		 *   or leading icon, label, trailing icon.
+		 *
+		 * A chip whose component records no child at all keeps the layout
+		 * children it was given.
+		 *
+		 * The frame calls it through `update`. Call it yourself after
+		 * writing components::Chip when the result must be visible before
+		 * the next Layout phase; the setters of entities::Chip do.
 		 * @param componentRegistry The registry holding the components.
-		 * @param entityIdentifier The chip entity.
+		 * @param entityIdentifier The chip entity. It must have
+		 * components::Chip, components::Selectable, components::Color,
+		 * components::Borders, components::Elevation, components::Layout
+		 * and components::Accessibility.
 		 */
 		static void apply(ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Activate as the user would: ignored when disabled, a Filter
-		 * chip toggles its selection, and the press callback is called.
+		 * @brief Press the chip as a click does.
+		 *
+		 * A Filter chip flips its selection and is redrawn; the other
+		 * variants keep theirs. Then the press callback of the component is
+		 * called. Nothing happens, and nothing is called, when the chip is
+		 * disabled.
+		 *
+		 * The handlers set by install call it; call it directly to simulate
+		 * a click, for example in a test on a bare identifier.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
 		 */
@@ -96,8 +165,12 @@ namespace guillaume::systems
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Activate the close icon as the user would: ignored when
-		 * disabled, otherwise the close callback is called.
+		 * @brief Press the close icon of the chip as a click does.
+		 *
+		 * Calls the close callback of the component, and nothing else: the
+		 * chip is not removed or hidden, the callback decides what closing
+		 * means. Nothing is called when the chip is disabled or has no
+		 * close callback.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
 		 */
@@ -105,10 +178,15 @@ namespace guillaume::systems
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Set the selected state and restyle.
+		 * @brief Select or deselect the chip from code and show it at
+		 * once.
+		 *
+		 * Writes the selected flag of components::Selectable, then calls
+		 * `apply`. The press callback is not called, and the call works on
+		 * any variant and on a disabled chip.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
-		 * @param selected The new selected state.
+		 * @param selected True to select the chip, false to deselect it.
 		 */
 		static void setSelected(ecs::ComponentRegistry &componentRegistry,
 								const ecs::Entity::Identifier &entityIdentifier,
@@ -117,65 +195,81 @@ namespace guillaume::systems
 		/**
 		 * @brief Whether the chip is selected.
 		 * @param componentRegistry The registry holding the components.
-		 * @param entityIdentifier The chip entity.
-		 * @return True when selected.
+		 * @param entityIdentifier The chip entity. It must have a
+		 * components::Selectable.
+		 * @return The selected flag of its components::Selectable.
 		 */
 		static bool isSelected(const ecs::ComponentRegistry &componentRegistry,
 							   const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Enable or disable the chip and restyle.
+		 * @brief Enable or disable the chip and show it at once.
+		 *
+		 * Writes the enabled flag of components::StyleState (through
+		 * systems::interaction::setEnabled), then calls `apply`. A disabled
+		 * chip ignores press and close and is drawn with the disabled
+		 * colors.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
-		 * @param disabled True to disable.
+		 * @param disabled True to disable the chip, false to enable it.
 		 */
 		static void setDisabled(ecs::ComponentRegistry &componentRegistry,
 								const ecs::Entity::Identifier &entityIdentifier,
 								bool disabled);
 
 		/**
-		 * @brief Whether the chip ignores input.
+		 * @brief Whether the chip ignores input and is drawn disabled.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
-		 * @return True for a disabled entity.
+		 * @return True when the entity has a components::StyleState that is
+		 * not enabled.
 		 */
 		static bool isDisabled(const ecs::ComponentRegistry &componentRegistry,
 							   const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Get the glyph of the leading icon the chip should have.
+		 * @brief Get the name of the glyph the leading icon of the chip
+		 * should show.
+		 *
+		 * The widget class calls it to decide whether to build a leading
+		 * icon child and with which glyph.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
-		 * @return The configured glyph, the default one for an Assist chip
-		 * without a glyph, or an empty string for no leading icon.
+		 * @return The glyph configured in components::Chip;
+		 * components::Chip::DefaultAssistGlyph for an Assist chip without
+		 * one; an empty string when the chip should have no leading icon.
 		 */
 		static std::string
 			leadingGlyph(const ecs::ComponentRegistry &componentRegistry,
 						 const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Whether the chip should have a selected check child.
+		 * @brief Whether the widget class should build a selected check
+		 * child for this chip.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
-		 * @return True for a Filter chip.
+		 * @return True for the Filter variant, false for the others.
 		 */
 		static bool
 			needsCheckIcon(const ecs::ComponentRegistry &componentRegistry,
 						   const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Whether the chip should have a trailing close icon.
+		 * @brief Whether the widget class should build a trailing close
+		 * icon child for this chip.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The chip entity.
-		 * @return True for an Input chip or when a close callback is set.
+		 * @return True for the Input variant, or for any variant with a
+		 * close callback set.
 		 */
 		static bool
 			needsCloseIcon(const ecs::ComponentRegistry &componentRegistry,
 						   const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Style the chip with the given identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
+		 * @brief Frame entry point: call `apply` on one chip.
+		 * @param entityIdentifier The chip entity. An entity without a
+		 * components::Chip is logged and skipped.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

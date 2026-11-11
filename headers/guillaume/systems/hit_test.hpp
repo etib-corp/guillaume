@@ -37,14 +37,26 @@ namespace guillaume::systems
 {
 
 	/**
-	 * @brief Check whether an entity accepts interaction.
+	 * @file
+	 * @brief Free functions the input systems share to decide whether a
+	 * pointer or hand ray hits an entity.
 	 *
-	 * Entities without a `StyleState` are always interactive; entities with
-	 * one follow its enabled flag.
+	 * Used by systems::MouseMotion, systems::MouseButton, the hand systems
+	 * built on systems::HandEventSystem, systems::Drag and systems::Focus.
+	 * Everything here is inline and reads components only.
+	 */
+
+	/**
+	 * @brief Whether an entity accepts input.
 	 *
-	 * @param registry Component registry.
-	 * @param entityIdentifier Entity identifier.
-	 * @return False when the entity is disabled.
+	 * An entity without a components::StyleState always does; an entity
+	 * with one follows its enabled flag. The input systems call this before
+	 * hit-testing, so a disabled widget is never hovered, pressed, dragged
+	 * or focused.
+	 *
+	 * @param registry The registry holding the components.
+	 * @param entityIdentifier The entity to test.
+	 * @return False only when the entity has a StyleState that is disabled.
 	 */
 	inline bool isInteractive(const ecs::ComponentRegistry &registry,
 							  const ecs::Entity::Identifier &entityIdentifier)
@@ -55,15 +67,18 @@ namespace guillaume::systems
 	}
 
 	/**
-	 * @brief Get the accessibility hit margin of an entity.
+	 * @brief Extra hit area of an entity around its Bound, in dp.
 	 *
-	 * The margin is read from `MouseHoverInteraction` (or, failing that,
-	 * `HandHoverInteraction`) so that a small control can grow its hit area
-	 * to the M3 48 dp touch target without growing visually.
+	 * A small control (an 18 dp checkbox box) sets an accessibility margin
+	 * so it can be hit on a larger touch target without being drawn larger.
+	 * The margin is read from components::MouseHoverInteraction when the
+	 * entity has one, otherwise from components::HandHoverInteraction.
 	 *
-	 * @param registry Component registry.
-	 * @param entityIdentifier Entity identifier.
-	 * @return The horizontal and vertical margin added on each side.
+	 * @param registry The registry holding the components.
+	 * @param entityIdentifier The entity to read the margin of.
+	 * @return The margin added on each side: x on the left and on the
+	 * right, y above and below. (0, 0) when the entity has neither hover
+	 * component.
 	 */
 	inline utility::math::Vector2F
 		hitMargin(const ecs::ComponentRegistry &registry,
@@ -95,11 +110,29 @@ namespace guillaume::systems
 	}
 
 	/**
-	 * @brief Intersect a ray with an entity bound grown by a margin.
-	 * @param ray World ray.
-	 * @param pose Entity pose (top-left corner).
-	 * @param bound Entity bound.
-	 * @param margin Margin added on each side, along right and up.
+	 * @brief Whether a ray crosses the rectangle of an entity, grown by a
+	 * margin.
+	 *
+	 * The rectangle starts at the pose position, has the size of the bound
+	 * and lies in the plane given by the pose orientation. With a margin,
+	 * its origin is moved back by the margin along the orientation's right
+	 * and up axes and its size grows by twice the margin.
+	 *
+	 * @code
+	 * const auto pose = registry.getComponent<components::Transform>(id)
+	 * 	.getPose();
+	 * if (hitTest(ray, pose, registry.getComponent<components::Bound>(id),
+	 * 		hitMargin(registry, id))) {
+	 * 	// the pointer is over the entity
+	 * }
+	 * @endcode
+	 *
+	 * @param ray The pointer or hand ray, in world space.
+	 * @param pose The world pose of the entity: the origin corner of its
+	 * rectangle and its orientation.
+	 * @param bound The size of the entity, in dp.
+	 * @param margin The margin added on each side, in dp, as returned by
+	 * hitMargin().
 	 * @return True when the ray hits the grown rectangle.
 	 */
 	inline bool hitTest(const utility::graphic::RayF &ray,
