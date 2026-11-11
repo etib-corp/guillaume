@@ -81,7 +81,6 @@ namespace guillaume::entities::tests
 		auto list = makeList(registry);
 
 		list->initialize();
-		list->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(list->getIdentifier());
@@ -94,7 +93,6 @@ namespace guillaume::entities::tests
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(2));
 
 		list->initialize();
-		list->update();
 
 		// Heights follow the content: each row is its content column plus
 		// the 16 dp M3 padding on both edges.
@@ -129,7 +127,6 @@ namespace guillaume::entities::tests
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(2));
 
 		list->initialize();
-		list->update();
 
 		const auto first  = list->getItemIdentifier(0);
 		const auto second = list->getItemIdentifier(1);
@@ -148,7 +145,6 @@ namespace guillaume::entities::tests
 		auto list = makeList(registry, List::Variant::SingleLine, items);
 
 		list->initialize();
-		list->update();
 		EXPECT_EQ(
 			registry
 				.getComponent<components::Layout>(list->getContentIdentifier(0))
@@ -157,7 +153,6 @@ namespace guillaume::entities::tests
 			1U);
 
 		list->setVariant(List::Variant::TwoLine);
-		list->update();
 		EXPECT_EQ(list->getVariant(), List::Variant::TwoLine);
 		EXPECT_EQ(
 			registry
@@ -198,7 +193,6 @@ namespace guillaume::entities::tests
 		items[1].disabled = true;
 		auto list = makeList(registry, List::Variant::SingleLine, items);
 		list->initialize();
-		list->update();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -229,7 +223,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(1));
 		list->initialize();
-		list->update();
 
 		const auto row = list->getItemIdentifier(0);
 		EXPECT_EQ(
@@ -254,7 +247,6 @@ namespace guillaume::entities::tests
 		items.push_back(List::divider());
 		auto list = makeList(registry, List::Variant::SingleLine, items);
 		list->initialize();
-		list->update();
 
 		const auto header = list->getItemIdentifier(0);
 		EXPECT_EQ(
@@ -277,7 +269,6 @@ namespace guillaume::entities::tests
 		auto list =
 			makeList(registry, List::Variant::SingleLine, { accordion });
 		list->initialize();
-		list->update();
 
 		const auto row	= list->getItemIdentifier(0);
 		auto childCount = [&]() {

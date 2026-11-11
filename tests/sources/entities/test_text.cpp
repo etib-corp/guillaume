@@ -77,7 +77,6 @@ namespace guillaume::entities::tests
 				text = std::make_shared<entities::Text>(
 					componentRegistry, "Hello", 24.0f,
 					utility::graphic::Color32Bit(255, 255, 255, 255));
-				text->update();
 				entityRegistry.addEntity(text);
 
 				textRender->bindComponentRegistry(componentRegistry);
@@ -148,7 +147,6 @@ namespace guillaume::entities::tests
 		auto text =
 			builder.makeText(parent, "Hello", 18.0f,
 							 utility::graphic::Color32Bit(255, 255, 255, 255));
-		text->update();
 
 		ASSERT_NE(text, nullptr);
 		EXPECT_EQ(text->getParent(), parent);
@@ -165,7 +163,6 @@ namespace guillaume::entities::tests
 
 		entities::Text::Builder builder(registry, entityRegistry);
 		auto text = builder.withContent("Hello").registerEntity(parent);
-		text->update();
 
 		const auto &token = getTypeToken(theme::TypeRole::BodyMedium);
 		const auto &component =
@@ -190,7 +187,6 @@ namespace guillaume::entities::tests
 		auto text =
 			builder.makeText(parent, "Save", theme::TypeRole::LabelLarge,
 							 utility::graphic::Color32Bit(0, 0, 0, 255));
-		text->update();
 
 		const auto &component =
 			registry.getComponent<components::Text>(text->getIdentifier());
@@ -210,7 +206,6 @@ namespace guillaume::entities::tests
 		auto text = std::make_shared<entities::Text>(
 			registry, "Hi", theme::TypeRole::TitleMedium,
 			utility::graphic::Color32Bit(0, 0, 0, 255), 30.0f);
-		text->update();
 
 		const auto &component =
 			registry.getComponent<components::Text>(text->getIdentifier());

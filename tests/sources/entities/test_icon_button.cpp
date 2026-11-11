@@ -54,7 +54,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		EXPECT_FALSE(button->isSelected());
 
@@ -77,7 +76,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		const auto iconId = button->getIconIdentifier();
 		ASSERT_NE(iconId, ecs::Entity::InvalidIdentifier);
@@ -109,7 +107,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setSelected(true);
 		EXPECT_TRUE(button->isSelected());
@@ -128,7 +125,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setSelected(true);
 		EXPECT_FALSE(button->isSelected());
@@ -147,7 +143,6 @@ namespace guillaume::entities::tests
 			 });
 
 		button->initialize();
-		button->update();
 
 		button->setDisabled(true);
 		EXPECT_TRUE(button->isDisabled());
@@ -173,7 +168,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setAccessibilityLabel("Favorite");
 		EXPECT_EQ(button->getAccessibilityLabel(), "Favorite");
@@ -205,7 +199,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(button->getIdentifier());
@@ -234,7 +227,6 @@ namespace guillaume::entities::tests
 				toggle, variant, IconButton::Size::Medium, disabled, "Like",
 				std::function<void(void)>());
 			button->initialize();
-			button->update();
 			return button;
 		}
 

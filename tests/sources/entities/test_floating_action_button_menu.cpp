@@ -49,7 +49,6 @@ namespace guillaume::entities::tests
 															   actions, "Menu");
 
 		menu->initialize();
-		menu->update();
 
 		EXPECT_EQ(menu->getActionCount(), 2);
 		EXPECT_NE(menu->getTriggerIdentifier(), ecs::Entity::InvalidIdentifier);
@@ -65,7 +64,6 @@ namespace guillaume::entities::tests
 			"Menu");
 
 		menu->initialize();
-		menu->update();
 
 		EXPECT_FALSE(menu->isOpen());
 
@@ -84,7 +82,6 @@ namespace guillaume::entities::tests
 			"Menu");
 
 		menu->initialize();
-		menu->update();
 
 		menu->toggle();
 		EXPECT_TRUE(menu->isOpen());
@@ -124,7 +121,6 @@ namespace guillaume::entities::tests
 		menu->setOnStateChange([&states](bool open) {
 			states.push_back(open);
 		});
-		menu->update();
 
 		const auto action  = menu->getActionIdentifier(0);
 		const auto trigger = menu->getTriggerIdentifier();

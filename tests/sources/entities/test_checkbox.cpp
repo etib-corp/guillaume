@@ -93,7 +93,6 @@ namespace guillaume::entities::tests
 		auto checkbox = makeCheckbox(registry);
 
 		checkbox->initialize();
-		checkbox->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(checkbox->getIdentifier());
@@ -153,7 +152,6 @@ namespace guillaume::entities::tests
 									 Checkbox::Variant::Enabled, "Accept");
 
 		checkbox->initialize();
-		checkbox->update();
 
 		// Only the check glyph is laid out inside the 18 dp box.
 		EXPECT_EQ(checkbox->getChildren().size(), 1U);

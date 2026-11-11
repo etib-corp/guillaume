@@ -77,7 +77,6 @@ namespace guillaume::entities::tests
 		auto progress = makeProgressIndicator(registry);
 
 		progress->initialize();
-		progress->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
@@ -92,7 +91,6 @@ namespace guillaume::entities::tests
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.25f);
 
 		progress->initialize();
-		progress->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
@@ -104,8 +102,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-
-		progress->update();
 
 		const float baseZ =
 			registry
@@ -149,7 +145,6 @@ namespace guillaume::entities::tests
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.5f);
 
 		progress->initialize();
-		progress->update();
 
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);
@@ -166,7 +161,6 @@ namespace guillaume::entities::tests
 			registry, ProgressIndicator::Variant::CircularIndeterminate, 0.0f);
 
 		progress->initialize();
-		progress->update();
 
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);

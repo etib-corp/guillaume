@@ -54,9 +54,6 @@ namespace guillaume::ecs::tests
 		void initialize(void) override
 		{
 		}
-		void update(void) override
-		{
-		}
 	};
 
 	TEST_F(TestEntity, DefaultLayerIsZero)

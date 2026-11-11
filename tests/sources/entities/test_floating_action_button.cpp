@@ -56,7 +56,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		fab->initialize();
-		fab->update();
 
 		EXPECT_NE(fab->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
 		EXPECT_NE(fab->getLabelIdentifier(), ecs::Entity::InvalidIdentifier);
@@ -72,7 +71,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		fab->initialize();
-		fab->update();
 
 		const float baseX =
 			registry.getComponent<components::Transform>(fab->getIdentifier())
@@ -119,7 +117,6 @@ namespace guillaume::entities::tests
 			});
 
 		fab->initialize();
-		fab->update();
 
 		fab->setDisabled(true);
 		EXPECT_TRUE(fab->isDisabled());
@@ -144,7 +141,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		fab->initialize();
-		fab->update();
 
 		fab->setAccessibilityLabel("Edit comment");
 		EXPECT_EQ(fab->getAccessibilityLabel(), "Edit comment");
@@ -177,7 +173,6 @@ namespace guillaume::entities::tests
 			FloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
 		fab->initialize();
-		fab->update();
 
 		auto &elevation =
 			registry.getComponent<components::Elevation>(fab->getIdentifier());
@@ -189,7 +184,6 @@ namespace guillaume::entities::tests
 			FloatingActionButton::Size::Medium, true, false, "",
 			std::function<void(void)>());
 		lowered->initialize();
-		lowered->update();
 		EXPECT_EQ(
 			registry
 				.getComponent<components::Elevation>(lowered->getIdentifier())
@@ -202,7 +196,6 @@ namespace guillaume::entities::tests
 			FloatingActionButton::Size::Medium, false, true, "",
 			std::function<void(void)>());
 		disabled->initialize();
-		disabled->update();
 		EXPECT_FALSE(
 			registry
 				.getComponent<components::Elevation>(disabled->getIdentifier())
@@ -221,7 +214,6 @@ namespace guillaume::entities::tests
 				  ++clicks;
 			  });
 		fab->initialize();
-		fab->update();
 
 		EXPECT_EQ(registry.getComponent<components::Color>(fab->getIdentifier())
 					  .getColor(),
@@ -268,7 +260,6 @@ namespace guillaume::entities::tests
 			FloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
 		fab->initialize();
-		fab->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Text>(fab->getLabelIdentifier())

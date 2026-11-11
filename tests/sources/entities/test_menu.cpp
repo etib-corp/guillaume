@@ -85,7 +85,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(2));
 
 		menu->initialize();
-		menu->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(menu->getIdentifier());
@@ -111,7 +110,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(2));
 
 		menu->initialize();
-		menu->update();
 
 		const auto first  = menu->getItemIdentifier(0);
 		const auto second = menu->getItemIdentifier(1);
@@ -128,7 +126,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(2));
 
 		menu->initialize();
-		menu->update();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(menu->getIdentifier());
@@ -192,7 +189,6 @@ namespace guillaume::entities::tests
 		items[1].disabled = true;
 		auto menu		  = makeMenu(registry, items);
 		menu->initialize();
-		menu->update();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -235,7 +231,6 @@ namespace guillaume::entities::tests
 		items[1].dense = true;
 		auto menu	   = makeMenu(registry, items);
 		menu->initialize();
-		menu->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
@@ -265,7 +260,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(1));
 		menu->initialize();
 		menu->setAnchor(anchor.getIdentifier());
-		menu->update();
 
 		auto y = [&]() {
 			return registry

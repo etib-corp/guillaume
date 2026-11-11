@@ -71,7 +71,6 @@ namespace guillaume::entities::tests
 		auto card = makeCard(registry);
 
 		card->initialize();
-		card->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(card->getIdentifier());
@@ -89,7 +88,6 @@ namespace guillaume::entities::tests
 		auto card = makeCard(registry, Card::Variant::Elevated);
 
 		card->initialize();
-		card->update();
 
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(card->getIdentifier());
@@ -102,7 +100,6 @@ namespace guillaume::entities::tests
 		auto card = makeCard(registry, Card::Variant::Filled);
 
 		card->initialize();
-		card->update();
 
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(card->getIdentifier());
@@ -115,7 +112,6 @@ namespace guillaume::entities::tests
 		auto card = makeCard(registry, Card::Variant::Outlined);
 
 		card->initialize();
-		card->update();
 
 		const auto &color =
 			registry.getComponent<components::Color>(card->getIdentifier());
@@ -283,7 +279,6 @@ namespace guillaume::entities::tests
 					  .getRole(),
 				  components::AccessibilityRole::Header);
 		// Text entities push their content on update (as the systems do).
-		card->getContent()->update();
 		EXPECT_EQ(registry
 					  .getComponent<components::Text>(
 						  card->getContent()->getIdentifier())

@@ -60,7 +60,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "texture.png");
-		image->update();
 
 		const auto &component =
 			registry.getComponent<components::Image>(image->getIdentifier());
@@ -137,7 +136,6 @@ namespace guillaume::entities::tests
 		registry.getComponent<components::Bound>(image->getIdentifier())
 			.setWidth(64)
 			.setHeight(64);
-		image->update();
 
 		imageRender.bindComponentRegistry(registry);
 		imageRender.update(image->getIdentifier());

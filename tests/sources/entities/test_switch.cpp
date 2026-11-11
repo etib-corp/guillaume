@@ -88,7 +88,6 @@ namespace guillaume::entities::tests
 		auto toggle = makeSwitch(registry);
 
 		toggle->initialize();
-		toggle->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(toggle->getIdentifier());
@@ -121,7 +120,6 @@ namespace guillaume::entities::tests
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, true);
 
 		toggle->initialize();
-		toggle->update();
 
 		const auto &value =
 			registry.getComponent<components::Value>(toggle->getIdentifier());
@@ -135,8 +133,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, false,
 								 "check", "Label");
-
-		toggle->update();
 
 		const float baseZ =
 			registry
@@ -160,8 +156,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, false,
 								 "check", "Dark mode");
-
-		toggle->update();
 
 		const auto &layoutChildren =
 			registry.getComponent<components::Layout>(toggle->getIdentifier())
@@ -192,7 +186,6 @@ namespace guillaume::entities::tests
 			makeSwitch(registry, Switch::Variant::Enabled, false, "", "Wifi");
 
 		toggle->initialize();
-		toggle->update();
 
 		const float trackWidth =
 			registry.getComponent<components::Bound>(toggle->getIdentifier())

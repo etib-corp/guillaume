@@ -179,8 +179,4 @@ namespace guillaume::ecs
 	void Entity::initialize(void)
 	{
 	}
-
-	void Entity::update(void)
-	{
-	}
 }	 // namespace guillaume::ecs

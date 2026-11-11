@@ -91,7 +91,6 @@ namespace guillaume::entities::tests
 		auto drawer = makeNavigationDrawer(registry, makeDestinations(3));
 
 		drawer->initialize();
-		drawer->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(drawer->getIdentifier());
@@ -105,7 +104,6 @@ namespace guillaume::entities::tests
 		auto drawer = makeNavigationDrawer(registry, makeDestinations(2));
 
 		drawer->initialize();
-		drawer->update();
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(drawer->getIdentifier());
@@ -141,7 +139,6 @@ namespace guillaume::entities::tests
 										   NavigationDrawer::Variant::Modal);
 
 		drawer->initialize();
-		drawer->update();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(drawer->getIdentifier());
@@ -184,7 +181,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto drawer = makeNavigationDrawer(registry, makeDestinations(2));
 		drawer->initialize();
-		drawer->update();
 
 		EXPECT_EQ(registry
 					  .getComponent<components::Color>(
@@ -217,7 +213,6 @@ namespace guillaume::entities::tests
 						  })
 						  .registerEntity(nullptr);
 		drawer->initialize();
-		drawer->update();
 
 		EXPECT_EQ(drawer->getDestinationCount(), 3U);
 		EXPECT_EQ(drawer->getSectionCount(), 1U);
@@ -281,7 +276,6 @@ namespace guillaume::entities::tests
 			makeNavigationDrawer(registry, makeDestinations(2),
 								 NavigationDrawer::Variant::Collapsed);
 		drawer->initialize();
-		drawer->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Bound>(drawer->getIdentifier())

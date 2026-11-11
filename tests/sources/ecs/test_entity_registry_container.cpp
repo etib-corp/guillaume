@@ -37,18 +37,12 @@ namespace guillaume::ecs::tests
 		void initialize(void) override
 		{
 		}
-		void update(void) override
-		{
-		}
 	};
 
 	class DummyParentEntity: public ParentEntity
 	{
 		public:
 		void initialize(void) override
-		{
-		}
-		void update(void) override
 		{
 		}
 	};

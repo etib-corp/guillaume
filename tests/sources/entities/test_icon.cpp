@@ -100,7 +100,6 @@ namespace guillaume::entities::tests
 					componentRegistry, "home", 24.0f,
 					utility::graphic::Color32Bit(255, 255, 255, 255),
 					components::Glyph::Style::Outlined);
-				icon->update();
 				entityRegistry.addEntity(icon);
 
 				glyphRender->bindComponentRegistry(componentRegistry);
@@ -171,7 +170,6 @@ namespace guillaume::entities::tests
 			builder.makeIcon(parent, "home", 32.0f,
 							 utility::graphic::Color32Bit(255, 255, 255, 255),
 							 components::Glyph::Style::Outlined);
-		icon->update();
 
 		ASSERT_NE(icon, nullptr);
 		EXPECT_EQ(icon->getParent(), parent);
@@ -189,7 +187,6 @@ namespace guillaume::entities::tests
 
 		entities::Icon::Builder builder(registry, entityRegistry);
 		auto icon = builder.withGlyphName("home").registerEntity(parent);
-		icon->update();
 
 		EXPECT_EQ(
 			registry.getComponent<components::Color>(icon->getIdentifier())

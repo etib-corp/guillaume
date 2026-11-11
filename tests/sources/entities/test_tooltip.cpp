@@ -65,7 +65,6 @@ namespace guillaume::entities::tests
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
 
 		tooltip->initialize();
-		tooltip->update();
 
 		const auto &borders = registry.getComponent<components::Borders>(
 			tooltip->getIdentifier());
@@ -79,7 +78,6 @@ namespace guillaume::entities::tests
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Rich);
 
 		tooltip->initialize();
-		tooltip->update();
 
 		const auto &borders = registry.getComponent<components::Borders>(
 			tooltip->getIdentifier());
@@ -93,7 +91,6 @@ namespace guillaume::entities::tests
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
 
 		tooltip->initialize();
-		tooltip->update();
 
 		const auto &color =
 			registry.getComponent<components::Color>(tooltip->getIdentifier());
@@ -111,7 +108,6 @@ namespace guillaume::entities::tests
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
 
 		tooltip->initialize();
-		tooltip->update();
 
 		const auto &overlay = registry.getComponent<components::Overlay>(
 			tooltip->getIdentifier());

@@ -70,7 +70,6 @@ namespace guillaume::entities::tests
 		auto appBar = makeAppBar(registry, AppBar::Variant::Small);
 
 		appBar->initialize();
-		appBar->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(appBar->getIdentifier());
@@ -111,11 +110,9 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto smallEntity = makeAppBar(registry, AppBar::Variant::Small);
 		smallEntity->initialize();
-		smallEntity->update();
 
 		auto largeEntity = makeAppBar(registry, AppBar::Variant::Large);
 		largeEntity->initialize();
-		largeEntity->update();
 
 		const float smallHeight =
 			registry
@@ -154,7 +151,6 @@ namespace guillaume::entities::tests
 		auto appBar = builder.makeAppBar(nullptr, AppBar::Variant::Small);
 		appBar->setTitle("Title");
 		appBar->initialize();
-		appBar->update();
 
 		EXPECT_EQ(appBar->getChildren().size(), 1U);
 		EXPECT_NE(appBar->getChildren()[0]->getIdentifier(),
@@ -175,7 +171,6 @@ namespace guillaume::entities::tests
 
 		auto appBar = builder.registerEntity(nullptr);
 		appBar->initialize();
-		appBar->update();
 
 		EXPECT_EQ(appBar->getChildren().size(), 4U);
 
@@ -190,7 +185,6 @@ namespace guillaume::entities::tests
 		auto appBar = makeAppBar(registry, AppBar::Variant::Small);
 
 		appBar->initialize();
-		appBar->update();
 
 		const auto &color =
 			registry.getComponent<components::Color>(appBar->getIdentifier());
@@ -233,7 +227,6 @@ namespace guillaume::entities::tests
 			auto appBar =
 				builder.withVariant(variant).withTitle("Title").registerEntity(
 					nullptr);
-			appBar->update();
 
 			EXPECT_FLOAT_EQ(
 				registry
@@ -269,7 +262,6 @@ namespace guillaume::entities::tests
 							  },
 							  "Search")
 						  .registerEntity(nullptr);
-		appBar->update();
 
 		auto action = appBar->getActionButton(0);
 		ASSERT_NE(action, nullptr);

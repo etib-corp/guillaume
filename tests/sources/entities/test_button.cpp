@@ -81,7 +81,6 @@ namespace guillaume::entities::tests
 			utility::graphic::OrientationF()));
 
 		button->initialize();
-		button->update();
 
 		const auto iconIdentifier  = button->getIconIdentifier();
 		const auto labelIdentifier = button->getLabelIdentifier();
@@ -135,7 +134,6 @@ namespace guillaume::entities::tests
 			utility::graphic::OrientationF()));
 
 		button->initialize();
-		button->update();
 
 		const auto iconIdentifier  = button->getIconIdentifier();
 		const auto labelIdentifier = button->getLabelIdentifier();
@@ -180,7 +178,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		EXPECT_FALSE(button->isSelected());
 
@@ -206,7 +203,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setSelected(true);
 		EXPECT_TRUE(button->isSelected());
@@ -224,7 +220,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setSelected(true);
 		EXPECT_FALSE(button->isSelected());
@@ -239,7 +234,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setSelected(true);
 		EXPECT_TRUE(button->isSelected());
@@ -257,7 +251,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		auto &borders =
 			registry.getComponent<components::Borders>(button->getIdentifier());
@@ -281,7 +274,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(button->getIdentifier());
@@ -300,7 +292,6 @@ namespace guillaume::entities::tests
 			 });
 
 		button->initialize();
-		button->update();
 
 		button->setDisabled(true);
 		EXPECT_TRUE(button->isDisabled());
@@ -325,7 +316,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setDisabled(true);
 
@@ -344,7 +334,6 @@ namespace guillaume::entities::tests
 			false, false, true, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		registry.getComponent<components::Bound>(button->getLabelIdentifier())
 			.setWidth(50.0f);
@@ -376,7 +365,6 @@ namespace guillaume::entities::tests
 			false, false, false, "", std::function<void(void)>());
 
 		button->initialize();
-		button->update();
 
 		button->setAccessibilityLabel("Save changes");
 		EXPECT_EQ(button->getAccessibilityLabel(), "Save changes");
@@ -411,7 +399,6 @@ namespace guillaume::entities::tests
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
 		button->initialize();
-		button->update();
 
 		rectangleRender.bindComponentRegistry(registry);
 		rectangleRender.update(button->getIdentifier());
@@ -471,7 +458,6 @@ namespace guillaume::entities::tests
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, true, false, "", std::function<void(void)>());
 		button->initialize();
-		button->update();
 
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
@@ -498,7 +484,6 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer entityRegistry;
 		Button::Builder builder(registry, entityRegistry);
 		auto button = builder.withLabel("Ok").registerEntity(nullptr);
-		button->update();
 
 		EXPECT_EQ(button->getColorStyle(), Button::Color::Text);
 		EXPECT_EQ(
@@ -516,7 +501,6 @@ namespace guillaume::entities::tests
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
 		button->initialize();
-		button->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(button->getIdentifier());
@@ -538,7 +522,6 @@ namespace guillaume::entities::tests
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
 		button->initialize();
-		button->update();
 
 		button->setUppercase(true);
 		EXPECT_EQ(
@@ -572,7 +555,6 @@ namespace guillaume::entities::tests
 			Button::Color::Elevated, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
 		elevated->initialize();
-		elevated->update();
 		EXPECT_EQ(
 			registry
 				.getComponent<components::Elevation>(elevated->getIdentifier())
@@ -584,7 +566,6 @@ namespace guillaume::entities::tests
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
 		filled->initialize();
-		filled->update();
 		EXPECT_FALSE(
 			registry
 				.getComponent<components::Elevation>(filled->getIdentifier())
@@ -599,7 +580,6 @@ namespace guillaume::entities::tests
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
 		button->initialize();
-		button->update();
 
 		button->setLoading(true);
 		EXPECT_TRUE(button->isLoading());

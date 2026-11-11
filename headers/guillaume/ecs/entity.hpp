@@ -169,16 +169,6 @@ namespace guillaume::ecs
 		 * perform any necessary initialization based on their components.
 		 */
 		virtual void initialize(void);
-
-		/**
-		 * @brief Legacy hook, kept for source compatibility.
-		 *
-		 * The framework no longer calls it: behavior lives in systems, which
-		 * run every frame on the entity's components. The default
-		 * implementation is a no-op and no library entity overrides it.
-		 * @deprecated Put the logic in a system; this hook will be removed.
-		 */
-		virtual void update(void);
 	};
 
 	/**

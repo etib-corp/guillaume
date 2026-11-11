@@ -73,7 +73,6 @@ namespace guillaume::entities::tests
 		auto dialog = makeDialog(registry, Dialog::Variant::Alert);
 
 		dialog->initialize();
-		dialog->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(dialog->getIdentifier());
@@ -91,7 +90,6 @@ namespace guillaume::entities::tests
 		auto dialog = makeDialog(registry, Dialog::Variant::FullScreen);
 
 		dialog->initialize();
-		dialog->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(dialog->getIdentifier());
@@ -108,7 +106,6 @@ namespace guillaume::entities::tests
 		auto dialog = makeDialog(registry, Dialog::Variant::Alert);
 
 		dialog->initialize();
-		dialog->update();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(dialog->getIdentifier());
@@ -123,7 +120,6 @@ namespace guillaume::entities::tests
 		auto dialog = makeDialog(registry, Dialog::Variant::FullScreen);
 
 		dialog->initialize();
-		dialog->update();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(dialog->getIdentifier());
@@ -185,7 +181,6 @@ namespace guillaume::entities::tests
 									 })
 						  .registerEntity(nullptr);
 		dialog->initialize();
-		dialog->update();
 
 		ASSERT_EQ(dialog->getActionCount(), 2U);
 		const auto &row = registry.getComponent<components::Layout>(
@@ -209,7 +204,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry, Dialog::Variant::Confirmation);
 		dialog->initialize();
-		dialog->update();
 
 		ASSERT_NE(dialog->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
 		EXPECT_EQ(
