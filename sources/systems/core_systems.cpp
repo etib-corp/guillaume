@@ -66,6 +66,10 @@
 #include "guillaume/systems/mesh_render.hpp"
 #include "guillaume/systems/mouse_button.hpp"
 #include "guillaume/systems/mouse_motion.hpp"
+#include "guillaume/systems/navigation_bar.hpp"
+#include "guillaume/systems/navigation_bar_destination.hpp"
+#include "guillaume/systems/navigation_drawer.hpp"
+#include "guillaume/systems/navigation_drawer_destination.hpp"
 #include "guillaume/systems/overlay.hpp"
 #include "guillaume/systems/progress_indicator.hpp"
 #include "guillaume/systems/rectangle_render.hpp"
@@ -193,6 +197,15 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(std::make_unique<systems::Search>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::TextField>());
+		// A destination is styled before the bar or drawer that owns it.
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationBarDestination>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationBar>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationDrawerDestination>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationDrawer>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

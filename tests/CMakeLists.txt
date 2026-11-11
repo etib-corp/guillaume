@@ -72,6 +72,10 @@ set(TEST_SOURCES
     sources/systems/test_menu.cpp
     sources/systems/test_list.cpp
     sources/systems/test_search.cpp
+    sources/systems/test_navigation_bar.cpp
+    sources/systems/test_navigation_bar_destination.cpp
+    sources/systems/test_navigation_drawer.cpp
+    sources/systems/test_navigation_drawer_destination.cpp
     sources/systems/test_snackbar.cpp
     sources/systems/test_switch.cpp
     sources/systems/test_text_field.cpp

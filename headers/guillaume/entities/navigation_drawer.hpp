@@ -35,6 +35,7 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/navigation_drawer.hpp"
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/selection.hpp"
 
@@ -54,40 +55,25 @@ namespace guillaume::entities
 	 * dividers separate groups, and the modal variant paints a `backdrop`
 	 * behind the sheet. The collapsed variant renders a narrow rail of
 	 * icon-over-label destinations.
+	 *
+	 * The class is a facade without fields: its state is
+	 * components::NavigationDrawer and systems::NavigationDrawer styles the
+	 * sheet, arranges the entries and drives the backdrop. `initialize()`
+	 * only builds the child entities.
 	 */
 	class NavigationDrawer:
-		public SurfaceBase<components::Overlay, components::SelectionGroup>
+		public SurfaceBase<components::Overlay, components::SelectionGroup,
+						   components::NavigationDrawer>
 	{
 		public:
-		/**
-		 * @brief Drawer variant.
-		 */
-		enum class Variant {
-			Standard,	 ///< Docked drawer on `surface`.
-			Modal,		 ///< Drawer on `surfaceContainerLow` over a backdrop.
-			Collapsed	 ///< Narrow rail of collapsed items.
-		};
+		/// Drawer variant.
+		using Variant = components::NavigationDrawer::Variant;
 
-		/**
-		 * @brief Kind of a drawer entry.
-		 */
-		enum class EntryKind {
-			Destination,	///< Pressable destination.
-			Section,		///< Section header (`titleSmall`).
-			Divider			///< Horizontal divider.
-		};
+		/// Kind of a drawer entry.
+		using EntryKind = components::NavigationDrawer::EntryKind;
 
-		/**
-		 * @brief One drawer entry.
-		 */
-		struct Entry {
-			EntryKind kind { EntryKind::Destination };	  ///< Entry kind.
-			std::string icon {};		///< Destination icon glyph.
-			std::string label {};		///< Destination label or section title.
-			std::string right {};		///< Trailing text (badge count, ...).
-			bool disabled { false };	///< Whether the destination is
-										///< disabled.
-		};
+		/// One drawer entry.
+		using Entry = components::NavigationDrawer::Entry;
 
 		/**
 		 * @brief Builder used to configure and create drawers.
@@ -340,66 +326,17 @@ namespace guillaume::entities
 		ecs::Entity::Identifier getBackdropIdentifier(void) const;
 
 		/**
-		 * @brief Build the entries.
+		 * @brief Build the entry children and select the first enabled
+		 * destination.
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Restyle and re-arrange the drawer.
-		 */
-		void update(void) override;
-
 		private:
-		Variant _variant { Variant::Standard };	   ///< Drawer variant.
-		std::vector<Entry> _entries {};			   ///< Drawer entries.
-		std::vector<std::shared_ptr<ecs::Entity>>
-			_destinationEntities {};	///< Destination children.
-		std::vector<std::shared_ptr<ecs::Entity>>
-			_sectionEntities {};	///< Section header children.
-		std::vector<std::shared_ptr<ecs::Entity>>
-			_dividerEntities {};				///< Divider children.
-		std::shared_ptr<Backdrop> _backdrop;	///< Modal backdrop.
-		std::function<void(std::size_t)>
-			_onIndexChange {};				  ///< Selection change handler.
-		bool _updatingSelection { false };	  ///< Reentrancy guard.
-
 		/**
-		 * @brief Build the entry children.
+		 * @brief Build the backdrop when it is missing, and a child for
+		 * every entry, then wire them to the system.
 		 */
 		void buildDestinations(void);
-
-		/**
-		 * @brief Select a destination identifier through the selection system.
-		 * @param identifier The destination entity identifier to select.
-		 */
-		void selectEntity(ecs::Entity::Identifier identifier);
-
-		/**
-		 * @brief Apply the variant geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Apply the overlay flags and the backdrop.
-		 */
-		void applyOverlay(void);
-
-		/**
-		 * @brief Select the first enabled destination.
-		 */
-		void applySelection(void);
-
-		/**
-		 * @brief Handle a user press on a destination.
-		 * @param index Destination index.
-		 */
-		void pressDestination(std::size_t index);
-
-		/**
-		 * @brief Get the drawer width of the current variant.
-		 * @return The width.
-		 */
-		float getDrawerWidth(void) const;
 	};
 
 }	 // namespace guillaume::entities

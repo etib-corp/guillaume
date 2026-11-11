@@ -49,6 +49,10 @@ set(GUILLAUME_SOURCES
     sources/components/menu.cpp
     sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
+    sources/components/navigation_bar.cpp
+    sources/components/navigation_bar_destination.cpp
+    sources/components/navigation_drawer.cpp
+    sources/components/navigation_drawer_destination.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
     sources/components/progress_indicator.cpp
@@ -188,6 +192,10 @@ set(GUILLAUME_SOURCES
     sources/systems/mesh_render.cpp
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
+    sources/systems/navigation_bar.cpp
+    sources/systems/navigation_bar_destination.cpp
+    sources/systems/navigation_drawer.cpp
+    sources/systems/navigation_drawer_destination.cpp
     sources/systems/overlay.cpp
     sources/systems/progress_indicator.cpp
     sources/systems/radio_button.cpp
