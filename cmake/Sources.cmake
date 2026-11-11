@@ -28,6 +28,7 @@ set(GUILLAUME_SOURCES
     sources/components/ellipse.cpp
     sources/components/extended_floating_action_button.cpp
     sources/components/floating_action_button.cpp
+    sources/components/floating_action_button_menu.cpp
     sources/components/focus.cpp
     sources/components/glyph.cpp
     sources/components/hierarchy.cpp
@@ -49,10 +50,12 @@ set(GUILLAUME_SOURCES
     sources/components/parent.cpp
     sources/components/progress_indicator.cpp
     sources/components/radio_button.cpp
+    sources/components/radio_group.cpp
     sources/components/range.cpp
     sources/components/ring.cpp
     sources/components/scrim.cpp
     sources/components/scrollable.cpp
+    sources/components/segmented_button.cpp
     sources/components/selection.cpp
     sources/components/snackbar.cpp
     sources/components/style_state.cpp
@@ -153,6 +156,7 @@ set(GUILLAUME_SOURCES
     sources/systems/elevation_render.cpp
     sources/systems/extended_floating_action_button.cpp
     sources/systems/floating_action_button.cpp
+    sources/systems/floating_action_button_menu.cpp
     sources/systems/focus.cpp
     sources/systems/focus_ring_render.cpp
     sources/systems/glyph_render.cpp
@@ -179,9 +183,11 @@ set(GUILLAUME_SOURCES
     sources/systems/overlay.cpp
     sources/systems/progress_indicator.cpp
     sources/systems/radio_button.cpp
+    sources/systems/radio_group.cpp
     sources/systems/rectangle_render.cpp
     sources/systems/ring_render.cpp
     sources/systems/scroll.cpp
+    sources/systems/segmented_button.cpp
     sources/systems/selection.cpp
     sources/systems/scrim_render.cpp
     sources/systems/shape_mesh.cpp

@@ -34,6 +34,7 @@
 #include "guillaume/systems/common_button.hpp"
 #include "guillaume/systems/extended_floating_action_button.hpp"
 #include "guillaume/systems/floating_action_button.hpp"
+#include "guillaume/systems/floating_action_button_menu.hpp"
 #include "guillaume/systems/icon_button.hpp"
 #include "guillaume/systems/clip.hpp"
 #include "guillaume/systems/divider.hpp"
@@ -68,8 +69,10 @@
 #include "guillaume/systems/ring_render.hpp"
 #include "guillaume/systems/scrim_render.hpp"
 #include "guillaume/systems/scroll.hpp"
+#include "guillaume/systems/segmented_button.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/systems/radio_button.hpp"
+#include "guillaume/systems/radio_group.hpp"
 #include "guillaume/systems/snackbar.hpp"
 #include "guillaume/systems/style_state.hpp"
 #include "guillaume/systems/surface_tone.hpp"
@@ -174,6 +177,12 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(std::make_unique<systems::Snackbar>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::AppBar>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Card>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::RadioGroup>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::SegmentedButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::FloatingActionButtonMenu>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

@@ -34,6 +34,8 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/radio_group.hpp"
+
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/radio_button.hpp"
 #include "guillaume/entities/surface.hpp"
@@ -49,8 +51,11 @@ namespace guillaume::entities
 	 * rows, keeps at most one of them selected and exposes the
 	 * `RadioGroup` accessibility role. Selecting an option through user
 	 * activation calls the value-change handler with its index.
+	 *
+	 * The class is a facade: its state lives in components::RadioGroup and
+	 * its rules in systems::RadioGroup.
 	 */
-	class RadioGroup: public SurfaceBase<>
+	class RadioGroup: public SurfaceBase<components::RadioGroup>
 	{
 		public:
 		/**
@@ -180,33 +185,16 @@ namespace guillaume::entities
 			setOnValueChange(std::function<void(std::size_t)> onValueChange);
 
 		/**
-		 * @brief Build the option radio buttons.
+		 * @brief Build the option radio buttons and record their identifiers
+		 * in components::RadioGroup.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Refresh the options.
-		 */
-		void update(void) override;
 
 		/**
 		 * @brief Vertical space between 20 dp rings so their 40 dp targets
 		 * do not overlap.
 		 */
-		static constexpr float RowSpacing = 20.0f;
-
-		private:
-		std::vector<std::string> _options {};	 ///< Option labels.
-		std::optional<std::size_t> _value {};	 ///< Selected option.
-		std::function<void(std::size_t)>
-			_onValueChange {};	  ///< Value-change handler.
-		std::vector<std::shared_ptr<RadioButton>>
-			_buttons {};	///< Option children.
-
-		/**
-		 * @brief Apply the selection to the option buttons.
-		 */
-		void applySelection(void);
+		static constexpr float RowSpacing = components::RadioGroup::RowSpacing;
 	};
 
 }	 // namespace guillaume::entities
