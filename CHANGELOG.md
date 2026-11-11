@@ -38,6 +38,11 @@ Versions follow the calendar scheme described in
   progress) and a Layout-phase system of the same name whose static functions
   hold the rules and the actions (`show`, `hide`, `advance`, `start`,
   `stop`, ...).
+- `AppBar`, `Card`, `Dialog`, `Menu`, `RadioGroup`, `SegmentedButton` and
+  `FloatingActionButtonMenu` follow the strict ECS, each with a configuration
+  component and a Layout-phase system of the same name.
+- `components::CommonButton::setCorners()` overrides the radius of each
+  corner; `systems::SegmentedButton` uses it to join its segments.
 - `systems::Layout::layerOf()` returns an entity's tree depth from its
   `components::Hierarchy`.
 
@@ -67,6 +72,21 @@ Versions follow the calendar scheme described in
     tick, and rebuilding an indicator's children stops the old animation.
   - `Tooltip` and `Snackbar` build a missing child as soon as a setter needs
     it, not on the next update.
+- `entities::AppBar`, `Card`, `Dialog`, `Menu`, `RadioGroup`,
+  `SegmentedButton` and `FloatingActionButtonMenu` are facades without fields
+  and no longer override `update()`. Visible differences:
+  - **Breaking:** `Card::getActions()` returns the vector by value instead of
+    by `const` reference.
+  - A dialog keeps the pose it was given; before, its Transform was reset to
+    the default pose on every update, discarding `Builder::withPose()`.
+  - Menu rows are an internal entity instead of `entities::View`, and
+    `Menu::setVariant()` no longer rebuilds them.
+  - Setters that need a new child (`AppBar::setTitle()`, the `Card` content
+    setters, `Dialog::setTitle()` / `setMessage()`, `Menu::setItems()`) build
+    it immediately, not on the next update.
+  - Accessibility labels of the app bar, card and dialog titles follow later
+    title changes.
+  - `SegmentedButton::setSegmentDisabled()` keeps the connected corners.
 - `components::Elevation::setElevationLevel()` only marks the component
   changed when the resolved shadow differs.
 - `entities::SurfaceBase` keeps no copy of its configuration and no longer
