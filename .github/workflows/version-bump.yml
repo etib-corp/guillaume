@@ -7,6 +7,11 @@ on:
 permissions:
   contents: write
 
+# One bump at a time: two merges in a row must not compute the same version.
+concurrency:
+  group: version-bump
+  cancel-in-progress: false
+
 jobs:
   bump:
     if: github.event.pull_request.merged == true
@@ -20,8 +25,12 @@ jobs:
 
       - name: Determine bump type from PR title
         id: bump
+        env:
+          # Passed through the environment, never interpolated into the
+          # script: a PR title is untrusted text.
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          title="${{ github.event.pull_request.title }}"
+          title="$PR_TITLE"
           lower="$(printf '%s' "$title" | tr '[:upper:]' '[:lower:]')"
           case "$lower" in
             feat*)
@@ -35,19 +44,20 @@ jobs:
               ;;
           esac
 
-      - name: Skip if no version bump is required
+      - name: Report when no version bump is required
         if: steps.bump.outputs.type == 'none'
         run: |
           echo "PR title does not indicate a feature or fix; skipping version bump."
-          exit 0
 
       - name: Read current version
+        if: steps.bump.outputs.type != 'none'
         id: current
         run: |
           version="$(grep -oE 'VERSION [0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt | head -1 | awk '{print $2}')"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Compute new version
+        if: steps.bump.outputs.type != 'none'
         id: next
         run: |
           current="${{ steps.current.outputs.version }}"
@@ -73,28 +83,35 @@ jobs:
           echo "new=$new" >> "$GITHUB_OUTPUT"
 
       - name: Update CMakeLists.txt
+        if: steps.bump.outputs.type != 'none'
         run: |
           sed -i -E "s/VERSION ${{ steps.current.outputs.version }}/VERSION ${{ steps.next.outputs.new }}/" CMakeLists.txt
 
       - name: Update CHANGELOG.md
+        if: steps.bump.outputs.type != 'none'
         run: |
           new="${{ steps.next.outputs.new }}"
           date="$(date +%Y-%m-%d)"
           if grep -q '^## \[Unreleased\]' CHANGELOG.md; then
-            sed -i "0,/^## \[Unreleased\]/s//## [$new] - $date\n\n## [Unreleased]/" CHANGELOG.md
+            # What was unreleased is what this version releases: the heading
+            # goes below a fresh, empty Unreleased section, above the entries.
+            sed -i "0,/^## \[Unreleased\]/s//## [Unreleased]\n\n## [$new] - $date/" CHANGELOG.md
           else
             printf '\n## [%s] - %s\n' "$new" "$date" >> CHANGELOG.md
           fi
 
       - name: Commit version bump
+        if: steps.bump.outputs.type != 'none'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CMakeLists.txt CHANGELOG.md
           git commit -m "chore: bump version to ${{ steps.next.outputs.new }}"
+          git pull --rebase origin main
           git push origin HEAD:main
 
       - name: Create release tag
+        if: steps.bump.outputs.type != 'none'
         run: |
           git tag "v${{ steps.next.outputs.new }}"
           git push origin "v${{ steps.next.outputs.new }}"
