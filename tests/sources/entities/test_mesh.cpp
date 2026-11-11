@@ -90,23 +90,23 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(component.getTexturePath(), "skin.png");
 	}
 
-	TEST_F(TestMesh, UpdateReappliesStoredPaths)
+	TEST_F(TestMesh, ComponentIsTheSourceOfTruthForThePaths)
 	{
 		ecs::ComponentRegistry registry;
 		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
 		model->setTexturePath("skin.png");
 
-		registry.getComponent<components::Mesh>(model->getIdentifier())
-			.setMeshPath("mutated.obj")
-			.setTexturePath("mutated.png");
-
-		model->update();
-
-		const auto &component =
+		// The entity keeps no copy: the paths are in the component from
+		// construction, and a direct component change is not reverted.
+		auto &component =
 			registry.getComponent<components::Mesh>(model->getIdentifier());
-
 		EXPECT_EQ(component.getMeshPath(), "teapot.obj");
 		EXPECT_EQ(component.getTexturePath(), "skin.png");
+
+		component.setMeshPath("mutated.obj").setTexturePath("mutated.png");
+
+		EXPECT_EQ(component.getMeshPath(), "mutated.obj");
+		EXPECT_EQ(component.getTexturePath(), "mutated.png");
 	}
 
 	TEST_F(TestMesh, BuilderPresetBuildsAndRegistersModel)

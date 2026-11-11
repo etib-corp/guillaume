@@ -72,7 +72,7 @@ namespace guillaume::components
 		 * @brief Get the image texture path.
 		 * @return The image texture path.
 		 */
-		std::string getTexturePath(void) const;
+		const std::string &getTexturePath(void) const;
 
 		/**
 		 * @brief Set the texture drawn when the main texture fails to load.

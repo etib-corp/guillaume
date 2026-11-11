@@ -76,8 +76,8 @@ namespace guillaume::entities
 	Mesh::Mesh(ecs::ComponentRegistry &registry, const std::string &meshPath)
 		: ecs::EntityFiller<components::Transform, components::Bound,
 							components::Mesh>(registry)
-		, _meshPath(meshPath)
 	{
+		setMeshPath(meshPath);
 	}
 
 	Mesh::~Mesh()
@@ -86,8 +86,6 @@ namespace guillaume::entities
 
 	Mesh &Mesh::setMeshPath(const std::string &meshPath)
 	{
-		_meshPath = meshPath;
-
 		getComponentRegistry()
 			.getComponent<components::Mesh>(getIdentifier())
 			.setMeshPath(meshPath);
@@ -97,23 +95,11 @@ namespace guillaume::entities
 
 	Mesh &Mesh::setTexturePath(const std::string &texturePath)
 	{
-		_texturePath = texturePath;
-
 		getComponentRegistry()
 			.getComponent<components::Mesh>(getIdentifier())
 			.setTexturePath(texturePath);
 
 		return *this;
-	}
-
-	void Mesh::initialize(void)
-	{
-	}
-
-	void Mesh::update(void)
-	{
-		setMeshPath(_meshPath);
-		setTexturePath(_texturePath);
 	}
 
 }	 // namespace guillaume::entities

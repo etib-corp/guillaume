@@ -38,6 +38,17 @@ Versions follow the calendar scheme described in
 - `Divider` is the first widget migrated to a strict ECS: its state lives in
   `components::Divider`, its behavior in `systems::Divider`, and
   `entities::Divider` is a facade without fields or an `update()` override.
+- `Backdrop` and `Text` follow: `components::Backdrop` + `systems::Backdrop`,
+  and `components::Typography` + `systems::Typography`. `entities::Text` no
+  longer keeps its own copy of the content and color: the `Text` and `Color`
+  components are the only source of truth, and a text is fully configured as
+  soon as it is constructed (it no longer needs an `update()` call).
+- **Behavior change:** `entities::Icon`, `entities::Image` and
+  `entities::Mesh` no longer keep private copies of their glyph, paths and
+  size and re-apply them on `update()`. The components are the only source of
+  truth, so a value written directly to a component is no longer overwritten
+  by the entity. `components::Image::getTexturePath()` now returns a
+  reference.
 - `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
 - Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 

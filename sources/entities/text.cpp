@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "guillaume/entities/text.hpp"
+#include "guillaume/systems/typography.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme.hpp"
 
@@ -108,12 +109,12 @@ namespace guillaume::entities
 			   theme::TypeRole role, const utility::graphic::Color32Bit &color,
 			   std::optional<float> fontSize)
 		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Text, components::Color>(registry)
-		, _content(content)
-		, _typeRole(role)
-		, _fontSize(fontSize)
-		, _color(color)
+							components::Text, components::Color,
+							components::Typography>(registry)
 	{
+		typography().setRole(role).setFontSize(fontSize);
+		setContent(content);
+		setColor(color);
 		applyTypography();
 	}
 
@@ -121,9 +122,25 @@ namespace guillaume::entities
 	{
 	}
 
+	components::Typography &Text::typography(void)
+	{
+		return getComponentRegistry().getComponent<components::Typography>(
+			getIdentifier());
+	}
+
+	const components::Typography &Text::typography(void) const
+	{
+		return getComponentRegistry().getComponent<components::Typography>(
+			getIdentifier());
+	}
+
+	void Text::applyTypography(void)
+	{
+		systems::Typography::apply(getComponentRegistry(), getIdentifier());
+	}
+
 	Text &Text::setContent(const std::string &content)
 	{
-		_content = content;
 		getComponentRegistry()
 			.getComponent<components::Text>(getIdentifier())
 			.setContent(content);
@@ -132,52 +149,29 @@ namespace guillaume::entities
 
 	Text &Text::setFontSize(const float &fontSize)
 	{
-		_fontSize = fontSize;
+		typography().setFontSize(fontSize);
 		applyTypography();
 		return *this;
 	}
 
 	Text &Text::setTypeRole(theme::TypeRole role)
 	{
-		_typeRole = role;
-		_fontSize.reset();
+		typography().setRole(role).setFontSize(std::nullopt);
 		applyTypography();
 		return *this;
 	}
 
 	theme::TypeRole Text::getTypeRole(void) const
 	{
-		return _typeRole;
-	}
-
-	void Text::applyTypography(void)
-	{
-		auto &text = getComponentRegistry().getComponent<components::Text>(
-			getIdentifier());
-		const auto &token = getTypeToken(_typeRole);
-		text.setTypeToken(token);
-		if (_fontSize.has_value()) {
-			text.setFontSize(*_fontSize);
-		}
+		return typography().getRole();
 	}
 
 	Text &Text::setColor(const utility::graphic::Color32Bit &color)
 	{
-		_color = color;
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
 			.setColor(color);
 		return *this;
 	}
 
-	void Text::initialize(void)
-	{
-	}
-
-	void Text::update(void)
-	{
-		setContent(_content);
-		applyTypography();
-		setColor(_color);
-	}
 }	 // namespace guillaume::entities

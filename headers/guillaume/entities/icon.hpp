@@ -132,18 +132,6 @@ namespace guillaume::entities
 						 const components::Glyph::Style &style);
 		};
 
-		private:
-		std::string _glyphName {};	  ///< Name of the glyph to be used for this
-									  ///< Icon entity
-		float _fontSize { 24.0f };	  ///< Font size of the icon to be used for
-									  ///< this Icon entity
-		utility::graphic::Color32Bit
-			_color {};	  ///< Color of the icon to be used for this Icon entity
-						  ///< (RGBA)
-		components::Glyph::Style _style {
-			components::Glyph::Style::Outlined
-		};	  ///< Style of the glyph to be used for this Icon entity
-
 		public:
 		/**
 		 * @brief Default constructor for the Icon component.
@@ -206,16 +194,6 @@ namespace guillaume::entities
 		 * @return Reference to this icon for chaining.
 		 */
 		Icon &setAccessibilityLabel(const std::string &label);
-
-		/**
-		 * @brief Initialize the icon entity's derived state.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the icon entity's derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

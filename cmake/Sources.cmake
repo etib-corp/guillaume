@@ -10,6 +10,7 @@ set(GUILLAUME_SOURCES
     sources/components/accessibility.cpp
     sources/components/animation.cpp
     sources/components/arc.cpp
+    sources/components/backdrop.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/clip.cpp
@@ -43,6 +44,7 @@ set(GUILLAUME_SOURCES
     sources/components/text.cpp
     sources/components/text_field.cpp
     sources/components/transform.cpp
+    sources/components/typography.cpp
     sources/components/value.cpp
     sources/ecs/component.cpp
     sources/ecs/component_registry.cpp
@@ -117,6 +119,7 @@ set(GUILLAUME_SOURCES
     sources/storage.cpp
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
+    sources/systems/backdrop.cpp
     sources/systems/clip.cpp
     sources/systems/core_systems.cpp
     sources/systems/divider.cpp
@@ -155,6 +158,7 @@ set(GUILLAUME_SOURCES
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
+    sources/systems/typography.cpp
     sources/theme.cpp
     sources/theme/default_theme.cpp
     sources/theme/tokens.cpp

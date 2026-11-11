@@ -29,11 +29,13 @@
 #include <utility/graphic/pose.hpp>
 
 #include "guillaume/components/animation.hpp"
+#include "guillaume/components/backdrop.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/scrim.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
+#include "guillaume/systems/backdrop.hpp"
 
 namespace guillaume::entities
 {
@@ -48,13 +50,14 @@ namespace guillaume::entities
 	 */
 	class Backdrop:
 		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Scrim, components::Animation>
+								 components::Scrim, components::Animation,
+								 components::Backdrop>
 	{
 		public:
 		/**
 		 * @brief Side of the backdrop quad, in dp.
 		 */
-		static constexpr float Extent = 8192.0f;
+		static constexpr float Extent = systems::Backdrop::Extent;
 
 		/**
 		 * @brief Construct a hidden backdrop.
@@ -87,25 +90,6 @@ namespace guillaume::entities
 		 */
 		void follow(const utility::graphic::PoseF &ownerPose, float ownerWidth,
 					float ownerHeight);
-
-		/**
-		 * @brief Nothing to initialize.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Re-apply the current color.
-		 */
-		void update(void) override;
-
-		private:
-		bool _visible { false };	 ///< Whether the backdrop is shown.
-		float _progress { 0.0f };	 ///< Fade-in progress in [0, 1].
-
-		/**
-		 * @brief Push the faded Backdrop color to the Scrim component.
-		 */
-		void applyColor(void);
 	};
 
 }	 // namespace guillaume::entities

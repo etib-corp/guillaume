@@ -24,6 +24,7 @@
 
 #include "guillaume/systems/animation.hpp"
 #include "guillaume/systems/arc_render.hpp"
+#include "guillaume/systems/backdrop.hpp"
 #include "guillaume/systems/clip.hpp"
 #include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/drag.hpp"
@@ -60,6 +61,7 @@
 #include "guillaume/systems/text_field.hpp"
 #include "guillaume/systems/text_input.hpp"
 #include "guillaume/systems/text_render.hpp"
+#include "guillaume/systems/typography.hpp"
 
 namespace guillaume::systems
 {
@@ -68,6 +70,10 @@ namespace guillaume::systems
 		utility::Engine &engine,
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider)
 	{
+		// Typography resolves the metrics MeasureText measures with, and both
+		// run in the Measure phase: keep it registered first.
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::Typography>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::MeasureText>(ressourceProvider, engine));
 		systemRegistry.registerNewSystem(
@@ -123,6 +129,7 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Clip>(engine));
 		systemRegistry.registerNewSystem(std::make_unique<systems::Divider>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Backdrop>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));

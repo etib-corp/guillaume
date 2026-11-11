@@ -29,6 +29,7 @@
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
+#include "guillaume/components/typography.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/color.hpp"
 
@@ -44,7 +45,8 @@ namespace guillaume::entities
 	 */
 	class Text:
 		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Text, components::Color>
+								 components::Text, components::Color,
+								 components::Typography>
 	{
 		public:
 		/**
@@ -152,16 +154,6 @@ namespace guillaume::entities
 						 const utility::graphic::Color32Bit &color);
 		};
 
-		private:
-		std::string
-			_content {};	///< Text content to be set in the Text component
-		theme::TypeRole _typeRole {
-			theme::TypeRole::BodyMedium
-		};	  ///< Typescale role resolved on every update
-		std::optional<float>
-			_fontSize {};	 ///< Explicit size overriding the role size
-		utility::graphic::Color32Bit _color {};
-
 		public:
 		/**
 		 * @brief Default constructor for the Text component.
@@ -226,19 +218,21 @@ namespace guillaume::entities
 		 */
 		Text &setColor(const utility::graphic::Color32Bit &color);
 
-		/**
-		 * @brief Initialize the text entity's derived state.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the text entity's derived state.
-		 */
-		void update(void) override;
-
 		private:
 		/**
-		 * @brief Push the role token and any size override to the component.
+		 * @brief Access the typography component.
+		 * @return The component holding the role and explicit size.
+		 */
+		components::Typography &typography(void);
+
+		/**
+		 * @brief Access the typography component.
+		 * @return The component holding the role and explicit size.
+		 */
+		const components::Typography &typography(void) const;
+
+		/**
+		 * @brief Run systems::Typography on this entity right now.
 		 */
 		void applyTypography(void);
 	};

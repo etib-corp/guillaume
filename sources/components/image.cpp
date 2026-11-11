@@ -73,7 +73,7 @@ namespace guillaume::components
 		return _usingFallback;
 	}
 
-	std::string Image::getTexturePath(void) const
+	const std::string &Image::getTexturePath(void) const
 	{
 		return _texturePath;
 	}

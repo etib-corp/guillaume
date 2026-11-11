@@ -81,20 +81,22 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(component.getTexturePath(), "other.png");
 	}
 
-	TEST_F(TestImage, UpdateReappliesStoredTexturePath)
+	TEST_F(TestImage, ComponentIsTheSourceOfTruthForTheTexturePath)
 	{
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "texture.png");
 
+		// The entity keeps no copy: the path is in the component from
+		// construction, and a direct component change is what it reports.
+		const auto &component =
+			registry.getComponent<components::Image>(image->getIdentifier());
+		EXPECT_EQ(component.getTexturePath(), "texture.png");
+
 		registry.getComponent<components::Image>(image->getIdentifier())
 			.setTexturePath("mutated.png");
 
-		image->update();
-
-		const auto &component =
-			registry.getComponent<components::Image>(image->getIdentifier());
-
-		EXPECT_EQ(component.getTexturePath(), "texture.png");
+		EXPECT_EQ(component.getTexturePath(), "mutated.png");
+		EXPECT_EQ(image->getTexturePath(), "mutated.png");
 	}
 
 	TEST_F(TestImage, BuilderPresetBuildsAndRegistersImage)
