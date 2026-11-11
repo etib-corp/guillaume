@@ -70,15 +70,19 @@ namespace guillaume::components
 		ecs::Entity::Identifier _lead {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Icon and label group, or the pill of a collapsed item
+
 		ecs::Entity::Identifier _iconEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Icon child
+
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Label child
+
 		ecs::Entity::Identifier _rightEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Trailing text child
+
 		PressHandler _onPress {};	 ///< User press callback
 
 		public:

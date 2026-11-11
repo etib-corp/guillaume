@@ -112,6 +112,7 @@ namespace guillaume::components
 		ecs::Entity::Identifier _backdrop {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Modal backdrop child
+
 		IndexHandler _onIndexChange {};		  ///< Selection change callback
 		bool _updatingSelection { false };	  ///< Reentrancy guard
 

@@ -72,15 +72,19 @@ namespace guillaume::components
 		ecs::Entity::Identifier _indicator {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Active indicator pill child
+
 		ecs::Entity::Identifier _iconEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Icon child
+
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Label child
+
 		ecs::Entity::Identifier _badgeEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Badge child
+
 		PressHandler _onPress {};	 ///< User press callback
 
 		public:

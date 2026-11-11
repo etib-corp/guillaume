@@ -77,27 +77,35 @@ namespace guillaume::components
 		ecs::Entity::Identifier _leadingIconEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Leading icon child
+
 		ecs::Entity::Identifier _trailingIconEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Trailing icon child
+
 		ecs::Entity::Identifier _errorIconEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Error icon child
+
 		ecs::Entity::Identifier _inputColumn {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Column holding the label and the input
+
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Floating label child
+
 		ecs::Entity::Identifier _inputEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Input text child
+
 		ecs::Entity::Identifier _prefixEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Prefix child
+
 		ecs::Entity::Identifier _suffixEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Suffix child
+
 		ecs::Entity::Identifier _supportingEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Supporting text child

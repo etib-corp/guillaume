@@ -74,6 +74,7 @@ namespace guillaume::components
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Label child
+
 		std::optional<float> _size {};	  ///< Size override
 		std::optional<utility::graphic::Color32Bit>
 			_containerColor {};	   ///< Container color override

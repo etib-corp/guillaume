@@ -73,17 +73,21 @@ namespace guillaume::components
 		ecs::Entity::Identifier _iconEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Hero icon child
+
 		ecs::Entity::Identifier _titleEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Title child
+
 		ecs::Entity::Identifier _messageEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Message child
+
 		std::vector<ecs::Entity::Identifier>
 			_actionEntities {};	   ///< Action button children
 		ecs::Entity::Identifier _actionRow {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Right-aligned action row child
+
 		ecs::Entity::Identifier _backdrop {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Modal backdrop child

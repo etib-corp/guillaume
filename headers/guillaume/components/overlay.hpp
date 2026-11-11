@@ -50,6 +50,7 @@ namespace guillaume::components
 		bool _dismissOnOutsideClick {
 			true
 		};	  ///< Whether an outside click dismisses the overlay.
+
 		bool _dismissOnEscape { true };	   ///< Whether Escape dismisses it.
 		float _autoDismiss { 0.0f };	   ///< Auto-dismiss delay (0 = never).
 		float _elapsed { 0.0f };		   ///< Elapsed time while visible.

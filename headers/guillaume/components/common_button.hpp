@@ -86,6 +86,7 @@ namespace guillaume::components
 		bool _compact {
 			false
 		};	  ///< Whether the horizontal padding is compact
+
 		float _minWidth { 0.0f };	  ///< Extra minimum width
 		bool _uppercase { false };	  ///< Whether the label is upper-cased
 		std::optional<Corners> _corners {};	   ///< Per-corner radius override

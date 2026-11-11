@@ -79,19 +79,18 @@ Guillaume stores state the ECS way and composes UI the widget way:
 - **Systems** own everything that happens every frame for a kind of
   component: input hit-testing, measuring, layout, rendering. Each system
   declares the components it needs and a phase.
-- **Entities are not bare identifiers.** An entity such as `Button` or
-  `NavigationDrawer` is a class that creates its components and child
-  entities and overrides `update()` to restyle and re-arrange itself. When a
-  system visits an entity whose components changed, `ecs::System::routine`
-  calls that entity's `update()`, then its parent's, so a change propagates up
-  the tree within the same system pass.
+- **Entities are thin facades.** An entity class such as `Button` or
+  `NavigationDrawer` holds no state and no rule. It creates its components
+  and child entities, and its setters write components and call the
+  system's static functions so a change is visible at once. The framework
+  never calls back into an entity: `ecs::System::routine` only calls the
+  system's `update(identifier)`.
 
-So most entities still behave like retained widgets that keep part of their
-state in member fields. **That is the legacy shape, and it is being migrated
-away**: the target is a strict ECS in which an entity is only an identifier,
-all state is in components and all behavior is in systems.
+Every widget of the library follows this shape. A system can be driven on a
+bare identifier with the right components, which is how the system tests
+under `tests/sources/systems/` work.
 
-### Target shape and migration recipe
+### Widget shape and how to add one
 
 `Divider` is the reference. It is split in three:
 
@@ -104,7 +103,7 @@ all state is in components and all behavior is in systems.
 `systems/test_divider.cpp` drives the system on a bare identifier with five
 components and no `entities::Divider` object at all.
 
-To migrate another widget:
+To write a widget (this is also how the existing ones were migrated):
 
 1. Move each member field of the entity class into a `components::X`
    configuration component. Setters compare before writing and call
@@ -151,9 +150,16 @@ component and system (`CommonButton`, `IconButton`, `FloatingActionButton`,
 `apply` in `components::Button` as the restyle function, which replaces the
 virtual `applyStyleState()` / `applyGeometry()` calls.
 
-When no entity overrides `update()` any more, `ecs::Entity::update()` and the
-calls to it in `ecs::System::routine` are deleted, and the entity classes can
-become plain builder functions.
+What remains of the entity classes:
+
+- `initialize()` and private build helpers, only to create child entities
+  (that needs `shared_from_this()`, and a system cannot create entities).
+- `SurfaceBase` keeps a list of handles to its attached children.
+- `ecs::Entity::update()` still exists as a deprecated no-op for source
+  compatibility; nothing calls it.
+
+The next step, when wanted, is to turn the entity classes into plain builder
+functions and remove `ecs::Entity::update()`.
 
 ## Patterns Used
 

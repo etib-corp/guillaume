@@ -74,9 +74,11 @@ namespace guillaume::components
 		ecs::Entity::Identifier _navigationButton {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Leading icon button child
+
 		ecs::Entity::Identifier _titleEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Title child
+
 		Identifiers _actionButtons {};	  ///< Trailing action children
 
 		public:

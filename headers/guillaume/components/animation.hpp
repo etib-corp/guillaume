@@ -55,6 +55,7 @@ namespace guillaume::components
 		motion::Easing _easing {
 			motion::Easing::Standard
 		};	  ///< Easing curve.
+
 		SampleHandler _onSample {};		   ///< Eased progress handler.
 		CompleteHandler _onComplete {};	   ///< Completion handler.
 

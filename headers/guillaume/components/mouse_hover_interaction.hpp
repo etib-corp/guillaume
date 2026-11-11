@@ -51,6 +51,7 @@ namespace guillaume::components
 		bool _isHovered {
 			false
 		};	  ///< Whether the mouse is currently hovering over the entity
+
 		utility::graphic::SizeUI _accessibilityMargin {
 			0, 0
 		};	  ///< Additional margin around the entity for hover detection to

@@ -88,18 +88,23 @@ namespace guillaume::components
 		ecs::Entity::Identifier _searchIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Pressable leading icon
+
 		ecs::Entity::Identifier _textEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Query child
+
 		ecs::Entity::Identifier _placeholderEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Placeholder child
+
 		ecs::Entity::Identifier _clearIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Pressable clear icon
+
 		ecs::Entity::Identifier _loadingIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Loading glyph
+
 		ecs::Entity::Identifier _trailingIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Pressable trailing icon
