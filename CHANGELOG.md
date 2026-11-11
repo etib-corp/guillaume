@@ -9,6 +9,8 @@ Versions follow the calendar scheme described in
 
 ## [2026.3.2] - 2026-11-11
 
+## [2026.3.3] - 2026-11-11
+
 ## [Unreleased]
 
 ### Changed
