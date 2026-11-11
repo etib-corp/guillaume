@@ -31,6 +31,7 @@
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/extended_floating_action_button.hpp"
 #include "guillaume/entities/button_base.hpp"
 
 namespace guillaume::entities
@@ -43,20 +44,17 @@ namespace guillaume::entities
 	class ExtendedFloatingActionButton: public ButtonBase
 	{
 		public:
-		/**
-		 * @brief Color variant of the extended FAB.
-		 */
-		enum class Variant { Surface, Primary, Secondary, Tertiary };
+		/// Variant (see components::ExtendedFloatingActionButton).
+		using Variant = components::ExtendedFloatingActionButton::Variant;
 
 		/**
 		 * @brief Size of the extended FAB.
 		 */
-		/**
-		 * @brief Shadow mode (Paper `mode`): elevated or flat.
-		 */
-		enum class Mode { Elevated, Flat };
+		/// Mode (see components::ExtendedFloatingActionButton).
+		using Mode = components::ExtendedFloatingActionButton::Mode;
 
-		enum class Size { Small, Medium, Large };
+		/// Size (see components::ExtendedFloatingActionButton).
+		using Size = components::ExtendedFloatingActionButton::Size;
 
 		/**
 		 * @brief Builder used to configure and create
@@ -179,33 +177,7 @@ namespace guillaume::entities
 					std::function<void(void)> onClick);
 		};
 
-		private:
-		Variant _variant { Variant::Primary };	  ///< Color variant
-		Size _size { Size::Medium };			  ///< Size
-		Mode _mode { Mode::Elevated };
-		bool _isExtended {
-			true
-		};	  ///< Whether the label is shown	  ///< Shadow mode
-		std::optional<float> _customSize {};	///< Custom container size
-		bool _lowered { false };				///< Whether the FAB is lowered
-
 		protected:
-		/**
-		 * @brief Resolve the M3 elevation level from the current state.
-		 */
-		void applyElevation(void);
-
-		/**
-		 * @brief Re-apply the visual state (colors, borders, radius) from the
-		 * current interaction/selected state.
-		 */
-		void applyStyleState(void) override;
-
-		/**
-		 * @brief Re-measure and lay out the button and its children.
-		 */
-		void applyGeometry(void) override;
-
 		/**
 		 * @brief Font size used for the icon child.
 		 * @return The icon font size.
@@ -254,7 +226,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~ExtendedFloatingActionButton(void) override;
+		~ExtendedFloatingActionButton(void) override = default;
 
 		/**
 		 * @brief Set the color variant.

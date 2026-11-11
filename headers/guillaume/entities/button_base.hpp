@@ -33,6 +33,7 @@
 #include "guillaume/ecs/parent_entity_filler.hpp"
 
 #include "guillaume/components/borders.hpp"
+#include "guillaume/components/button.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/accessibility.hpp"
@@ -46,6 +47,7 @@
 
 #include "guillaume/entities/icon.hpp"
 #include "guillaume/entities/text.hpp"
+#include "guillaume/systems/button.hpp"
 
 namespace guillaume::entities
 {
@@ -71,7 +73,7 @@ namespace guillaume::entities
 			components::HandButtonInteraction, components::HandHoverInteraction,
 			components::MouseHoverInteraction,
 			components::MouseButtonInteraction, components::StyleState,
-			components::Accessibility>
+			components::Accessibility, components::Button>
 	{
 		public:
 		/**
@@ -250,12 +252,15 @@ namespace guillaume::entities
 		/**
 		 * @brief Glyph shown by the icon while loading.
 		 */
-		static constexpr const char *LoadingGlyph = "progress_activity";
+		static constexpr const char *LoadingGlyph =
+			systems::Button::LoadingGlyph;
 
 		/**
 		 * @brief Minimum press duration that counts as a long press.
 		 */
-		static constexpr std::chrono::milliseconds LongPressDuration { 500 };
+		static constexpr std::chrono::milliseconds LongPressDuration {
+			systems::Button::LongPressDuration
+		};
 
 		/**
 		 * @brief Get the accessibility hint.
@@ -289,11 +294,6 @@ namespace guillaume::entities
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Recompute the button entity's derived state.
-		 */
-		void update(void) override;
-
 		protected:
 		/**
 		 * @brief Construct a ButtonBase entity.
@@ -317,15 +317,24 @@ namespace guillaume::entities
 				   std::function<void(void)> onClick);
 
 		/**
-		 * @brief Re-apply the visual state (colors, borders, radius) from the
-		 * current interaction/selected state.
+		 * @brief Access the button state component.
+		 * @return The components::Button of this entity.
 		 */
-		virtual void applyStyleState(void) = 0;
+		components::Button &state(void);
 
 		/**
-		 * @brief Re-measure and lay out the button and its children.
+		 * @brief Access the button state component.
+		 * @return The components::Button of this entity.
 		 */
-		virtual void applyGeometry(void) = 0;
+		const components::Button &state(void) const;
+
+		/**
+		 * @brief Restyle now through the variant system.
+		 *
+		 * The variant system does the same every frame; this makes the result
+		 * of a setter visible immediately.
+		 */
+		void restyle(void);
 
 		/**
 		 * @brief Font size used for the icon child.
@@ -467,33 +476,6 @@ namespace guillaume::entities
 		 * @brief Mirror the toggle selection on the Accessibility component.
 		 */
 		void syncAccessibilityState(void);
-
-		std::string _iconGlyphName {};	  ///< Icon glyph name to attach.
-		components::Glyph::Style _iconStyle {
-			components::Glyph::Style::Outlined
-		};	  ///< Style of the icon to attach.
-		std::string
-			_selectedIconGlyphName {};	  ///< Icon glyph name when selected.
-		std::string _labelContent {};	  ///< Label content to attach.
-		std::shared_ptr<Icon> _icon;	  ///< Internal child icon entity
-		std::shared_ptr<Text> _label;	  ///< Internal child label entity
-		bool _isToggle { false };	 ///< Whether the button is a toggle button
-		bool _isSelected { false };	   ///< Whether the button is selected
-		bool _isMorph { false };	///< Whether the button morphs when selected
-		bool _isTrailingIcon {
-			false
-		};	  ///< Whether the icon trails the label
-		std::function<void(void)> _onClick {};	  ///< Click event handler
-		std::function<void(void)>
-			_onLongPress {};	///< Long-press handler (replaces the click)
-		std::chrono::steady_clock::time_point
-			_pressStart {};			  ///< When the current press started
-		bool _isLoading { false };	  ///< Whether a progress glyph is shown
-		bool _isVisible { true };	  ///< Whether the button is shown
-		std::optional<utility::graphic::Color32Bit>
-			_containerColorOverride {};	   ///< Custom container color
-		std::optional<utility::graphic::Color32Bit>
-			_contentColorOverride {};	 ///< Custom content color
 
 		/**
 		 * @brief Resolve the container color, honouring the override.

@@ -30,6 +30,7 @@
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/icon_button.hpp"
 #include "guillaume/entities/button_base.hpp"
 
 namespace guillaume::entities
@@ -41,15 +42,11 @@ namespace guillaume::entities
 	class IconButton: public ButtonBase
 	{
 		public:
-		/**
-		 * @brief Color variant of the icon button.
-		 */
-		enum class Variant { Standard, Filled, Tonal, Outlined };
+		/// Variant (see components::IconButton).
+		using Variant = components::IconButton::Variant;
 
-		/**
-		 * @brief Size of the icon button.
-		 */
-		enum class Size { Small, Medium, Large };
+		/// Size (see components::IconButton).
+		using Size = components::IconButton::Size;
 
 		/**
 		 * @brief Builder used to configure and create `IconButton` entities.
@@ -172,22 +169,7 @@ namespace guillaume::entities
 							   Variant variant, Size size);
 		};
 
-		private:
-		Variant _variant { Variant::Standard };	   ///< Color variant
-		Size _size { Size::Medium };			   ///< Size
-
 		protected:
-		/**
-		 * @brief Re-apply the visual state (colors, borders, radius) from the
-		 * current interaction/selected state.
-		 */
-		void applyStyleState(void) override;
-
-		/**
-		 * @brief Re-measure and lay out the button and its children.
-		 */
-		void applyGeometry(void) override;
-
 		/**
 		 * @brief Font size used for the icon child.
 		 * @return The icon font size.
@@ -235,7 +217,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor for the IconButton entity.
 		 */
-		~IconButton(void) override;
+		~IconButton(void) override = default;
 
 		/**
 		 * @brief Set the color variant.

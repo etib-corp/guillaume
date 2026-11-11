@@ -30,6 +30,7 @@
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/common_button.hpp"
 #include "guillaume/entities/button_base.hpp"
 
 namespace guillaume::entities
@@ -42,20 +43,14 @@ namespace guillaume::entities
 	class Button: public ButtonBase
 	{
 		public:
-		/**
-		 * @brief Color style of the button.
-		 */
-		enum class Color { Elevated, Filled, Tonal, Outlined, Text, Segmented };
+		/// Color (see components::CommonButton).
+		using Color = components::CommonButton::Color;
 
-		/**
-		 * @brief Shape of the button.
-		 */
-		enum class Shape { Round, Square };
+		/// Shape (see components::CommonButton).
+		using Shape = components::CommonButton::Shape;
 
-		/**
-		 * @brief Size of the button.
-		 */
-		enum class Size { ExtraSmall, Small, Medium, Large, ExtraLarge };
+		/// Size (see components::CommonButton).
+		using Size = components::CommonButton::Size;
 
 		/**
 		 * @brief Builder used to configure and create `Button` entities.
@@ -231,28 +226,7 @@ namespace guillaume::entities
 				Shape shape, Size size, bool isMorph);
 		};
 
-		private:
-		Color _colorStyle { Color::Text };
-		bool _isCompact { false };	  ///< Compact horizontal padding.
-		float _minWidth { 0.0f };	  ///< Extra minimum width (segments).
-		bool _isUppercase {
-			false
-		};	  ///< Upper-case label.	///< Color style of the button
-		Shape _shape { Shape::Round };	  ///< Shape of the button
-		Size _size { Size::Small };		  ///< Size of the button
-
 		protected:
-		/**
-		 * @brief Re-apply the visual state (colors, borders, radius) from the
-		 * current interaction/selected state.
-		 */
-		void applyStyleState(void) override;
-
-		/**
-		 * @brief Re-measure and lay out the button and its children.
-		 */
-		void applyGeometry(void) override;
-
 		/**
 		 * @brief Font size used for the icon child.
 		 * @return The icon font size.
@@ -304,7 +278,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor for the Button entity.
 		 */
-		~Button(void) override;
+		~Button(void) override = default;
 
 		/**
 		 * @brief Set the color style of the button.
@@ -348,12 +322,12 @@ namespace guillaume::entities
 		/**
 		 * @brief Minimum container width (M3: 64 dp).
 		 */
-		static constexpr float MinWidth = 64.0f;
+		static constexpr float MinWidth = components::CommonButton::MinWidth;
 
 		/**
 		 * @brief Minimum container height (M3: 40 dp, ExtraSmall excepted).
 		 */
-		static constexpr float MinHeight = 40.0f;
+		static constexpr float MinHeight = components::CommonButton::MinHeight;
 
 		Button &setColorStyle(const Color &colorStyle);
 

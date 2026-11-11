@@ -13,13 +13,17 @@ set(GUILLAUME_SOURCES
     sources/components/backdrop.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
+    sources/components/button.cpp
     sources/components/checkbox.cpp
     sources/components/clip.cpp
     sources/components/color.cpp
+    sources/components/common_button.cpp
     sources/components/divider.cpp
     sources/components/drag_interaction.cpp
     sources/components/elevation.cpp
     sources/components/ellipse.cpp
+    sources/components/extended_floating_action_button.cpp
+    sources/components/floating_action_button.cpp
     sources/components/focus.cpp
     sources/components/glyph.cpp
     sources/components/hierarchy.cpp
@@ -30,6 +34,7 @@ set(GUILLAUME_SOURCES
     sources/components/hand_thumb_rest_interaction.cpp
     sources/components/hand_thumb_stick_interaction.cpp
     sources/components/hand_trigger_interaction.cpp
+    sources/components/icon_button.cpp
     sources/components/image.cpp
     sources/components/layout.cpp
     sources/components/line.cpp
@@ -125,13 +130,17 @@ set(GUILLAUME_SOURCES
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
     sources/systems/backdrop.cpp
+    sources/systems/button.cpp
     sources/systems/checkbox.cpp
     sources/systems/clip.cpp
+    sources/systems/common_button.cpp
     sources/systems/core_systems.cpp
     sources/systems/divider.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/elevation_render.cpp
+    sources/systems/extended_floating_action_button.cpp
+    sources/systems/floating_action_button.cpp
     sources/systems/focus.cpp
     sources/systems/focus_ring_render.cpp
     sources/systems/glyph_render.cpp
@@ -143,6 +152,7 @@ set(GUILLAUME_SOURCES
     sources/systems/hand_thumb_rest.cpp
     sources/systems/hand_thumb_stick.cpp
     sources/systems/hand_trigger.cpp
+    sources/systems/icon_button.cpp
     sources/systems/image_render.cpp
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp

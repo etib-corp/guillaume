@@ -25,7 +25,12 @@
 #include "guillaume/systems/animation.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/backdrop.hpp"
+#include "guillaume/systems/button.hpp"
 #include "guillaume/systems/checkbox.hpp"
+#include "guillaume/systems/common_button.hpp"
+#include "guillaume/systems/extended_floating_action_button.hpp"
+#include "guillaume/systems/floating_action_button.hpp"
+#include "guillaume/systems/icon_button.hpp"
 #include "guillaume/systems/clip.hpp"
 #include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/drag.hpp"
@@ -143,6 +148,14 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::RadioButton>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Switch>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::CommonButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::IconButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::FloatingActionButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::ExtendedFloatingActionButton>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(
