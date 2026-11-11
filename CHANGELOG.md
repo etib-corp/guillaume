@@ -49,7 +49,9 @@ Versions follow the calendar scheme described in
   subtree is attached, and throws `std::invalid_argument` when the new parent
   is the entity itself or one of its descendants.
 
-## [2026.3.2] - 2026-11-11
+## [2026.3.3] - 2026-11-11
+
+Includes the changes released as 2026.3.2 on the same day.
 
 ### Changed
 
