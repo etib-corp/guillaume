@@ -188,6 +188,8 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(std::make_unique<systems::Dialog>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Menu>());
 		systemRegistry.registerNewSystem(
+			std::make_unique<systems::TextField>());
+		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::StyleState>());
@@ -197,8 +199,6 @@ namespace guillaume::systems
 			std::make_unique<systems::FocusRingRender>(engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Animation>(engine));
-		systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextField>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::MeasureMesh>(ressourceProvider, engine));
 		systemRegistry.registerNewSystem(

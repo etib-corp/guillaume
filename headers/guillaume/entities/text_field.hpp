@@ -24,7 +24,6 @@
 
 #include <functional>
 #include <memory>
-#include <optional>
 #include <string>
 
 #include <utility/graphic/color.hpp>
@@ -35,6 +34,7 @@
 
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/text_field.hpp"
+#include "guillaume/components/text_field_configuration.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/icon.hpp"
@@ -48,14 +48,15 @@ namespace guillaume::entities
 	/**
 	 * @brief Text field entity (Paper `TextInput` and `HelperText`).
 	 *
-	 * The text field reuses `SurfaceBase` for the layout, geometry and
-	 * background surface, `components::TextField` to carry the
-	 * label/placeholder/prefix/suffix/supporting/error state and
-	 * `components::Line` for the filled variant bottom indicator. The field
-	 * lays out an optional leading icon, an input column (floating label over
-	 * the input), optional prefix/suffix affixes and an optional trailing icon
-	 * (replaced by an error icon in the error state). The supporting or error
-	 * text is painted below the field.
+	 * A facade without state of its own: `components::TextField` carries the
+	 * label/placeholder/prefix/suffix/supporting/error state,
+	 * `components::TextFieldConfiguration` the variant, flags, callbacks and
+	 * child identifiers, and `systems::TextField` holds every rule. This
+	 * class only builds the child entities and forwards its setters. The
+	 * field lays out an optional leading icon, an input column (floating
+	 * label over the input), optional prefix/suffix affixes and an optional
+	 * trailing icon (replaced by an error icon in the error state). The
+	 * supporting or error text is painted below the field.
 	 *
 	 * The label rests in the input position (`bodyLarge`) and floats
 	 * (`bodySmall`) while the field is focused or populated: above the input in
@@ -70,20 +71,23 @@ namespace guillaume::entities
 	 *
 	 * @see SurfaceBase
 	 * @see components::TextField
+	 * @see components::TextFieldConfiguration
+	 * @see systems::TextField
 	 * @see components::Line
 	 */
-	class TextField: public SurfaceBase<components::TextField, components::Line>
+	class TextField:
+		public SurfaceBase<components::TextField, components::Line,
+						   components::TextFieldConfiguration>
 	{
 		public:
-		/**
-		 * @brief Text field variant.
-		 */
-		enum class Variant { Filled, Outlined };
+		/// Text field variant.
+		using Variant = components::TextFieldConfiguration::Variant;
 
 		/**
 		 * @brief Smallest intrinsic width.
 		 */
-		static constexpr float MinWidth = 100.0f;
+		static constexpr float MinWidth =
+			components::TextFieldConfiguration::MinWidth;
 
 		/**
 		 * @brief Builder used to configure and create text fields.
@@ -385,101 +389,41 @@ namespace guillaume::entities
 		ecs::Entity::Identifier getErrorIconIdentifier(void) const;
 
 		/**
-		 * @brief Build the children.
+		 * @brief Build the children, which needs the owning handle.
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Restyle and re-arrange the field.
-		 */
-		void update(void) override;
-
 		private:
-		Variant _variant { Variant::Filled };	 ///< Text field variant.
-		std::string _placeholder {};			 ///< Label text.
-		std::string _leadingIcon {};			 ///< Leading icon glyph.
-		std::string _trailingIcon {};			 ///< Trailing icon glyph.
-		std::string _supportingText {};			 ///< Supporting text.
-		bool _error { false };					 ///< Error state.
-		std::string _text {};					 ///< Last known input text.
-		bool _editable { true };				 ///< Editable flag.
-		bool _dense { false };					 ///< Dense flag.
-		bool _multiline { false };				 ///< Multiline flag.
-		std::optional<float> _width {};			 ///< Forced width.
-		std::function<void(const std::string &)>
-			_onChange {};							  ///< Text change handler.
-		std::function<void(void)> _onFocus {};		  ///< Focus handler.
-		std::function<void(void)> _onBlur {};		  ///< Blur handler.
-		std::shared_ptr<Icon> _leadingIconEntity;	  ///< Leading icon child.
-		std::shared_ptr<Icon> _trailingIconEntity;	  ///< Trailing icon child.
-		std::shared_ptr<Icon> _errorIconEntity;		  ///< Error icon child.
-		std::shared_ptr<View> _inputColumn;			  ///< Label + input.
-		std::shared_ptr<Text> _labelEntity;			  ///< Floating label.
-		std::shared_ptr<Text> _textEntity;			  ///< Input text child.
-		std::shared_ptr<Text> _prefixEntity;		  ///< Prefix child.
-		std::shared_ptr<Text> _suffixEntity;		  ///< Suffix child.
-		std::shared_ptr<Text> _supportingEntity;	  ///< Supporting child.
-
 		/**
-		 * @brief Apply the variant geometry and state colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Mirror the state on the TextField component.
-		 */
-		void applyComponent(void);
-
-		/**
-		 * @brief Build and arrange the children.
+		 * @brief Create the child entities the current state requires and
+		 * that do not exist yet, and record them in
+		 * components::TextFieldConfiguration.
 		 */
 		void buildContent(void);
 
 		/**
-		 * @brief Create the child entities that do not exist yet and refresh
-		 * the supporting text.
-		 * @param content Color of the input text.
-		 * @param variantColor Color of the label, icons, affixes and support.
+		 * @brief Get the configuration component of this field.
+		 * @return The component.
 		 */
-		void createChildren(const utility::graphic::Color32Bit &content,
-							const utility::graphic::Color32Bit &variantColor);
+		components::TextFieldConfiguration &configuration(void);
 
 		/**
-		 * @brief Color every child for the enabled, error and floating states.
-		 * @param content Color of the input text.
-		 * @param variantColor Color of the label, icons, affixes and support.
+		 * @brief Get the configuration component of this field.
+		 * @return The component.
 		 */
-		void applyContentColors(
-			const utility::graphic::Color32Bit &content,
-			const utility::graphic::Color32Bit &variantColor);
+		const components::TextFieldConfiguration &configuration(void) const;
 
 		/**
-		 * @brief Order the children in the row and size the field to them.
+		 * @brief Get the text field component of this field.
+		 * @return The component.
 		 */
-		void arrangeChildren(void);
+		components::TextField &field(void);
 
 		/**
-		 * @brief Give the input child the focus component while it may be
-		 * edited.
+		 * @brief Build the missing children, then restyle and re-arrange
+		 * the field.
 		 */
-		void applyEditing(void);
-
-		/**
-		 * @brief Place the label (outlined) and the supporting text manually.
-		 */
-		void placeManualChildren(void);
-
-		/**
-		 * @brief Get the field height of the current flags.
-		 * @return The height.
-		 */
-		float getFieldHeight(void) const;
-
-		/**
-		 * @brief Get the color of the label and active indicator.
-		 * @return The color.
-		 */
-		utility::graphic::Color32Bit getActiveColor(void) const;
+		void refresh(void);
 	};
 
 }	 // namespace guillaume::entities

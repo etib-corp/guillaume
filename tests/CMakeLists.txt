@@ -72,6 +72,7 @@ set(TEST_SOURCES
     sources/systems/test_menu.cpp
     sources/systems/test_snackbar.cpp
     sources/systems/test_switch.cpp
+    sources/systems/test_text_field.cpp
     sources/systems/test_tooltip.cpp
     sources/systems/test_typography.cpp
     sources/systems/test_ellipse_render.cpp

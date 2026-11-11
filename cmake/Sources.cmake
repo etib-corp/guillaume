@@ -65,6 +65,7 @@ set(GUILLAUME_SOURCES
     sources/components/switch.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
+    sources/components/text_field_configuration.cpp
     sources/components/tooltip.cpp
     sources/components/transform.cpp
     sources/components/typography.cpp
