@@ -25,10 +25,14 @@
 
 /**
  * @file
- * @brief Source-compatibility alias for the FAB style tables.
+ * @brief Makes the floating action button style tables reachable as
+ * `guillaume::entities::fab_style`.
  *
- * The helpers live in guillaume::systems since the widget rules moved to
- * systems; this header keeps the names available in guillaume::entities.
+ * This header declares nothing of its own: the functions that map a size
+ * and a variant of FloatingActionButton or ExtendedFloatingActionButton to
+ * metrics and scheme colors are defined in guillaume::systems::fab_style.
+ *
+ * @see guillaume::systems::fab_style
  */
 namespace guillaume::entities
 {

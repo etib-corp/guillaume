@@ -44,26 +44,62 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Progress indicator entity: a bar or ring showing task progress.
+	 * @brief A bar or a ring that fills up to show how far a task has
+	 * progressed, or that loops when the progress is unknown.
 	 *
-	 * The progress indicator reuses `SurfaceBase` for its geometry and
-	 * `components::Value` (normalized to `[0, 1]`) as the progress state. The
-	 * base surface itself is transparent: a dedicated track child draws the
-	 * inactive track while a fill child draws the active progress. The M3
-	 * variants are:
-	 * - `LinearDeterminate`: a 4 high rounded bar filled from the left.
-	 * - `LinearIndeterminate`: a sliding animated bar.
-	 * - `CircularDeterminate`: a 48x48 ring whose arc spans the value.
-	 * - `CircularIndeterminate`: a 48x48 ring with a rotating arc.
+	 * The progress, 0 (nothing done) to 1 (complete), lives in
+	 * components::Value. The rest of the state lives in
+	 * components::ProgressIndicator (variant, dimensions, color,
+	 * visibility, running transition values).
+	 * systems::ProgressIndicator sizes the widget and draws its track and
+	 * fill each frame, in the Layout phase. The class itself holds no
+	 * field: its setters write the components and redraw at once.
 	 *
-	 * This class is a facade without fields: the state lives in
-	 * `components::ProgressIndicator` (and `components::Value`) and the rules
-	 * in `systems::ProgressIndicator`.
+	 * @code
+	 * ProgressIndicator::Builder builder(getComponentRegistry(),
+	 * 	getEntityRegistry());
+	 * auto progress = builder.withWidth(240.0f).makeProgressIndicator(parent,
+	 * 	ProgressIndicator::Variant::LinearDeterminate, 0.0f);
+	 * // later, as the task advances:
+	 * progress->setValue(0.5f);
+	 * @endcode
 	 *
-	 * @see SurfaceBase
-	 * @see components::Value
-	 * @see components::ProgressIndicator
-	 * @see systems::ProgressIndicator
+	 * `ProgressIndicator::create(registry, config, variant, value)` builds
+	 * the same widget without registering it in an entity registry.
+	 *
+	 * The widget has two children: the track, drawn in full, and the fill,
+	 * drawn over it. The variants are:
+	 * - `LinearDeterminate`: a 4 dp thick bar, 200 dp long by default,
+	 *   filled from its start up to the value.
+	 * - `LinearIndeterminate`: the same bar, with a segment of 60% of its
+	 *   length sliding along it.
+	 * - `CircularDeterminate`: a 4 dp thick ring, 48 dp wide by default,
+	 *   whose arc starts at the top and covers the value.
+	 * - `CircularIndeterminate`: the same ring, with a quarter-turn arc
+	 *   rotating around it.
+	 *
+	 * What drives the animations: the widget's own components::Animation
+	 * runs the 200 ms transition of the drawn value toward a new value,
+	 * and the 200 ms fade of setVisible(). In the indeterminate variants
+	 * the fill child carries a looping components::Animation of 1.5
+	 * second per cycle, started when the child is built. systems::Animation
+	 * samples both every frame, in the Event phase.
+	 *
+	 * Things to know:
+	 * - Values outside 0 to 1 are clamped. The indeterminate variants
+	 *   store the value but do not draw it.
+	 * - The value given at creation is drawn as is; only later changes
+	 *   are animated.
+	 * - The length and the diameter are chosen in the builder and cannot
+	 *   be changed afterwards. After a setVariant() from a bar to a ring
+	 *   or back, the shape the indicator was not created with has its
+	 *   default size (200 dp long or 48 dp wide).
+	 * - A hidden indicator keeps its place in its parent's layout.
+	 * - systems::ProgressIndicator overwrites the widget's size, padding,
+	 *   color and corner radius every frame.
+	 *
+	 * @see components::ProgressIndicator, systems::ProgressIndicator,
+	 * LoadingIndicator
 	 */
 	class ProgressIndicator:
 		public SurfaceBase<components::Value, components::Animation,
@@ -71,84 +107,99 @@ namespace guillaume::entities
 						   components::ProgressIndicator>
 	{
 		public:
-		/// Variant (see components::ProgressIndicator).
+		/// Shape and kind of the indicator: a bar or a ring, determinate
+		/// (shows a value) or indeterminate (loops).
 		using Variant = components::ProgressIndicator::Variant;
 
 		/**
-		 * @brief Builder used to configure and create `ProgressIndicator`
-		 * entities.
+		 * @brief Configures a ProgressIndicator, then builds it and
+		 * registers it in the entity registry given at construction.
 		 */
 		class Builder: public EntityBuilderBase<ProgressIndicator>
 		{
 			private:
-			SurfaceConfig _config;	  ///< Surface configuration.
+			SurfaceConfig _config;	  ///< Pose and size of the widget.
 			Variant _variant { Variant::LinearDeterminate };	///< Variant.
-			float _value { 0.0f };		///< Initial normalized value.
-			float _width { 200.0f };	///< Linear track length.
-			float _size { 48.0f };		///< Circular diameter.
+			float _value { 0.0f };		///< Initial progress, 0 to 1.
+			float _width { 200.0f };	///< Length of the bar, in dp.
+			float _size { 48.0f };		///< Diameter of the ring, in dp.
 
 			public:
 			/**
-			 * @brief Construct a new ProgressIndicator Builder.
-			 * @param componentRegistry The component registry.
-			 * @param entityRegistry The entity registry.
+			 * @brief Create a builder set to the defaults of reset().
+			 * @param componentRegistry The registry the indicator's
+			 * components are created in.
+			 * @param entityRegistry The registry the built indicators are
+			 * added to.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the ProgressIndicator entity from the current
-			 * configuration.
-			 * @return The newly created ProgressIndicator.
+			 * @brief Build a progress indicator and its track and fill
+			 * children from the current configuration, without registering
+			 * it or setting its parent.
+			 * @return The new indicator, visible.
 			 */
 			std::shared_ptr<ProgressIndicator> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder.
+			 * @brief Restore the defaults: LinearDeterminate variant, value
+			 * 0, a 200 dp long bar, a 48 dp wide ring and a default pose.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the progress indicator pose.
-			 * @param pose The new pose.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the pose the indicator is created with.
+			 * @param pose The position and orientation of the widget.
+			 * Default: a default-constructed pose.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
-			 * @brief Set the progress indicator variant.
-			 * @param variant The new variant.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the indicator variant.
+			 * @param variant The variant. Default:
+			 * `Variant::LinearDeterminate`.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withVariant(Variant variant);
 
 			/**
-			 * @brief Set the initial normalized progress value.
-			 * @param value The new value, in `[0, 1]`.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the progress the indicator starts with.
+			 * @param value The progress, 0 to 1; a value outside is
+			 * clamped. Default: 0.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withValue(float value);
 
 			/**
-			 * @brief Set the linear track length.
-			 * @param width The new track length.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the length of the bar of the linear variants.
+			 * @param width The length, in dp. Default: 200. The circular
+			 * variants ignore it.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withWidth(float width);
 
 			/**
-			 * @brief Set the circular diameter.
-			 * @param size The new diameter.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the diameter of the ring of the circular variants.
+			 * @param size The diameter, in dp. Default: 48. The linear
+			 * variants ignore it.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withSize(float size);
 
 			/**
-			 * @brief Create a progress indicator using the builder.
-			 * @param parent The parent entity.
-			 * @param variant The progress indicator variant.
-			 * @param value The initial normalized value, in `[0, 1]`.
-			 * @return The newly created progress indicator.
+			 * @brief Build a progress indicator, register it under
+			 * @p parent and reset the builder.
+			 *
+			 * The arguments replace the variant and value set before; the
+			 * pose, length and diameter are kept.
+			 * @param parent The entity the indicator is attached to.
+			 * @param variant The indicator variant.
+			 * @param value The progress it starts with, 0 to 1; a value
+			 * outside is clamped. Not drawn by the indeterminate variants.
+			 * @return The registered indicator, visible.
 			 */
 			std::shared_ptr<ProgressIndicator>
 				makeProgressIndicator(std::shared_ptr<ecs::Entity> parent,
@@ -157,14 +208,18 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a progress indicator and its track and fill
+		 * children, without registering it in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
+		 * The arguments are forwarded to the private constructor:
+		 * (registry, config, variant, value). A fixed width in the config
+		 * is taken as the length of the bar (linear variants) and a fixed
+		 * height as the diameter of the ring (circular variants). The
+		 * children are built here, by build(), because a child needs its
+		 * parent to be owned by a shared pointer.
 		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * @param arguments The constructor arguments, as listed above.
+		 * @return The new indicator, visible, with no parent.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<ProgressIndicator>
@@ -182,75 +237,93 @@ namespace guillaume::entities
 		~ProgressIndicator(void) override;
 
 		/**
-		 * @brief Set the progress indicator variant.
+		 * @brief Change the indicator variant.
+		 *
+		 * Does nothing when @p variant is the current one. Otherwise
+		 * replaces the track and fill children by those of the new
+		 * variant, starts the looping animation when it is indeterminate,
+		 * and redraws at once. The value is kept.
 		 * @param variant The new variant.
-		 * @return Reference to this progress indicator for chaining.
+		 * @return This indicator, for chaining.
 		 */
 		ProgressIndicator &setVariant(Variant variant);
 
 		/**
-		 * @brief Get the progress indicator variant.
-		 * @return The variant.
+		 * @brief Get the indicator variant.
+		 * @return The variant stored in components::ProgressIndicator.
 		 */
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Set the normalized progress value.
-		 * @param value The new normalized value, in `[0, 1]`.
-		 * @return Reference to this progress indicator for chaining.
+		 * @brief Set the progress.
+		 *
+		 * Writes components::Value. The fill does not jump: the drawn
+		 * value moves to the new one over 200 ms (see
+		 * getDisplayedValue()).
+		 * @param value The new progress, 0 (nothing done) to 1 (complete);
+		 * a value outside is clamped.
+		 * @return This indicator, for chaining.
 		 */
 		ProgressIndicator &setValue(float value);
 
 		/**
-		 * @brief Get the current normalized progress value.
-		 * @return The normalized value, in `[0, 1]`.
+		 * @brief Get the progress last set.
+		 * @return The progress, 0 to 1. It is the target value, not the
+		 * one being drawn during a transition.
 		 */
 		float getValue(void) const;
 
 		/**
-		 * @brief Get the value currently drawn, which trails the target value
-		 * by a 200 ms transition.
-		 * @return The drawn normalized value.
+		 * @brief Get the progress drawn at the moment.
+		 * @return The drawn progress, 0 to 1. It follows getValue() with a
+		 * 200 ms transition and equals it once the transition is over.
 		 */
 		float getDisplayedValue(void) const;
 
 		/**
 		 * @brief Show or hide the indicator with a 200 ms fade (Paper
 		 * `visible`).
-		 * @param visible Target visibility.
-		 * @return Reference to this indicator for chaining.
+		 *
+		 * Does nothing when the indicator is already in that state.
+		 * @param visible True to fade in, false to fade out.
+		 * @return This indicator, for chaining.
 		 */
 		ProgressIndicator &setVisible(bool visible);
 
 		/**
-		 * @brief Get the target visibility.
-		 * @return True when visible.
+		 * @brief Check whether the indicator is meant to be visible.
+		 * @return The value last given to setVisible(), true by default. It
+		 * changes at once, before the fade ends; see getOpacity().
 		 */
 		bool isVisible(void) const;
 
 		/**
-		 * @brief Get the current fade opacity.
-		 * @return Opacity in [0, 1].
+		 * @brief Get the opacity of the fade.
+		 * @return The opacity, 0 (hidden) to 1 (fully drawn); in between
+		 * while a fade is running.
 		 */
 		float getOpacity(void) const;
 
 		/**
-		 * @brief Override the fill color (default `Primary`).
-		 * @param color Fill color.
-		 * @return Reference to this indicator for chaining.
+		 * @brief Set the color of the fill. Redraws at once.
+		 * @param color The color, used in place of the theme's primary
+		 * color. The track keeps its theme color.
+		 * @return This indicator, for chaining.
 		 */
 		ProgressIndicator &
 			setIndicatorColor(const utility::graphic::Color32Bit &color);
 
 		/**
-		 * @brief Get the resolved fill color.
-		 * @return The fill color before fading.
+		 * @brief Get the color of the fill.
+		 * @return The color given to setIndicatorColor(), or the theme's
+		 * primary color when none was given. The fade opacity is not
+		 * applied to it.
 		 */
 		utility::graphic::Color32Bit getIndicatorColor(void) const;
 
 		/**
-		 * @brief Indeterminate segment length, as a fraction of the track
-		 * (Paper uses 60%).
+		 * @brief Length of the sliding segment of the LinearIndeterminate
+		 * variant, as a fraction of the bar length: 0.6 (Paper uses 60%).
 		 */
 		static constexpr float IndeterminateSegment =
 			components::ProgressIndicator::IndeterminateSegment;
@@ -264,21 +337,25 @@ namespace guillaume::entities
 
 		private:
 		/**
-		 * @brief Construct a ProgressIndicator entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
+		 * @brief Construct a progress indicator, without its children.
+		 * @param registry The registry the indicator's components are
+		 * created in.
+		 * @param config Pose and size of the widget. A fixed width is
+		 * taken as the length of the bar (linear variants), a fixed height
+		 * as the diameter of the ring (circular variants).
 		 * @param variant The visual variant.
-		 * @param value The initial normalized value, in `[0, 1]`.
+		 * @param value The progress it starts with, 0 to 1; a value
+		 * outside is clamped.
 		 */
 		ProgressIndicator(ecs::ComponentRegistry &registry,
 						  const SurfaceConfig &config, Variant variant,
 						  float value);
 
 		/**
-		 * @brief Create the child entities.
+		 * @brief Build the track and fill children and redraw.
 		 *
-		 * Called once by create(), when the entity is owned and can be given
-		 * as parent to its children.
+		 * Called once by create(), when the indicator is owned by a shared
+		 * pointer and can be given as parent to its children.
 		 */
 		void build(void);
 	};

@@ -53,17 +53,46 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Base class for all interactive button entities.
+	 * @brief What Button, IconButton, FloatingActionButton and
+	 * ExtendedFloatingActionButton have in common: an icon, a label, a
+	 * click, a toggle state.
 	 *
-	 * `ButtonBase` owns the shared component signature, the optional icon and
-	 * label child entities, the toggle/selected/morph/disabled states, the
-	 * accessibility label and the click handler. Concrete button classes
-	 * (Button, IconButton, FloatingActionButton,
-	 * ExtendedFloatingActionButton) derive from it and only implement the
-	 * visual contract through protected virtual hooks.
+	 * This class is not created directly; use one of the four widgets above.
+	 * It holds no field. The shared state lives in components::Button (glyph
+	 * names, label, toggle, selected, loading, visible, callbacks, color
+	 * overrides), the enabled flag in components::StyleState and the label
+	 * read by assistive tools in components::Accessibility. The rules are in
+	 * two systems:
+	 * - systems::Button (Event phase) turns hover, press and release into
+	 *   state, calls the click or long-press handler and keeps the icon
+	 *   child's glyph up to date.
+	 * - The system of the concrete widget (systems::CommonButton,
+	 *   systems::IconButton, ...) computes colors, size and the position of
+	 *   the icon and label. It is reached through the restyle function
+	 *   stored in components::Button.
 	 *
-	 * Toggle behavior is a parameter (`isToggle`), available on every leaf
-	 * type.
+	 * The setters below write the components and, when the look depends on
+	 * the value, restyle at once.
+	 *
+	 * @code
+	 * Button::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto save = builder.makeButton(nullptr, "Save", [] {},
+	 * 	Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+	 * 	false);
+	 * save->setIconGlyphName("save").setDisabled(true);
+	 * save->setOnClick([] {
+	 * 	// called when the button is released
+	 * });
+	 * @endcode
+	 *
+	 * Watch out for:
+	 * - The icon and the label are child entities (Icon and Text) owned by
+	 *   the button and created once, when the widget is built. Their colors,
+	 *   sizes and positions are overwritten by the concrete widget's system.
+	 * - The handlers are called on release, not on press. A hidden or
+	 *   disabled button calls none.
+	 *
+	 * @see components::Button, systems::Button, Button, IconButton
 	 */
 	class ButtonBase:
 		public std::enable_shared_from_this<ButtonBase>,
@@ -82,234 +111,281 @@ namespace guillaume::entities
 		~ButtonBase(void) override = default;
 
 		/**
-		 * @brief Set the icon glyph name.
-		 * @param iconGlyphName The glyph name of the icon to attach.
-		 * @return Reference to this button for chaining.
+		 * @brief Change the icon.
+		 *
+		 * The icon child shows it at once, unless the button is loading or
+		 * is selected with a selected glyph set.
+		 * @param iconGlyphName The name of the glyph, such as "add".
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setIconGlyphName(const std::string &iconGlyphName);
 
 		/**
-		 * @brief Set the style of the icon.
-		 * @param iconStyle The style of the icon to attach.
-		 * @return Reference to this button for chaining.
+		 * @brief Change the style the icon glyph is drawn in.
+		 * @param iconStyle The glyph style (outlined, filled, ...), applied
+		 * to the icon child at once.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setIconStyle(const components::Glyph::Style &iconStyle);
 
 		/**
-		 * @brief Set the label content.
-		 * @param labelContent The label content to attach.
-		 * @return Reference to this button for chaining.
+		 * @brief Change the text of the label.
+		 *
+		 * Writes the content of the label child. It has no visible effect on
+		 * a widget without label child (see usesLabel()).
+		 * @param labelContent The new text.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setLabelContent(const std::string &labelContent);
 
 		/**
-		 * @brief Set if the button is a toggle button.
-		 * @param isToggle Whether the button should be a toggle button.
-		 * @return Reference to this button for chaining.
+		 * @brief Make the button a toggle, or a plain push button.
+		 *
+		 * A toggle flips its selected state each time the user releases it.
+		 * @param isToggle True for a toggle. False also clears the selected
+		 * state.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setIsToggle(const bool &isToggle);
 
 		/**
-		 * @brief Get whether the button is currently selected (for toggle
-		 * buttons).
-		 * @return True when the button is a toggle button and is selected,
-		 * false otherwise.
+		 * @brief Tell whether a toggle button is on.
+		 * @return True when the button is a toggle and is selected. Always
+		 * false for a push button.
 		 */
 		bool isSelected(void) const;
 
 		/**
-		 * @brief Set the selected state of the button (for toggle buttons).
-		 * @param selected The new selected state to set.
-		 * @return Reference to this button for chaining.
+		 * @brief Turn a toggle button on or off from code.
+		 *
+		 * Updates the icon and restyles at once. The click handler is not
+		 * called. Ignored when the button is not a toggle.
+		 * @param selected True to select the button.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setSelected(const bool &selected);
 
 		/**
-		 * @brief Set the icon glyph name shown when the button is selected.
-		 * @param selectedIconGlyphName The glyph shown when selected.
-		 * @return Reference to this button for chaining.
+		 * @brief Set the icon shown instead of the regular one while the
+		 * button is selected.
+		 * @param selectedIconGlyphName The glyph name. An empty name keeps
+		 * the regular icon when selected.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &
 			setSelectedIconGlyphName(const std::string &selectedIconGlyphName);
 
 		/**
-		 * @brief Set if the button morphs its shape when selected.
-		 * @param isMorph Whether the button morphs when selected.
-		 * @return Reference to this button for chaining.
+		 * @brief Choose whether the button changes shape when selected, and
+		 * restyle at once.
+		 * @param isMorph True to let the concrete widget's system use a
+		 * different shape for the selected state. Only systems::CommonButton
+		 * (Button) reads this flag.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setMorph(const bool &isMorph);
 
 		/**
-		 * @brief Set if the icon is placed after the label.
-		 * @param isTrailingIcon Whether the icon trails the label.
-		 * @return Reference to this button for chaining.
+		 * @brief Put the icon before or after the label, and restyle at
+		 * once.
+		 * @param isTrailingIcon True to place the icon after the label.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setTrailingIcon(const bool &isTrailingIcon);
 
 		/**
-		 * @brief Set if the button is disabled.
-		 * @param isDisabled Whether the button should be disabled.
-		 * @return Reference to this button for chaining.
+		 * @brief Disable or enable the button, and restyle at once.
+		 *
+		 * A disabled button ignores hover, press and release and calls no
+		 * handler. The flag is stored in components::StyleState.
+		 * @param isDisabled True to disable the button.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setDisabled(const bool &isDisabled);
 
 		/**
-		 * @brief Get whether the button is disabled.
-		 * @return True when the button is disabled, false otherwise.
+		 * @brief Tell whether the button is disabled.
+		 * @return True when its components::StyleState is not enabled.
 		 */
 		bool isDisabled(void) const;
 
 		/**
-		 * @brief Set the accessibility label.
-		 * @param accessibilityLabel The accessibility label to set.
-		 * @return Reference to this button for chaining.
+		 * @brief Set the name assistive tools announce for the button.
+		 * @param accessibilityLabel The name. At construction it defaults to
+		 * the label text.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &
 			setAccessibilityLabel(const std::string &accessibilityLabel);
 
 		/**
-		 * @brief Get the accessibility label.
-		 * @return The accessibility label.
+		 * @brief Get the name assistive tools announce for the button.
+		 * @return The label stored in components::Accessibility.
 		 */
 		const std::string &getAccessibilityLabel(void) const;
 
 		/**
-		 * @brief Set the accessibility hint (result of activation).
-		 * @param accessibilityHint New hint.
-		 * @return Reference to this button for chaining.
+		 * @brief Set the sentence that tells assistive tools what activating
+		 * the button does.
+		 * @param accessibilityHint The hint, such as "Opens the settings".
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setAccessibilityHint(const std::string &accessibilityHint);
 
 		/**
-		 * @brief Override the semantic role (default Button).
-		 * @param role New role.
-		 * @return Reference to this button for chaining.
+		 * @brief Change the role announced by assistive tools.
+		 * @param role The role. It is components::AccessibilityRole::Button
+		 * until this is called.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setAccessibilityRole(components::AccessibilityRole role);
 
 		/**
-		 * @brief Set the long-press handler (Paper `onLongPress`).
+		 * @brief Set the function called when the user holds the button.
 		 *
-		 * A press held for at least `LongPressDuration` calls this handler
-		 * instead of the click handler.
+		 * When the press lasted at least LongPressDuration, the release
+		 * calls this handler instead of the click handler. A toggle button
+		 * still flips its selected state.
 		 *
-		 * @param onLongPress Handler (empty to disable long press).
-		 * @return Reference to this button for chaining.
+		 * @param onLongPress The handler. An empty function turns long press
+		 * off: every release is then a click.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setOnLongPress(std::function<void(void)> onLongPress);
 
 		/**
-		 * @brief Show or hide the loading state (Paper `loading`).
+		 * @brief Show or hide the loading state.
 		 *
-		 * While loading the icon shows the progress glyph.
+		 * While loading, the icon child shows LoadingGlyph instead of the
+		 * icon. The button stays clickable.
 		 *
-		 * @param loading New loading state.
-		 * @return Reference to this button for chaining.
+		 * @param loading True to show the loading glyph.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setLoading(bool loading);
 
 		/**
-		 * @brief Show or hide the button (Paper `visible`).
+		 * @brief Show or hide the button, and restyle at once.
 		 *
-		 * A hidden button paints nothing, ignores activation and is skipped by
-		 * keyboard traversal; its enabled state is preserved.
+		 * A hidden button ignores press and release and is skipped by
+		 * keyboard traversal (its Accessibility is not focusable). Its
+		 * enabled state is kept. Painting nothing is up to the concrete
+		 * widget's system: systems::FloatingActionButton and
+		 * systems::ExtendedFloatingActionButton do it; systems::CommonButton
+		 * (Button) and systems::IconButton do not read this flag, so a
+		 * hidden Button or IconButton is still drawn.
 		 *
-		 * @param visible New visibility.
-		 * @return Reference to this button for chaining.
+		 * @param visible False to hide the button.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setVisible(bool visible);
 
 		/**
-		 * @brief Check the visibility.
-		 * @return True when shown.
+		 * @brief Tell whether the button is shown.
+		 * @return False after setVisible(false). True by default.
 		 */
 		bool isVisible(void) const;
 
 		/**
-		 * @brief Check the loading state.
-		 * @return True while loading.
+		 * @brief Tell whether the button is in the loading state.
+		 * @return True between setLoading(true) and setLoading(false).
 		 */
 		bool isLoading(void) const;
 
 		/**
-		 * @brief Override the theme container color (Paper `buttonColor` /
-		 * `containerColor`).
-		 * @param color Custom color, or none to restore the theme color.
-		 * @return Reference to this button for chaining.
+		 * @brief Replace the theme's background color with a custom one,
+		 * and restyle at once.
+		 * @param color The custom color, or `std::nullopt` to go back to the
+		 * color of the theme.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setContainerColorOverride(
 			std::optional<utility::graphic::Color32Bit> color);
 
 		/**
-		 * @brief Override the theme content color (Paper `textColor` /
-		 * `iconColor`).
-		 * @param color Custom color, or none to restore the theme color.
-		 * @return Reference to this button for chaining.
+		 * @brief Replace the theme's icon and label color with a custom
+		 * one, and restyle at once.
+		 * @param color The custom color, or `std::nullopt` to go back to the
+		 * color of the theme.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setContentColorOverride(
 			std::optional<utility::graphic::Color32Bit> color);
 
 		/**
-		 * @brief Glyph shown by the icon while loading.
+		 * @brief Name of the glyph the icon child shows while loading.
 		 */
 		static constexpr const char *LoadingGlyph =
 			systems::Button::LoadingGlyph;
 
 		/**
-		 * @brief Minimum press duration that counts as a long press.
+		 * @brief How long a press must last to count as a long press
+		 * (500 ms).
 		 */
 		static constexpr std::chrono::milliseconds LongPressDuration {
 			systems::Button::LongPressDuration
 		};
 
 		/**
-		 * @brief Get the accessibility hint.
-		 * @return The hint.
+		 * @brief Get the sentence that tells assistive tools what activating
+		 * the button does.
+		 * @return The hint stored in components::Accessibility, empty when
+		 * none was set.
 		 */
 		const std::string &getAccessibilityHint(void) const;
 
 		/**
-		 * @brief Set the click event handler.
-		 * @param onClick The new click event handler to set.
-		 * @return Reference to this button for chaining.
+		 * @brief Set the function called when the user clicks the button.
+		 *
+		 * It is called when the left mouse button or the hand button A is
+		 * released over the button, unless the release counts as a long
+		 * press. For a toggle, isSelected() already returns the new state.
+		 * @param onClick The handler. An empty function means no reaction.
+		 * @return This button, for chaining.
 		 */
 		ButtonBase &setOnClick(std::function<void(void)> onClick);
 
 		/**
-		 * @brief Get the identifier of the internal icon child entity.
-		 * @return The icon entity identifier, or InvalidIdentifier when no icon
-		 * is attached.
+		 * @brief Get the icon child, to read or adjust its components.
+		 * @return The identifier of the Icon child, or
+		 * `ecs::Entity::InvalidIdentifier` when the widget has none.
 		 */
 		ecs::Entity::Identifier getIconIdentifier(void) const;
 
 		/**
-		 * @brief Get the identifier of the internal label child entity.
-		 * @return The label entity identifier, or InvalidIdentifier when no
-		 * label is attached.
+		 * @brief Get the label child, to read or adjust its components.
+		 * @return The identifier of the Text child, or
+		 * `ecs::Entity::InvalidIdentifier` when the widget has none.
 		 */
 		ecs::Entity::Identifier getLabelIdentifier(void) const;
 
 		protected:
 		/**
-		 * @brief Create the icon and label children.
+		 * @brief Create the icon and label children, then style the button.
 		 *
-		 * Called once by the subclass's create(), when the button is owned
-		 * and can be given as parent to its children.
+		 * Called once by the `create()` of the concrete widget, after
+		 * construction: a child needs its parent to be owned by a
+		 * `std::shared_ptr`. usesIcon() and usesLabel() decide which
+		 * children exist; their identifiers are stored in
+		 * components::Button. The button itself is the entity registry that
+		 * owns them.
 		 */
 		void build(void);
 
 		/**
-		 * @brief Construct a ButtonBase entity.
-		 * @param registry Reference to the component registry.
-		 * @param iconGlyphName Icon glyph name to attach.
-		 * @param iconStyle Style of the icon to attach.
-		 * @param labelContent Label content to attach.
-		 * @param isToggle Whether the button is a toggle button.
-		 * @param isMorph Initial morph state.
-		 * @param isDisabled Initial disabled state.
-		 * @param isTrailingIcon Initial trailing icon state.
-		 * @param accessibilityLabel Initial accessibility label.
-		 * @param onClick Click event handler.
+		 * @brief Create the entity with its components and store the
+		 * initial state. The children are created later, by build().
+		 * @param registry The registry that stores the components.
+		 * @param iconGlyphName The name of the icon glyph, empty for none.
+		 * @param iconStyle The style the glyph is drawn in.
+		 * @param labelContent The text of the label, empty for none.
+		 * @param isToggle True when a release flips the selected state.
+		 * @param isMorph True when the shape changes while selected.
+		 * @param isDisabled True to start disabled.
+		 * @param isTrailingIcon True to place the icon after the label.
+		 * @param accessibilityLabel The name announced by assistive tools.
+		 * When empty, @p labelContent is used.
+		 * @param onClick The function called on click (may be empty).
 		 */
 		ButtonBase(ecs::ComponentRegistry &registry,
 				   const std::string &iconGlyphName,
@@ -320,34 +396,35 @@ namespace guillaume::entities
 				   std::function<void(void)> onClick);
 
 		/**
-		 * @brief Access the button state component.
+		 * @brief Access the shared button state, for writing.
 		 * @return The components::Button of this entity.
 		 */
 		components::Button &state(void);
 
 		/**
-		 * @brief Access the button state component.
+		 * @brief Access the shared button state, for reading.
 		 * @return The components::Button of this entity.
 		 */
 		const components::Button &state(void) const;
 
 		/**
-		 * @brief Restyle now through the variant system.
+		 * @brief Recompute colors and geometry now.
 		 *
-		 * The variant system does the same every frame; this makes the result
-		 * of a setter visible immediately.
+		 * Runs the restyle function the concrete widget's system stored in
+		 * components::Button, if any. That system does the same every frame;
+		 * calling it from a setter makes the change visible immediately.
 		 */
 		void restyle(void);
 
 		/**
-		 * @brief Font size used for the icon child.
-		 * @return The icon font size.
+		 * @brief Size the icon child is created with.
+		 * @return The glyph size, in dp.
 		 */
 		virtual float getIconFontSize(void) const = 0;
 
 		/**
-		 * @brief Whether this button type displays a text label.
-		 * @return True when a label child is used.
+		 * @brief Tell build() whether to create a label child.
+		 * @return True for the widgets that show text. False by default.
 		 */
 		virtual bool usesLabel(void) const
 		{
@@ -355,8 +432,8 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Whether this button type displays an icon child.
-		 * @return True when an icon child is used.
+		 * @brief Tell build() whether to create an icon child.
+		 * @return True by default.
 		 */
 		virtual bool usesIcon(void) const
 		{
@@ -364,38 +441,46 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Get the initial content color used when creating children.
-		 * @return The initial content color.
+		 * @brief Color the icon and label children are created with.
+		 * @return The content color for the initial state of the widget.
+		 * The first restyle replaces it.
 		 */
 		virtual utility::graphic::Color32Bit
 			getInitialContentColor(void) const = 0;
 
 		/**
-		 * @brief Check whether the button is currently hovered by any pointer.
-		 * @return True when hovered.
+		 * @brief Tell whether a pointer is over the button.
+		 * @return True when the mouse or a hand hovers it.
 		 */
 		bool isHovered(void);
 
 		/**
-		 * @brief Check whether the button is currently pressed by any pointer.
-		 * @return True when pressed.
+		 * @brief Tell whether the button is held down.
+		 * @return True while the left mouse button or the hand button A is
+		 * pressed on it.
 		 */
 		bool isPressed(void);
 
 		/**
-		 * @brief Get the icon glyph name to display for the current state.
-		 * @return The selected glyph when selected (and provided), otherwise
-		 * the base glyph.
+		 * @brief Get the glyph the icon child should show right now.
+		 * @return LoadingGlyph while loading; otherwise the selected glyph
+		 * when the button is selected and one is set; otherwise the regular
+		 * glyph.
 		 */
 		const std::string &getActiveIconGlyphName(void) const;
 
 		public:
 		/**
-		 * @brief Apply the current layer depth offset to a position.
-		 * @param position The base position.
-		 * @param orientation The orientation.
-		 * @param layer The button layer.
-		 * @return The offset pose.
+		 * @brief Compute the pose of content drawn in front of a button.
+		 *
+		 * Forwards to systems::Layout::contentLayerPose: the position is
+		 * moved toward the viewer, along the forward axis of the
+		 * orientation, by one depth step per layer plus one, so the icon
+		 * and the label do not overlap the container surface in depth.
+		 * @param position The position of the content on the button plane.
+		 * @param orientation The orientation of the button.
+		 * @param layer The layer of the button in the entity tree.
+		 * @return The pose to give to the content.
 		 */
 		static const utility::graphic::PoseF applyLayerToPosition(
 			const utility::graphic::PositionF &position,
@@ -403,21 +488,24 @@ namespace guillaume::entities
 			const std::uint32_t &layer);
 
 		/**
-		 * @brief Replace the alpha of a color while keeping its RGB channels.
+		 * @brief Replace the alpha of a color and keep its red, green and
+		 * blue.
 		 * @param color The base color.
-		 * @param alpha The new alpha channel.
-		 * @return The color with the updated alpha.
+		 * @param alpha The new alpha, from 0 (transparent) to 255 (opaque).
+		 * @return The color with the new alpha.
 		 */
 		static utility::graphic::Color32Bit
 			applyStateAlpha(const utility::graphic::Color32Bit &color,
 							std::uint8_t alpha);
 
 		/**
-		 * @brief Apply a Material Design state layer over a base color.
-		 * @param base The base container color.
-		 * @param overlay The state layer overlay color.
-		 * @param alpha The overlay opacity (0-255).
-		 * @return The base color with the overlay blended on top.
+		 * @brief Blend a translucent state layer (hover, press) over a
+		 * container color.
+		 * @param base The container color.
+		 * @param overlay The color of the state layer, usually the content
+		 * color.
+		 * @param alpha The opacity of the layer, from 0 to 255.
+		 * @return The container color with the layer blended on top.
 		 */
 		static utility::graphic::Color32Bit
 			applyStateLayer(const utility::graphic::Color32Bit &base,
@@ -425,79 +513,104 @@ namespace guillaume::entities
 							std::uint8_t alpha);
 
 		/**
-		 * @brief Disabled container color used by every button type.
-		 * @return The disabled container color.
+		 * @brief Get the background color of a disabled button.
+		 * @return The OnSurface color of the active scheme at the
+		 * disabled-container opacity of the theme.
 		 */
 		static utility::graphic::Color32Bit getDisabledContainerColor(void);
 
 		/**
-		 * @brief Disabled content color used by every button type.
-		 * @return The disabled content color.
+		 * @brief Get the icon and label color of a disabled button.
+		 * @return The OnSurface color of the active scheme at the
+		 * disabled-content opacity of the theme.
 		 */
 		static utility::graphic::Color32Bit getDisabledContentColor(void);
 
 		/**
-		 * @brief Disabled border color used by every button type.
-		 * @return The disabled border color.
+		 * @brief Get the outline color of a disabled button.
+		 * @return The OnSurface color of the active scheme at the
+		 * disabled-container opacity of the theme (the same value as
+		 * getDisabledContainerColor()).
 		 */
 		static utility::graphic::Color32Bit getDisabledBorderColor(void);
 
 		/**
-		 * @brief Hover event handler for the button.
+		 * @brief Tell the button a pointer started hovering it.
+		 *
+		 * Restyles unless the button is disabled. The framework does not
+		 * call this: systems::Button wires the hover components itself.
+		 * Useful to drive a button from code or from a test.
 		 */
 		void hoverHandler(void);
 
 		/**
-		 * @brief Unhover event handler for the button.
+		 * @brief Tell the button a pointer stopped hovering it.
+		 *
+		 * Same effect as hoverHandler(): restyles unless disabled.
 		 */
 		void unHoverHandler(void);
 
 		/**
-		 * @brief Press event handler for the button.
+		 * @brief Press the button from code, as the user would.
+		 *
+		 * Starts timing the press and restyles. Ignored when the button is
+		 * disabled or hidden.
 		 */
 		void buttonPressHandler(void);
 
 		/**
-		 * @brief Release event handler for the button.
+		 * @brief Release the button from code, as the user would.
+		 *
+		 * Flips the selected state of a toggle, restyles, then calls the
+		 * long-press or the click handler. Ignored when the button is
+		 * disabled or hidden.
 		 */
 		void buttonReleaseHandler(void);
 
 		protected:
 		/**
-		 * @brief Grow the hit area of a small control to the M3 touch target.
+		 * @brief Make a small button easier to hit.
 		 *
-		 * Sets the hover accessibility margins (consumed by the hit test of
-		 * every pointer and hand system) so the interactive area is at least
-		 * `theme::SpacingScale::MinTouchTarget` on both axes.
+		 * Sets the accessibility margin of the mouse and hand hover
+		 * components so the area that reacts to pointers is at least
+		 * `theme::SpacingScale::MinTouchTarget` (48 dp) on both axes. The
+		 * drawn size does not change.
 		 *
-		 * @param width Visual width of the control.
-		 * @param height Visual height of the control.
+		 * @param width The drawn width of the button, in dp.
+		 * @param height The drawn height of the button, in dp.
 		 */
 		void applyTouchTarget(float width, float height);
 
 		/**
-		 * @brief Mirror the toggle selection on the Accessibility component.
+		 * @brief Copy the current state to the icon child and to
+		 * Accessibility.
+		 *
+		 * Forwards to systems::Button::syncContent: the icon child gets the
+		 * active glyph and style, and components::Accessibility is marked
+		 * selected when the button is a selected toggle.
 		 */
 		void syncAccessibilityState(void);
 
 		/**
-		 * @brief Resolve the container color, honouring the override.
-		 * @param color Theme-derived container color.
-		 * @return The override when set, otherwise @p color.
+		 * @brief Pick the background color to paint.
+		 * @param color The color computed from the theme.
+		 * @return The color given to setContainerColorOverride() when one
+		 * is set, otherwise @p color.
 		 */
 		utility::graphic::Color32Bit resolveContainerColor(
 			const utility::graphic::Color32Bit &color) const;
 
 		/**
-		 * @brief Resolve the content color, honouring the override.
-		 * @param color Theme-derived content color.
-		 * @return The override when set, otherwise @p color.
+		 * @brief Pick the icon and label color to paint.
+		 * @param color The color computed from the theme.
+		 * @return The color given to setContentColorOverride() when one is
+		 * set, otherwise @p color.
 		 */
 		utility::graphic::Color32Bit resolveContentColor(
 			const utility::graphic::Color32Bit &color) const;
 		static constexpr float _layerDepthStep {
 			1.0f
-		};	  ///< Distance pushed toward the camera per layer.
+		};	  ///< Depth between two layers, toward the viewer.
 	};
 
 }	 // namespace guillaume::entities

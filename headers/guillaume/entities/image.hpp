@@ -38,7 +38,38 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Image component
+	 * @brief A picture loaded from a texture file and stretched over a
+	 * rectangle.
+	 *
+	 * Image is a leaf widget: it has no children. Its state lives in
+	 * components::Image (texture path, fallback path, loading state),
+	 * components::Bound (displayed size), components::Transform and
+	 * components::Accessibility (role Image and label). systems::ImageRender
+	 * loads the texture and draws it over the Bound each frame, in the
+	 * Render phase, and records the outcome as the loading state. The class
+	 * itself holds no field.
+	 *
+	 * @code
+	 * Image::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto photo = builder.withSize(160.0f, 90.0f)
+	 * 	.withFallbackPath("images/placeholder.png")
+	 * 	.makeImage(parent, "images/photo.png");
+	 * photo->setAccessibilityLabel("Team photo");
+	 * @endcode
+	 *
+	 * `Image::create(registry, texturePath)` builds the same widget without
+	 * registering it in an entity registry; set its size and fallback with
+	 * the setters afterwards.
+	 *
+	 * Watch out:
+	 * - No system measures the texture. The picture fills the Bound, so
+	 *   give the image a size with Builder::withSize(), setSize() or
+	 *   setAspectRatio().
+	 * - The texture is stretched to the Bound; the aspect ratio of the file
+	 *   is not preserved.
+	 * - getLoadState() is `Pending` until the first Render phase.
+	 *
+	 * @see components::Image, systems::ImageRender, Icon
 	 */
 	class Image:
 		public ecs::EntityFiller<components::Transform, components::Bound,
@@ -46,70 +77,86 @@ namespace guillaume::entities
 	{
 		public:
 		/**
-		 * @brief Builder used to configure and create `Image` entities.
+		 * @brief Configures Image widgets and registers them in the scene's
+		 * entity registry.
 		 */
 		class Builder: public EntityBuilderBase<Image>
 		{
 			private:
-			std::string _texturePath;	 ///< Name of the texture to be used for
-										 ///< this Image entity
-			std::string _fallbackPath;	  ///< Texture drawn on load failure
-			float _width { 0.0f };		  ///< Requested width (0: keep).
-			float _height { 0.0f };		  ///< Requested height (0: keep).
+			std::string _texturePath;	  ///< Path of the texture file to draw.
+			std::string _fallbackPath;	  ///< Path of the texture drawn when
+										  ///< the main one fails to load.
+			float _width { 0.0f };	   ///< Displayed width, in dp (0: leave the
+									   ///< Bound as created).
+			float _height { 0.0f };	   ///< Displayed height, in dp (0: leave
+									   ///< the Bound as created).
 
 			public:
 			/**
-			 * @brief Construct a new Image Builder object.
-			 * @param componentRegistry The component registry to register
-			 * components to.
-			 * @param entityRegistry The entity registry to register entities
-			 * to.
+			 * @brief Construct a builder holding the defaults of reset().
+			 * @param componentRegistry The registry the components of the
+			 * built images are stored in.
+			 * @param entityRegistry The registry that owns the images built
+			 * by `makeImage`.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the Image entity from the current configuration.
-			 * @return The newly created Image.
+			 * @brief Build an image from the current configuration, without
+			 * registering it or giving it a parent.
+			 *
+			 * The size is applied only when both the width and the height
+			 * are positive.
+			 * @return The new image.
 			 */
 			std::shared_ptr<Image> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder to its initial state for creating a new
-			 * Image entity.
+			 * @brief Restore the defaults: empty texture path, no fallback
+			 * texture, and no size (width and height 0).
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the name of the texture to be used for the Image
-			 * entity.
-			 * @param texturePath The texture identifier to set.
-			 * @return Reference to the builder for chaining.
+			 * @brief Choose the texture to draw.
+			 * @param texturePath The path of the texture file, as the
+			 * resource provider of the application resolves it. Empty by
+			 * default.
+			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withTexturePath(const std::string &texturePath);
 
 			/**
 			 * @brief Set the texture drawn when the main one fails to load.
-			 * @param fallbackPath Fallback texture path.
+			 * @param fallbackPath The path of the fallback texture file.
+			 * Empty by default, which means no fallback.
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withFallbackPath(const std::string &fallbackPath);
 
 			/**
 			 * @brief Set the displayed size.
-			 * @param width Width in dp.
-			 * @param height Height in dp.
+			 *
+			 * Unlike Image::setSize(), this never throws: the built image
+			 * keeps the Bound it was created with unless both values are
+			 * positive.
+			 * @param width The displayed width, in dp. 0 by default.
+			 * @param height The displayed height, in dp. 0 by default.
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withSize(float width, float height);
 
 			/**
-			 * @brief Create a default image entity using the builder.
-			 * @param parent The parent entity to which the new image entity
-			 * will be attached.
-			 * @param texturePath The texture name to assign to the created
-			 * entity.
-			 * @return A shared pointer to the newly created image entity.
+			 * @brief Build an image, register it under `parent` and reset
+			 * the builder.
+			 *
+			 * The fallback path and size set with the `with...` methods
+			 * apply to the built image.
+			 * @param parent The entity the image is attached to, or nullptr
+			 * for a root entity.
+			 * @param texturePath The path of the texture file to draw.
+			 * @return The registered image.
 			 */
 			std::shared_ptr<Image> makeImage(std::shared_ptr<Entity> parent,
 											 const std::string &texturePath);
@@ -117,14 +164,14 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Build an image without registering it in an entity
+		 * registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
+		 * The arguments are forwarded to the private constructor:
+		 * `(registry, texturePath)`. An image has no children to build.
 		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * @param arguments The constructor arguments, as listed above.
+		 * @return The new image. The caller owns it.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<Image> create(Arguments &&...arguments)
@@ -135,69 +182,80 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Default destructor for the Image component.
+		 * @brief Destructor.
 		 */
 		~Image(void);
 
 		/**
-		 * @brief Set the name of the texture for this Image entity.
-		 * @param texturePath The new name of the texture to set.
-		 * @return Reference to this Image for chaining.
+		 * @brief Change the texture to draw.
+		 *
+		 * systems::ImageRender loads it at the next Render phase.
+		 * @param texturePath The path of the new texture file, written to
+		 * components::Image.
+		 * @return Reference to this image for chaining.
 		 */
 		Image &setTexturePath(const std::string &texturePath);
 
 		/**
-		 * @brief Get the texture path.
-		 * @return The texture path.
+		 * @brief Get the path of the texture the image was asked to draw.
+		 * @return The texture path stored in components::Image. It does not
+		 * change when the fallback is drawn instead.
 		 */
 		const std::string &getTexturePath(void) const;
 
 		/**
 		 * @brief Set the texture drawn when the main one fails to load.
-		 * @param fallbackPath Fallback texture path (empty to disable).
+		 * @param fallbackPath The path of the fallback texture file, or an
+		 * empty string for no fallback.
 		 * @return Reference to this image for chaining.
 		 */
 		Image &setFallbackPath(const std::string &fallbackPath);
 
 		/**
-		 * @brief Set the displayed size.
-		 * @param width Width in dp, must be positive.
-		 * @param height Height in dp, must be positive.
+		 * @brief Set the displayed size, written to components::Bound.
+		 * @param width The width, in dp. Must be positive.
+		 * @param height The height, in dp. Must be positive.
 		 * @return Reference to this image for chaining.
-		 * @throws std::invalid_argument If a dimension is not positive.
+		 * @throws std::invalid_argument If a dimension is zero or negative.
 		 */
 		Image &setSize(float width, float height);
 
 		/**
-		 * @brief Set the height from the width and an aspect ratio
-		 * (width / height).
-		 * @param width Width in dp, must be positive.
-		 * @param aspectRatio Width-to-height ratio, must be positive.
+		 * @brief Set the displayed size from a width and an aspect ratio.
+		 *
+		 * The height is `width / aspectRatio`: a width of 160 with a ratio
+		 * of 16.0f / 9.0f gives a height of 90. The ratio is not stored;
+		 * it is applied once.
+		 * @param width The width, in dp. Must be positive.
+		 * @param aspectRatio The width divided by the height. Must be
+		 * positive.
 		 * @return Reference to this image for chaining.
-		 * @throws std::invalid_argument If an argument is not positive.
+		 * @throws std::invalid_argument If an argument is zero or negative.
 		 */
 		Image &setAspectRatio(float width, float aspectRatio);
 
 		/**
-		 * @brief Get the loading state reported by systems::ImageRender.
-		 * @return The loading state.
+		 * @brief Tell whether the texture could be loaded.
+		 * @return `Pending` before systems::ImageRender first ran on the
+		 * image, `Loaded` when the texture or its fallback is drawn,
+		 * `Failed` when neither could be loaded.
 		 */
 		components::Image::LoadState getLoadState(void) const;
 
 		/**
-		 * @brief Set the accessibility label (role Image).
-		 * @param label The label.
+		 * @brief Describe the picture for assistive technologies.
+		 * @param label The text announced for the image, written to
+		 * components::Accessibility. The role is always Image.
 		 * @return Reference to this image for chaining.
 		 */
 		Image &setAccessibilityLabel(const std::string &label);
 
 		private:
 		/**
-		 * @brief Default constructor for the Image component.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param texturePath The name of the texture to be used for this Image
-		 * entity.
+		 * @brief Construct an image and give it the Image accessibility
+		 * role.
+		 * @param registry The registry the components are stored in.
+		 * @param texturePath The path of the texture file to draw.
 		 */
 		Image(ecs::ComponentRegistry &registry, const std::string &texturePath);
 	};

@@ -25,10 +25,15 @@
 
 /**
  * @file
- * @brief Source-compatibility aliases for the placement helpers.
+ * @brief Makes the placement helpers callable from guillaume::entities
+ * without qualification.
  *
- * The helpers live in guillaume::systems since the widget rules moved to
- * systems; this header keeps the names available in guillaume::entities.
+ * This header declares nothing of its own: the functions are defined in
+ * guillaume::systems::placement. They read the pose of an entity and
+ * position a child relative to its parent, for the widgets that place
+ * children themselves instead of relying on systems::Layout.
+ *
+ * @see guillaume::systems::placement
  */
 namespace guillaume::entities
 {

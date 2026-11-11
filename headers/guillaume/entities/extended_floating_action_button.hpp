@@ -39,137 +39,198 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Extended floating action button. A wide `ButtonBase` leaf that
-	 * always displays an icon and a text label.
+	 * @brief A Material 3 extended floating action button: a wide, raised
+	 * button with a text label and an optional icon, which can collapse to
+	 * a square icon-only FAB.
+	 *
+	 * The state shared by every button (icon, label, callbacks) lives in
+	 * components::Button, and systems::Button turns input into clicks in the
+	 * Event phase. What is specific to this variant (color variant, size,
+	 * shadow mode, lowered flag, custom size, extended flag) lives in
+	 * components::ExtendedFloatingActionButton;
+	 * systems::ExtendedFloatingActionButton colors the container, sets its
+	 * shadow and size and places the icon and the label each frame, in the
+	 * Layout phase. The class itself holds no field: its setters write the
+	 * component and restyle at once.
+	 *
+	 * @code
+	 * ExtendedFloatingActionButton::Builder builder(getComponentRegistry(),
+	 * 	getEntityRegistry());
+	 * auto compose = builder.withIcon("edit")
+	 * 	.makeExtendedFloatingActionButton(parent, "Compose", [] {
+	 * 		// called when the user clicks the button
+	 * 	});
+	 * compose->setExtended(false); // icon only
+	 * @endcode
+	 *
+	 * `ExtendedFloatingActionButton::create(registry, iconGlyphName,
+	 * iconStyle, labelContent, variant, size, lowered, isDisabled,
+	 * accessibilityLabel, onClick)` builds the same widget without
+	 * registering it in an entity registry.
+	 *
+	 * The button owns its icon and label children: it is the entity registry
+	 * they are registered in. Its Bound and Elevation are written each frame,
+	 * so values set by hand on them are overwritten. A collapsed button
+	 * keeps its label child and paints it transparent. It does not place
+	 * itself: position it through its Transform or its parent's layout.
+	 *
+	 * @see ButtonBase, components::ExtendedFloatingActionButton,
+	 * systems::ExtendedFloatingActionButton, FloatingActionButton
 	 */
 	class ExtendedFloatingActionButton: public ButtonBase
 	{
 		public:
-		/// Variant (see components::ExtendedFloatingActionButton).
+		/// Color variant: Surface, Primary, Secondary or Tertiary (see
+		/// components::ExtendedFloatingActionButton::Variant).
 		using Variant = components::ExtendedFloatingActionButton::Variant;
 
-		/**
-		 * @brief Size of the extended FAB.
-		 */
-		/// Mode (see components::ExtendedFloatingActionButton).
+		/// Shadow mode: Elevated or Flat (see
+		/// components::ExtendedFloatingActionButton::Mode).
 		using Mode = components::ExtendedFloatingActionButton::Mode;
 
-		/// Size (see components::ExtendedFloatingActionButton).
+		/// Size: Small, Medium or Large (see
+		/// components::ExtendedFloatingActionButton::Size).
 		using Size = components::ExtendedFloatingActionButton::Size;
 
 		/**
-		 * @brief Builder used to configure and create
-		 * `ExtendedFloatingActionButton` entities.
+		 * @brief Configures, creates and registers
+		 * ExtendedFloatingActionButton widgets.
+		 *
+		 * Set options with the `with...` methods then call registerEntity(),
+		 * or use makeExtendedFloatingActionButton() to do both in one call.
 		 */
 		class Builder: public EntityBuilderBase<ExtendedFloatingActionButton>
 		{
 			private:
-			std::string _iconGlyphName;	   ///< Icon glyph name to attach
-			components::Glyph::Style
-				_iconStyle;				  ///< Style of the icon to attach
-			std::string _labelContent;	  ///< Label content to attach
-			std::function<void(void)> _onClick;	   ///< Click event handler
-			Variant _variant;					   ///< Color variant
-			Size _size;							   ///< Size
-			bool _lowered;						///< Whether the FAB is lowered
-			bool _isDisabled;					///< Whether the FAB is disabled
-			std::string _accessibilityLabel;	///< Accessibility label
+			std::string
+				_iconGlyphName;	   ///< Icon glyph name; empty for no icon
+			components::Glyph::Style _iconStyle;	///< Icon glyph style
+			std::string _labelContent;				///< Label text
+			std::function<void(void)>
+				_onClick;		 ///< Handler called on a user click
+			Variant _variant;	 ///< Color variant
+			Size _size;			 ///< Size
+			bool _lowered;		 ///< Whether the FAB uses the lowered style
+			bool _isDisabled;	 ///< Whether the FAB is disabled
+			std::string
+				_accessibilityLabel;	///< Label read by assistive technology
 
 			public:
 			/**
-			 * @brief Construct a new ExtendedFloatingActionButton Builder
-			 * object.
-			 * @param componentRegistry The component registry used to build
-			 * entities.
-			 * @param entityRegistry The entity registry used to build entities.
+			 * @brief Construct a builder with the default configuration (see
+			 * reset()).
+			 * @param componentRegistry The registry that stores the
+			 * components of the buttons to build.
+			 * @param entityRegistry The registry the built buttons are added
+			 * to (usually the scene's).
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the ExtendedFloatingActionButton entity from the
-			 * current configuration.
-			 * @return The newly created ExtendedFloatingActionButton.
+			 * @brief Build an ExtendedFloatingActionButton, with its icon and
+			 * label children, from the current configuration, without
+			 * registering it.
+			 *
+			 * registerEntity() calls it, then sets the parent, registers the
+			 * button and resets the builder.
+			 * @return The new extended FAB.
 			 */
 			std::shared_ptr<ExtendedFloatingActionButton>
 				buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder to its initial state.
+			 * @brief Restore the default configuration.
+			 *
+			 * Defaults: no icon, Glyph::Style::Outlined, empty label, no
+			 * click handler, Variant::Primary, Size::Medium, not lowered,
+			 * enabled, empty accessibility label.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the icon glyph name.
-			 * @param iconGlyphName The glyph name of the icon to attach.
+			 * @brief Set the icon shown before the label.
+			 * @param iconGlyphName The glyph name of the icon (for example
+			 * "edit"). Default: empty, no icon.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withIcon(const std::string &iconGlyphName);
 
 			/**
-			 * @brief Set the style of the icon.
-			 * @param iconStyle The style of the icon to attach.
+			 * @brief Set the glyph style of the icon.
+			 * @param iconStyle The glyph style. Default:
+			 * Glyph::Style::Outlined.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withIconStyle(const components::Glyph::Style &iconStyle);
 
 			/**
-			 * @brief Set the label content.
-			 * @param labelContent The label content to attach.
+			 * @brief Set the label text.
+			 * @param labelContent The label text. Default: empty. It is also
+			 * the accessibility label when none is set.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &labelContent);
 
 			/**
-			 * @brief Set the click event handler.
-			 * @param onClick The click event handler to set.
+			 * @brief Set the click handler.
+			 * @param onClick The function called when the user clicks the
+			 * FAB. Default: empty, nothing is called.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withOnClick(std::function<void(void)> onClick);
 
 			/**
 			 * @brief Set the color variant.
-			 * @param variant The color variant to set.
+			 * @param variant The color variant. Default: Variant::Primary.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withVariant(const Variant &variant);
 
 			/**
 			 * @brief Set the size.
-			 * @param size The size to set.
+			 * @param size The size. Default: Size::Medium.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withSize(const Size &size);
 
 			/**
-			 * @brief Set if the FAB is lowered.
-			 * @param lowered Whether the FAB is lowered.
+			 * @brief Choose the lowered style: a weaker shadow (elevation
+			 * level 1 instead of 3).
+			 * @param lowered True for the lowered style. Default: false.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLowered(const bool &lowered);
 
 			/**
-			 * @brief Set if the FAB is disabled.
-			 * @param isDisabled Whether the FAB is disabled.
+			 * @brief Choose whether the FAB starts disabled.
+			 * @param isDisabled True for a FAB that ignores input. Default:
+			 * false.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withDisabled(const bool &isDisabled);
 
 			/**
-			 * @brief Set the accessibility label.
-			 * @param accessibilityLabel The accessibility label to set.
+			 * @brief Set the label read by assistive technology.
+			 * @param accessibilityLabel The accessibility label. Default:
+			 * empty, in which case the label text is used.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
 
 			/**
-			 * @brief Create an extended FAB using the builder.
-			 * @param parent The parent entity to which the new entity will be
-			 * attached.
-			 * @param labelContent The label content to attach.
-			 * @param onClick The click event handler.
-			 * @return A shared pointer to the newly created entity.
+			 * @brief Build an extended FAB, register it under `parent` and
+			 * reset the builder.
+			 *
+			 * The icon, variant, size and other options are the ones set
+			 * before the call with the `with...` methods, or the defaults.
+			 * @param parent The entity the FAB becomes a child of.
+			 * @param labelContent The label text.
+			 * @param onClick The function called when the user clicks the
+			 * FAB (may be empty).
+			 * @return The new extended FAB, registered in the entity
+			 * registry.
 			 */
 			std::shared_ptr<ExtendedFloatingActionButton>
 				makeExtendedFloatingActionButton(
@@ -180,14 +241,15 @@ namespace guillaume::entities
 
 		protected:
 		/**
-		 * @brief Font size used for the icon child.
-		 * @return The icon font size.
+		 * @brief Get the font size the icon child is created with.
+		 * @return The icon font size, in dp.
 		 */
 		float getIconFontSize(void) const override;
 
 		/**
-		 * @brief Whether this button type displays a text label.
-		 * @return True when a label child is used.
+		 * @brief Tell ButtonBase::build() that this variant has a label
+		 * child.
+		 * @return Always true.
 		 */
 		bool usesLabel(void) const override
 		{
@@ -195,22 +257,25 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Get the initial content color used when creating children.
-		 * @return The initial content color.
+		 * @brief Get the color the icon and label children are created with.
+		 * @return The resting content color of the current variant.
 		 */
 		utility::graphic::Color32Bit
 			getInitialContentColor(void) const override;
 
 		public:
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create an extended FAB and its icon and label children,
+		 * without registering it in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
-		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * The constructor is private because the children need a button
+		 * already held by a `std::shared_ptr` as parent: create() constructs
+		 * the FAB then calls build(), which creates them.
+		 * @tparam Arguments The types of the constructor arguments.
+		 * @param arguments The arguments forwarded to the constructor:
+		 * (registry, iconGlyphName, iconStyle, labelContent, variant, size,
+		 * lowered, isDisabled, accessibilityLabel, onClick).
+		 * @return The new extended FAB.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<ExtendedFloatingActionButton>
@@ -229,91 +294,111 @@ namespace guillaume::entities
 		~ExtendedFloatingActionButton(void) override = default;
 
 		/**
-		 * @brief Set the color variant.
-		 * @param variant The color variant to set.
-		 * @return Reference to this entity for chaining.
+		 * @brief Set the color variant. Restyles at once.
+		 * @param variant The new color variant.
+		 * @return Reference to this FAB for chaining.
 		 */
 		ExtendedFloatingActionButton &setVariant(const Variant &variant);
 
 		/**
-		 * @brief Set the size.
-		 * @param size The size to set.
-		 * @return Reference to this entity for chaining.
+		 * @brief Set the size, which decides the container height, the
+		 * corner radius and the icon size. Restyles at once.
+		 * @param size The new size. A custom size, when set, still decides
+		 * the container height.
+		 * @return Reference to this FAB for chaining.
 		 */
 		ExtendedFloatingActionButton &setSize(const Size &size);
 
 		/**
-		 * @brief Set the shadow mode; Flat paints no shadow.
-		 * @param mode New mode.
+		 * @brief Set the shadow mode. Restyles at once.
+		 * @param mode Mode::Elevated for a shadow, Mode::Flat for none
+		 * (elevation level 0).
 		 * @return Reference to this FAB for chaining.
 		 */
 		ExtendedFloatingActionButton &setMode(Mode mode);
 
 		/**
 		 * @brief Get the shadow mode.
-		 * @return The mode.
+		 * @return Mode::Elevated (the default) or Mode::Flat.
 		 */
 		Mode getMode(void) const;
 
 		/**
 		 * @brief Override the container height (Paper `customSize`).
-		 * @param size Custom size, or none for the size preset.
+		 * Restyles at once.
+		 *
+		 * The height is also the width of a collapsed FAB. The corner radius
+		 * becomes the custom size divided by 3.5.
+		 * @param size The container height, in dp, or `std::nullopt` to use
+		 * the size preset.
 		 * @return Reference to this FAB for chaining.
-		 * @throws std::invalid_argument If @p size is not positive.
+		 * @throws std::invalid_argument If @p size holds a value that is
+		 * zero or negative.
 		 */
 		ExtendedFloatingActionButton &setCustomSize(std::optional<float> size);
 
 		/**
-		 * @brief Expand (icon + label) or collapse (icon only) the FAB.
-		 * @param extended New state.
+		 * @brief Expand (icon and label) or collapse (icon only) the FAB.
+		 * Restyles at once.
+		 * @param extended True to show the label, false to hide it and
+		 * shrink the container to a square. A new FAB is extended.
 		 * @return Reference to this FAB for chaining.
 		 */
 		ExtendedFloatingActionButton &setExtended(bool extended);
 
 		/**
-		 * @brief Check whether the label is shown.
-		 * @return True when extended.
+		 * @brief Check whether the FAB is extended.
+		 * @return True when extended. The label is shown only when the FAB
+		 * is extended and its label text is not empty.
 		 */
 		bool isExtended(void) const;
 
 		/**
-		 * @brief Set if the FAB is lowered.
-		 * @param lowered Whether the FAB is lowered.
-		 * @return Reference to this entity for chaining.
+		 * @brief Choose the lowered style: a weaker shadow (elevation level 1
+		 * instead of 3). Restyles at once.
+		 * @param lowered True for the lowered style.
+		 * @return Reference to this FAB for chaining.
 		 */
 		ExtendedFloatingActionButton &setLowered(const bool &lowered);
 
 		/**
 		 * @brief Get the color variant.
-		 * @return The color variant.
+		 * @return The variant stored in
+		 * components::ExtendedFloatingActionButton.
 		 */
 		Variant getVariant(void) const;
 
 		/**
 		 * @brief Get the size.
-		 * @return The size.
+		 * @return The size preset, even when a custom size overrides it.
 		 */
 		Size getSize(void) const;
 
 		/**
-		 * @brief Get whether the FAB is lowered.
+		 * @brief Get whether the FAB uses the lowered style.
 		 * @return True when lowered, false otherwise.
 		 */
 		bool isLowered(void) const;
 
 		private:
 		/**
-		 * @brief Construct an ExtendedFloatingActionButton entity.
-		 * @param registry Reference to the component registry.
-		 * @param iconGlyphName Icon glyph name to attach.
-		 * @param iconStyle Style of the icon.
-		 * @param labelContent Label content to attach.
-		 * @param variant Initial color variant.
-		 * @param size Initial size.
-		 * @param lowered Initial lowered state.
-		 * @param isDisabled Initial disabled state.
-		 * @param accessibilityLabel Initial accessibility label.
-		 * @param onClick Click event handler.
+		 * @brief Construct an extended FAB without its children; create()
+		 * calls it then build().
+		 *
+		 * Adds components::ExtendedFloatingActionButton to the entity and
+		 * installs systems::ExtendedFloatingActionButton on it. An extended
+		 * FAB is never a toggle.
+		 * @param registry The registry that stores the FAB's components.
+		 * @param iconGlyphName The glyph name of the icon; empty for no icon.
+		 * @param iconStyle The glyph style of the icon.
+		 * @param labelContent The label text.
+		 * @param variant The color variant.
+		 * @param size The size.
+		 * @param lowered True for the lowered style.
+		 * @param isDisabled True when the FAB starts disabled.
+		 * @param accessibilityLabel The label read by assistive technology;
+		 * when empty, the label text is used.
+		 * @param onClick The function called on a user click (may be empty).
 		 */
 		ExtendedFloatingActionButton(ecs::ComponentRegistry &registry,
 									 const std::string &iconGlyphName,

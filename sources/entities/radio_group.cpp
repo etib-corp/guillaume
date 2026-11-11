@@ -141,8 +141,9 @@ namespace guillaume::entities
 		if (index >= buttons.size()) {
 			return nullptr;
 		}
-		// The lookup is const because this getter is; the child itself is
-		// shared and mutable, as it always was.
+		// The lookup returns a pointer to const because this getter is
+		// const; the child is shared and callers may modify it, hence the
+		// cast.
 		return std::const_pointer_cast<RadioButton>(
 			getEntity<RadioButton>(buttons[index]));
 	}

@@ -52,127 +52,187 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Dialog entity: a centered or full-screen overlay panel.
+	 * @brief A modal panel shown above the rest of the interface, with an
+	 * optional icon, a title, a message and a row of text buttons.
 	 *
-	 * A facade without state: the configuration lives in
-	 * `components::Dialog`, the visibility in `components::Overlay`, and
-	 * `systems::Dialog` holds every rule. This class only builds the child
-	 * entities (backdrop, icon, title, message, action row and buttons) and
-	 * forwards its setters to the component and the system. The Material
-	 * Design variants are:
-	 * - `Alert`: a title, a message and a row of textual actions.
-	 * - `Simple`: a title followed by a list of option labels.
-	 * - `Confirmation`: an icon, a title and a message.
-	 * - `FullScreen`: a full-height panel without corners.
+	 * Its configuration lives in components::Dialog (variant, title,
+	 * message, actions, icon, identifiers of the children) and its
+	 * visibility and dismiss handler in components::Overlay. systems::Dialog
+	 * styles the panel, arranges its children and shows or hides its
+	 * backdrop each frame, in the Layout phase. The class itself holds no
+	 * field: its setters write the components and restyle at once.
 	 *
-	 * @see SurfaceBase
-	 * @see components::Dialog
-	 * @see components::Overlay
-	 * @see systems::Dialog
+	 * @code
+	 * Dialog::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto dialog = builder.withOnDismiss([]() {
+	 * 		// called when the user dismisses the dialog
+	 * 	})
+	 * 	.addAction("Cancel")
+	 * 	.addAction("Delete", []() {
+	 * 		// called when the button is pressed
+	 * 	})
+	 * 	.makeDialog(parent, Dialog::Variant::Alert, "Delete the file?",
+	 * 		"This cannot be undone.");
+	 * dialog->show();
+	 * @endcode
+	 *
+	 * `Dialog::create(registry, config, variant, title, message, actions,
+	 * icon, onDismiss)` builds the same widget without registering it in an
+	 * entity registry.
+	 *
+	 * Showing and hiding: a dialog is created hidden. show() and hide()
+	 * switch it; dismiss() hides it and calls the dismiss handler.
+	 * systems::Overlay dismisses the topmost visible overlay when the user
+	 * presses Escape. Pressing an action button only calls the action's
+	 * handler: the dialog stays open until the handler (or other code)
+	 * hides it.
+	 *
+	 * The variants differ as follows:
+	 * - `Alert`, `Simple`: the default look, a 320 dp wide panel with
+	 *   rounded corners.
+	 * - `Confirmation`: same look; shows the "info" icon when no icon is
+	 *   set.
+	 * - `FullScreen`: a 640 dp high panel without rounded corners and
+	 *   without backdrop.
+	 *
+	 * Things to know:
+	 * - The dialog is the entity registry of its children (backdrop, icon,
+	 *   title, message, action row); they are built by this class and
+	 *   destroyed with it.
+	 * - systems::Dialog overwrites the panel's layout settings, width,
+	 *   color, corner radius and elevation every frame: values set through
+	 *   the SurfaceBase setters do not last.
+	 * - The actions are fixed at creation.
+	 *
+	 * @see components::Dialog, components::Overlay, systems::Dialog
 	 */
 	class Dialog:
 		public SurfaceBase<components::Overlay, components::Elevation,
 						   components::Accessibility, components::Dialog>
 	{
 		public:
-		/// Dialog variant.
+		/// Look of the dialog: Alert, Simple, Confirmation or FullScreen.
 		using Variant = components::Dialog::Variant;
 
-		/// One dialog action, rendered as a text button.
+		/// One dialog action: a label and a press handler, shown as a text
+		/// button in the action row.
 		using Action = components::Dialog::Action;
 
 		/**
-		 * @brief Builder used to configure and create `Dialog` entities.
+		 * @brief Configures a Dialog, then builds it and registers it in the
+		 * entity registry given at construction.
 		 */
 		class Builder: public EntityBuilderBase<Dialog>
 		{
 			private:
-			SurfaceConfig _config;					///< Surface configuration.
+			SurfaceConfig _config;	  ///< Pose and layout of the panel.
 			Variant _variant { Variant::Alert };	///< Dialog variant.
-			std::string _title {};					///< Dialog title.
-			std::string _message {};				///< Dialog message.
-			std::vector<Action> _actions {};		///< Dialog actions.
-			std::string _icon {};					///< Hero icon glyph.
+			std::string _title {};					///< Title text.
+			std::string _message {};				///< Message text.
+			std::vector<Action> _actions {};		///< Actions, in row order.
+			std::string _icon {};					///< Icon glyph name.
 			std::function<void(void)> _onDismiss {};	///< Dismiss handler.
 
 			public:
 			/**
-			 * @brief Construct a new Dialog Builder.
-			 * @param componentRegistry The component registry.
-			 * @param entityRegistry The entity registry.
+			 * @brief Create a builder set to the defaults of reset().
+			 * @param componentRegistry The registry the dialog's components
+			 * are created in.
+			 * @param entityRegistry The registry the built dialogs are added
+			 * to.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the Dialog entity from the current configuration.
-			 * @return The newly created Dialog.
+			 * @brief Build a dialog and its children from the current
+			 * configuration, without registering it or setting its parent.
+			 * @return The new dialog, hidden.
 			 */
 			std::shared_ptr<Dialog> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder.
+			 * @brief Restore the defaults: Alert variant, no title, no
+			 * message, no action, no icon, no dismiss handler, and a
+			 * default pose.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the dialog pose.
-			 * @param pose The new pose.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the pose the dialog is created with.
+			 * @param pose The position and orientation of the panel.
+			 * Default: a default-constructed pose.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
 			 * @brief Set the dialog variant.
-			 * @param variant The new variant.
-			 * @return Reference to the builder for chaining.
+			 * @param variant The variant. Default: `Variant::Alert`.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withVariant(Variant variant);
 
 			/**
-			 * @brief Set the dialog title.
-			 * @param title The new title.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the title, shown above the message.
+			 * @param title The title text. Default: empty, which builds no
+			 * title.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withTitle(const std::string &title);
 
 			/**
-			 * @brief Set the dialog message.
-			 * @param message The new message.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the message, shown under the title.
+			 * @param message The message text. Default: empty, which builds
+			 * no message.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withMessage(const std::string &message);
 
 			/**
-			 * @brief Append a dialog action label.
-			 * @param label The action label.
-			 * @return Reference to the builder for chaining.
+			 * @brief Append an action, shown as a text button at the end of
+			 * the action row.
+			 * @param label The button label. An action with an empty label
+			 * gets no button.
+			 * @param onPress Called when the button is pressed. May be
+			 * empty. The dialog stays open after the call.
+			 * @return This builder, for chaining.
 			 */
 			Builder &addAction(const std::string &label,
 							   std::function<void(void)> onPress = {});
 
 			/**
-			 * @brief Set the hero icon shown centred above the title.
-			 * @param iconGlyph Icon glyph name.
-			 * @return Reference to this builder for chaining.
+			 * @brief Set the icon shown above the title.
+			 * @param iconGlyph The glyph name. Default: empty, which builds
+			 * no icon, except for a Confirmation dialog, which then shows
+			 * "info".
+			 * @return This builder, for chaining.
 			 */
 			Builder &withIcon(const std::string &iconGlyph);
 
 			/**
-			 * @brief Set the handler called when the dialog is dismissed.
-			 * @param onDismiss Dismiss handler.
-			 * @return Reference to this builder for chaining.
+			 * @brief Set the handler called when the dialog is dismissed
+			 * (see Dialog::setOnDismiss()).
+			 * @param onDismiss The handler. Default: none.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withOnDismiss(std::function<void(void)> onDismiss);
 
 			/**
-			 * @brief Create a dialog using the builder.
-			 * @param parent The parent entity.
+			 * @brief Build a dialog, register it under @p parent and reset
+			 * the builder.
+			 *
+			 * The arguments replace the variant, title and message set
+			 * before; @p actions are appended to the actions already added
+			 * with addAction(). The icon and dismiss handler set before are
+			 * kept.
+			 * @param parent The entity the dialog is attached to.
 			 * @param variant The dialog variant.
-			 * @param title The dialog title.
-			 * @param message The dialog message.
-			 * @param actions The dialog action labels.
-			 * @return The newly created dialog.
+			 * @param title The title text (empty: no title).
+			 * @param message The message text (empty: no message).
+			 * @param actions Labels of extra actions without a press
+			 * handler.
+			 * @return The registered dialog, hidden until show() is called.
 			 */
 			std::shared_ptr<Dialog>
 				makeDialog(std::shared_ptr<ecs::Entity> parent, Variant variant,
@@ -181,15 +241,24 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a dialog with pressable actions and a hero icon.
-		 * @param registry Component registry.
-		 * @param config Surface configuration.
-		 * @param variant Dialog variant.
-		 * @param title Title (headlineSmall).
-		 * @param message Supporting text (bodyMedium).
-		 * @param actions Actions, rendered right-aligned in a row.
-		 * @param icon Hero icon glyph (Confirmation defaults to "info").
-		 * @param onDismiss Dismiss handler.
+		 * @brief Construct a dialog with pressable actions and an icon.
+		 *
+		 * Writes the components and styles the panel, but builds no child:
+		 * use create() or the Builder, which also build the children.
+		 * @param registry The registry the dialog's components are created
+		 * in.
+		 * @param config Pose and layout of the panel. systems::Dialog
+		 * overwrites the layout settings.
+		 * @param variant The dialog variant.
+		 * @param title The title text, in the HeadlineSmall type role.
+		 * @param message The message text, in the BodyMedium type role.
+		 * @param actions The actions, shown as a row of text buttons aligned
+		 * to the end of the panel.
+		 * @param icon The glyph name of the icon above the title. When
+		 * empty, a Confirmation dialog shows "info" and the other variants
+		 * show no icon.
+		 * @param onDismiss Called when the dialog is dismissed; stored in
+		 * components::Overlay.
 		 */
 		Dialog(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::string &title,
@@ -198,14 +267,17 @@ namespace guillaume::entities
 			   std::function<void(void)> onDismiss = {});
 
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a dialog and its children, without registering it
+		 * in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
+		 * The arguments are forwarded to a constructor: (registry, config,
+		 * variant, title, message, actions, icon, onDismiss) with a vector
+		 * of Action, or (registry, config, variant, title, message, labels)
+		 * with a vector of labels. The children are built here, by build(),
+		 * because a child needs its parent to be owned by a shared pointer.
 		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * @param arguments The constructor arguments, as listed above.
+		 * @return The new dialog, hidden, with no parent.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<Dialog> create(Arguments &&...arguments)
@@ -222,112 +294,143 @@ namespace guillaume::entities
 		~Dialog(void) override = default;
 
 		/**
-		 * @brief Set the dialog variant.
+		 * @brief Change the dialog variant.
+		 *
+		 * Builds the default "info" icon when the new variant is
+		 * Confirmation and the dialog has no icon yet, then restyles at
+		 * once.
 		 * @param variant The new variant.
-		 * @return Reference to this dialog for chaining.
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &setVariant(Variant variant);
 
 		/**
 		 * @brief Get the dialog variant.
-		 * @return The variant.
+		 * @return The variant stored in components::Dialog.
 		 */
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Set the dialog title.
-		 * @param title The new title.
-		 * @return Reference to this dialog for chaining.
+		 * @brief Change the title text.
+		 *
+		 * Builds the title child when the dialog had none and @p title is
+		 * not empty, then restyles at once. An empty title leaves an
+		 * existing title child in place, with no text.
+		 * @param title The new title text.
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &setTitle(const std::string &title);
 
 		/**
-		 * @brief Set the dialog message.
-		 * @param message The new message.
-		 * @return Reference to this dialog for chaining.
+		 * @brief Change the message text.
+		 *
+		 * Builds the message child when the dialog had none and @p message
+		 * is not empty, then restyles at once. An empty message leaves an
+		 * existing message child in place, with no text.
+		 * @param message The new message text.
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &setMessage(const std::string &message);
 
 		/**
-		 * @brief Show the dialog.
-		 * @return Reference to this dialog for chaining.
+		 * @brief Show the dialog and, except for the FullScreen variant,
+		 * its backdrop.
+		 *
+		 * Sets components::Overlay visible and restyles at once.
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &show(void);
 
 		/**
-		 * @brief Hide the dialog.
-		 * @return Reference to this dialog for chaining.
+		 * @brief Hide the dialog and its backdrop.
+		 *
+		 * Sets components::Overlay hidden and restyles at once. Does not
+		 * itself call the dismiss handler; use dismiss() for that.
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &hide(void);
 
 		/**
-		 * @brief Whether the dialog is visible.
-		 * @return True when visible.
+		 * @brief Check whether the dialog is shown.
+		 * @return True when components::Overlay is visible. False for a
+		 * dialog that was never shown.
 		 */
 		bool isVisible(void) const;
 
 		/**
-		 * @brief Open (show) the dialog.
-		 * @return Reference to this dialog for chaining.
+		 * @brief Show the dialog; same as show().
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &open(void);
 
 		/**
-		 * @brief Close (hide) the dialog.
-		 * @return Reference to this dialog for chaining.
+		 * @brief Hide the dialog; same as hide().
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &close(void);
 
 		/**
-		 * @brief Whether the dialog is open.
-		 * @return True when visible.
+		 * @brief Check whether the dialog is shown; same as isVisible().
+		 * @return True when the dialog is shown.
 		 */
 		bool isOpen(void) const;
 
 		/**
-		 * @brief Hide the dialog as a user dismissal and call the dismiss
-		 * handler.
-		 * @return Reference to this dialog for chaining.
+		 * @brief Dismiss the dialog as the user would: hide it, then call
+		 * the dismiss handler.
+		 *
+		 * Does nothing while the dialog is hidden.
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &dismiss(void);
 
 		/**
 		 * @brief Set the handler called when the dialog is dismissed
-		 * (Paper `onDismiss`); it is also given to the Overlay component so
-		 * outside clicks and Escape report it.
-		 * @param onDismiss Dismiss handler.
-		 * @return Reference to this dialog for chaining.
+		 * (Paper `onDismiss`).
+		 *
+		 * The handler is stored in components::Overlay. It is called by
+		 * dismiss() and by systems::Overlay when it dismisses the dialog,
+		 * for example on Escape.
+		 * @param onDismiss The handler; an empty one removes it.
+		 * @return This dialog, for chaining.
 		 */
 		Dialog &setOnDismiss(std::function<void(void)> onDismiss);
 
 		/**
-		 * @brief Get the number of actions.
-		 * @return The action count.
+		 * @brief Get the number of action buttons.
+		 * @return The number of buttons built; an action with an empty
+		 * label has none.
 		 */
 		std::size_t getActionCount(void) const;
 
 		/**
 		 * @brief Get the identifier of an action button.
-		 * @param index Action index.
-		 * @return The identifier, or InvalidIdentifier when out of range.
+		 * @param index Index of the button in the action row, from 0.
+		 * @return The identifier, or `ecs::Entity::InvalidIdentifier` when
+		 * @p index is out of range.
 		 */
 		ecs::Entity::Identifier getActionIdentifier(std::size_t index) const;
 
 		/**
-		 * @brief Get the identifier of the action row.
-		 * @return The identifier, or InvalidIdentifier before initialization.
+		 * @brief Get the identifier of the row that holds the action
+		 * buttons.
+		 * @return The identifier, or `ecs::Entity::InvalidIdentifier` when
+		 * the dialog has no action.
 		 */
 		ecs::Entity::Identifier getActionRowIdentifier(void) const;
 
 		/**
-		 * @brief Get the identifier of the modal backdrop.
-		 * @return The identifier, or InvalidIdentifier before initialization.
+		 * @brief Get the identifier of the backdrop drawn behind the
+		 * panel.
+		 * @return The identifier, or `ecs::Entity::InvalidIdentifier`
+		 * before the children are built.
 		 */
 		ecs::Entity::Identifier getBackdropIdentifier(void) const;
 
 		/**
-		 * @brief Get the identifier of the hero icon.
-		 * @return The identifier, or InvalidIdentifier when there is none.
+		 * @brief Get the identifier of the icon shown above the title.
+		 * @return The identifier, or `ecs::Entity::InvalidIdentifier` when
+		 * the dialog has no icon.
 		 */
 		ecs::Entity::Identifier getIconIdentifier(void) const;
 
@@ -349,13 +452,15 @@ namespace guillaume::entities
 
 		private:
 		/**
-		 * @brief Construct a Dialog entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
+		 * @brief Construct a dialog whose actions have no press handler,
+		 * with no icon and no dismiss handler.
+		 * @param registry The registry the dialog's components are created
+		 * in.
+		 * @param config Pose and layout of the panel.
 		 * @param variant The dialog variant.
-		 * @param title The dialog title.
-		 * @param message The dialog message.
-		 * @param actions The dialog action labels.
+		 * @param title The title text.
+		 * @param message The message text.
+		 * @param actions The labels of the action buttons.
 		 */
 		Dialog(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::string &title,
@@ -363,10 +468,10 @@ namespace guillaume::entities
 			   const std::vector<std::string> &actions);
 
 		/**
-		 * @brief Create the child entities.
+		 * @brief Build the children and restyle.
 		 *
-		 * Called once by create(), when the entity is owned and can be given
-		 * as parent to its children.
+		 * Called once by create(), when the dialog is owned by a shared
+		 * pointer and can be given as parent to its children.
 		 */
 		void build(void);
 	};

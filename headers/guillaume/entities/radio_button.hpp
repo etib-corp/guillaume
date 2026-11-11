@@ -45,89 +45,129 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Radio button entity: a single-choice circle with an optional
-	 * label.
+	 * @brief A circle the user selects to pick one option, with an optional
+	 * label next to it.
 	 *
-	 * The radio reuses `SurfaceBase` for its geometry and
-	 * `components::Selectable` for the selected state. The outer circle is a
-	 * `components::Ring` (outline when unselected, primary when selected) and
-	 * a small filled inner dot is shown when selected.
+	 * Its state lives in components::RadioButton (variant, label, callback,
+	 * child identifiers) and its selection in components::Selectable;
+	 * systems::RadioButton colors the ring (a components::Ring), shows the
+	 * inner dot while selected and places the label each frame, in the
+	 * Layout phase. The class itself holds no field: its setters write the
+	 * components and restyle at once.
 	 *
-	 * The class is a facade without fields: its state is
-	 * components::RadioButton and systems::RadioButton styles the ring and
-	 * places the dot and the label. `build()` only builds the child
-	 * entities.
+	 * @code
+	 * RadioButton::Builder builder(getComponentRegistry(),
+	 * 	getEntityRegistry());
+	 * auto radio = builder.makeRadioButton(parent,
+	 * 	RadioButton::Variant::Enabled, "Standard delivery");
+	 * radio->setOnPress([] {
+	 * 	// called when the user selects the radio button
+	 * });
+	 * @endcode
 	 *
-	 * @see SurfaceBase
-	 * @see components::Selectable
-	 * @see components::Ring
+	 * `RadioButton::create(registry, config, variant, label)` builds the
+	 * same widget without registering it in an entity registry; `config` is
+	 * the SurfaceConfig of the ring (pose, size).
+	 *
+	 * A radio button alone does not deselect the others: a press only
+	 * selects it. Use RadioGroup to keep one option selected among several.
+	 * The radio button owns its dot and label children: it is the entity
+	 * registry they are registered in. The label child is built only when
+	 * the label given at creation is not empty. The ring is 20 dp wide and
+	 * answers input on a TouchTarget square centered on it. Its Color and
+	 * enabled state are written each frame from the selection and the
+	 * variant, so values set by hand on them are overwritten. select() does
+	 * not call the press handler; only a user press does.
+	 *
+	 * @see components::RadioButton, systems::RadioButton, RadioGroup
 	 */
 	class RadioButton:
 		public SurfaceBase<components::Selectable, components::Ring,
 						   components::RadioButton>
 	{
 		public:
-		/// Variant (see components::RadioButton).
+		/// Visual variant: Enabled, Disabled (ignores input) or Error
+		/// (error colors).
 		using Variant = components::RadioButton::Variant;
 
 		/**
-		 * @brief Builder used to configure and create `RadioButton` entities.
+		 * @brief Configures, creates and registers RadioButton widgets.
+		 *
+		 * Set options with the `with...` methods then call registerEntity(),
+		 * or use makeRadioButton() to do both in one call.
 		 */
 		class Builder: public EntityBuilderBase<RadioButton>
 		{
 			private:
-			SurfaceConfig _config;	  ///< Surface configuration.
+			SurfaceConfig _config;	  ///< Pose, layout and size of the ring.
 			Variant _variant { Variant::Enabled };	  ///< Visual variant.
-			std::string _label {};					  ///< Label content.
+			std::string _label {};	  ///< Label text; empty for no label.
 
 			public:
 			/**
-			 * @brief Construct a new RadioButton Builder.
-			 * @param componentRegistry The component registry.
-			 * @param entityRegistry The entity registry.
+			 * @brief Construct a builder with the default configuration (see
+			 * reset()).
+			 * @param componentRegistry The registry that stores the
+			 * components of the radio buttons to build.
+			 * @param entityRegistry The registry the built radio buttons are
+			 * added to (usually the scene's).
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the RadioButton entity from the current
-			 * configuration.
-			 * @return The newly created RadioButton.
+			 * @brief Build a RadioButton, with its dot and label children,
+			 * from the current configuration, without registering it.
+			 *
+			 * registerEntity() calls it, then sets the parent, registers the
+			 * radio button and resets the builder.
+			 * @return The new radio button, not selected.
 			 */
 			std::shared_ptr<RadioButton> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder.
+			 * @brief Restore the default configuration.
+			 *
+			 * Defaults: Variant::Enabled, no label, default pose. The ring
+			 * is a 20 dp circle with no padding.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the radio button pose.
-			 * @param pose The new pose.
+			 * @brief Set the position and orientation of the ring.
+			 * @param pose The pose written to the radio button's Transform.
+			 * Default: a default-constructed pose.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
-			 * @brief Set the radio button variant.
-			 * @param variant The new variant.
+			 * @brief Set the visual variant.
+			 * @param variant Enabled, Disabled (ignores input) or Error
+			 * (error colors). Default: Variant::Enabled.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withVariant(Variant variant);
 
 			/**
-			 * @brief Set the radio button label.
-			 * @param label The new label.
+			 * @brief Set the label shown to the right of the ring.
+			 * @param label The label text, also used as the accessibility
+			 * label. Default: empty, no label child is built.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
 
 			/**
-			 * @brief Create a radio button using the builder.
-			 * @param parent The parent entity.
-			 * @param variant The radio button variant.
-			 * @param label The radio button label.
-			 * @return The newly created radio button.
+			 * @brief Build a radio button, register it under `parent` and
+			 * reset the builder.
+			 *
+			 * A pose set before the call with withPose() also applies.
+			 * @param parent The entity the radio button becomes a child of.
+			 * @param variant Enabled, Disabled or Error.
+			 * @param label The label text; empty for a radio button without
+			 * label.
+			 * @return The new radio button, not selected, registered in the
+			 * entity registry.
 			 */
 			std::shared_ptr<RadioButton>
 				makeRadioButton(std::shared_ptr<ecs::Entity> parent,
@@ -136,14 +176,17 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a radio button and its dot and label children,
+		 * without registering it in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
-		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * The constructor is private because the children need a radio
+		 * button already held by a `std::shared_ptr` as parent: create()
+		 * constructs the radio button then calls build(), which creates
+		 * them.
+		 * @tparam Arguments The types of the constructor arguments.
+		 * @param arguments The arguments forwarded to the constructor:
+		 * (registry, config, variant, label).
+		 * @return The new radio button, not selected.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<RadioButton> create(Arguments &&...arguments)
@@ -160,85 +203,109 @@ namespace guillaume::entities
 		~RadioButton(void) override = default;
 
 		/**
-		 * @brief Set the radio button variant.
-		 * @param variant The new variant.
+		 * @brief Set the visual variant. Restyles at once.
+		 * @param variant Enabled, Disabled (ignores input) or Error (error
+		 * colors).
 		 * @return Reference to this radio button for chaining.
 		 */
 		RadioButton &setVariant(Variant variant);
 
 		/**
-		 * @brief Get the radio button variant.
-		 * @return The variant.
+		 * @brief Get the visual variant.
+		 * @return The variant stored in components::RadioButton.
 		 */
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Set the radio button label.
-		 * @param label The new label.
+		 * @brief Set the label text and the accessibility label. Restyles at
+		 * once.
+		 *
+		 * The text on screen changes only when the radio button was created
+		 * with a label: no label child is built here.
+		 * @param label The new label text.
 		 * @return Reference to this radio button for chaining.
 		 */
 		RadioButton &setLabel(const std::string &label);
 
 		/**
-		 * @brief Whether the radio button is currently selected.
-		 * @return True when selected.
+		 * @brief Check whether the radio button is selected.
+		 * @return True when its components::Selectable is selected. A new
+		 * radio button is not selected.
 		 */
 		bool isSelected(void) const;
 
 		/**
-		 * @brief Select or deselect the radio button.
-		 * @param selected The new selected state.
+		 * @brief Select or deselect the radio button, even when it is
+		 * disabled. Restyles at once.
+		 *
+		 * The press handler is not called and no other radio button is
+		 * changed.
+		 * @param selected True to select, false to deselect.
 		 * @return Reference to this radio button for chaining.
 		 */
 		RadioButton &select(bool selected);
 
 		/**
-		 * @brief Check whether the radio button is disabled.
+		 * @brief Check whether the radio button ignores input.
 		 * @return True for `Variant::Disabled`.
 		 */
 		bool isDisabled(void) const;
 
 		/**
-		 * @brief Set the handler called when the user selects the radio
-		 * (Paper `onPress`). Activation selects the radio first.
-		 * @param onPress Handler.
+		 * @brief Set the handler called when the user presses the radio
+		 * button (Paper `onPress`).
+		 *
+		 * The press selects the radio button first, then calls the handler,
+		 * also when the radio button was already selected. A disabled radio
+		 * button calls nothing.
+		 * @param onPress The function to call. Pass an empty function to
+		 * remove the handler.
 		 * @return Reference to this radio button for chaining.
 		 */
 		RadioButton &setOnPress(std::function<void(void)> onPress);
 
 		/**
-		 * @brief Diameter of the selected dot (M3: 10 dp).
+		 * @brief Diameter of the dot shown while selected, in dp (M3:
+		 * 10 dp).
 		 */
 		static constexpr float DotSize = components::RadioButton::DotSize;
 
 		/**
-		 * @brief Side of the square interactive target (Paper: 36-40 dp).
+		 * @brief Side of the square that answers input, centered on the
+		 * ring, in dp.
 		 */
 		static constexpr float TouchTarget =
 			components::RadioButton::TouchTarget;
 
 		/**
-		 * @brief Gap between the target and the label.
+		 * @brief Gap between the touch target and the label, in dp.
 		 */
 		static constexpr float LabelGap = components::RadioButton::LabelGap;
 
 		private:
 		/**
-		 * @brief Construct a RadioButton entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The visual variant.
-		 * @param label The label content.
+		 * @brief Construct a radio button without its children; create()
+		 * calls it then build().
+		 *
+		 * Fills components::RadioButton and installs systems::RadioButton
+		 * on the entity.
+		 * @param registry The registry that stores the radio button's
+		 * components.
+		 * @param config The pose, layout and size of the ring.
+		 * @param variant Enabled, Disabled or Error.
+		 * @param label The label text; empty for no label.
 		 */
 		RadioButton(ecs::ComponentRegistry &registry,
 					const SurfaceConfig &config, Variant variant,
 					const std::string &label);
 
 		/**
-		 * @brief Create the child entities.
+		 * @brief Create the dot child and, when the label is not empty, the
+		 * label child, and record their identifiers in
+		 * components::RadioButton.
 		 *
-		 * Called once by create(), when the entity is owned and can be given
-		 * as parent to its children.
+		 * Called once by create(), when the radio button is held by a
+		 * `std::shared_ptr` and can be given as parent to its children.
 		 */
 		void build(void);
 	};
