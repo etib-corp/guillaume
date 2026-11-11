@@ -52,6 +52,20 @@ namespace guillaume::entities
 	 * the configured axis, applies the alignments and updates the container
 	 * `components::Bound`.
 	 *
+	 * The class is a facade without fields and without an `update()`
+	 * override. Its whole state lives in components that already existed:
+	 * the pose in `components::Transform`, the surface color in
+	 * `components::Color`, the corner radius in `components::Borders`, and
+	 * the axis, alignments, spacing, padding, fixed size and ordered child
+	 * identifiers in `components::Layout`. The setters write those components
+	 * and arrange the children at once; `systems::Layout` does the same every
+	 * frame, so a value written to these components by identifier is never
+	 * overwritten by the view.
+	 *
+	 * The view does not own the entities attached to it: they stay alive
+	 * through the entity registry they were built in (usually the view
+	 * itself, passed as the entity registry of their builder).
+	 *
 	 * @see components::Layout
 	 * @see systems::Layout
 	 */
@@ -215,27 +229,6 @@ namespace guillaume::entities
 				const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 		};
 
-		private:
-		utility::graphic::PoseF _pose {};		   ///< Pose of the container.
-		utility::graphic::Color32Bit _color {};	   ///< Surface color.
-		float _borderRadius { 16.0f };		///< Border radius of the surface.
-		Axis _axis { Axis::Horizontal };	///< Arrangement axis.
-		MainAxisAlignment _mainAxisAlignment {
-			MainAxisAlignment::Start
-		};	  ///< Main axis alignment.
-		CrossAxisAlignment _crossAxisAlignment {
-			CrossAxisAlignment::Center
-		};	  ///< Cross axis alignment.
-		float _spacing { 8.0f };		   ///< Space between children.
-		float _padding { 16.0f };		   ///< Space around children.
-		bool _hasFixedWidth { false };	   ///< Whether the width is forced.
-		bool _hasFixedHeight { false };	   ///< Whether the height is forced.
-		float _fixedWidth { 0.0f };		   ///< Forced width.
-		float _fixedHeight { 0.0f };	   ///< Forced height.
-		std::vector<std::shared_ptr<ecs::Entity>>
-			_entities {};	 ///< Entities attached to the container.
-
-		public:
 		/**
 		 * @brief Construct a View entity.
 		 * @param registry Reference to the component registry.
@@ -252,7 +245,9 @@ namespace guillaume::entities
 		 * @param fixedWidth The forced width.
 		 * @param hasFixedHeight Whether the height is forced.
 		 * @param fixedHeight The forced height.
-		 * @param entities The entities to attach to the container.
+		 * @param entities The entities to attach to the container. Their
+		 * identifiers are recorded as layout children at once; they are
+		 * parented to the view by initialize().
 		 */
 		View(ecs::ComponentRegistry &registry,
 			 const utility::graphic::PoseF &pose,
@@ -352,6 +347,10 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Set the entities attached to the container.
+		 *
+		 * Each entity is parented to the view and its identifier recorded,
+		 * in order, as a layout child in `components::Layout`. The view keeps
+		 * no handle on the entities.
 		 * @param entities The new entities to attach.
 		 * @return Reference to this View for chaining.
 		 */
@@ -359,19 +358,20 @@ namespace guillaume::entities
 			const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 
 		/**
-		 * @brief Initialize the container entity's derived state.
+		 * @brief Parent the entities given to the constructor and arrange
+		 * them.
+		 *
+		 * This holds no rule: parenting needs `shared_from_this()`, which
+		 * the constructor cannot use.
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Recompute the container entity's derived state.
-		 */
-		void update(void) override;
-
 		private:
 		/**
-		 * @brief Arrange the container children and update the container
-		 * bound by delegating to `systems::Layout`.
+		 * @brief Arrange the layout children now with `systems::Layout`.
+		 *
+		 * The Layout system does the same every frame; this makes the result
+		 * visible immediately while a scene is being built.
 		 */
 		void applyGeometry(void);
 	};

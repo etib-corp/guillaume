@@ -551,4 +551,90 @@ namespace guillaume::entities::tests
 		EXPECT_TRUE(component.hasChanged());
 	}
 
+	TEST_F(TestView, ComponentsWrittenByIdentifierSurviveAnUpdate)
+	{
+		ecs::ComponentRegistry registry;
+
+		auto child = std::make_shared<TestChild>(registry);
+
+		registry.getComponent<components::Bound>(child->getIdentifier())
+			.setWidth(10.0f)
+			.setHeight(10.0f);
+
+		auto layout = makeView(registry, { child });
+
+		layout->initialize();
+
+		const utility::graphic::Color32Bit color(1, 2, 3, 4);
+		registry.getComponent<components::Color>(layout->getIdentifier())
+			.setColor(color);
+		registry.getComponent<components::Layout>(layout->getIdentifier())
+			.setFixedWidth(300.0f);
+
+		layout->update();
+		layout->initialize();
+
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(layout->getIdentifier())
+				.getColor(),
+			color);
+		EXPECT_TRUE(
+			registry.getComponent<components::Layout>(layout->getIdentifier())
+				.hasFixedWidth());
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(layout->getIdentifier())
+				.getWidth(),
+			300.0f);
+	}
+
+	TEST_F(TestView, ConstructorWritesTheConfigurationToComponents)
+	{
+		ecs::ComponentRegistry registry;
+
+		auto child = std::make_shared<TestChild>(registry);
+
+		auto layout = makeView(
+			registry, { child }, 4.0f, 2.0f, View::Axis::Vertical,
+			View::MainAxisAlignment::End, View::CrossAxisAlignment::Start);
+
+		const auto &component =
+			registry.getComponent<components::Layout>(layout->getIdentifier());
+
+		EXPECT_EQ(component.getAxis(), View::Axis::Vertical);
+		EXPECT_EQ(component.getMainAxisAlignment(),
+				  View::MainAxisAlignment::End);
+		EXPECT_EQ(component.getCrossAxisAlignment(),
+				  View::CrossAxisAlignment::Start);
+		EXPECT_FLOAT_EQ(component.getPadding(), 4.0f);
+		EXPECT_FLOAT_EQ(component.getSpacing(), 2.0f);
+		EXPECT_FALSE(component.hasFixedWidth());
+		ASSERT_EQ(component.getChildren().size(), 1U);
+		EXPECT_EQ(component.getChildren().front(), child->getIdentifier());
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Borders>(layout->getIdentifier())
+				.getTopLeftRadius(),
+			16.0f);
+	}
+
+	TEST_F(TestView, AttachedEntitiesAreParentedButNotOwned)
+	{
+		ecs::ComponentRegistry registry;
+
+		auto first	= std::make_shared<TestChild>(registry);
+		auto second = std::make_shared<TestChild>(registry);
+
+		auto layout = makeView(registry, { first });
+
+		layout->initialize();
+		layout->setEntities(
+			std::vector<std::shared_ptr<ecs::Entity>> { first, second });
+
+		EXPECT_EQ(first->getParent(), layout);
+		EXPECT_EQ(second->getParent(), layout);
+		// The view keeps no handle and does not register what is attached.
+		EXPECT_TRUE(layout->getEntities().empty());
+		EXPECT_EQ(first.use_count(), 1);
+		EXPECT_EQ(second.use_count(), 1);
+	}
+
 }	 // namespace guillaume::entities::tests

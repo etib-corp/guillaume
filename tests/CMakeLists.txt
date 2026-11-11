@@ -87,6 +87,7 @@ set(TEST_SOURCES
     sources/systems/test_text_input.cpp
     sources/systems/test_text_render.cpp
     sources/systems/test_value_interactions.cpp
+    sources/systems/test_view.cpp
     sources/systems/test_glyph_render.cpp
     sources/test_application.cpp
     sources/test_ecs.cpp
