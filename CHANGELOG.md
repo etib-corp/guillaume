@@ -16,8 +16,22 @@ Versions follow the calendar scheme described in
   and `ecs::Entity::setParent()` keeps it up to date, so systems can walk the
   tree from identifiers alone. It supersedes the unused `components::Parent`.
 
+- `components::SurfaceTone` and `systems::SurfaceTone`: the elevation and
+  shadow mode of `entities::Surface` live in the component, and the system
+  resolves the tonal color and the shadow from it each frame.
+
 ### Changed
 
+- `entities::SurfaceBase` keeps no copy of its configuration and no longer
+  overrides `initialize()` / `update()`: the Transform, Color, Borders and
+  Layout components are the state and `systems::Layout` arranges the children.
+  `getSurfaceConfig()` returns the configuration by value, read back from the
+  components.
+- `entities::Surface` is a facade without fields and no longer overrides
+  `update()`; after a theme change the surface is restyled by
+  `systems::SurfaceTone`, not by calling `update()` on it.
+- `systems::Layout` reads the layer from `components::Hierarchy` instead of
+  looking the entity object up.
 - `ecs::Entity::setParent()` now updates the layer of every descendant when a
   subtree is attached, and throws `std::invalid_argument` when the new parent
   is the entity itself or one of its descendants.

@@ -362,7 +362,7 @@ namespace guillaume::entities
 
 	void Switch::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 
 		_thumb = std::make_shared<SwitchThumb>(
 			getComponentRegistry(), schemeColor(SchemeColorRole::Outline));
@@ -390,7 +390,7 @@ namespace guillaume::entities
 
 	void Switch::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyState();
 	}
 

@@ -127,6 +127,12 @@ registry has one, and `ecs::Entity::setParent()` keeps it up to date, so a
 system can place children or compute depth from identifiers without the
 entity object. Systems treat it as read-only.
 
+`entities::SurfaceBase`, the base of 20 widgets, already follows this: it has
+no configuration of its own (Transform, Color, Borders and Layout are the
+state), `systems::Layout` arranges its children, and it overrides neither
+`initialize()` nor `update()`. `entities::Surface` is a facade over
+`components::SurfaceTone` / `systems::SurfaceTone`.
+
 When no entity overrides `update()` any more, `ecs::Entity::update()` and the
 calls to it in `ecs::System::routine` are deleted, and the entity classes can
 become plain builder functions.

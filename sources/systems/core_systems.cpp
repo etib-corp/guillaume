@@ -58,6 +58,7 @@
 #include "guillaume/systems/scroll.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/systems/style_state.hpp"
+#include "guillaume/systems/surface_tone.hpp"
 #include "guillaume/systems/text_field.hpp"
 #include "guillaume/systems/text_input.hpp"
 #include "guillaume/systems/text_render.hpp"
@@ -74,6 +75,8 @@ namespace guillaume::systems
 		// run in the Measure phase: keep it registered first.
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Typography>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::SurfaceTone>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::MeasureText>(ressourceProvider, engine));
 		systemRegistry.registerNewSystem(

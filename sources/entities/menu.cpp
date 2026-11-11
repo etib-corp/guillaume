@@ -553,7 +553,7 @@ namespace guillaume::entities
 
 	void Menu::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		applyVariant();
 		applyOverlay();
 		buildItems();
@@ -563,7 +563,7 @@ namespace guillaume::entities
 
 	void Menu::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 		applyOverlay();
 		buildItems();

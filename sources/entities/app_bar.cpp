@@ -385,7 +385,7 @@ namespace guillaume::entities
 
 	void AppBar::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		applyVariant();
 		buildContent();
 		attachContent();
@@ -393,7 +393,7 @@ namespace guillaume::entities
 
 	void AppBar::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 		buildContent();
 		attachContent();

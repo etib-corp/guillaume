@@ -381,7 +381,7 @@ namespace guillaume::entities
 
 	void Chip::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 
 		const auto contentColor =
 			schemeColor(SchemeColorRole::OnSecondaryContainer);
@@ -433,7 +433,7 @@ namespace guillaume::entities
 
 	void Chip::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 	}
 

@@ -35,20 +35,15 @@ namespace guillaume::entities
 								  components::Bound, components::Color,
 								  components::Borders, ExtraComponents...>(
 			  registry)
-		, _surfaceConfig(config)
 		, _children()
 	{
-		this->getComponentRegistry()
-			.template getComponent<components::Transform>(this->getIdentifier())
-			.setPose(_surfaceConfig.pose);
-		setSurfaceConfig(_surfaceConfig);
+		setSurfaceConfig(config);
 	}
 
 	template<ecs::InheritFromComponent... ExtraComponents>
 	SurfaceBase<ExtraComponents...> &SurfaceBase<ExtraComponents...>::setPose(
 		const utility::graphic::PoseF &pose)
 	{
-		_surfaceConfig.pose = pose;
 		this->getComponentRegistry()
 			.template getComponent<components::Transform>(this->getIdentifier())
 			.setPose(pose);
@@ -60,7 +55,6 @@ namespace guillaume::entities
 	SurfaceBase<ExtraComponents...> &SurfaceBase<ExtraComponents...>::setColor(
 		const utility::graphic::Color32Bit &color)
 	{
-		_surfaceConfig.color = color;
 		this->getComponentRegistry()
 			.template getComponent<components::Color>(this->getIdentifier())
 			.setColor(color);
@@ -71,7 +65,6 @@ namespace guillaume::entities
 	SurfaceBase<ExtraComponents...> &
 		SurfaceBase<ExtraComponents...>::setBorderRadius(float radius)
 	{
-		_surfaceConfig.borderRadius = radius;
 		this->getComponentRegistry()
 			.template getComponent<components::Borders>(this->getIdentifier())
 			.setBorderRadius(radius);
@@ -83,8 +76,6 @@ namespace guillaume::entities
 		SurfaceBase<ExtraComponents...>::setSurfaceConfig(
 			const SurfaceConfig &config)
 	{
-		_surfaceConfig = config;
-
 		this->getComponentRegistry()
 			.template getComponent<components::Transform>(this->getIdentifier())
 			.setPose(config.pose);
@@ -123,10 +114,34 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	template<ecs::InheritFromComponent... ExtraComponents> const SurfaceConfig &
-		SurfaceBase<ExtraComponents...>::getSurfaceConfig(void) const
+	template<ecs::InheritFromComponent... ExtraComponents>
+	SurfaceConfig SurfaceBase<ExtraComponents...>::getSurfaceConfig(void) const
 	{
-		return _surfaceConfig;
+		const auto &registry   = this->getComponentRegistry();
+		const auto &identifier = this->getIdentifier();
+		const auto &layout =
+			registry.template getComponent<components::Layout>(identifier);
+		SurfaceConfig config;
+
+		config.pose =
+			registry.template getComponent<components::Transform>(identifier)
+				.getPose();
+		config.color =
+			registry.template getComponent<components::Color>(identifier)
+				.getColor();
+		config.borderRadius =
+			registry.template getComponent<components::Borders>(identifier)
+				.getTopLeftRadius();
+		config.axis				  = layout.getAxis();
+		config.mainAxisAlignment  = layout.getMainAxisAlignment();
+		config.crossAxisAlignment = layout.getCrossAxisAlignment();
+		config.spacing			  = layout.getSpacing();
+		config.padding			  = layout.getPadding();
+		config.hasFixedWidth	  = layout.hasFixedWidth();
+		config.fixedWidth		  = layout.getFixedWidth();
+		config.hasFixedHeight	  = layout.hasFixedHeight();
+		config.fixedHeight		  = layout.getFixedHeight();
+		return config;
 	}
 
 	template<ecs::InheritFromComponent... ExtraComponents>
@@ -165,43 +180,16 @@ namespace guillaume::entities
 	}
 
 	template<ecs::InheritFromComponent... ExtraComponents>
-	void SurfaceBase<ExtraComponents...>::initialize(void)
-	{
-		update();
-	}
-
-	template<ecs::InheritFromComponent... ExtraComponents>
-	void SurfaceBase<ExtraComponents...>::update(void)
-	{
-		// The framework may move the surface through the Transform component
-		// directly (Scene::placeEntitiesInFrontOfView), so the registry pose is
-		// adopted instead of restoring the stale private copy.
-		_surfaceConfig.pose = this->getComponentRegistry()
-								  .template getComponent<components::Transform>(
-									  this->getIdentifier())
-								  .getPose();
-
-		setSurfaceConfig(_surfaceConfig);
-		setChildren(_children);
-	}
-
-	template<ecs::InheritFromComponent... ExtraComponents>
 	void SurfaceBase<ExtraComponents...>::applyGeometry(void)
 	{
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		childIdentifiers.reserve(_children.size());
+		const auto &identifier = this->getIdentifier();
 
-		for (const auto &child: _children) {
-			if (child == nullptr
-				|| child->getIdentifier() == ecs::Entity::InvalidIdentifier) {
-				continue;
-			}
-			childIdentifiers.push_back(child->getIdentifier());
-		}
-
-		systems::Layout::apply(this->getComponentRegistry(),
-							   this->getIdentifier(), childIdentifiers,
-							   static_cast<std::uint32_t>(this->getLayer()));
+		systems::Layout::apply(
+			this->getComponentRegistry(), identifier,
+			this->getComponentRegistry()
+				.template getComponent<components::Layout>(identifier)
+				.getChildren(),
+			static_cast<std::uint32_t>(this->getLayer()));
 	}
 
 }	 // namespace guillaume::entities

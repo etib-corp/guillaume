@@ -803,7 +803,7 @@ namespace guillaume::entities
 
 	void TextField::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		applyVariant();
 		applyComponent();
 		buildContent();
@@ -812,7 +812,7 @@ namespace guillaume::entities
 
 	void TextField::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 
 		const std::string current = getText();
 		if (current != _text) {

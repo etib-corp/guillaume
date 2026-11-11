@@ -22,6 +22,7 @@
 
 #include "guillaume/theme.hpp"
 #include "guillaume/entities/surface.hpp"
+#include "guillaume/systems/surface_tone.hpp"
 
 namespace guillaume::entities
 {
@@ -181,51 +182,48 @@ namespace guillaume::entities
 	Surface::Surface(ecs::ComponentRegistry &registry,
 					 const SurfaceConfig &config,
 					 theme::ElevationLevel elevation, Mode mode)
-		: SurfaceBase<components::Elevation>(registry, config)
-		, _elevation(elevation)
-		, _mode(mode)
+		: SurfaceBase<components::Elevation, components::SurfaceTone>(registry,
+																	  config)
 	{
-		applyElevation();
-	}
-
-	void Surface::applyElevation(void)
-	{
-		setColor(getElevatedSurfaceColor(_elevation));
 		getComponentRegistry()
-			.getComponent<components::Elevation>(getIdentifier())
-			.setElevationLevel(_mode == Mode::Elevated
-								   ? _elevation
-								   : theme::ElevationLevel::Level0);
+			.getComponent<components::SurfaceTone>(getIdentifier())
+			.setElevation(elevation)
+			.setShadow(mode == Mode::Elevated);
+		systems::SurfaceTone::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Surface &Surface::setElevation(theme::ElevationLevel elevation)
 	{
-		_elevation = elevation;
-		applyElevation();
+		getComponentRegistry()
+			.getComponent<components::SurfaceTone>(getIdentifier())
+			.setElevation(elevation);
+		systems::SurfaceTone::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	theme::ElevationLevel Surface::getElevation(void) const
 	{
-		return _elevation;
+		return getComponentRegistry()
+			.getComponent<components::SurfaceTone>(getIdentifier())
+			.getElevation();
 	}
 
 	Surface &Surface::setMode(Mode mode)
 	{
-		_mode = mode;
-		applyElevation();
+		getComponentRegistry()
+			.getComponent<components::SurfaceTone>(getIdentifier())
+			.setShadow(mode == Mode::Elevated);
+		systems::SurfaceTone::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Surface::Mode Surface::getMode(void) const
 	{
-		return _mode;
-	}
-
-	void Surface::update(void)
-	{
-		SurfaceBase::update();
-		applyElevation();
+		return getComponentRegistry()
+				   .getComponent<components::SurfaceTone>(getIdentifier())
+				   .hasShadow()
+			? Mode::Elevated
+			: Mode::Flat;
 	}
 
 }	 // namespace guillaume::entities

@@ -512,7 +512,7 @@ namespace guillaume::entities
 
 	void Dialog::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		buildContent();
 		applyVariant();
 		applyOverlay();
@@ -520,7 +520,7 @@ namespace guillaume::entities
 
 	void Dialog::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		buildContent();
 		applyVariant();
 		applyOverlay();

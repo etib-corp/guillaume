@@ -222,9 +222,12 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Get the current surface configuration.
+		 *
+		 * The surface keeps no copy of it: the value is read back from the
+		 * Transform, Color, Borders and Layout components.
 		 * @return The surface configuration.
 		 */
-		const SurfaceConfig &getSurfaceConfig(void) const;
+		SurfaceConfig getSurfaceConfig(void) const;
 
 		/**
 		 * @brief Attach the child entities arranged by this surface.
@@ -239,16 +242,6 @@ namespace guillaume::entities
 		 */
 		const Children &getChildren(void) const;
 
-		/**
-		 * @brief Arrange the surface children and update its bound.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the surface derived state.
-		 */
-		void update(void) override;
-
 		protected:
 		/**
 		 * @brief Construct a surface base.
@@ -259,13 +252,15 @@ namespace guillaume::entities
 					const SurfaceConfig &config);
 
 		/**
-		 * @brief Arrange the attached children with `systems::Layout`.
+		 * @brief Arrange the layout children now with `systems::Layout`.
+		 *
+		 * The Layout system does the same every frame; this makes the result
+		 * visible immediately while a scene is being built.
 		 */
 		void applyGeometry(void);
 
 		private:
-		SurfaceConfig _surfaceConfig;	 ///< Current surface configuration.
-		Children _children {};			 ///< Attached children.
+		Children _children {};	  ///< Handles keeping attached children alive.
 	};
 
 }	 // namespace guillaume::entities
@@ -273,6 +268,7 @@ namespace guillaume::entities
 #include "guillaume/entities/surface.tpp"
 
 #include "guillaume/components/elevation.hpp"
+#include "guillaume/components/surface_tone.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme/tokens.hpp"
 
@@ -286,8 +282,13 @@ namespace guillaume::entities
 	 * its elevation level (Paper `elevation.level0-5`). In `Mode::Elevated`
 	 * (the default) it also casts the level's shadow; `Mode::Flat` keeps the
 	 * tonal background without a shadow.
+	 *
+	 * The class is a facade without fields: its state is
+	 * components::SurfaceTone and systems::SurfaceTone resolves the color and
+	 * the shadow from it.
 	 */
-	class Surface: public SurfaceBase<components::Elevation>
+	class Surface:
+		public SurfaceBase<components::Elevation, components::SurfaceTone>
 	{
 		public:
 		/**
@@ -401,22 +402,6 @@ namespace guillaume::entities
 
 		/** @brief Get the shadow mode. @return The mode. */
 		Mode getMode(void) const;
-
-		/**
-		 * @brief Restyle from the active theme.
-		 */
-		void update(void) override;
-
-		private:
-		theme::ElevationLevel _elevation {
-			theme::ElevationLevel::Level1
-		};	  ///< Elevation level.
-		Mode _mode { Mode::Elevated };	  ///< Shadow mode.
-
-		/**
-		 * @brief Resolve background and shadow from the elevation tokens.
-		 */
-		void applyElevation(void);
 	};
 
 }	 // namespace guillaume::entities
