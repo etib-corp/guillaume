@@ -41,7 +41,11 @@
 namespace guillaume
 {
 	/**
-	 * @brief Text renderable that bakes the entity pose into its glyph mesh.
+	 * @brief What a render system hands to the engine to draw a piece of
+	 * text: glyph quads already placed in world coordinates.
+	 *
+	 * systems::TextRender and systems::GlyphRender build one per entity and
+	 * pass it to `utility::Engine::createObject` or `updateObject`.
 	 *
 	 * `utility::graphic::Text` stores its glyph quads in local (object) space
 	 * and relies on the renderer applying `Renderable::getModelMatrix()`. Every
@@ -54,6 +58,11 @@ namespace guillaume
 	 * world space and resets the pose to identity. Text then lands on its
 	 * entity position whether or not the renderer applies the model matrix.
 	 *
+	 * @note The text is anchored by the top-left corner of the box around
+	 * its glyphs, like every other entity. The renderable is a snapshot:
+	 * when the pose, the content or the style of the entity changes, the
+	 * system builds a new one.
+	 * @see MeshRenderable
 	 * @see systems::TextRender
 	 * @see systems::GlyphRender
 	 */
@@ -61,15 +70,21 @@ namespace guillaume
 	{
 		public:
 		/**
-		 * @brief Build a text renderable anchored on the entity pose.
+		 * @brief Lay out a text and place its glyphs in world coordinates.
 		 *
-		 * @param ressourceProvider The resource provider used to load the font.
-		 * @param anchor The entity pose; its position is the glyph-box
-		 * top-left.
-		 * @param color The text color.
-		 * @param content The text content.
-		 * @param fontSize The font size.
-		 * @param font The font path.
+		 * @param ressourceProvider The resource provider that loads the
+		 * font file.
+		 * @param anchor The pose of the entity: the top-left corner of the
+		 * glyph box is put on its position and the text is turned by its
+		 * orientation.
+		 * @param color The color of the glyphs.
+		 * @param content The characters to draw.
+		 * @param fontSize The font size, passed on to
+		 * `utility::graphic::Text`. It is a whole number: the render
+		 * systems pass components::Text::getFontSize, whose fractional part
+		 * is dropped by the conversion.
+		 * @param font The path of the font file, relative to the resource
+		 * root, for instance the result of theme::fontPath.
 		 */
 		TextRenderable(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
@@ -91,9 +106,13 @@ namespace guillaume
 
 		private:
 		/**
-		 * @brief Rewrite the local glyph mesh into world space.
+		 * @brief Replace the glyph mesh, built in local space, by a copy
+		 * whose vertices are in world space, and reset the pose to the
+		 * identity.
 		 *
-		 * @param anchor The entity pose to anchor the glyph-box top-left on.
+		 * Does nothing when the text produced no vertex (empty content).
+		 * @param anchor The pose of the entity: the top-left corner of the
+		 * glyph box lands on its position, turned by its orientation.
 		 */
 		void bake(const utility::graphic::PoseF &anchor)
 		{

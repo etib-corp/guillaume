@@ -40,12 +40,29 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Non-template base class for managing systems within the ECS
-	 * architecture.
+	 * @brief Owns the systems of an application, grouped by phase and kept
+	 * in registration order.
 	 *
-	 * This base class provides common functionality that doesn't depend on
-	 * system types.
+	 * Application has one registry, filled once at start-up by
+	 * systems::registerCoreSystems, and shared by every scene. Each frame,
+	 * for each phase, Application::routine runs the systems returned by
+	 * getSystemsByPhase() in order.
+	 *
+	 * @code
+	 * ecs::SystemRegistry systems;
+	 * systems.registerNewSystem(std::make_unique<MySystem>());
+	 *
+	 * for (const auto &system:
+	 * 	 systems.getSystemsByPhase(ecs::Phase::Layout)) {
+	 * 	system->routine(componentRegistry, entityRegistry, traveler);
+	 * }
+	 * @endcode
+	 *
+	 * @note Within a phase, registration order is execution order. When a
+	 * system needs what another system of the same phase produces in the
+	 * same frame, register that other system first.
 	 * @see System
+	 * @see Phase
 	 */
 	class SystemRegistry:
 		public utility::logging::Loggable<SystemRegistry,
@@ -55,34 +72,40 @@ namespace guillaume::ecs
 		private:
 		std::array<std::vector<std::unique_ptr<System>>,
 				   static_cast<std::size_t>(Phase::Count)>
-			_systems;	 ///< Array of registered systems
+			_systems;	 ///< One list of systems per phase, each in
+						 ///< registration order
 
 		public:
 		/**
-		 * @brief Default constructor
+		 * @brief Create a registry with no system.
 		 */
 		SystemRegistry(void) = default;
 
 		/**
-		 * @brief Default destructor
+		 * @brief Destroy the registry and the systems it owns.
 		 */
 		~SystemRegistry(void) = default;
 
 		/**
-		 * @brief Register a new system in the registry.
-		 * @param system Unique pointer to the system instance.
-		 * @note If a system of the same type is already registered, it is
-		 * replaced.
+		 * @brief Take ownership of a system and append it to the list of
+		 * its phase (System::getPhase).
+		 *
+		 * Nothing prevents registering two systems of the same type: both
+		 * are kept and both run.
+		 * @param system The system to add. Must not be null.
+		 * @throws std::out_of_range When the phase of the system is not one
+		 * of the four phases (Phase::Count, for instance).
 		 */
 		void registerNewSystem(std::unique_ptr<System> system);
 
 		/**
-		 * @brief Get all systems registered for a specific update phase.
-		 * @param phase The update phase to query.
-		 * @return Vector of pointers to systems registered for the specified
-		 * phase. Returns an empty vector if no systems are registered for the
-		 * phase.
-		 * @throws std::out_of_range if the phase is not a valid Phase value.
+		 * @brief Get the systems of a phase, in the order they run.
+		 * @param phase The phase to list.
+		 * @return Reference to the list, in registration order; empty when
+		 * no system is registered for the phase. It stays valid as long as
+		 * the registry, and grows when a system is registered.
+		 * @throws std::out_of_range When `phase` is not one of the four
+		 * phases (Phase::Count, for instance).
 		 */
 		const std::vector<std::unique_ptr<System>> &
 			getSystemsByPhase(Phase phase) const;

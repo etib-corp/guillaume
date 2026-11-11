@@ -32,35 +32,66 @@ namespace guillaume::ecs
 	class EntityRegistry;
 
 	/**
-	 * @brief Strategy interface used to traverse an entity hierarchy.
+	 * @brief Decides in which order the entities of a scene are visited.
+	 *
+	 * A traveler turns the ownership tree of an EntityRegistry (the scene,
+	 * the entities it owns, the entities those own, ...) into a flat list.
+	 * System::routine walks that list and calls System::update on each
+	 * entity that matches the system. The order matters because a system
+	 * often needs the result it computed for a parent or for the children:
+	 * - LevelOrderTraveler: parents before children. Used by the Layout and
+	 *   Render phases (a parent places its children, then they place
+	 *   theirs).
+	 * - ReverseLevelOrderTraveler: children before parents. Used by the
+	 *   Event and Measure phases (a parent is sized from the sizes of its
+	 *   children).
+	 *
+	 * "Parent" and "child" here follow ownership (who called
+	 * EntityRegistry::addEntity), not Entity::setParent. An entity created
+	 * through a widget Builder is owned by the scene even when it has a
+	 * parent: it is ordered among the entities of the scene, by creation
+	 * order.
+	 *
+	 * Each phase is tied to its traveler in system_phase.hpp. A traveler
+	 * has no state and can be shared.
+	 *
+	 * @see SystemPhase
+	 * @see EntityRegistry::getEntitiesBreadthFirst
 	 */
 	class EntityTreeTraveler
 	{
 		public:
 		/**
-		 * @brief Default virtual destructor.
+		 * @brief Virtual destructor.
 		 */
 		virtual ~EntityTreeTraveler(void) = default;
 
 		/**
-		 * @brief Traverse the entity hierarchy and return mutable entities.
-		 * @param entityRegistry Root entity registry to traverse.
-		 * @return Ordered mutable entity shared pointers.
+		 * @brief List every entity below a registry, in this traveler's
+		 * order.
+		 * @param entityRegistry The registry to start from, usually the
+		 * scene. Entities owned by nested registries are included.
+		 * @return The entities, in visiting order; empty when the registry
+		 * owns nothing.
 		 */
 		virtual std::vector<std::shared_ptr<Entity>>
 			travel(EntityRegistry &entityRegistry) const = 0;
 
 		/**
-		 * @brief Traverse the entity hierarchy and return const entities.
-		 * @param entityRegistry Root entity registry to traverse.
-		 * @return Ordered const entity shared pointers.
+		 * @brief List every entity below a registry, in this traveler's
+		 * order, read-only.
+		 * @param entityRegistry The registry to start from, usually the
+		 * scene. Entities owned by nested registries are included.
+		 * @return The entities, in visiting order; empty when the registry
+		 * owns nothing.
 		 */
 		virtual std::vector<std::shared_ptr<const Entity>>
 			travel(const EntityRegistry &entityRegistry) const = 0;
 	};
 
 	/**
-	 * @brief Concept to ensure a type inherits from EntityTreeTraveler.
+	 * @brief Constrains a template parameter to a type derived from
+	 * EntityTreeTraveler.
 	 * @tparam Type The type to check.
 	 */
 	template<typename Type>

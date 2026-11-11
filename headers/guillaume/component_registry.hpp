@@ -65,7 +65,18 @@ namespace guillaume
 {
 
 	/**
-	 * @brief Component registry class registering all core components.
+	 * @brief An ecs::ComponentRegistry whose storages for the general-purpose
+	 * components (geometry, appearance, interaction) exist from
+	 * construction.
+	 *
+	 * It adds no function to ecs::ComponentRegistry, which is the type used
+	 * everywhere in the library (Scene::getComponentRegistry returns an
+	 * ecs::ComponentRegistry). Since a registry creates the storage of a
+	 * component type on its first use, listing a type here is never
+	 * required: the widget configuration components, for instance, are
+	 * not listed.
+	 *
+	 * @see ecs::ComponentRegistry
 	 * @see ecs::ComponentRegistryFiller
 	 */
 	class ComponentRegistry:
@@ -91,12 +102,13 @@ namespace guillaume
 	{
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the registry with one empty storage per listed
+		 * component type.
 		 */
 		ComponentRegistry(void);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the registry and every component it stores.
 		 */
 		virtual ~ComponentRegistry(void) = default;
 	};

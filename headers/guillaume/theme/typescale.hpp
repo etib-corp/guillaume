@@ -31,33 +31,42 @@ namespace guillaume::theme
 {
 
 	/**
-	 * @brief Material 3 typescale roles.
+	 * @brief The named text styles of Material Design 3: what a piece of
+	 * text is, not how big it is.
 	 *
-	 * Mirrors react-native-paper's `MD3TypescaleKey` plus its `default`
-	 * entry (`src/styles/themes/v3/tokens.tsx`).
+	 * A widget asks for a role (`TitleLarge` for a dialog title,
+	 * `LabelLarge` for a button label, `BodyMedium` for running text) and
+	 * the theme answers with a TypeToken. Five families (Display, Headline,
+	 * Title, Label, Body), each in three sizes, plus `Default`. The values
+	 * given are the defaults: font size / line height, in dp.
+	 *
+	 * The list mirrors react-native-paper's `MD3TypescaleKey` plus its
+	 * `default` entry.
+	 * @see Typescale
 	 */
 	enum class TypeRole : std::size_t {
-		DisplayLarge,
-		DisplayMedium,
-		DisplaySmall,
-		HeadlineLarge,
-		HeadlineMedium,
-		HeadlineSmall,
-		TitleLarge,
-		TitleMedium,
-		TitleSmall,
-		LabelLarge,
-		LabelMedium,
-		LabelSmall,
-		BodyLarge,
-		BodyMedium,
-		BodySmall,
-		Default,
-		Count
+		DisplayLarge,	   ///< 57 / 64, regular.
+		DisplayMedium,	   ///< 45 / 52, regular.
+		DisplaySmall,	   ///< 36 / 44, regular.
+		HeadlineLarge,	   ///< 32 / 40, regular.
+		HeadlineMedium,	   ///< 28 / 36, regular.
+		HeadlineSmall,	   ///< 24 / 32, regular.
+		TitleLarge,		   ///< 22 / 28, regular.
+		TitleMedium,	   ///< 16 / 24, medium weight.
+		TitleSmall,		   ///< 14 / 20, medium weight.
+		LabelLarge,		   ///< 14 / 20, medium weight.
+		LabelMedium,	   ///< 12 / 16, medium weight.
+		LabelSmall,		   ///< 11 / 16, medium weight.
+		BodyLarge,		   ///< 16 / 24, regular.
+		BodyMedium,		   ///< 14 / 20, regular.
+		BodySmall,		   ///< 12 / 16, regular.
+		Default,		   ///< 14 / 20, regular: text with no specific role.
+		Count			   ///< Number of roles; not a role.
 	};
 
 	/**
-	 * @brief Font weights available to the typescale.
+	 * @brief Font weights available to the typescale. The value is the
+	 * usual numeric weight (400 regular, 500 medium).
 	 */
 	enum class FontWeight : std::uint16_t {
 		Regular = 400,	  ///< Roboto Regular.
@@ -65,31 +74,55 @@ namespace guillaume::theme
 	};
 
 	/**
-	 * @brief Resolved typography for one typescale role.
+	 * @brief One text style: everything needed to measure and draw a piece
+	 * of text.
+	 *
+	 * The default-constructed token is the `Default` role: Roboto regular,
+	 * 14 dp on a 20 dp line.
 	 */
 	struct TypeToken {
 		std::string fontFamily { "Roboto" };			  ///< Font family name.
 		FontWeight fontWeight { FontWeight::Regular };	  ///< Font weight.
 		float fontSize { 14.0f };						  ///< Font size, in dp.
-		float lineHeight { 20.0f };		 ///< Line height, in dp.
-		float letterSpacing { 0.0f };	 ///< Letter spacing, in dp.
+		float lineHeight {
+			20.0f
+		};	  ///< Distance between two baselines, in dp.
+		float letterSpacing {
+			0.0f
+		};	  ///< Extra space between characters, in dp.
 	};
 
 	/**
-	 * @brief Get the bundled font file rendering a weight.
-	 * @param weight Font weight.
-	 * @return Font path relative to the resource root.
+	 * @brief Get the font file shipped with the library for a weight.
+	 * @param weight The font weight.
+	 * @return The path of the font file, relative to the resource root:
+	 * `fonts/Roboto-Medium.ttf` for `Medium`, `fonts/Roboto-Regular.ttf`
+	 * otherwise.
 	 */
 	const std::string &fontPath(FontWeight weight);
 
 	/**
-	 * @brief Material 3 typescale: one TypeToken per TypeRole.
+	 * @brief The text styles of a theme: one TypeToken per TypeRole.
+	 *
+	 * Read a style through guillaume::getTypeToken. To change one, edit a
+	 * copy of the theme and activate it:
+	 * @code
+	 * guillaume::Theme custom = guillaume::getActiveTheme();
+	 * auto title = custom.getTypescale().get(theme::TypeRole::TitleLarge);
+	 * title.fontSize	 = 24.0f;
+	 * title.lineHeight = 30.0f;
+	 * custom.getTypescale().set(theme::TypeRole::TitleLarge, title);
+	 * guillaume::setActiveTheme(custom);
+	 * @endcode
+	 *
+	 * @see guillaume::Theme::getTypescale
 	 */
 	class Typescale
 	{
 		public:
 		/**
-		 * @brief Construct the M3 baseline typescale.
+		 * @brief Create the scale with the Material 3 baseline styles
+		 * listed in TypeRole.
 		 */
 		Typescale(void);
 
@@ -99,20 +132,21 @@ namespace guillaume::theme
 		~Typescale(void) = default;
 
 		/**
-		 * @brief Get the token of a role.
-		 * @param role Typescale role.
-		 * @return Immutable token reference.
-		 * @throws std::out_of_range If @p role is `TypeRole::Count`.
+		 * @brief Get the text style of a role.
+		 * @param role The typescale role to look up.
+		 * @return The token of that role, read-only.
+		 * @throws std::out_of_range When `role` is `TypeRole::Count`.
 		 */
 		const TypeToken &get(TypeRole role) const;
 
 		/**
-		 * @brief Replace the token of a role.
-		 * @param role Typescale role.
-		 * @param token New token.
-		 * @throws std::out_of_range If @p role is `TypeRole::Count`.
-		 * @throws std::invalid_argument If the size or line height is not
-		 * positive.
+		 * @brief Replace the text style of a role.
+		 * @param role The typescale role to change.
+		 * @param token The new style. Its font size and line height must be
+		 * greater than 0.
+		 * @throws std::out_of_range When `role` is `TypeRole::Count`.
+		 * @throws std::invalid_argument When the font size or the line
+		 * height is zero or negative. The role keeps its previous style.
 		 */
 		void set(TypeRole role, const TypeToken &token);
 

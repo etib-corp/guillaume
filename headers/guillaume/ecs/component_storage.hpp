@@ -32,7 +32,13 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Interface for type-erased component storage.
+	 * @brief What ComponentRegistry can do with a component storage without
+	 * knowing which component type it holds.
+	 *
+	 * The registry keeps one ComponentStorage per component type behind this
+	 * interface, which lets it remove an entity or reset the changed flags
+	 * across all types in one loop.
+	 * @see ComponentStorage
 	 */
 	class IComponentStorage
 	{
@@ -43,102 +49,129 @@ namespace guillaume::ecs
 		virtual ~IComponentStorage(void) = default;
 
 		/**
-		 * @brief Remove a component for an entity.
-		 * @param entityIdentifier The entity identifier.
+		 * @brief Delete the component stored for an entity. Does nothing when
+		 * the entity has none.
+		 * @param entityIdentifier The identifier of the entity.
 		 */
 		virtual void remove(const Entity::Identifier &entityIdentifier) = 0;
 
 		/**
-		 * @brief Check if a component exists for an entity.
-		 * @param entityIdentifier The entity identifier.
-		 * @return True if a component exists.
+		 * @brief Tell whether a component is stored for an entity.
+		 * @param entityIdentifier The identifier of the entity.
+		 * @return True when the entity has a component in this storage.
 		 */
 		virtual bool has(const Entity::Identifier &entityIdentifier) const = 0;
 
 		/**
-		 * @brief Check whether the stored component for an entity has changed.
-		 * @param entityIdentifier The entity identifier.
-		 * @return True when the component exists and is marked as changed.
+		 * @brief Tell whether the component stored for an entity is marked as
+		 * changed.
+		 * @param entityIdentifier The identifier of the entity.
+		 * @return True when the component exists and is marked as changed;
+		 * false when it is unchanged or the entity has none.
 		 */
 		virtual bool
 			hasChanged(const Entity::Identifier &entityIdentifier) const = 0;
 
 		/**
-		 * @brief Clear the changed flags for all components in this storage.
+		 * @brief Mark every component of this storage as unchanged.
 		 */
 		virtual void resetChangedFlags(void) = 0;
 	};
 
 	/**
-	 * @brief Storage for a single component type.
+	 * @brief Holds every component of one type, indexed by entity identifier.
+	 *
+	 * ComponentRegistry creates one storage per component type the first
+	 * time that type is used. Application code goes through the registry
+	 * and does not use this class directly.
+	 *
+	 * @note Pointers and references to a stored component stay valid until
+	 * that component is removed or replaced; adding components for other
+	 * entities does not move it.
 	 * @tparam ComponentType The component type stored.
+	 * @see ComponentRegistry
 	 */
 	template<InheritFromComponent ComponentType> class ComponentStorage:
 		public IComponentStorage
 	{
 		public:
 		/**
-		 * @brief Container type for components.
+		 * @brief The container: one component per entity identifier.
 		 */
 		using Storage = std::unordered_map<Entity::Identifier, ComponentType>;
 
 		private:
-		Storage _components;
+		Storage _components;	///< The stored components, by entity identifier
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create an empty storage.
 		 */
 		ComponentStorage(void) = default;
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the storage and every component it holds.
 		 */
 		~ComponentStorage(void) override = default;
 
 		/**
-		 * @brief Add or replace a component for an entity.
-		 * @param entityIdentifier The entity identifier.
-		 * @param args Arguments forwarded to the component constructor.
+		 * @brief Construct a component for an entity, replacing the one it
+		 * already has, if any.
+		 * @tparam Args The types of the constructor arguments.
+		 * @param entityIdentifier The identifier of the entity.
+		 * @param args Arguments forwarded to the constructor of
+		 * `ComponentType`; none builds a default component.
 		 * @return Reference to the stored component.
-		 * @note If a component already exists for the entity, it is replaced.
+		 * @note When the entity already has a component, a new one is
+		 * constructed and assigned over it: the previous values are lost.
 		 */
 		template<typename... Args> ComponentType &
 			emplace(const Entity::Identifier &entityIdentifier, Args &&...args);
 
 		/**
-		 * @brief Find a component for an entity.
-		 * @param entityIdentifier The entity identifier.
-		 * @return Pointer to the component or nullptr.
-		 * @retval nullptr No component exists for the entity.
+		 * @brief Look up the component of an entity.
+		 * @param entityIdentifier The identifier of the entity.
+		 * @return Pointer to the component, or nullptr when the entity has
+		 * none.
 		 */
 		ComponentType *find(const Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Find a component for an entity (const).
-		 * @param entityIdentifier The entity identifier.
-		 * @return Pointer to the component or nullptr.
-		 * @retval nullptr No component exists for the entity.
+		 * @brief Look up the component of an entity, read-only.
+		 * @param entityIdentifier The identifier of the entity.
+		 * @return Pointer to the component, or nullptr when the entity has
+		 * none.
 		 */
 		const ComponentType *
 			find(const Entity::Identifier &entityIdentifier) const;
 
 		/**
-		 * @brief Remove a component for an entity.
-		 * @param entityIdentifier The entity identifier.
+		 * @brief Delete the component stored for an entity. Does nothing when
+		 * the entity has none.
+		 * @param entityIdentifier The identifier of the entity.
 		 */
 		void remove(const Entity::Identifier &entityIdentifier) override;
 
 		/**
-		 * @brief Check if a component exists for an entity.
-		 * @param entityIdentifier The entity identifier.
-		 * @return True if a component exists.
+		 * @brief Tell whether a component is stored for an entity.
+		 * @param entityIdentifier The identifier of the entity.
+		 * @return True when the entity has a component in this storage.
 		 */
 		bool has(const Entity::Identifier &entityIdentifier) const override;
 
+		/**
+		 * @brief Tell whether the component stored for an entity is marked as
+		 * changed.
+		 * @param entityIdentifier The identifier of the entity.
+		 * @return True when the component exists and is marked as changed;
+		 * false when it is unchanged or the entity has none.
+		 */
 		bool hasChanged(
 			const Entity::Identifier &entityIdentifier) const override;
 
+		/**
+		 * @brief Mark every component of this storage as unchanged.
+		 */
 		void resetChangedFlags(void) override;
 	};
 

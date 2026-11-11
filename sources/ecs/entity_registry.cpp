@@ -32,8 +32,14 @@ namespace guillaume::ecs
 	namespace
 	{
 		/**
-		 * @brief Global tree version, incremented whenever an entity is added
-		 * to any registry. Used to invalidate cached breadth-first traversals.
+		 * @brief Get the program-wide tree version.
+		 *
+		 * It is incremented whenever an entity is added to or removed from
+		 * any registry. A registry compares it with the version at which it
+		 * cached its breadth-first walk to know whether the cache is stale.
+		 * One counter serves all registries because a change in a nested
+		 * registry must also invalidate the caches of the registries above.
+		 * @return Reference to the counter.
 		 */
 		std::size_t &getTreeVersion(void)
 		{

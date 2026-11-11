@@ -30,61 +30,79 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Templated Entity class that automatically sets its signature based
-	 * on the specified component types.
-	 * @tparam ComponentTypes The component types that define the entity's
-	 * signature.
+	 * @brief The base class of a widget without children: an Entity that
+	 * creates its components when it is constructed.
+	 *
+	 * The constructor does three things for the new entity:
+	 * 1. sets its signature to the listed component types, so the systems
+	 *    that need them visit it;
+	 * 2. creates one default component of each listed type in the registry;
+	 * 3. gives it a components::Hierarchy (added to the signature too), so
+	 *    Entity::setParent keeps the tree readable from components.
 	 *
 	 * @code
-	 * // UI-style entity composed from common components.
-	 * class ButtonEntity
-	 *     : public ecs::EntityFiller<components::Transform,
-	 *                                components::Bound,
-	 *                                components::Click,
-	 *                                components::Text> {
-	 *   public:
-	 *     ButtonEntity(ecs::ComponentRegistry &registry)
-	 *         : ecs::EntityFiller<components::Transform,
-	 *                             components::Bound,
-	 *                             components::Click,
-	 *                             components::Text>(registry) {}
+	 * class Label:
+	 * 	public ecs::EntityFiller<components::Transform, components::Bound,
+	 * 							 components::Text>
+	 * {
+	 * 	public:
+	 * 	Label(ecs::ComponentRegistry &registry)
+	 * 		: ecs::EntityFiller<components::Transform, components::Bound,
+	 * 							components::Text>(registry)
+	 * 	{
+	 * 	}
 	 * };
 	 *
-	 * ButtonEntity button(registry);
+	 * auto label = std::make_shared<Label>(scene.getComponentRegistry());
+	 * scene.getEntityRegistry().addEntity(label);
 	 * @endcode
 	 *
+	 * Things to watch out for:
+	 * - A component added afterwards with ComponentRegistry::addComponent is
+	 *   not in the signature; add its bit with Entity::setSignature.
+	 * - The entity keeps a reference to the registry, which must outlive it.
+	 * - A widget that owns children derives from ParentEntityFiller instead.
+	 *
+	 * @tparam ComponentTypes The component types the entity starts with.
 	 * @see Entity
+	 * @see ParentEntityFiller
 	 * @see ComponentRegistry
 	 */
 	template<InheritFromComponent... ComponentTypes> class EntityFiller:
 		public Entity
 	{
 		private:
-		ComponentRegistry &_componentRegistry;
+		ComponentRegistry &_componentRegistry;	  ///< Registry storing the
+												  ///< entity's components
 
 		protected:
 		/**
-		 * @brief Get the Component Registry.
-		 * @return Reference to the component registry.
+		 * @brief Get the registry that stores this entity's components.
+		 * @return Reference to the registry given to the constructor.
 		 */
 		ComponentRegistry &getComponentRegistry(void);
 
 		/**
-		 * @brief Get the Component Registry (const).
-		 * @return Const reference to the component registry.
+		 * @brief Get the registry that stores this entity's components,
+		 * read-only.
+		 * @return Const reference to the registry given to the constructor.
 		 */
 		const ComponentRegistry &getComponentRegistry(void) const;
 
 		public:
 		/**
-		 * @brief Construct a new Entity Filler object.
-		 * @param componentRegistry The component registry to register
-		 * components to.
+		 * @brief Create the entity, its listed components and its
+		 * components::Hierarchy.
+		 * @param componentRegistry The registry in which the components are
+		 * created, normally the scene's. It must outlive the entity.
+		 * @throws ComponentTypeLimitExceededException When more than
+		 * MaxComponentTypes component types are in use.
 		 */
 		EntityFiller(ComponentRegistry &componentRegistry);
 
 		/**
-		 * @brief Default destructor for the Entity Filler class.
+		 * @brief Destroy the entity object; its components stay in the
+		 * registry (see EntityRegistry::removeEntity).
 		 */
 		virtual ~EntityFiller(void) = default;
 	};

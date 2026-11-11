@@ -34,25 +34,42 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Manager class for handling multiple entity builders.
+	 * @brief Holds one builder per builder type and hands them out by type.
+	 *
+	 * Each Scene has one, reached with Scene::getBuilderManager and filled
+	 * with a builder for every widget of the library. This is how a scene
+	 * creates its widgets:
+	 * @code
+	 * auto &builder =
+	 * 	getBuilderManager().getBuilder<entities::Button::Builder>();
+	 * auto button = builder.makeButton(nullptr, "Save", [] {},
+	 * 	entities::Button::Color::Filled, entities::Button::Shape::Round,
+	 * 	entities::Button::Size::Medium, false);
+	 * @endcode
+	 *
+	 * @note A builder is shared by all its users: it keeps its options
+	 * between calls until an entity is built, which resets it.
+	 * @see EntityBuilder
+	 * @see EntityBuilderManagerFiller
 	 */
 	class EntityBuilderManager
 	{
 		private:
 		std::map<std::type_index, std::unique_ptr<EntityBuilder>>
-			_builders;	  ///< Map of entity builders indexed by their type
+			_builders;	  ///< The builders, by builder type
 
 		public:
 		/**
-		 * @brief Add a builder for a specific entity type.
-		 * @tparam BuilderType The type of the builder being added, which must
-		 * inherit from EntityBuilder
-		 * @param componentRegistry Component registry passed to the builder
-		 * constructor.
-		 * @param entityRegistry Entity registry passed to the builder
-		 * constructor.
-		 * @throws std::runtime_error if a builder for the specified entity type
-		 * already exists
+		 * @brief Create a builder of a given type and keep it.
+		 * @tparam BuilderType The builder type to create, for instance
+		 * `entities::Button::Builder`. It must be constructible from the two
+		 * registries.
+		 * @param componentRegistry The registry in which the builder creates
+		 * components. It must outlive the manager.
+		 * @param entityRegistry The registry in which the builder registers
+		 * entities. It must outlive the manager.
+		 * @throws std::runtime_error When the manager already holds a
+		 * builder of that type.
 		 */
 		template<InheritFromEntityBuilder BuilderType>
 		void addBuilder(ComponentRegistry &componentRegistry,
@@ -60,22 +77,21 @@ namespace guillaume::ecs
 
 		public:
 		/**
-		 * @brief Construct a new EntityBuilderManager object.
+		 * @brief Create a manager with no builder.
 		 */
 		EntityBuilderManager(void);
 
 		/**
-		 * @brief Default destructor for the EntityBuilderManager class.
+		 * @brief Destroy the manager and the builders it holds.
 		 */
 		virtual ~EntityBuilderManager(void);
 
 		/**
-		 * @brief Get a reference to the builder for a specific entity type.
-		 * @tparam BuilderType The type of the builder to retrieve, which must
-		 * inherit from EntityBuilder
-		 * @return Reference to the builder for the specified entity type
-		 * @throws std::runtime_error if no builder exists for the specified
-		 * entity type
+		 * @brief Get the builder of a given type.
+		 * @tparam BuilderType The builder type to get, for instance
+		 * `entities::Button::Builder`.
+		 * @return Reference to the builder, valid as long as the manager.
+		 * @throws std::runtime_error When no builder of that type was added.
 		 */
 		template<InheritFromEntityBuilder BuilderType>
 		BuilderType &getBuilder(void);

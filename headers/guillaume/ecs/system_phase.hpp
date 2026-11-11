@@ -34,85 +34,107 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Enumeration of system update phases.
+	 * @brief The four steps of a frame. Every system belongs to one of them.
 	 *
-	 * Defines the different phases during which systems can be updated,
-	 * allowing for organized and efficient processing of entities based on
-	 * their components.
+	 * Application::routine runs the phases in the order of the enumerators,
+	 * once per frame. Within a phase, the systems run one after the other in
+	 * the order they were registered, each one over the whole scene. A
+	 * system therefore sees what the systems of the earlier phases wrote in
+	 * the same frame, and what the later ones wrote in the previous frame.
+	 *
+	 * Pick the phase of a system by what it produces: state driven by input
+	 * goes in Event, an intrinsic size in Measure, positions and style in
+	 * Layout, engine calls in Render.
+	 *
+	 * @see System
+	 * @see SystemPhaseList
 	 */
 	enum class Phase : std::size_t {
-		Event,		///< Main update phase for application logic
-		Measure,	///< Measurement phase for calculating layout and text sizes
-		Layout,		///< Layout phase for arranging entities based on
-					///< measurements
-		Render,		///< Render phase for drawing entities
-		Count		///< Sentinel value representing the number of phases
+		Event,	  ///< Turn input (mouse, hands, keyboard) into component
+				  ///< state and call the user's handlers
+		Measure,	///< Compute intrinsic sizes (text, glyphs), children
+					///< before parents
+		Layout,		///< Place children and style widgets, parents before
+					///< children
+		Render,		///< Hand the geometry to the engine, parents before
+					///< children
+		Count		///< Number of phases; not a phase
 	};
 
 	/**
-	 * @brief SystemPhase is a template class that associates a system update
-	 * phase with a specific entity tree traversal strategy.
-	 * @tparam Value The system update phase.
-	 * @tparam TravelerType The type of EntityTreeTraveler to use for this
-	 * phase.
+	 * @brief Ties a Phase to the order in which its systems visit the
+	 * entities.
+	 *
+	 * Application keeps one instance per phase (SystemPhaseList) and, for
+	 * each, runs the systems registered for getPhase() with getTraveler().
+	 * Use the aliases EventPhase, MeasurePhase, LayoutPhase and RenderPhase
+	 * rather than this template.
+	 * @tparam Value The phase.
+	 * @tparam TravelerType The traveler that orders the entities for the
+	 * systems of this phase.
+	 * @see EntityTreeTraveler
 	 */
 	template<Phase Value, InheritFromEntityTreeTraveler TravelerType>
 	class SystemPhase
 	{
 		public:
-		static constexpr Phase phase =
-			Value;	  ///< The system update phase associated with this class
+		static constexpr Phase phase = Value;	 ///< The phase, known at
+												 ///< compile time
 
 		private:
 		TravelerType
-			_traveler;	  ///< Entity tree traveler for this system phase
+			_traveler;	  ///< The traveler handed to the systems of the phase
 
 		public:
 		/**
-		 * @brief Default constructor for SystemPhase.
+		 * @brief Create the phase definition and its traveler.
 		 */
 		SystemPhase(void) = default;
 
 		/**
-		 * @brief Default destructor for SystemPhase.
+		 * @brief Destroy the phase definition and its traveler.
 		 */
 		~SystemPhase(void) = default;
 
 		/**
-		 * @brief Get the phase value associated with this system phase.
-		 * @return The system phase value.
+		 * @brief Get the phase this definition describes.
+		 * @return The phase, equal to SystemPhase::phase.
 		 */
 		constexpr Phase getPhase(void) const;
 
 		/**
-		 * @brief Get a const reference to the associated traveler.
-		 * @return Const traveler reference.
+		 * @brief Get the traveler that orders the entities for this phase.
+		 * @return Reference to the traveler, valid as long as this object;
+		 * pass it to System::routine.
 		 */
 		const EntityTreeTraveler &getTraveler(void) const;
 	};
 
 	/**
-	 * @brief Type alias for event handling systems.
+	 * @brief The Event phase: entities are visited children before parents.
 	 */
 	using EventPhase = SystemPhase<Phase::Event, ReverseLevelOrderTraveler>;
 
 	/**
-	 * @brief Type alias for measurement systems.
+	 * @brief The Measure phase: entities are visited children before
+	 * parents, so a parent is sized after its children.
 	 */
 	using MeasurePhase = SystemPhase<Phase::Measure, ReverseLevelOrderTraveler>;
 
 	/**
-	 * @brief Type alias for layout systems.
+	 * @brief The Layout phase: entities are visited parents before children,
+	 * so a parent is placed before it places its children.
 	 */
 	using LayoutPhase = SystemPhase<Phase::Layout, LevelOrderTraveler>;
 
 	/**
-	 * @brief Type alias for rendering systems.
+	 * @brief The Render phase: entities are visited parents before children.
 	 */
 	using RenderPhase = SystemPhase<Phase::Render, LevelOrderTraveler>;
 
 	/**
-	 * @brief Tuple containing all system phases in execution order.
+	 * @brief Every phase, in the order a frame runs them: Event, Measure,
+	 * Layout, Render.
 	 */
 	using SystemPhaseList =
 		std::tuple<EventPhase, MeasurePhase, LayoutPhase, RenderPhase>;

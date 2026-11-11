@@ -48,12 +48,33 @@ namespace guillaume
 {
 
 	/**
-	 * @brief Scene manager class responsible for managing scenes in the
-	 * application.
+	 * @brief Owns the scenes of an application, knows which one is active,
+	 * and performs the switches between them.
+	 *
+	 * Application creates one manager. The manager builds one instance of
+	 * every scene type at construction and keeps them all until it is
+	 * destroyed: switching scenes changes which one is active, it does not
+	 * create or destroy scenes. Each frame, Application asks it for the
+	 * registries of the active scene, runs the systems on them, then calls
+	 * processSceneTransition() to honor a Scene::goToScene request.
+	 *
+	 * Every switch goes through the same steps: `onExit()` on the active
+	 * scene, then `onEnter()` on the new one, then
+	 * Scene::placeEntitiesInFrontOfView with the engine's view.
+	 *
+	 * The manager also owns the LocalStorage and the SessionStorage handed
+	 * to every scene. The LocalStorage uses its default path, so
+	 * constructing a manager opens (and creates if needed) the file given
+	 * by LocalStorage::defaultStoragePath.
+	 *
+	 * @note Application code normally switches scenes with
+	 * Scene::goToScene and does not use this class directly.
 	 * @tparam DefaultSceneType The scene activated when the application
 	 * starts.
-	 * @tparam SceneTypes The other scenes of the application. Every scene type
-	 * must inherit from Scene and appear only once.
+	 * @tparam SceneTypes The other scenes of the application. Every scene
+	 * type must inherit from Scene and appear only once.
+	 * @see Scene
+	 * @see Application
 	 */
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
 		requires AllDistinct<DefaultSceneType, SceneTypes...>
@@ -64,107 +85,145 @@ namespace guillaume
 	{
 		public:
 		/**
-		 * @brief Construct the manager and create every scene.
-		 * @param ressourceProvider Shared pointer to the resource provider for
-		 * the scenes.
-		 * @param engine Engine queried for the current view. It must outlive
-		 * the manager.
+		 * @brief Create one instance of every scene type and make
+		 * `DefaultSceneType` the active one.
+		 *
+		 * No scene is entered yet: call enterActiveScene() once the manager
+		 * is built.
+		 * @param ressourceProvider The resource provider handed to every
+		 * scene.
+		 * @param engine The engine asked for the current view each time a
+		 * scene is entered. It must outlive the manager.
+		 * @throws std::runtime_error When the local storage cannot be
+		 * opened at all (see LocalStorage).
 		 */
 		SceneManager(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
 			utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor for the SceneManager class.
+		 * @brief Destroy the manager and every scene. `onExit()` is not
+		 * called on the active scene.
 		 */
 		~SceneManager(void);
 
 		/**
 		 * @brief Get the active scene.
-		 * @return Pointer to the active scene, or nullptr if no active scene
-		 * is set.
+		 * @return Pointer to the active scene, never nullptr. It stays
+		 * valid as long as the manager.
+		 * @throws std::runtime_error When the manager holds no scene.
 		 */
 		Scene *getActiveScene(void);
 
 		/**
-		 * @brief Check whether at least one scene is registered.
-		 * @return True when one or more scenes are registered.
+		 * @brief Tell whether the manager holds at least one scene.
+		 * @return True when one or more scenes exist, which is always the
+		 * case after construction.
 		 */
 		bool hasScenes(void) const noexcept;
 
 		/**
-		 * @brief Check whether an active scene has been selected.
-		 * @return True when the active scene points to a registered scene.
+		 * @brief Tell whether an active scene is selected.
+		 * @return True when scenes exist and one of them is the active one,
+		 * which is always the case after construction.
 		 */
 		bool hasActiveScene(void) const noexcept;
 
 		/**
-		 * @brief Enter the currently active scene, setting its view from the
-		 * engine and calling onEnter().
-		 * @throws std::runtime_error if there is no active scene.
+		 * @brief Enter the active scene: call its `onEnter()`, then place
+		 * its entities in front of the engine's current view
+		 * (Scene::placeEntitiesInFrontOfView).
+		 *
+		 * `onEnter()` comes first because that is where the scene builds the
+		 * entities to place. Application calls this once at start-up for
+		 * the default scene; later entries happen through the switches.
+		 * @throws std::runtime_error When the manager holds no scene.
 		 */
 		void enterActiveScene(void);
 
 		/**
-		 * @brief Process a pending scene transition request from the active
-		 * scene. Calls onExit() on the current scene, switches the active
-		 * scene, and calls onEnter() on the new scene.
-		 * @throws std::runtime_error if the requested next scene type is not
-		 * registered.
+		 * @brief Carry out the switch requested by the active scene with
+		 * Scene::goToScene, if any.
+		 *
+		 * Does nothing when no switch is pending. Otherwise the request is
+		 * cleared, `onExit()` is called on the active scene, the requested
+		 * scene becomes active and is entered (enterActiveScene()).
+		 * Application calls it once per frame, after the systems ran.
+		 * @throws std::runtime_error When the requested scene type is not
+		 * one of this manager's scenes. The request is dropped and the
+		 * active scene stays active, without `onExit()` being called.
 		 */
 		void processSceneTransition(void);
 
 		/**
-		 * @brief Switch to a different scene immediately. Calls onExit() on
-		 * the current scene and onEnter() on the new one, like a transition
-		 * requested by the scene itself.
-		 * @tparam SceneType The type of the scene to switch to.
-		 * @throws std::runtime_error if the specified scene type is not found
-		 * in the scene manager.
+		 * @brief Switch to another scene immediately, without waiting for
+		 * the end of the frame.
+		 *
+		 * Same steps as a switch requested by the scene itself: `onExit()`
+		 * on the active scene, then the new scene becomes active and is
+		 * entered. Switching to the scene that is already active exits and
+		 * re-enters it.
+		 * @tparam SceneType The scene type to switch to.
+		 * @throws std::runtime_error When `SceneType` is not one of this
+		 * manager's scenes; the active scene is left as it was.
 		 */
 		template<InheritFromScene SceneType> void switchToScene(void);
 
 		/**
-		 * @brief Get the active entity registry.
-		 * @return Reference to the active entity registry.
+		 * @brief Get the entity registry of the active scene.
+		 * @return Reference to the active scene, seen as the registry that
+		 * owns its entities. It designates another scene after a switch.
+		 * @throws std::runtime_error When the manager holds no scene.
 		 */
 		ecs::EntityRegistry &getActiveEntityRegistry(void);
 
 		/**
-		 * @brief Get the active component registry.
-		 * @return Reference to the active component registry.
+		 * @brief Get the component registry of the active scene.
+		 * @return Reference to the registry of the active scene. It
+		 * designates another scene's registry after a switch.
+		 * @throws std::runtime_error When the manager holds no scene.
 		 */
 		ecs::ComponentRegistry &getActiveComponentRegistry(void);
 
 		/**
-		 * @brief Get a list of all registered scene types.
-		 * @return Vector of type indices for all registered scenes.
+		 * @brief List the scene types this manager holds.
+		 * @return One `std::type_index` per scene, in the ordering of
+		 * `std::type_index` (not the order of the template arguments).
 		 */
 		std::vector<std::type_index> getRegisteredSceneTypes(void) const;
 
 		protected:
 		/**
-		 * @brief Add a scene to the scene manager.
-		 * @tparam SceneType The type of the scene to be added.
+		 * @brief Create the instance of one scene type and keep it.
+		 *
+		 * The scene receives the resource provider and the two storages. A
+		 * scene of the same type already held is replaced.
+		 * @tparam SceneType The scene type to instantiate. It must be
+		 * constructible from the arguments of the Scene constructor.
 		 */
 		template<InheritFromScene SceneType> void addScene(void);
 
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   ///< Shared pointer to the resource provider
+			_ressourceProvider;	   ///< Resource provider handed to the scenes
 		std::map<std::type_index, std::unique_ptr<Scene>>
-			_scenes;	///< Registered scenes in the manager
-		std::type_index
-			_activeSceneType;	 ///< Type index of the currently active scene
-		LocalStorage _localStorage;	   ///< Local storage for persistent data
+			_scenes;	///< One instance per scene type, kept for the whole
+						///< life of the manager
+		std::type_index _activeSceneType;	 ///< Type of the active scene
+		LocalStorage
+			_localStorage;	  ///< Persistent storage shared by the scenes
 		SessionStorage
-			_sessionStorage;		 ///< Session storage for temporary data
-		utility::Engine &_engine;	 ///< Application engine (non-owning)
+			_sessionStorage;		 ///< Session storage shared by the scenes
+		utility::Engine &_engine;	 ///< Engine asked for the view; not owned
 
 		/**
-		 * @brief Leave the active scene and enter another registered scene.
-		 * @param nextType Type index of the scene to activate.
-		 * @throws std::runtime_error If the scene type is not registered.
+		 * @brief Leave the active scene and enter another one.
+		 *
+		 * Calls `onExit()` on the active scene, clears its pending request,
+		 * makes `nextType` active and calls enterActiveScene().
+		 * @param nextType The type of the scene to activate.
+		 * @throws std::runtime_error When no scene of that type exists; the
+		 * active scene is left untouched.
 		 */
 		void transitionTo(std::type_index nextType);
 	};

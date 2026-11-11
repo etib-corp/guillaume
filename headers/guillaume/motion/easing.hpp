@@ -26,7 +26,16 @@ namespace guillaume::motion
 {
 
 	/**
-	 * @brief Easing curves covering the Material Design 3 motion tokens.
+	 * @brief The shapes an animation's progress can follow over time.
+	 *
+	 * An easing turns "how much time has passed" into "how far the
+	 * animation is": linear moves at constant speed, the others start or
+	 * end gently. The curves are those of Material Design 3, given as CSS
+	 * cubic-bezier control points. theme::MotionScale says which one to use
+	 * for which kind of movement.
+	 *
+	 * @note `Emphasized` and `EmphasizedDecelerate` are the same curve.
+	 * @see applyEasing
 	 */
 	enum class Easing {
 		Linear,		   ///< Constant speed.
@@ -42,21 +51,37 @@ namespace guillaume::motion
 	};
 
 	/**
-	 * @brief Evaluate an easing curve at a normalized time.
-	 * @param easing The easing curve to apply.
-	 * @param t The normalized time, clamped to `[0, 1]`.
-	 * @return The eased value, in `[0, 1]`.
+	 * @brief Get how far an animation is, given how much of its time has
+	 * passed.
+	 *
+	 * @code
+	 * // elapsed and duration in seconds
+	 * const float progress =
+	 * 	motion::applyEasing(motion::Easing::Standard, elapsed / duration);
+	 * const float width = from + (to - from) * progress;
+	 * @endcode
+	 * @param easing The curve to follow.
+	 * @param t The fraction of the animation's duration that has passed, 0
+	 * (start) to 1 (end). Values outside that range are clamped.
+	 * @return The progress of the animation, 0 (start value) to 1 (end
+	 * value). 0 gives 0 and 1 gives 1 for every curve.
 	 */
 	float applyEasing(Easing easing, float t);
 
 	/**
-	 * @brief Evaluate a cubic bezier curve at a normalized x.
-	 * @param x The normalized x position, clamped to `[0, 1]`.
-	 * @param x1 First control point x.
-	 * @param y1 First control point y.
-	 * @param x2 Second control point x.
-	 * @param y2 Second control point y.
-	 * @return The curve value at `x`.
+	 * @brief Evaluate a CSS-style cubic bezier easing curve, which goes
+	 * from (0, 0) to (1, 1) and is bent by two control points.
+	 *
+	 * Use it for a curve that Easing does not offer. The result is found by
+	 * bisection, precise enough for animation.
+	 * @param x The fraction of time that has passed, 0 to 1. Values outside
+	 * that range are clamped.
+	 * @param x1 The x of the first control point, 0 to 1.
+	 * @param y1 The y of the first control point.
+	 * @param x2 The x of the second control point, 0 to 1.
+	 * @param y2 The y of the second control point.
+	 * @return The y of the curve at `x`: the progress of the animation. It
+	 * can leave the 0 to 1 range when `y1` or `y2` does.
 	 */
 	float cubicBezier(float x, float x1, float y1, float x2, float y2);
 

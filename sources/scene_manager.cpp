@@ -23,4 +23,4 @@
 #include "guillaume/scene_manager.hpp"
 
 // SceneManager is a template class; all implementation is in scene_manager.tpp.
-// This file is kept to preserve existing build configurations.
+// This translation unit only checks that the header compiles on its own.
