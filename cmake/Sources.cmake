@@ -11,10 +11,12 @@ set(GUILLAUME_SOURCES
     sources/components/animation.cpp
     sources/components/arc.cpp
     sources/components/backdrop.cpp
+    sources/components/badge.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/button.cpp
     sources/components/checkbox.cpp
+    sources/components/chip.cpp
     sources/components/clip.cpp
     sources/components/color.cpp
     sources/components/common_button.cpp
@@ -130,8 +132,10 @@ set(GUILLAUME_SOURCES
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
     sources/systems/backdrop.cpp
+    sources/systems/badge.cpp
     sources/systems/button.cpp
     sources/systems/checkbox.cpp
+    sources/systems/chip.cpp
     sources/systems/clip.cpp
     sources/systems/common_button.cpp
     sources/systems/core_systems.cpp

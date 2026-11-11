@@ -25,8 +25,10 @@
 #include "guillaume/systems/animation.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/backdrop.hpp"
+#include "guillaume/systems/badge.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/checkbox.hpp"
+#include "guillaume/systems/chip.hpp"
 #include "guillaume/systems/common_button.hpp"
 #include "guillaume/systems/extended_floating_action_button.hpp"
 #include "guillaume/systems/floating_action_button.hpp"
@@ -156,6 +158,8 @@ namespace guillaume::systems
 			std::make_unique<systems::FloatingActionButton>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::ExtendedFloatingActionButton>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Badge>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Chip>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

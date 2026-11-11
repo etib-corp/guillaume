@@ -23,7 +23,6 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <string>
 
 #include <utility/graphic/color.hpp>
@@ -33,6 +32,7 @@
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/components/animation.hpp"
+#include "guillaume/components/badge.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
@@ -46,18 +46,16 @@ namespace guillaume::entities
 	 *
 	 * Defaults to Paper's 20 dp label badge; `Variant::Dot` keeps the 6 dp
 	 * status dot. Visibility changes fade the badge over 150 ms (M3 short3).
+	 *
+	 * The class is a facade without fields: its state is components::Badge
+	 * and systems::Badge sizes, colors and fades the badge. `initialize()`
+	 * only builds the label child.
 	 */
-	class Badge: public SurfaceBase<components::Animation>
+	class Badge: public SurfaceBase<components::Animation, components::Badge>
 	{
 		public:
-		/**
-		 * @brief Badge variants.
-		 */
-		enum class Variant {
-			Dot,	  ///< 6 dp dot without label.
-			Small,	  ///< 16 dp label badge.
-			Large	  ///< 20 dp label badge (Paper default).
-		};
+		/// Badge variants.
+		using Variant = components::Badge::Variant;
 
 		/**
 		 * @brief Builder for Badge entities.
@@ -189,35 +187,6 @@ namespace guillaume::entities
 		 * @brief Build the label child.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Restyle the badge.
-		 */
-		void update(void) override;
-
-		private:
-		Variant _variant { Variant::Large };	///< Badge variant.
-		std::string _label {};					///< Badge label.
-		std::shared_ptr<Text> _labelEntity;		///< Label child entity.
-		std::optional<float> _size {};			///< Size override.
-		std::optional<utility::graphic::Color32Bit>
-			_containerColor {};	   ///< Container color override.
-		std::optional<utility::graphic::Color32Bit>
-			_contentColor {};		 ///< Label color override.
-		bool _visible { true };		 ///< Target visibility.
-		float _opacity { 1.0f };	 ///< Current fade opacity.
-		float _fadeFrom { 1.0f };	 ///< Opacity at the start of the fade.
-
-		/**
-		 * @brief Apply geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Get the size of the current variant.
-		 * @return The size, in dp.
-		 */
-		float getVariantSize(void) const;
 	};
 
 }	 // namespace guillaume::entities

@@ -53,8 +53,10 @@ set(TEST_SOURCES
     sources/event/test_event_bus.cpp
     sources/event/test_event_handler.cpp
     sources/event/test_event_subscriber.cpp
+    sources/systems/test_badge.cpp
     sources/systems/test_button.cpp
     sources/systems/test_checkbox.cpp
+    sources/systems/test_chip.cpp
     sources/systems/test_focus.cpp
     sources/systems/test_backdrop.cpp
     sources/systems/test_divider.cpp
