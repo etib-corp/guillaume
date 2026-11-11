@@ -70,6 +70,8 @@ set(TEST_SOURCES
     sources/systems/test_floating_action_button_menu.cpp
     sources/systems/test_dialog.cpp
     sources/systems/test_menu.cpp
+    sources/systems/test_list.cpp
+    sources/systems/test_search.cpp
     sources/systems/test_snackbar.cpp
     sources/systems/test_switch.cpp
     sources/systems/test_text_field.cpp

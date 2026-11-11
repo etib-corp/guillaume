@@ -57,6 +57,7 @@
 #include "guillaume/systems/keyboard_control.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/line_render.hpp"
+#include "guillaume/systems/list.hpp"
 #include "guillaume/systems/loading_indicator.hpp"
 #include "guillaume/systems/measure_glyph.hpp"
 #include "guillaume/systems/measure_mesh.hpp"
@@ -71,6 +72,7 @@
 #include "guillaume/systems/ring_render.hpp"
 #include "guillaume/systems/scrim_render.hpp"
 #include "guillaume/systems/scroll.hpp"
+#include "guillaume/systems/search.hpp"
 #include "guillaume/systems/segmented_button.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/systems/radio_button.hpp"
@@ -187,6 +189,8 @@ namespace guillaume::systems
 			std::make_unique<systems::FloatingActionButtonMenu>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Dialog>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Menu>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::List>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Search>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::TextField>());
 		systemRegistry.registerNewSystem(

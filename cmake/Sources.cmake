@@ -44,6 +44,7 @@ set(GUILLAUME_SOURCES
     sources/components/image.cpp
     sources/components/layout.cpp
     sources/components/line.cpp
+    sources/components/list.cpp
     sources/components/loading_indicator.cpp
     sources/components/menu.cpp
     sources/components/mesh.cpp
@@ -57,6 +58,7 @@ set(GUILLAUME_SOURCES
     sources/components/ring.cpp
     sources/components/scrim.cpp
     sources/components/scrollable.cpp
+    sources/components/search.cpp
     sources/components/segmented_button.cpp
     sources/components/selection.cpp
     sources/components/snackbar.cpp
@@ -177,6 +179,7 @@ set(GUILLAUME_SOURCES
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp
     sources/systems/line_render.cpp
+    sources/systems/list.cpp
     sources/systems/loading_indicator.cpp
     sources/systems/measure_glyph.cpp
     sources/systems/measure_mesh.cpp
@@ -192,6 +195,7 @@ set(GUILLAUME_SOURCES
     sources/systems/rectangle_render.cpp
     sources/systems/ring_render.cpp
     sources/systems/scroll.cpp
+    sources/systems/search.cpp
     sources/systems/segmented_button.cpp
     sources/systems/selection.cpp
     sources/systems/scrim_render.cpp

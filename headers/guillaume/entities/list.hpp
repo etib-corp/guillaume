@@ -34,6 +34,8 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/list.hpp"
+
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/icon.hpp"
 #include "guillaume/entities/surface.hpp"
@@ -58,42 +60,21 @@ namespace guillaume::entities
 	 * The variant names the expected number of text lines; it only limits
 	 * the description (`SingleLine` hides it).
 	 *
+	 * The list is a facade without state: its configuration lives in
+	 * components::List and systems::List styles and arranges it. The class
+	 * only builds the row entities.
+	 *
 	 * @see SurfaceBase
+	 * @see components::List
+	 * @see systems::List
 	 * @see entities::View
 	 */
-	class List: public SurfaceBase<>
+	class List: public SurfaceBase<components::List>
 	{
 		public:
-		/**
-		 * @brief List variant.
-		 */
-		enum class Variant { SingleLine, TwoLine, ThreeLine };
-
-		/**
-		 * @brief Kind of a list entry.
-		 */
-		enum class ItemKind {
-			Item,		  ///< Pressable row (or accordion when it has
-						  ///< children).
-			Subheader,	  ///< Section header (`titleSmall`).
-			Divider		  ///< Horizontal divider.
-		};
-
-		/**
-		 * @brief List entry.
-		 */
-		struct Item {
-			std::string headline;		 ///< Primary headline text.
-			std::string supporting;		 ///< Optional supporting text.
-			std::string leadingIcon;	 ///< Optional leading icon glyph name.
-			std::string trailingIcon;	 ///< Optional trailing icon glyph name.
-			std::string leadingImage {};	///< Optional leading image path.
-			std::function<void(void)> onPress {};	 ///< Press handler.
-			bool disabled { false };	///< Whether the row is disabled.
-			ItemKind kind { ItemKind::Item };	 ///< Entry kind.
-			std::vector<Item> children {};		 ///< Accordion children.
-			bool expanded { false };			 ///< Accordion expanded state.
-		};
+		using Variant  = components::List::Variant;		///< List variant.
+		using ItemKind = components::List::ItemKind;	///< Kind of an entry.
+		using Item	   = components::List::Item;		///< List entry.
 
 		/**
 		 * @brief Builder used to configure and create lists.
@@ -207,7 +188,7 @@ namespace guillaume::entities
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Replace the entries.
+		 * @brief Replace the entries and rebuild the rows.
 		 * @param items The new entries.
 		 * @return Reference to this list for chaining.
 		 */
@@ -266,114 +247,19 @@ namespace guillaume::entities
 		bool isExpanded(std::size_t index) const;
 
 		/**
-		 * @brief Build the rows.
+		 * @brief Build the rows and style the list.
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Restyle and re-arrange the list.
-		 */
-		void update(void) override;
-
 		private:
 		/**
-		 * @brief Built row and its content.
-		 */
-		struct Row {
-			std::shared_ptr<ecs::Entity> entity;	///< Row root.
-			std::shared_ptr<View> view;				///< Pressable row.
-			std::shared_ptr<View> content;		 ///< Title/description column.
-			std::shared_ptr<Text> headline;		 ///< Title child.
-			std::shared_ptr<Text> supporting;	 ///< Description child.
-			std::vector<std::shared_ptr<Icon>> icons;	 ///< Icon children.
-			std::shared_ptr<Icon> chevron;				 ///< Accordion chevron.
-			std::vector<Row> children;	  ///< Accordion child rows.
-			bool hidden { false };		  ///< Collapsed accordion child.
-		};
-
-		Variant _variant { Variant::SingleLine };	 ///< List variant.
-		std::vector<Item> _items {};				 ///< List entries.
-		std::vector<Row> _rows {};					 ///< Built rows.
-		bool _rowsDirty { true };	 ///< Whether rows must rebuild.
-
-		/**
-		 * @brief Apply the variant geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Build or refresh the rows.
+		 * @brief Build one row per entry when the rows are stale, record
+		 * their identifiers in components::List, make them pressable and hand
+		 * them to the surface as layout children.
+		 *
+		 * Does nothing until the list is owned by a shared pointer.
 		 */
 		void buildItems(void);
-
-		/**
-		 * @brief Build one row.
-		 * @param item Entry.
-		 * @param path Index path used by the press handlers.
-		 * @param inset Leading inset for nested rows.
-		 * @return The row.
-		 */
-		Row buildRow(const Item &item, std::vector<std::size_t> path,
-					 float inset);
-
-		/**
-		 * @brief Build a subheader row: a title text with the Header role.
-		 * @param item Entry.
-		 * @return The subheader entity, or nullptr when it has no text.
-		 */
-		std::shared_ptr<ecs::Entity> buildSubheader(const Item &item);
-
-		/**
-		 * @brief Build the leading group of a row: the nesting inset, the
-		 * leading image or icon, and the headline/supporting column.
-		 * @param row Row receiving the created entities.
-		 * @param item Entry.
-		 * @param inset Leading inset for nested rows.
-		 * @return The leading group view.
-		 */
-		std::shared_ptr<View> buildRowLead(Row &row, const Item &item,
-										   float inset);
-
-		/**
-		 * @brief Wire the press handler, accessibility and enabled state.
-		 * @param row Row to make interactive.
-		 * @param item Entry.
-		 * @param path Index path used by the press handlers.
-		 */
-		void makeRowInteractive(Row &row, const Item &item,
-								const std::vector<std::size_t> &path);
-
-		/**
-		 * @brief Restyle a row from its interaction state.
-		 * @param row Row.
-		 */
-		void styleRow(Row &row);
-
-		/**
-		 * @brief Find a row by index path.
-		 * @param path Index path.
-		 * @return The row, or nullptr.
-		 */
-		Row *findRow(const std::vector<std::size_t> &path);
-
-		/**
-		 * @brief Find an entry by index path.
-		 * @param path Index path.
-		 * @return The entry, or nullptr.
-		 */
-		Item *findItem(const std::vector<std::size_t> &path);
-
-		/**
-		 * @brief Handle a press on a row.
-		 * @param path Index path of the row.
-		 */
-		void pressRow(const std::vector<std::size_t> &path);
-
-		/**
-		 * @brief Get the list width.
-		 * @return The width.
-		 */
-		float getListWidth(void) const;
 	};
 
 }	 // namespace guillaume::entities
