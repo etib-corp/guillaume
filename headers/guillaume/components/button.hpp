@@ -72,9 +72,11 @@ namespace guillaume::components
 		ecs::Entity::Identifier _icon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Icon child
+
 		ecs::Entity::Identifier _label {
 			ecs::Entity::InvalidIdentifier
-		};							 ///< Label child
+		};	  ///< Label child
+
 		bool _toggle { false };		 ///< Whether a click toggles the selection
 		bool _selected { false };	 ///< Whether the button is selected
 		bool _morph { false };		 ///< Whether the shape morphs when selected
@@ -82,6 +84,7 @@ namespace guillaume::components
 		bool _loading {
 			false
 		};	  ///< Whether a progress glyph replaces the icon
+
 		bool _visible { true };	   ///< Whether the button is shown
 		Handler _onClick {};	   ///< Click callback
 		Handler

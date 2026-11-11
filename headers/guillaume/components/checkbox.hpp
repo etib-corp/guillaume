@@ -69,9 +69,11 @@ namespace guillaume::components
 		ecs::Entity::Identifier _checkIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Check glyph child
+
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Label child
+
 		std::optional<utility::graphic::Color32Bit>
 			_checkedColor {};	 ///< Fill override when checked
 		std::optional<utility::graphic::Color32Bit>
