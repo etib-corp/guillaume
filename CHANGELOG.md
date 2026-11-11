@@ -50,7 +50,8 @@ Versions follow the calendar scheme described in
 - `ecs::EntityRegistry::removeEntity()` and `clearEntities()` remove an
   entity with everything it owns, delete its components
   (`ecs::ComponentRegistry::removeEntity()`) and unlink it from its parent's
-  `components::Hierarchy`. `List`, `Menu`, `NavigationDrawer` and the
+  `components::Hierarchy`. Entities parented to it go with it, wherever they
+  are registered below the registry the removal started in. `List`, `Menu`, `NavigationDrawer` and the
   indicators use it when they rebuild their children, so replaced children no
   longer stay registered.
 - `systems::Layout::layerOf()` returns an entity's tree depth from its
