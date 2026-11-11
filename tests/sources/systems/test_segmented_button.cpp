@@ -22,6 +22,8 @@
 
 #include "systems/test_segmented_button.hpp"
 
+#include <guillaume/systems/common_button.hpp>
+
 namespace guillaume::systems::tests
 {
 	namespace
@@ -238,6 +240,23 @@ namespace guillaume::systems::tests
 		for (std::size_t index = 0; index < _buttons.size(); ++index) {
 			EXPECT_FALSE(_registry.hasChanged(_buttons[index]));
 			EXPECT_FALSE(_registry.hasChanged(_icons[index]));
+		}
+	}
+
+	TEST_F(TestSegmentedButtonSystem, SegmentAndRowSystemsDoNotFightOverCorners)
+	{
+		_system.update(_entity);
+		_registry.resetChangedFlags();
+
+		// One frame of the real loop: each segment's own system runs, then
+		// the row's. Neither may undo the other's corners.
+		for (const auto segment: _buttons) {
+			guillaume::systems::CommonButton::apply(_registry, segment);
+		}
+		_system.update(_entity);
+
+		for (const auto segment: _buttons) {
+			EXPECT_FALSE(_registry.hasChanged(segment));
 		}
 	}
 

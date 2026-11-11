@@ -33,6 +33,7 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/style_state.hpp"
 #include "guillaume/systems/button.hpp"
+#include "guillaume/systems/common_button.hpp"
 #include "guillaume/systems/layout.hpp"
 
 namespace guillaume::systems
@@ -332,19 +333,24 @@ namespace guillaume::systems
 		const std::size_t count = buttons.size();
 
 		for (std::size_t index = 0; index < count; ++index) {
-			if (!componentRegistry.hasComponent<components::Borders>(
+			if (!componentRegistry.hasComponent<components::CommonButton>(
 					buttons[index])) {
 				continue;
 			}
 
 			const bool isFirst = (index == 0);
 			const bool isLast  = (index == count - 1);
+			const components::CommonButton::Corners corners {
+				isFirst ? radius : 0.0f, isLast ? radius : 0.0f,
+				isLast ? radius : 0.0f, isFirst ? radius : 0.0f
+			};
 
-			componentRegistry.getComponent<components::Borders>(buttons[index])
-				.setTopLeftRadius(isFirst ? radius : 0.0f)
-				.setBottomLeftRadius(isFirst ? radius : 0.0f)
-				.setTopRightRadius(isLast ? radius : 0.0f)
-				.setBottomRightRadius(isLast ? radius : 0.0f);
+			// The segment's own system writes these to Borders; apply it now
+			// so the result is visible at once.
+			componentRegistry
+				.getComponent<components::CommonButton>(buttons[index])
+				.setCorners(corners);
+			CommonButton::geometry(componentRegistry, buttons[index]);
 		}
 	}
 

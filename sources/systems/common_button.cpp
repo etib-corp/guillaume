@@ -185,8 +185,17 @@ namespace guillaume::systems
 														 morph),
 			 pressed);
 
-		registry.getComponent<components::Borders>(identifier)
-			.setBorderRadius(radius);
+		// A button joined to its neighbours keeps the corners its group gave
+		// it; writing the uniform radius first would flip Borders each frame.
+		auto &borders = registry.getComponent<components::Borders>(identifier);
+		if (const auto &corners = config.getCorners()) {
+			borders.setTopLeftRadius(corners->topLeft)
+				.setTopRightRadius(corners->topRight)
+				.setBottomRightRadius(corners->bottomRight)
+				.setBottomLeftRadius(corners->bottomLeft);
+		} else {
+			borders.setBorderRadius(radius);
+		}
 
 		if (!icon && !label) {
 			return;

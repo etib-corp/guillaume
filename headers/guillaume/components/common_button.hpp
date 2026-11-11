@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/ecs/entity.hpp"
 
@@ -59,6 +61,24 @@ namespace guillaume::components
 		/// Minimum height of the container, in dp.
 		static constexpr float MinHeight = 40.0f;
 
+		/**
+		 * @brief Radius of each corner, for a button joined to its neighbours
+		 * (a segment of a segmented button).
+		 */
+		struct Corners {
+			float topLeft { 0.0f };		   ///< Top-left radius, in dp.
+			float topRight { 0.0f };	   ///< Top-right radius, in dp.
+			float bottomRight { 0.0f };	   ///< Bottom-right radius, in dp.
+			float bottomLeft { 0.0f };	   ///< Bottom-left radius, in dp.
+
+			/**
+			 * @brief Compare two corner sets.
+			 * @param other The other corner set.
+			 * @return True when every radius is equal.
+			 */
+			bool operator==(const Corners &other) const = default;
+		};
+
 		private:
 		Color _colorStyle { Color::Text };	  ///< Color style
 		Shape _shape { Shape::Round };		  ///< Corner shape
@@ -68,6 +88,7 @@ namespace guillaume::components
 		};	  ///< Whether the horizontal padding is compact
 		float _minWidth { 0.0f };	  ///< Extra minimum width
 		bool _uppercase { false };	  ///< Whether the label is upper-cased
+		std::optional<Corners> _corners {};	   ///< Per-corner radius override
 
 		public:
 		/**
@@ -119,6 +140,19 @@ namespace guillaume::components
 		/** @brief Set: whether the label is upper-cased. @param uppercase The
 		 * value. @return It. */
 		CommonButton &setUppercase(bool uppercase);
+
+		/**
+		 * @brief Get the per-corner radius override.
+		 * @return The corners, or nothing when the shape decides the radius.
+		 */
+		const std::optional<Corners> &getCorners(void) const noexcept;
+
+		/**
+		 * @brief Override the radius of each corner.
+		 * @param corners The corners, or nothing to let the shape decide.
+		 * @return Reference to this component for chaining.
+		 */
+		CommonButton &setCorners(const std::optional<Corners> &corners);
 	};
 
 }	 // namespace guillaume::components
