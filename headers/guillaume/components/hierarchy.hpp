@@ -44,6 +44,7 @@ namespace guillaume::components
 		ecs::Entity::Identifier _parentIdentifier {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Parent entity identifier
+
 		std::vector<ecs::Entity::Identifier>
 			_childIdentifiers;		  ///< Direct children, in attach order
 		std::int32_t _layer { 0 };	  ///< Depth in the tree (root is 0)
