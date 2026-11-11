@@ -22,6 +22,7 @@ set(GUILLAUME_SOURCES
     sources/components/clip.cpp
     sources/components/color.cpp
     sources/components/common_button.cpp
+    sources/components/dialog.cpp
     sources/components/divider.cpp
     sources/components/drag_interaction.cpp
     sources/components/elevation.cpp
@@ -44,6 +45,7 @@ set(GUILLAUME_SOURCES
     sources/components/layout.cpp
     sources/components/line.cpp
     sources/components/loading_indicator.cpp
+    sources/components/menu.cpp
     sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/overlay.cpp
@@ -150,6 +152,7 @@ set(GUILLAUME_SOURCES
     sources/systems/clip.cpp
     sources/systems/common_button.cpp
     sources/systems/core_systems.cpp
+    sources/systems/dialog.cpp
     sources/systems/divider.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
@@ -177,6 +180,7 @@ set(GUILLAUME_SOURCES
     sources/systems/measure_glyph.cpp
     sources/systems/measure_mesh.cpp
     sources/systems/measure_text.cpp
+    sources/systems/menu.cpp
     sources/systems/mesh_render.cpp
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp

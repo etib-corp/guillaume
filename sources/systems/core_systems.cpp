@@ -37,6 +37,7 @@
 #include "guillaume/systems/floating_action_button_menu.hpp"
 #include "guillaume/systems/icon_button.hpp"
 #include "guillaume/systems/clip.hpp"
+#include "guillaume/systems/dialog.hpp"
 #include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/drag.hpp"
 #include "guillaume/systems/elevation_render.hpp"
@@ -60,6 +61,7 @@
 #include "guillaume/systems/measure_glyph.hpp"
 #include "guillaume/systems/measure_mesh.hpp"
 #include "guillaume/systems/measure_text.hpp"
+#include "guillaume/systems/menu.hpp"
 #include "guillaume/systems/mesh_render.hpp"
 #include "guillaume/systems/mouse_button.hpp"
 #include "guillaume/systems/mouse_motion.hpp"
@@ -183,6 +185,8 @@ namespace guillaume::systems
 			std::make_unique<systems::SegmentedButton>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::FloatingActionButtonMenu>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Dialog>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Menu>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(
