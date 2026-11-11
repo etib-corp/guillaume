@@ -87,6 +87,14 @@ Versions follow the calendar scheme described in
   - Accessibility labels of the app bar, card and dialog titles follow later
     title changes.
   - `SegmentedButton::setSegmentDisabled()` keeps the connected corners.
+- `entities::View` is a facade without fields and no longer overrides
+  `update()`; no new component was needed, its state was already in
+  Transform, Color, Borders and Layout. Visible differences:
+  - Values written to a view's components by identifier are no longer
+    overwritten by the view.
+  - **Breaking:** a view no longer keeps the entities passed to
+    `setEntities()` alive; they must be owned by an entity registry (which is
+    what the builders do) or by the caller.
 - `components::Elevation::setElevationLevel()` only marks the component
   changed when the resolved shadow differs.
 - `entities::SurfaceBase` keeps no copy of its configuration and no longer
