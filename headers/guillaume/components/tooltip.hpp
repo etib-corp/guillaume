@@ -33,33 +33,49 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Configuration and transient state of a tooltip.
+	 * @brief State of a tooltip: a small label that appears under an entity
+	 * (its anchor) after the pointer has rested on it.
 	 *
-	 * This component is the whole state of a tooltip: what it shows, the
-	 * entity that triggers it, the hover delays and their running timers.
-	 * systems::Tooltip turns it into the tooltip's Layout, Color, Borders,
-	 * Elevation, Overlay and Accessibility, and into the color of its title
-	 * and body children.
+	 * It holds two kinds of state. The configuration (variant, texts,
+	 * anchor, delays, viewport) is written by the entities::Tooltip widget.
+	 * The running state (hover timers, visibility) is written by
+	 * systems::Tooltip, which a looping components::Animation on the same
+	 * entity calls each frame to advance the timers. In the Layout phase,
+	 * systems::Tooltip turns all of it into the tooltip's Layout, Color,
+	 * Borders, Elevation, Overlay and Accessibility, and into the text and
+	 * color of its children.
+	 *
+	 * The tooltip shows once its anchor has been hovered for the enter
+	 * delay, and hides once the anchor has been left for the leave delay.
+	 * A hidden tooltip is drawn transparent.
+	 *
+	 * @see systems::Tooltip, components::Overlay, entities::Tooltip
 	 */
 	class Tooltip: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Tooltip variant.
+		 * @brief Kind of tooltip.
+		 *
+		 * Plain is a 32 dp high dark label with one text. Rich is a 64 dp
+		 * high elevated card with a title above the text.
 		 */
 		enum class Variant { Plain, Rich };
 
-		/// Clamping area, as (width, height).
+		/// Area the tooltip must stay inside, as (width, height) in dp,
+		/// with its origin at (0, 0).
 		using Viewport = std::pair<float, float>;
 
-		/// Paper `enterTouchDelay`, in seconds.
+		/// Default time the anchor must be hovered before the tooltip
+		/// shows, in seconds.
 		static constexpr float DefaultEnterDelay = 0.5f;
 
-		/// Paper `leaveTouchDelay`, in seconds.
+		/// Default time the tooltip stays after the anchor is left, in
+		/// seconds.
 		static constexpr float DefaultLeaveDelay = 1.5f;
 
 		private:
-		Variant _variant { Variant::Plain };	///< Tooltip variant
+		Variant _variant { Variant::Plain };	///< Kind of tooltip
 		std::string _text {};					///< Body text
 		std::string _title {};					///< Title (Rich only)
 		ecs::Entity::Identifier _titleEntity {
@@ -84,7 +100,8 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the configuration of a hidden, empty plain tooltip
+		 * with no anchor and the default delays.
 		 */
 		Tooltip(void) = default;
 
@@ -93,93 +110,231 @@ namespace guillaume::components
 		 */
 		~Tooltip(void) = default;
 
-		/** @brief Get the variant. @return The variant. */
+		/**
+		 * @brief Get the kind of tooltip.
+		 * @return The variant, Variant::Plain by default.
+		 */
 		Variant getVariant(void) const noexcept;
 
-		/** @brief Set the variant. @param variant It. @return It. */
+		/**
+		 * @brief Set the kind of tooltip.
+		 *
+		 * Marks the component changed only when the variant differs.
+		 * @param variant The new variant.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setVariant(Variant variant);
 
-		/** @brief Get the body text. @return The text. */
+		/**
+		 * @brief Get the body text.
+		 * @return The text; it is also the tooltip's accessible name.
+		 */
 		const std::string &getText(void) const noexcept;
 
-		/** @brief Set the body text. @param text It. @return It. */
+		/**
+		 * @brief Set the body text.
+		 *
+		 * systems::Tooltip copies it to the body child. Marks the component
+		 * changed only when the text differs.
+		 * @param text The new text.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setText(const std::string &text);
 
-		/** @brief Get the title. @return The title. */
+		/**
+		 * @brief Get the title of a rich tooltip.
+		 * @return The title; empty when there is none.
+		 */
 		const std::string &getTitle(void) const noexcept;
 
-		/** @brief Set the title. @param title It. @return It. */
+		/**
+		 * @brief Set the title of a rich tooltip.
+		 *
+		 * The widget uses it when it builds the title child. A plain
+		 * tooltip does not show it. Marks the component changed only when
+		 * the text differs.
+		 * @param title The new title.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setTitle(const std::string &title);
 
-		/** @brief Get the title child. @return Its identifier. */
+		/**
+		 * @brief Get the child that draws the title.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when it
+		 * has not been built.
+		 */
 		ecs::Entity::Identifier getTitleEntity(void) const noexcept;
 
-		/** @brief Set the title child. @param identifier It. @return It. */
+		/**
+		 * @brief Record the child that draws the title.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setTitleEntity(ecs::Entity::Identifier identifier);
 
-		/** @brief Get the body child. @return Its identifier. */
+		/**
+		 * @brief Get the child that draws the body text.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when it
+		 * has not been built.
+		 */
 		ecs::Entity::Identifier getTextEntity(void) const noexcept;
 
-		/** @brief Set the body child. @param identifier It. @return It. */
+		/**
+		 * @brief Record the child that draws the body text.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setTextEntity(ecs::Entity::Identifier identifier);
 
-		/** @brief Get the trigger entity. @return Its identifier. */
+		/**
+		 * @brief Get the entity whose hover shows the tooltip.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when
+		 * the tooltip has no anchor.
+		 */
 		ecs::Entity::Identifier getAnchor(void) const noexcept;
 
-		/** @brief Set the trigger entity. @param identifier It. @return It. */
+		/**
+		 * @brief Record the entity whose hover shows the tooltip.
+		 *
+		 * This only stores the identifier. Use systems::Tooltip::setAnchor
+		 * instead: it also resets the timers and starts or stops the
+		 * animation that advances them. Marks the component changed only
+		 * when the identifier differs.
+		 * @param identifier The anchor's identifier, or
+		 * ecs::Entity::InvalidIdentifier for none.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setAnchor(ecs::Entity::Identifier identifier);
 
-		/** @brief Get the hover-in delay. @return Seconds. */
+		/**
+		 * @brief Get how long the anchor must be hovered before the
+		 * tooltip shows.
+		 * @return The delay, in seconds.
+		 */
 		float getEnterDelay(void) const noexcept;
 
 		/**
-		 * @brief Set the hover-in delay.
-		 * @param seconds Delay, must be non-negative.
-		 * @return Reference to this component for chaining.
+		 * @brief Set how long the anchor must be hovered before the
+		 * tooltip shows.
+		 *
+		 * Marks the component changed only when the value differs.
+		 * @param seconds The delay, in seconds; 0 shows the tooltip at
+		 * once.
+		 * @return This component, for chaining.
 		 * @throws std::invalid_argument If @p seconds is negative.
 		 */
 		Tooltip &setEnterDelay(float seconds);
 
-		/** @brief Get the hover-out delay. @return Seconds. */
+		/**
+		 * @brief Get how long the tooltip stays after the pointer leaves
+		 * the anchor.
+		 * @return The delay, in seconds.
+		 */
 		float getLeaveDelay(void) const noexcept;
 
 		/**
-		 * @brief Set the hover-out delay.
-		 * @param seconds Delay, must be non-negative.
-		 * @return Reference to this component for chaining.
+		 * @brief Set how long the tooltip stays after the pointer leaves
+		 * the anchor.
+		 *
+		 * Marks the component changed only when the value differs.
+		 * @param seconds The delay, in seconds; 0 hides the tooltip at
+		 * once.
+		 * @return This component, for chaining.
 		 * @throws std::invalid_argument If @p seconds is negative.
 		 */
 		Tooltip &setLeaveDelay(float seconds);
 
-		/** @brief Get the time the anchor has been hovered. @return Seconds. */
+		/**
+		 * @brief Get how long the anchor has been hovered without a break.
+		 * @return The time, in seconds; 0 while the anchor is not hovered.
+		 */
 		float getHoverTime(void) const noexcept;
 
-		/** @brief Set the hovered time. @param seconds It. @return It. */
+		/**
+		 * @brief Store how long the anchor has been hovered.
+		 *
+		 * Running state written by systems::Tooltip::advance. Marks the
+		 * component changed only when the value differs.
+		 * @param seconds The time, in seconds.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setHoverTime(float seconds);
 
-		/** @brief Get the time since the anchor was left. @return Seconds. */
+		/**
+		 * @brief Get how long ago the pointer left the anchor while the
+		 * tooltip was shown.
+		 * @return The time, in seconds; 0 while the anchor is hovered or
+		 * the tooltip is hidden.
+		 */
 		float getLeaveTime(void) const noexcept;
 
-		/** @brief Set the left time. @param seconds It. @return It. */
+		/**
+		 * @brief Store how long ago the pointer left the anchor.
+		 *
+		 * Running state written by systems::Tooltip::advance. Marks the
+		 * component changed only when the value differs.
+		 * @param seconds The time, in seconds.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setLeaveTime(float seconds);
 
-		/** @brief Get the last ticker progress. @return Progress in [0, 1]. */
+		/**
+		 * @brief Get the progress the timer animation reported last.
+		 * @return The progress, 0 to 1.
+		 */
 		float getLastProgress(void) const noexcept;
 
-		/** @brief Set the last ticker progress. @param progress It. @return It.
+		/**
+		 * @brief Store the progress the timer animation reported last.
+		 *
+		 * The timers are driven by a one-second looping animation; the
+		 * difference between two reported progresses is the time elapsed,
+		 * in seconds. Marks the component changed only when the value
+		 * differs.
+		 * @param progress The progress, 0 to 1.
+		 * @return This component, for chaining.
 		 */
 		Tooltip &setLastProgress(float progress);
 
-		/** @brief Check the visibility. @return True when shown. */
+		/**
+		 * @brief Tell whether the tooltip is shown.
+		 * @return True when shown; false by default.
+		 */
 		bool isVisible(void) const noexcept;
 
-		/** @brief Set the visibility. @param visible It. @return It. */
+		/**
+		 * @brief Record whether the tooltip is shown.
+		 *
+		 * This only stores the flag; the screen follows on the next pass of
+		 * systems::Tooltip. Prefer systems::Tooltip::show and
+		 * systems::Tooltip::hide, which also place and restyle the tooltip
+		 * at once. Marks the component changed only when the flag differs.
+		 * @param visible True to show the tooltip.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setVisible(bool visible);
 
-		/** @brief Get the clamping area. @return The area, if any. */
+		/**
+		 * @brief Get the area the tooltip must stay inside.
+		 * @return The area as (width, height) in dp, or std::nullopt when
+		 * the tooltip is not kept inside any area.
+		 */
 		const std::optional<Viewport> &getViewport(void) const noexcept;
 
-		/** @brief Set the clamping area. @param viewport It. @return It. */
+		/**
+		 * @brief Set the area the tooltip must stay inside.
+		 *
+		 * With a viewport, a tooltip that would go past the bottom edge is
+		 * placed above its anchor, and its position is clamped to the
+		 * area. Marks the component changed only when the value differs.
+		 * @param viewport The area as (width, height) in dp, or
+		 * std::nullopt to lift the constraint.
+		 * @return This component, for chaining.
+		 */
 		Tooltip &setViewport(std::optional<Viewport> viewport);
 	};
 

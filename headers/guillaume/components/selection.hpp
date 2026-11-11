@@ -31,11 +31,24 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component marking an entity as selectable.
+	 * @brief Selected/unselected flag of an entity, with a callback run when
+	 * it changes.
 	 *
-	 * Used together with `components::SelectionGroup` on the parent to provide
-	 * mutually exclusive selection (RadioButton groups and navigation
-	 * destinations).
+	 * Widget systems write it and read it as the selection of their widget:
+	 * radio buttons, checkboxes, chips and navigation destinations all have
+	 * one. When the parent entity has a components::SelectionGroup,
+	 * systems::Selection (Event phase) keeps at most one Selectable child
+	 * selected.
+	 *
+	 * @code
+	 * registry.getComponent<components::Selectable>(identifier)
+	 * 	.setOnSelectionChangedHandler([](bool selected) { ... })
+	 * 	.setSelected(true);	   // runs the handler with true
+	 * @endcode
+	 *
+	 * The handler runs inside setSelected(), synchronously. The widget
+	 * systems install their own handler here to restyle the widget, so
+	 * replacing it on a widget's entity removes that behaviour.
 	 *
 	 * @see components::SelectionGroup
 	 * @see systems::Selection
@@ -43,7 +56,8 @@ namespace guillaume::components
 	class Selectable: public ecs::Component
 	{
 		public:
-		using Handler = std::function<void(bool)>;	  ///< Selection handler.
+		/// Callback receiving the new state: true when just selected.
+		using Handler = std::function<void(bool)>;
 
 		private:
 		bool _selected { false };		   ///< Whether the entity is selected.
@@ -51,7 +65,7 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor for the Selectable component.
+		 * @brief Create an unselected flag with no handler.
 		 */
 		Selectable(void) = default;
 
@@ -67,28 +81,49 @@ namespace guillaume::components
 		bool isSelected(void) const;
 
 		/**
-		 * @brief Set the selected state and fire the handler on change.
-		 * @param selected The new selected state.
-		 * @return Reference to this Selectable for chaining.
+		 * @brief Select or deselect the entity.
+		 *
+		 * When the state differs from the stored one, stores it, marks the
+		 * component changed and calls the handler with the new state. Does
+		 * nothing otherwise.
+		 * @param selected True to select the entity.
+		 * @return This component, for chaining.
 		 */
 		Selectable &setSelected(bool selected);
 
 		/**
-		 * @brief Set the selection change handler.
-		 * @param handler The handler to call when the selection changes.
-		 * @return Reference to this Selectable for chaining.
+		 * @brief Set the callback run when the selection changes.
+		 *
+		 * Replaces the previous handler. Does not mark the component
+		 * changed.
+		 * @param handler The callback, or an empty one to remove it.
+		 * @return This component, for chaining.
 		 */
 		Selectable &setOnSelectionChangedHandler(const Handler &handler);
 
 		/**
-		 * @brief Get the selection change handler.
-		 * @return The selection change handler.
+		 * @brief Get the callback run when the selection changes.
+		 * @return A copy of the callback, empty when none is set.
 		 */
 		Handler getOnSelectionChangedHandler(void) const;
 	};
 
 	/**
-	 * @brief Component holding the single selected child of a group.
+	 * @brief Marks an entity whose Selectable children are mutually
+	 * exclusive, and remembers which one is selected.
+	 *
+	 * systems::Selection (Event phase) reads the children from the entity's
+	 * components::Hierarchy each frame: when several are selected it keeps
+	 * the first one, and it writes the result here. The navigation bar and
+	 * the navigation drawer use it for their destinations.
+	 *
+	 * To change the selection, call systems::Selection::select() or select
+	 * the child's Selectable; setSelected() here only records the result.
+	 *
+	 * Watch out: when no child is selected but this component still names
+	 * one, the system selects that child again. Deselecting the selected
+	 * child alone is therefore undone on the next frame; call
+	 * clearSelection() as well to empty the group.
 	 *
 	 * @see components::Selectable
 	 * @see systems::Selection
@@ -106,7 +141,7 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor for the SelectionGroup component.
+		 * @brief Create a group with no selection that may stay empty.
 		 */
 		SelectionGroup(void) = default;
 
@@ -116,40 +151,51 @@ namespace guillaume::components
 		~SelectionGroup(void) = default;
 
 		/**
-		 * @brief Check whether a child is selected.
-		 * @return True when a child is selected.
+		 * @brief Check whether the group names a selected child.
+		 * @return True when getSelected() is a valid identifier.
 		 */
 		bool hasSelection(void) const;
 
 		/**
-		 * @brief Get the selected child identifier.
-		 * @return The selected child, or InvalidIdentifier when none.
+		 * @brief Get the selected child.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when
+		 * none is selected.
 		 */
 		ecs::Entity::Identifier getSelected(void) const;
 
 		/**
-		 * @brief Set the selected child identifier.
-		 * @param selected The selected child identifier.
-		 * @return Reference to this SelectionGroup for chaining.
+		 * @brief Record which child is selected.
+		 *
+		 * Marks the component changed when the identifier differs. It does
+		 * not touch the Selectable of any child.
+		 * @param selected The selected child, or
+		 * ecs::Entity::InvalidIdentifier for none.
+		 * @return This component, for chaining.
 		 */
 		SelectionGroup &setSelected(ecs::Entity::Identifier selected);
 
 		/**
-		 * @brief Clear the current selection.
-		 * @return Reference to this SelectionGroup for chaining.
+		 * @brief Record that no child is selected.
+		 *
+		 * Same as `setSelected(ecs::Entity::InvalidIdentifier)`.
+		 * @return This component, for chaining.
 		 */
 		SelectionGroup &clearSelection(void);
 
 		/**
 		 * @brief Check whether the group may have no selection.
-		 * @return True when empty selection is allowed.
+		 * @return True when an empty selection is allowed (the default).
 		 */
 		bool isEmptyAllowed(void) const;
 
 		/**
-		 * @brief Set whether the group may have no selection.
-		 * @param allowEmpty Whether empty selection is allowed.
-		 * @return Reference to this SelectionGroup for chaining.
+		 * @brief Choose whether the group may have no selection.
+		 *
+		 * When it may not, systems::Selection selects the first Selectable
+		 * child whenever the group is empty. Marks the component changed
+		 * when the flag differs.
+		 * @param allowEmpty False to always keep one child selected.
+		 * @return This component, for chaining.
 		 */
 		SelectionGroup &setAllowEmpty(bool allowEmpty);
 	};

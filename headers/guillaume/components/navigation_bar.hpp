@@ -34,31 +34,42 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Configuration of a navigation bar.
+	 * @brief State of a navigation bar: the bottom strip of three to five
+	 * destinations that switches between the top-level views of an app.
 	 *
-	 * This component is the whole state of a navigation bar: the variant, the
-	 * data of each destination, the destination child of each of them, the
-	 * callbacks and the transient selection guard. Which destination is
-	 * selected is the components::Selectable of the destination children.
-	 * systems::NavigationBar turns it into the bar color, the destination
-	 * widths, the row placement and the label visibility of each destination.
+	 * The entities::NavigationBar widget writes it: the destination data,
+	 * the callbacks, and the identifier of the destination child it builds
+	 * for each entry. systems::NavigationBar reads it every frame in the
+	 * Layout phase and turns it into the bar color, the width of each
+	 * destination, their placement in a row and the visibility of each
+	 * label.
+	 *
+	 * Which destination is selected is not stored here: it is the
+	 * components::Selectable of each destination child. Read it with
+	 * systems::NavigationBar::selectedIndex and change it with
+	 * systems::NavigationBar::select.
+	 *
+	 * @see systems::NavigationBar, components::NavigationBarDestination,
+	 * entities::NavigationBar
 	 */
 	class NavigationBar: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Navigation bar variant.
+		 * @brief Whether every destination shows its label (WithLabels) or
+		 * only the selected one does (WithoutLabels).
 		 */
 		enum class Variant { WithLabels, WithoutLabels };
 
 		/**
-		 * @brief One navigation destination.
+		 * @brief Description of one destination, as given by the user.
 		 */
 		struct Destination {
-			std::string icon;			///< Unfocused (outlined) icon glyph.
-			std::string label;			///< Label text.
-			std::string focusedIcon;	///< Icon glyph while selected.
-			std::string badge;			///< Badge label ("" hides it).
+			std::string icon;			///< Icon glyph name while not selected.
+			std::string label;			///< Text under the icon.
+			std::string focusedIcon;	///< Icon glyph name while selected;
+										///< empty keeps `icon`.
+			std::string badge;			///< Badge text; empty means no badge.
 
 			/**
 			 * @brief Compare two destinations.
@@ -68,14 +79,14 @@ namespace guillaume::components
 			bool operator==(const Destination &other) const = default;
 		};
 
-		/// Called with a destination index.
+		/// Callback that receives the index of a destination, starting at 0.
 		using IndexHandler = std::function<void(std::size_t)>;
 
-		/// M3 navigation bar height, in dp.
+		/// Height of the bar, in dp.
 		static constexpr float Height = 80.0f;
 
 		private:
-		Variant _variant { Variant::WithLabels };	  ///< Bar variant
+		Variant _variant { Variant::WithLabels };	  ///< Label visibility
 		std::vector<Destination> _destinations {};	  ///< Destination data
 		std::vector<ecs::Entity::Identifier>
 			_destinationEntities {};		  ///< Destination child of each
@@ -85,7 +96,8 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the configuration of a bar with labels and no
+		 * destination.
 		 */
 		NavigationBar(void) = default;
 
@@ -94,62 +106,135 @@ namespace guillaume::components
 		 */
 		~NavigationBar(void) = default;
 
-		/** @brief Get the variant. @return The variant. */
+		/**
+		 * @brief Get the label visibility rule.
+		 * @return The variant, Variant::WithLabels by default.
+		 */
 		Variant getVariant(void) const noexcept;
 
-		/** @brief Set the variant. @param variant It. @return It. */
+		/**
+		 * @brief Choose whether every destination shows its label.
+		 *
+		 * Marks the component changed only when the variant differs.
+		 * @param variant The new variant.
+		 * @return This component, for chaining.
+		 */
 		NavigationBar &setVariant(Variant variant);
 
-		/** @brief Get the destination data. @return The destinations. */
+		/**
+		 * @brief Get the description of every destination.
+		 * @return The destinations, in display order.
+		 */
 		const std::vector<Destination> &getDestinations(void) const noexcept;
 
-		/** @brief Set the destination data. @param destinations They. @return
-		 * It. */
+		/**
+		 * @brief Replace the description of every destination.
+		 *
+		 * This does not build the destination children; the widget does.
+		 * Marks the component changed only when the list differs.
+		 * @param destinations The new destinations, in display order.
+		 * @return This component, for chaining.
+		 */
 		NavigationBar &
 			setDestinations(const std::vector<Destination> &destinations);
 
-		/** @brief Append a destination. @param destination It. @return It. */
+		/**
+		 * @brief Append the description of one destination.
+		 *
+		 * Always marks the component changed.
+		 * @param destination The destination to add after the existing
+		 * ones.
+		 * @return This component, for chaining.
+		 */
 		NavigationBar &addDestination(const Destination &destination);
 
 		/**
-		 * @brief Record the badge label of one destination.
-		 * @param index The destination index (ignored when out of range).
-		 * @param badge The badge label.
-		 * @return It.
+		 * @brief Change the badge text recorded for one destination.
+		 *
+		 * This only updates the description. To update the badge on screen
+		 * too, call systems::NavigationBar::setBadge. Marks the component
+		 * changed only when the text differs.
+		 * @param index The destination index, starting at 0. An index out
+		 * of range is ignored.
+		 * @param badge The new badge text.
+		 * @return This component, for chaining.
 		 */
 		NavigationBar &setDestinationBadge(std::size_t index,
 										   const std::string &badge);
 
-		/** @brief Get the destination children. @return Their identifiers, in
-		 * destination order. */
+		/**
+		 * @brief Get the destination children.
+		 * @return One identifier per destination, in the same order as
+		 * getDestinations(). Empty until the widget has built them.
+		 */
 		const std::vector<ecs::Entity::Identifier> &
 			getDestinationEntities(void) const noexcept;
 
-		/** @brief Set the destination children. @param identifiers Their
-		 * identifiers, in destination order. @return It. */
+		/**
+		 * @brief Record the destination children.
+		 *
+		 * Called by the widget after it creates them. Marks the component
+		 * changed only when the list differs.
+		 * @param identifiers One identifier per destination, in the same
+		 * order as getDestinations().
+		 * @return This component, for chaining.
+		 */
 		NavigationBar &setDestinationEntities(
 			const std::vector<ecs::Entity::Identifier> &identifiers);
 
-		/** @brief Get the selection change callback. @return The callback. */
+		/**
+		 * @brief Get the callback run when a press changes the selected
+		 * destination.
+		 * @return The callback; empty when none is set.
+		 */
 		const IndexHandler &getOnIndexChange(void) const noexcept;
 
-		/** @brief Set the selection change callback. @param handler It.
-		 * @return It. */
+		/**
+		 * @brief Set the callback run when a press changes the selected
+		 * destination.
+		 *
+		 * It receives the index of the newly selected destination. It is
+		 * not called when the user presses the destination that is already
+		 * selected. Does not mark the component changed.
+		 * @param handler The callback; an empty one removes it.
+		 * @return This component, for chaining.
+		 */
 		NavigationBar &setOnIndexChange(IndexHandler handler);
 
-		/** @brief Get the destination press callback. @return The callback. */
+		/**
+		 * @brief Get the callback run on every destination press.
+		 * @return The callback; empty when none is set.
+		 */
 		const IndexHandler &getOnTabPress(void) const noexcept;
 
-		/** @brief Set the destination press callback. @param handler It.
-		 * @return It. */
+		/**
+		 * @brief Set the callback run on every destination press.
+		 *
+		 * It receives the index of the pressed destination and runs before
+		 * the selection changes, even when that destination is already
+		 * selected. Does not mark the component changed.
+		 * @param handler The callback; an empty one removes it.
+		 * @return This component, for chaining.
+		 */
 		NavigationBar &setOnTabPress(IndexHandler handler);
 
-		/** @brief Whether the bar is changing the selection itself. @return
-		 * True while it is. */
+		/**
+		 * @brief Tell whether systems::NavigationBar is changing the
+		 * selection at this moment.
+		 * @return True during systems::NavigationBar::select.
+		 */
 		bool isUpdatingSelection(void) const noexcept;
 
-		/** @brief Set whether the bar is changing the selection itself.
-		 * @param updating It. @return It. */
+		/**
+		 * @brief Raise or lower the guard that stops a selection change
+		 * from triggering another one.
+		 *
+		 * systems::NavigationBar raises it while it selects a destination,
+		 * so the selection change the destination reports back is ignored.
+		 * Marks the component changed when the flag differs.
+		 * @param updating True while the system changes the selection.
+		 * @return This component, for chaining.
+		 */
 		NavigationBar &setUpdatingSelection(bool updating);
 	};
 

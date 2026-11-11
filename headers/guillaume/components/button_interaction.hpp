@@ -34,21 +34,49 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Concept to check if a type is an enum.
+	 * @brief True when a type is an enumeration.
+	 *
+	 * Constrains the button type of ButtonInteraction.
+	 *
 	 * @tparam T The type to check.
-	 * @return True if T is an enum type, false otherwise.
 	 */
 	template<typename T>
 	concept IsEnum = std::is_enum_v<T>;
 
 	/**
-	 * @brief Generic component handling button interactions for any input type.
+	 * @brief Which buttons of an input device are held on an entity, and what
+	 * to call when one is pressed or released on it.
 	 *
-	 * @tparam EventType The event type (must satisfy
-	 * utility::event::InheritFromEvent).
-	 * @tparam ButtonEnum The enum type representing buttons in the event.
-	 * @tparam N Number of buttons in the compile-time array.
-	 * @tparam ButtonsArray A compile-time array of valid button values.
+	 * It is used through its two aliases, MouseButtonInteraction and
+	 * HandButtonInteraction. The system of the device (systems::MouseButton,
+	 * systems::HandButton) writes it in the Event phase, when a button event
+	 * arrives:
+	 * - a press whose ray hits the entity sets the button pressed and calls
+	 *   the press handler;
+	 * - a release that hits the entity while the button is pressed clears it
+	 *   and calls the release handler: this is the "click";
+	 * - a release anywhere else clears the button and calls nothing.
+	 *
+	 * systems::StyleState, systems::Focus and systems::Drag read the pressed
+	 * state of the primary button (left mouse button, hand button A).
+	 *
+	 * @code
+	 * using Button = utility::event::MouseButtonEvent::Button;
+	 * registry.getComponent<components::MouseButtonInteraction>(identifier)
+	 * 	.setOnButtonReleaseHandler(Button::Left, [] { save(); });
+	 * @endcode
+	 *
+	 * Widgets wire the primary button with
+	 * systems::interaction::makeInteractive, which replaces the press and
+	 * release handlers of that button.
+	 *
+	 * @tparam EventType The button event of the device. It only makes the
+	 * mouse and hand components distinct types.
+	 * @tparam ButtonEnum The enumeration naming the buttons of the device.
+	 * @tparam N Number of buttons in `ButtonsArray`.
+	 * @tparam ButtonsArray The buttons the component tracks. Each one starts
+	 * released and without handler.
+	 * @see MouseButtonInteraction, HandButtonInteraction, StyleState
 	 */
 	template<utility::event::InheritFromEvent EventType, IsEnum ButtonEnum,
 			 std::size_t N, const std::array<ButtonEnum, N> &ButtonsArray>
@@ -56,106 +84,102 @@ namespace guillaume::components
 	{
 		public:
 		/**
-		 * @brief Type for button press handlers, which are functions that take
-		 * no arguments and return void. These handlers will be called when the
-		 * corresponding button is pressed.
+		 * @brief Callback run when a button is pressed on the entity.
 		 */
 		using ButtonPressHandler = std::function<void(void)>;
 		/**
-		 * @brief Type for button release handlers, which are functions that
-		 * take no arguments and return void. These handlers will be called when
-		 * the corresponding button is released.
+		 * @brief Callback run when a button pressed on the entity is released
+		 * on it.
 		 */
-		using ButtonReleaseHandler =
-			std::function<void(void)>;	  ///< Type for button release handlers
+		using ButtonReleaseHandler = std::function<void(void)>;
 
 		private:
 		std::map<ButtonEnum, ButtonPressHandler>
-			_onButtonPressHandlers {};	  ///< Map of button press handlers
+			_onButtonPressHandlers {};	  ///< Press handler of each button
 		std::map<ButtonEnum, ButtonReleaseHandler>
-			_onButtonReleaseHandlers {};	///< Map of button release handlers
+			_onButtonReleaseHandlers {};	///< Release handler of each button
 		std::map<ButtonEnum, bool>
-			_isButtonPressed {};	///< Map of button pressed states
+			_isButtonPressed {};	///< Whether each button is held on the
+									///< entity
 
 		public:
 		/**
-		 * @brief Constructs a ButtonInteraction component.
+		 * @brief Construct the component with every button of `ButtonsArray`
+		 * released and without handler.
 		 */
 		ButtonInteraction(void);
 
 		/**
-		 * @brief Destructor for the ButtonInteraction component.
+		 * @brief Default destructor.
 		 */
 		~ButtonInteraction(void) = default;
 
 		/**
-		 * @brief Sets the handler function to be called when a button is
-		 * pressed.
+		 * @brief Store the callback run when a button is pressed on the
+		 * entity.
 		 *
-		 * @param button The button for which to set the press handler. Must be
-		 * one of the values in ButtonsArray.
-		 * @param handler The function to be called when the specified button is
-		 * pressed. This can be used to trigger specific actions or events in
-		 * response to the button press.
+		 * Always marks the component changed.
 		 *
-		 * @return A reference to the ButtonInteraction instance, allowing for
-		 * method chaining.
+		 * @param button The button the handler is for.
+		 * @param handler The callback, or `nullptr` to remove the current one.
+		 * @return This component, to chain calls.
 		 */
 		ButtonInteraction &
 			setOnButtonPressHandler(const ButtonEnum &button,
 									const ButtonPressHandler &handler);
 
 		/**
-		 * @brief Retrieves the current handler function for a button press.
-		 * @param button The button for which to get the press handler. Must be
-		 * one of the values in ButtonsArray.
-		 * @return The current button press handler function for the specified
-		 * button, which will be called when that button is pressed.
+		 * @brief Get the callback run when a button is pressed on the entity.
+		 * @param button The button to look up.
+		 * @return The handler; empty (`nullptr`) when none was set.
+		 * @throws std::invalid_argument If @p button is neither in
+		 * `ButtonsArray` nor a button a handler was set for.
 		 */
 		const ButtonPressHandler &
 			getOnButtonPressHandler(const ButtonEnum &button) const;
 
 		/**
-		 * @brief Sets the handler function to be called when a button is
-		 * released.
-		 * @param button The button for which to set the release handler. Must
-		 * be one of the values in ButtonsArray.
-		 * @param handler The function to be called when the specified button is
-		 * released. This can be used to trigger specific actions or events in
-		 * response to the button release.
-		 * @return A reference to the ButtonInteraction instance, allowing for
-		 * method chaining.
+		 * @brief Store the callback run when a button pressed on the entity is
+		 * released on it.
+		 *
+		 * Always marks the component changed.
+		 *
+		 * @param button The button the handler is for.
+		 * @param handler The callback, or `nullptr` to remove the current one.
+		 * @return This component, to chain calls.
 		 */
 		ButtonInteraction &
 			setOnButtonReleaseHandler(const ButtonEnum &button,
 									  const ButtonReleaseHandler &handler);
 
 		/**
-		 * @brief Retrieves the current handler function for a button release.
-		 * @param button The button for which to get the release handler. Must
-		 * be one of the values in ButtonsArray.
-		 * @return The current button release handler function for the specified
-		 * button, which will be called when that button is released.
+		 * @brief Get the callback run when a button pressed on the entity is
+		 * released on it.
+		 * @param button The button to look up.
+		 * @return The handler; empty (`nullptr`) when none was set.
+		 * @throws std::invalid_argument If @p button is neither in
+		 * `ButtonsArray` nor a button a handler was set for.
 		 */
 		const ButtonReleaseHandler &
 			getOnButtonReleaseHandler(const ButtonEnum &button) const;
 
 		/**
-		 * @brief Checks if a button is currently pressed.
-		 * @param button The button to check. Must be one of the values in
-		 * ButtonsArray.
-		 * @return True if the specified button is currently pressed, false
-		 * otherwise.
+		 * @brief Check whether a button is held on the entity.
+		 * @param button The button to check.
+		 * @return True from the press on the entity until the release; false
+		 * for a button the component does not track.
 		 */
 		bool isButtonPressed(const ButtonEnum &button) const;
 
 		/**
-		 * @brief Sets the pressed state of a button.
-		 * @param button The button for which to set the pressed state. Must be
-		 * one of the values in ButtonsArray.
-		 * @param pressed The new pressed state to set for the specified button.
-		 * @return A reference to the ButtonInteraction instance, allowing for
-		 * method chaining.
+		 * @brief Record whether a button is held on the entity.
+		 *
+		 * Called by the input system of the device; it calls no handler. Marks
+		 * the component changed only when the state differs.
+		 *
+		 * @param button The button to update.
+		 * @param pressed True when the button is held on the entity.
+		 * @return This component, to chain calls.
 		 */
 		ButtonInteraction &setButtonPressed(const ButtonEnum &button,
 											bool pressed);

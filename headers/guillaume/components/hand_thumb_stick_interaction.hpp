@@ -28,20 +28,27 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component handling thumb stick interactions.
-	 * @see systems::HandThumbStick
+	 * @brief Marks an entity as a target of XR controller thumb stick input
+	 * and stores the callback for it.
+	 *
+	 * systems::HandThumbStick selects the entities that have this component,
+	 * a Transform and a Bound, and consumes one thumb stick event per frame in
+	 * the Event phase. It has no per-entity rule: it neither writes this
+	 * component nor calls the handler set with setOnEventHandler().
+	 *
+	 * @see systems::HandThumbStick, Interaction
 	 */
 	class HandThumbStickInteraction:
 		public Interaction<utility::event::HandThumbStickEvent>
 	{
 		public:
 		/**
-		 * @brief Constructs a HandThumbStickInteraction component.
+		 * @brief Construct a component without handler.
 		 */
 		HandThumbStickInteraction(void);
 
 		/**
-		 * @brief Destructor for the HandThumbStickInteraction component.
+		 * @brief Default destructor.
 		 */
 		~HandThumbStickInteraction(void) = default;
 	};

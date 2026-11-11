@@ -19,7 +19,6 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-
 #pragma once
 
 #include <utility/graphic/color.hpp>
@@ -30,27 +29,52 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Configuration of a divider: a thin line separating content.
+	 * @brief State of a divider: a thin horizontal line separating content.
 	 *
-	 * This component is the whole state of a divider. systems::Divider turns
-	 * it into the entity's Transform, Bound, Line and Color.
+	 * It holds the variant, the length, the thickness, the inset, the color
+	 * and the pose of the divider.
+	 *
+	 * Role in the frame:
+	 * - entities::Divider writes the configuration.
+	 * - systems::Divider (Measure phase) reads it and writes the entity's
+	 *   Transform (the origin pose shifted right by the leading inset),
+	 *   Bound (the length minus the insets, by the thickness), Line and
+	 *   Color.
+	 *
+	 * @code
+	 * registry.getComponent<components::Divider>(identifier)
+	 * 	.setVariant(components::Divider::Variant::Inset)
+	 * 	.setLength(320.0f);
+	 * // Drawn 304 dp long, starting 16 dp to the right of the origin.
+	 * @endcode
+	 *
+	 * Watch out: the Transform, Bound, Line thickness and Color of the
+	 * entity are overwritten every frame from this component, so change the
+	 * divider here. Moving the entity through its Transform is supported:
+	 * the system notices the move and adopts it as the new origin pose.
+	 *
+	 * @see systems::Divider, components::Line
 	 */
 	class Divider: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Which edges of the divider are inset.
+		 * @brief Which ends of the divider are inset.
+		 *
+		 * FullWidth: none. Inset: the leading (left) end. Middle: both
+		 * ends.
 		 */
 		enum class Variant { FullWidth, Inset, Middle };
 
-		/// Paper's default hairline stroke.
+		/// Default stroke thickness, in dp.
 		static constexpr float HairlineThickness = 0.5f;
 
-		/// Paper's bold stroke.
+		/// Thickness of a bold stroke, in dp.
 		static constexpr float BoldThickness = 1.0f;
 
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the state of a full-width hairline divider, 100 dp
+		 * long.
 		 */
 		Divider(void) = default;
 
@@ -59,46 +83,100 @@ namespace guillaume::components
 		 */
 		~Divider(void) = default;
 
-		/** @brief Get the variant. @return The variant. */
+		/**
+		 * @brief Get which ends are inset.
+		 * @return The variant (FullWidth by default).
+		 */
 		Variant getVariant(void) const;
 
-		/** @brief Set the variant. @param variant The variant. @return It. */
+		/**
+		 * @brief Choose which ends are inset.
+		 *
+		 * Marks the component changed when the variant differs.
+		 * @param variant FullWidth, Inset or Middle.
+		 * @return This component, for chaining.
+		 */
 		Divider &setVariant(Variant variant);
 
-		/** @brief Get the total length. @return The length in dp. */
+		/**
+		 * @brief Get the total length, insets included.
+		 * @return The length, in dp (100 by default).
+		 */
 		float getLength(void) const;
 
-		/** @brief Set the total length. @param length In dp. @return It. */
+		/**
+		 * @brief Set the total length, insets included.
+		 *
+		 * The stroke drawn is this length minus the insets of the variant,
+		 * and never negative. Marks the component changed when the length
+		 * differs.
+		 * @param length The length, in dp.
+		 * @return This component, for chaining.
+		 */
 		Divider &setLength(float length);
 
-		/** @brief Get the stroke thickness. @return The thickness in dp. */
+		/**
+		 * @brief Get the stroke thickness.
+		 * @return The thickness, in dp (HairlineThickness by default).
+		 */
 		float getThickness(void) const;
 
-		/** @brief Set the thickness. @param thickness In dp. @return It. */
+		/**
+		 * @brief Set the stroke thickness.
+		 *
+		 * Marks the component changed when the thickness differs.
+		 * @param thickness The thickness, in dp, for example
+		 * HairlineThickness or BoldThickness.
+		 * @return This component, for chaining.
+		 */
 		Divider &setThickness(float thickness);
 
-		/** @brief Get the inset of an inset edge. @return The inset in dp. */
+		/**
+		 * @brief Get the inset applied to an inset end.
+		 * @return The inset, in dp (16 by default), whatever the variant.
+		 */
 		float getInset(void) const;
 
-		/** @brief Set the inset. @param inset In dp. @return It. */
+		/**
+		 * @brief Set the inset applied to an inset end.
+		 *
+		 * It has no visible effect on a FullWidth divider. Marks the
+		 * component changed when the inset differs.
+		 * @param inset The inset, in dp.
+		 * @return This component, for chaining.
+		 */
 		Divider &setInset(float inset);
 
-		/** @brief Get the stroke color. @return The color. */
+		/**
+		 * @brief Get the stroke color.
+		 * @return The color.
+		 */
 		const utility::graphic::Color32Bit &getColor(void) const;
 
-		/** @brief Set the stroke color. @param color The color. @return It. */
+		/**
+		 * @brief Set the stroke color.
+		 *
+		 * Unlike the other setters, it marks the component changed on every
+		 * call, even when the color is the same.
+		 * @param color The stroke color.
+		 * @return This component, for chaining.
+		 */
 		Divider &setColor(const utility::graphic::Color32Bit &color);
 
 		/**
 		 * @brief Get the pose of the divider before the leading inset.
-		 * @return The origin pose.
+		 * @return The pose of the left end of a full-width divider.
 		 */
 		const utility::graphic::PoseF &getOriginPose(void) const;
 
 		/**
 		 * @brief Set the pose of the divider before the leading inset.
-		 * @param pose The origin pose.
-		 * @return This component.
+		 *
+		 * The system writes this pose, shifted right by the leading inset,
+		 * to the Transform. Marks the component changed when the pose
+		 * differs.
+		 * @param pose The pose of the left end of the full-width divider.
+		 * @return This component, for chaining.
 		 */
 		Divider &setOriginPose(const utility::graphic::PoseF &pose);
 
@@ -111,30 +189,33 @@ namespace guillaume::components
 		/**
 		 * @brief Record the pose written to the Transform.
 		 *
-		 * This is bookkeeping used to detect an external move; it does not
-		 * mark the component as changed.
+		 * Bookkeeping of systems::Divider: when the Transform differs from
+		 * it, something else moved the entity. It does not mark the
+		 * component changed.
 		 * @param pose The applied pose.
-		 * @return This component.
+		 * @return This component, for chaining.
 		 */
 		Divider &setAppliedPose(const utility::graphic::PoseF &pose);
 
 		/**
-		 * @brief Inset applied on the leading edge for the current variant.
-		 * @return The inset in dp, or 0.
+		 * @brief Get the inset applied on the leading (left) end for the
+		 * current variant.
+		 * @return The inset, in dp, for Inset and Middle; 0 for FullWidth.
 		 */
 		float getLeadingInset(void) const;
 
 		/**
-		 * @brief Inset applied on the trailing edge for the current variant.
-		 * @return The inset in dp, or 0.
+		 * @brief Get the inset applied on the trailing (right) end for the
+		 * current variant.
+		 * @return The inset, in dp, for Middle; 0 otherwise.
 		 */
 		float getTrailingInset(void) const;
 
 		private:
-		Variant _variant { Variant::FullWidth };	///< Inset edges.
-		float _length { 100.0f };					///< Total length.
-		float _thickness { HairlineThickness };		///< Stroke thickness.
-		float _inset { 16.0f };						///< Edge inset.
+		Variant _variant { Variant::FullWidth };	///< Inset ends.
+		float _length { 100.0f };					///< Total length, in dp.
+		float _thickness { HairlineThickness };		///< Thickness, in dp.
+		float _inset { 16.0f };						///< End inset, in dp.
 		utility::graphic::Color32Bit _color {};		///< Stroke color.
 		utility::graphic::PoseF _originPose {};		///< Pose before inset.
 		utility::graphic::PoseF _appliedPose {};	///< Last pose written.

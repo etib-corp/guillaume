@@ -30,11 +30,25 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Which typescale role a text uses, and an optional explicit size.
+	 * @brief Which typescale role a text uses (BodyMedium, TitleLarge, ...)
+	 * and an optional explicit size.
 	 *
-	 * systems::Typography resolves the role against the active theme every
-	 * frame and writes the result into the entity's components::Text, so a
-	 * theme change restyles existing texts.
+	 * entities::Text writes it. systems::Typography reads it every frame
+	 * in the Measure phase, resolves the role against the active theme and
+	 * writes the font size, weight, line height and letter spacing into
+	 * the entity's components::Text, so a theme change restyles existing
+	 * texts.
+	 *
+	 * @code
+	 * registry.getComponent<components::Typography>(id).setRole(
+	 * 	theme::TypeRole::TitleLarge);
+	 * @endcode
+	 *
+	 * @note On an entity that has this component, metrics set directly on
+	 * components::Text are replaced on the next frame. Change the role or
+	 * the size override here.
+	 *
+	 * @see systems::Typography, components::Text, theme::TypeRole
 	 */
 	class Typography: public ecs::Component
 	{
@@ -49,32 +63,48 @@ namespace guillaume::components
 		 */
 		~Typography(void) = default;
 
-		/** @brief Get the typescale role. @return The role. */
+		/**
+		 * @brief Get the typescale role.
+		 * @return The role (BodyMedium by default).
+		 */
 		theme::TypeRole getRole(void) const;
 
 		/**
 		 * @brief Set the typescale role.
-		 * @param role The role to resolve against the theme.
-		 * @return This component.
+		 *
+		 * Marks the component changed only when the role differs.
+		 *
+		 * @param role The role systems::Typography resolves against the
+		 * active theme.
+		 * @return This component, for chaining.
 		 */
 		Typography &setRole(theme::TypeRole role);
 
 		/**
 		 * @brief Get the explicit font size.
-		 * @return The size overriding the role size, if any.
+		 * @return The size, in dp, that replaces the size of the role;
+		 * `std::nullopt` (the default) when the role's size is used.
 		 */
 		std::optional<float> getFontSize(void) const;
 
 		/**
 		 * @brief Override the font size of the role, or clear the override.
-		 * @param fontSize The explicit size, or std::nullopt to use the role.
-		 * @return This component.
+		 *
+		 * Only the size is replaced: the weight, line height and letter
+		 * spacing still come from the role. Marks the component changed
+		 * only when the value differs.
+		 *
+		 * @param fontSize The size, in dp, or `std::nullopt` to use the
+		 * size of the role.
+		 * @return This component, for chaining.
 		 */
 		Typography &setFontSize(std::optional<float> fontSize);
 
 		private:
-		theme::TypeRole _role { theme::TypeRole::BodyMedium };	  ///< Role.
-		std::optional<float> _fontSize {};	  ///< Explicit size override.
+		theme::TypeRole _role {
+			theme::TypeRole::BodyMedium
+		};	  ///< Typescale role.
+		std::optional<float> _fontSize {};	  ///< Size override, in dp.
 	};
 
 }	 // namespace guillaume::components

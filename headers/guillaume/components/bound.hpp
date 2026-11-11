@@ -30,33 +30,64 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component representing a bounding rectangle.
+	 * @brief Size of an entity: the width and height, in dp, of the
+	 * rectangle that starts at the position of its components::Transform.
+	 *
+	 * The bound has no position of its own. Shapes (rectangle, ellipse,
+	 * ring, arc, line, image) are drawn to fill it, and the input systems
+	 * hit-test against it.
+	 *
+	 * Who writes it depends on the entity:
+	 * - a text, an icon or a model: systems::MeasureText,
+	 *   systems::MeasureGlyph and systems::MeasureMesh write the measured
+	 *   size every frame (Measure phase);
+	 * - a container with a components::Layout: systems::Layout writes the
+	 *   size that wraps its children, or the fixed size of the layout
+	 *   (Layout phase);
+	 * - a widget: its system writes the size the widget's configuration
+	 *   asks for;
+	 * - anything else: the application.
+	 *
+	 * @note In the first three cases a size set by hand is overwritten on
+	 * the next frame. To force the size of a container use
+	 * components::Layout::setFixedWidth and setFixedHeight.
+	 * @note `getWidth()` and `getHeight()` come from
+	 * `utility::graphic::SizeF`. Use the setters of this class, not the
+	 * base class ones through a `SizeF` reference: only these mark the
+	 * component changed.
+	 *
+	 * @see components::Transform, components::Layout, systems::MeasureText
 	 */
 	class Bound: public ecs::Component, public utility::graphic::SizeF
 	{
 		public:
 		/**
-		 * @brief Default constructor for the Bound component.
+		 * @brief Construct a bound with the default size of
+		 * `utility::graphic::SizeF`.
 		 */
 		Bound(void);
 
 		/**
-		 * @brief Set the bound width, marking the component changed.
+		 * @brief Set the width.
 		 *
-		 * Overrides `utility::graphic::SizeF::setWidth` so writing a measured
-		 * size (from `systems::MeasureText`/`MeasureGlyph`) propagates through
-		 * the ECS change tracking and parents can re-hug their content.
+		 * Hides `utility::graphic::SizeF::setWidth` to add change tracking:
+		 * the component is marked changed only when @p width differs from
+		 * the current width, so a measure system writing the same size
+		 * every frame does not keep the entity dirty.
 		 *
-		 * @param width The new width.
-		 * @return Reference to this Bound for chaining.
+		 * @param width The new width, in dp.
+		 * @return This component, for chaining.
 		 */
 		Bound &setWidth(float width) noexcept;
 
 		/**
-		 * @brief Set the bound height, marking the component changed.
+		 * @brief Set the height.
 		 *
-		 * @param height The new height.
-		 * @return Reference to this Bound for chaining.
+		 * Marks the component changed only when @p height differs from the
+		 * current height.
+		 *
+		 * @param height The new height, in dp.
+		 * @return This component, for chaining.
 		 */
 		Bound &setHeight(float height) noexcept;
 

@@ -30,13 +30,15 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component drawing a translucent scrim over the entity bound.
+	 * @brief A translucent veil drawn over the whole bound of its entity,
+	 * to dim what is behind a modal surface.
 	 *
-	 * Used by modal dialogs, sheets, menus and snackbars to dim the content
-	 * behind them. The scrim is rendered as a full-bound quad by
-	 * `systems::ScrimRender`.
+	 * systems::ScrimRender reads it in the Render phase and draws one quad
+	 * of this color covering the entity's Transform and Bound. On a
+	 * backdrop entity, systems::Backdrop overwrites the color every frame
+	 * to fade the veil in and out.
 	 *
-	 * @see systems::ScrimRender
+	 * @see systems::ScrimRender, components::Backdrop
 	 */
 	class Scrim: public ecs::Component
 	{
@@ -46,25 +48,29 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor for the Scrim component.
+		 * @brief Create a half-transparent black scrim.
 		 */
 		Scrim(void) = default;
 
 		/**
-		 * @brief Default destructor for the Scrim component.
+		 * @brief Default destructor.
 		 */
 		~Scrim(void) = default;
 
 		/**
-		 * @brief Get the scrim color.
-		 * @return The scrim color.
+		 * @brief Get the color of the veil.
+		 * @return The color; its alpha is the strength of the dimming (0
+		 * is invisible, 255 hides what is behind).
 		 */
 		utility::graphic::Color32Bit getColor(void) const;
 
 		/**
-		 * @brief Set the scrim color.
-		 * @param color The new scrim color.
-		 * @return Reference to this Scrim for chaining.
+		 * @brief Set the color of the veil.
+		 *
+		 * Marks the component changed only when the color differs.
+		 * @param color The new color; its alpha is the strength of the
+		 * dimming.
+		 * @return This component, for chaining.
 		 */
 		Scrim &setColor(const utility::graphic::Color32Bit &color);
 	};

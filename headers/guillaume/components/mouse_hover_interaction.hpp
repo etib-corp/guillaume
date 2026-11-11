@@ -32,91 +32,128 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component handling mouse hover interactions.
-	 * @see systems::MouseMotion
+	 * @brief Whether the mouse pointer is over an entity, what to call when it
+	 * enters or leaves, and how far the hit area extends past the bound.
+	 *
+	 * systems::MouseMotion writes the hovered flag in the Event phase: on each
+	 * mouse motion event it casts a ray from the pointer and tests it against
+	 * the entity's Transform and Bound, grown by the accessibility margin. It
+	 * calls the hover handler once when the pointer enters and the unhover
+	 * handler once when it leaves. An entity disabled through StyleState is
+	 * never hovered. systems::StyleState copies the flag into
+	 * StyleState::isHovered.
+	 *
+	 * @code
+	 * registry.addComponent<components::MouseHoverInteraction>(identifier)
+	 * 	.setOnHoverHandler([] { showHint(); })
+	 * 	.setOnUnhoverHandler([] { hideHint(); });
+	 * @endcode
+	 *
+	 * The accessibility margin of this component is the hit margin of the
+	 * entity for every pointer and hand test (hover, buttons, pinch, poke),
+	 * not only for the mouse hover. The flag only changes in a frame that
+	 * received a mouse motion event.
+	 *
+	 * @see systems::MouseMotion, HandHoverInteraction, StyleState
 	 */
 	class MouseHoverInteraction: public ecs::Component
 	{
 		public:
 		using HoverHandler =
-			std::function<void(void)>;	  ///< Type for hover event handlers
+			std::function<void(void)>;	  ///< Called on hover start
 		using UnhoverHandler =
-			std::function<void(void)>;	  ///< Type for unhover event handlers
+			std::function<void(void)>;	  ///< Called on hover end
 
 		private:
-		HoverHandler _onHover;	  ///< Hover event handler for when the mouse
-								  ///< starts hovering
-		UnhoverHandler _onUnhover;	  ///< Unhover event handler for when the
-									  ///< mouse stops hovering
-		bool _isHovered {
-			false
-		};	  ///< Whether the mouse is currently hovering over the entity
+		HoverHandler _onHover;		  ///< Called when the pointer enters
+		UnhoverHandler _onUnhover;	  ///< Called when the pointer leaves
+		bool _isHovered { false };	  ///< Pointer is over the entity
 
 		utility::graphic::SizeUI _accessibilityMargin {
 			0, 0
-		};	  ///< Additional margin around the entity for hover detection to
-			  ///< improve accessibility
+		};	  ///< Hit area added on each side of the bound, in dp (width:
+			  ///< left and right, height: top and bottom)
 
 		public:
 		/**
-		 * @brief Default constructor for the MouseHoverInteraction component.
+		 * @brief Construct a component that is not hovered, has no handler and
+		 * no margin.
 		 */
 		MouseHoverInteraction(void);
 
 		/**
-		 * @brief Default destructor for the MouseHoverInteraction component.
+		 * @brief Default destructor.
 		 */
 		~MouseHoverInteraction(void) = default;
 
 		/**
-		 * @brief Set the hover event handler.
-		 * @param handler The function to call when the mouse starts hovering.
-		 * @return Reference to this MouseHoverInteraction for method chaining.
+		 * @brief Store the callback run when the pointer enters the entity.
+		 *
+		 * Always marks the component changed.
+		 *
+		 * @param handler The callback, or `nullptr` to remove the current one.
+		 * @return This component, to chain calls.
 		 */
 		MouseHoverInteraction &setOnHoverHandler(const HoverHandler &handler);
 		/**
-		 * @brief Set the unhover event handler.
-		 * @param handler The function to call when the mouse stops hovering.
-		 * @return Reference to this MouseHoverInteraction for method chaining.
+		 * @brief Store the callback run when the pointer leaves the entity.
+		 *
+		 * Always marks the component changed.
+		 *
+		 * @param handler The callback, or `nullptr` to remove the current one.
+		 * @return This component, to chain calls.
 		 */
 		MouseHoverInteraction &
 			setOnUnhoverHandler(const UnhoverHandler &handler);
 
 		/**
-		 * @brief Get the hover event handler.
-		 * @return The hover event handler.
+		 * @brief Get the callback run when the pointer enters the entity.
+		 * @return A copy of the handler; empty (`nullptr`) when none was set.
 		 */
 		HoverHandler getOnHoverHandler(void) const;
 
 		/**
-		 * @brief Get the unhover event handler.
-		 * @return The unhover event handler.
+		 * @brief Get the callback run when the pointer leaves the entity.
+		 * @return A copy of the handler; empty (`nullptr`) when none was set.
 		 */
 		UnhoverHandler getOnUnhoverHandler(void) const;
 
 		/**
-		 * @brief Check if the mouse is currently hovering over the entity.
-		 * @return True if the mouse is hovering, false otherwise.
+		 * @brief Check whether the pointer is over the entity.
+		 * @return True from the motion event that entered the hit area until
+		 * the one that left it.
 		 */
 		bool isHovered(void) const;
 
 		/**
-		 * @brief Set whether the mouse is currently hovering over the entity.
-		 * @param isHovered True if the mouse is hovering, false otherwise.
-		 * @return Reference to this MouseHoverInteraction for method chaining.
+		 * @brief Record whether the pointer is over the entity.
+		 *
+		 * Called by systems::MouseMotion; it calls no handler. Marks the
+		 * component changed only when the flag differs.
+		 *
+		 * @param isHovered True when the pointer is over the entity.
+		 * @return This component, to chain calls.
 		 */
 		MouseHoverInteraction &setHovered(bool isHovered);
 
 		/**
-		 * @brief Get the accessibility margin for hover detection.
-		 * @return The accessibility margin as a SizeUI object.
+		 * @brief Get the hit area added around the bound.
+		 * @return The margin, in dp: the width is added on the left and on the
+		 * right, the height above and below.
 		 */
 		utility::graphic::SizeUI getAccessibilityMargin(void) const;
 
 		/**
-		 * @brief Set the accessibility margin for hover detection.
-		 * @param margin The new accessibility margin as a SizeUI object.
-		 * @return Reference to this MouseHoverInteraction for method chaining.
+		 * @brief Grow the hit area past the bound without growing the entity
+		 * on screen.
+		 *
+		 * Widget systems use it to give a small control the 48 dp touch
+		 * target: a 40 dp wide control gets a margin of 4. Marks the component
+		 * changed only when the margin differs.
+		 *
+		 * @param margin The margin, in dp: the width is added on the left and
+		 * on the right, the height above and below.
+		 * @return This component, to chain calls.
 		 */
 		MouseHoverInteraction &
 			setAccessibilityMargin(const utility::graphic::SizeUI &margin);

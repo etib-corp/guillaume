@@ -31,6 +31,9 @@
 namespace guillaume::components
 {
 
+	/**
+	 * @brief The XR controller buttons a HandButtonInteraction tracks.
+	 */
 	inline constexpr std::array<utility::event::HandButtonEvent::Button, 6>
 		HandButtons = { utility::event::HandButtonEvent::Button::X,
 						utility::event::HandButtonEvent::Button::Y,
@@ -40,8 +43,23 @@ namespace guillaume::components
 						utility::event::HandButtonEvent::Button::System };
 
 	/**
-	 * @brief Component handling hand button interactions.
-	 * @see systems::HandButton
+	 * @brief Which XR controller buttons are held on an entity, with a press
+	 * and a release handler per button.
+	 *
+	 * systems::HandButton writes it in the Event phase: it tests the aim ray
+	 * carried by each hand button event against the entity's Transform and
+	 * Bound. Button A is the primary one: systems::StyleState and
+	 * systems::Drag read its pressed state, and
+	 * systems::interaction::makeInteractive wires the widget action to it.
+	 * systems::Focus gives the focus on A, B, X or Y.
+	 *
+	 * @code
+	 * using Button = utility::event::HandButtonEvent::Button;
+	 * registry.addComponent<components::HandButtonInteraction>(identifier)
+	 * 	.setOnButtonReleaseHandler(Button::A, [] { save(); });
+	 * @endcode
+	 *
+	 * @see ButtonInteraction for the members, systems::HandButton
 	 */
 	using HandButtonInteraction =
 		ButtonInteraction<utility::event::HandButtonEvent,

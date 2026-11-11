@@ -29,13 +29,34 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component representing a 3D model attached to an entity.
+	 * @brief A 3D model shown at the entity's pose: the model file and an
+	 * optional texture.
+	 *
+	 * entities::Mesh (or the application) writes the two paths.
+	 * systems::MeasureMesh (Measure phase) loads the model and writes the
+	 * width and height of its bounding box into the entity's
+	 * components::Bound. systems::MeshRender (Render phase) loads the
+	 * model at the pose of the entity's components::Transform and uploads
+	 * its meshes to the engine.
+	 *
+	 * @code
+	 * registry.getComponent<components::Mesh>(id)
+	 * 	.setMeshPath("models/chair.obj")
+	 * 	.setTexturePath("models/chair.png");
+	 * @endcode
+	 *
+	 * @note The Bound of the entity is overwritten every frame with the
+	 * size of the model; setting it does not resize the model.
+	 * @note This class is the model file reference. The geometry type the
+	 * render systems build is `utility::graphic::Mesh`.
+	 *
+	 * @see systems::MeasureMesh, systems::MeshRender, entities::Mesh
 	 */
 	class Mesh: public ecs::Component
 	{
 		private:
-		std::string _meshPath {};		///< Path to the model file
-		std::string _texturePath {};	///< Path to the texture file
+		std::string _meshPath {};		///< Model file, resource path
+		std::string _texturePath {};	///< Texture file; empty for none
 
 		public:
 		/**
@@ -49,28 +70,37 @@ namespace guillaume::components
 		~Mesh(void) = default;
 
 		/**
-		 * @brief Set the model path.
-		 * @param path The new model path.
-		 * @return Reference to this Mesh component for chaining.
+		 * @brief Choose the model to show.
+		 *
+		 * Marks the component changed only when the path differs.
+		 *
+		 * @param path The path of the model file, as understood by the
+		 * application's resource provider.
+		 * @return This component, for chaining.
 		 */
 		Mesh &setMeshPath(const std::string &path);
 
 		/**
-		 * @brief Set the texture path.
-		 * @param path The new texture path.
-		 * @return Reference to this Mesh component for chaining.
+		 * @brief Choose the texture applied to the model.
+		 *
+		 * Marks the component changed only when the path differs.
+		 *
+		 * @param path The path of the texture file; empty to draw the
+		 * model with the default material.
+		 * @return This component, for chaining.
 		 */
 		Mesh &setTexturePath(const std::string &path);
 
 		/**
-		 * @brief Get the model path.
-		 * @return The model path.
+		 * @brief Get the path of the model file.
+		 * @return A copy of the path; empty by default.
 		 */
 		std::string getMeshPath(void) const;
 
 		/**
-		 * @brief Get the texture path.
-		 * @return The texture path.
+		 * @brief Get the path of the texture file.
+		 * @return A copy of the path; empty (the default) when the model
+		 * has no texture.
 		 */
 		std::string getTexturePath(void) const;
 	};

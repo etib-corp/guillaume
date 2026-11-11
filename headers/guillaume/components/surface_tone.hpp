@@ -19,8 +19,8 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-#pragma once
 
+#pragma once
 #include "guillaume/ecs/component.hpp"
 #include "guillaume/theme/tokens.hpp"
 
@@ -28,12 +28,17 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Configuration of a tonal surface: its elevation and whether it
-	 * casts a shadow.
+	 * @brief State of a tonal surface: how high it sits above the
+	 * background, and whether it casts a shadow.
 	 *
-	 * This component is the whole state of entities::Surface.
-	 * systems::SurfaceTone turns it into the entity's Color (the tonal
-	 * surface color of the level) and Elevation (the shadow).
+	 * The entities::Surface widget writes it. systems::SurfaceTone reads it
+	 * every frame in the Measure phase and overwrites two other components
+	 * of the entity: Color (the theme's surface color tinted for the
+	 * level) and Elevation (the shadow, level 0 when the shadow is off).
+	 * So on an entity with this component, set the level here, not on
+	 * Color or Elevation.
+	 *
+	 * @see systems::SurfaceTone, components::Elevation, entities::Surface
 	 */
 	class SurfaceTone: public ecs::Component
 	{
@@ -46,7 +51,7 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor: level 1, with a shadow.
+		 * @brief Create the state of a level 1 surface with a shadow.
 		 */
 		SurfaceTone(void) = default;
 
@@ -55,16 +60,36 @@ namespace guillaume::components
 		 */
 		~SurfaceTone(void) = default;
 
-		/** @brief Get the elevation level. @return The level. */
+		/**
+		 * @brief Get how high the surface sits above the background.
+		 * @return The elevation level, Level1 by default.
+		 */
 		theme::ElevationLevel getElevation(void) const noexcept;
 
-		/** @brief Set the elevation level. @param elevation It. @return It. */
+		/**
+		 * @brief Set how high the surface sits above the background.
+		 *
+		 * A higher level gives a stronger tint and, with the shadow on, a
+		 * larger shadow. Marks the component changed only when the level
+		 * differs.
+		 * @param elevation The new elevation level.
+		 * @return This component, for chaining.
+		 */
 		SurfaceTone &setElevation(theme::ElevationLevel elevation);
 
-		/** @brief Whether a shadow is cast. @return True when it is. */
+		/**
+		 * @brief Tell whether the surface casts a shadow.
+		 * @return True when it does, which is the default.
+		 */
 		bool hasShadow(void) const noexcept;
 
-		/** @brief Enable or disable the shadow. @param shadow It. @return It.
+		/**
+		 * @brief Turn the shadow of the surface on or off.
+		 *
+		 * Without a shadow the surface keeps the tint of its level. Marks
+		 * the component changed only when the flag differs.
+		 * @param shadow True to cast a shadow.
+		 * @return This component, for chaining.
 		 */
 		SurfaceTone &setShadow(bool shadow);
 	};

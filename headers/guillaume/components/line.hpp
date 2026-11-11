@@ -30,14 +30,33 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component marking an entity as a horizontal stroke.
+	 * @brief A straight stroke across the width of the entity: a divider,
+	 * an indicator, the underline of a text field.
 	 *
-	 * The stroke runs from the left edge to the right edge of the entity
-	 * `components::Bound`, vertically centered, with the given `thickness`.
-	 * It can be drawn dashed, which is useful for dividers and tab
-	 * indicators. It is rendered by `systems::LineRender`.
+	 * The stroke runs from the left edge to the right edge of the entity's
+	 * components::Bound. The placement says where it sits across the
+	 * height (middle, top edge or bottom edge); it can be solid or dashed.
+	 * The stroke follows the orientation of the entity, so a rotated
+	 * entity gives a vertical line.
 	 *
-	 * @see systems::LineRender
+	 * Written by the widget systems that own a stroke (systems::Divider,
+	 * systems::TextField, ...) or by the application. Read by
+	 * systems::LineRender in the Render phase, with the entity's
+	 * Transform, Bound and Color.
+	 *
+	 * @code
+	 * registry.getComponent<components::Line>(id)
+	 * 	.setThickness(1.0f)
+	 * 	.setPlacement(components::Line::Placement::Bottom);
+	 * @endcode
+	 *
+	 * @note The stroke is drawn in the entity's components::Color unless
+	 * setColor() gives it a color of its own. The entity needs a
+	 * components::Color in both cases, or systems::LineRender skips it.
+	 * @note The length is the width of the Bound. The height of the Bound
+	 * only matters for the placement: the thickness is not limited by it.
+	 *
+	 * @see systems::LineRender, components::Bound, components::Color
 	 */
 	class Line: public ecs::Component
 	{
@@ -46,16 +65,17 @@ namespace guillaume::components
 		 * @brief Where the stroke sits across the bound height.
 		 */
 		enum class Placement {
-			Center,	   ///< Vertically centered (dividers, indicators).
-			Top,	   ///< Along the top edge.
-			Bottom	   ///< Along the bottom edge (text-field underline).
+			Center,	   ///< Half-way down the bound (dividers, indicators).
+			Top,	   ///< Inside the bound, against its top edge.
+			Bottom	   ///< Inside the bound, against its bottom edge
+					   ///< (text field underline).
 		};
 
 		private:
-		float _thickness { 2.0f };	   ///< Stroke thickness.
+		float _thickness { 2.0f };	   ///< Stroke thickness, in dp.
 		bool _dashed { false };		   ///< Whether the stroke is dashed.
-		float _dashLength { 8.0f };	   ///< Length of one dash.
-		float _gapLength { 8.0f };	   ///< Length of the gap between dashes.
+		float _dashLength { 8.0f };	   ///< Length of one dash, in dp.
+		float _gapLength { 8.0f };	   ///< Gap between two dashes, in dp.
 		Placement _placement { Placement::Center };	   ///< Stroke placement.
 		bool _hasColor { false };	 ///< Whether a stroke color overrides
 									 ///< the entity fill color.
@@ -64,7 +84,8 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Constructor for the Line component.
+		 * @brief Construct a solid, centered stroke 2 dp thick, with 8 dp
+		 * dashes and gaps ready for setDashed(), and no color of its own.
 		 */
 		explicit Line(void);
 
@@ -74,96 +95,126 @@ namespace guillaume::components
 		~Line(void) = default;
 
 		/**
-		 * @brief Get the stroke thickness.
-		 * @return The stroke thickness.
+		 * @brief Get the thickness of the stroke.
+		 * @return The thickness, in dp (2 by default).
 		 */
 		float getThickness(void) const;
 
 		/**
-		 * @brief Set the stroke thickness.
-		 * @param thickness The new stroke thickness.
-		 * @return Reference to this Line component for chaining.
+		 * @brief Set the thickness of the stroke.
+		 *
+		 * Marks the component changed only when the value differs.
+		 *
+		 * @param thickness The thickness, in dp.
+		 * @return This component, for chaining.
 		 */
 		Line &setThickness(float thickness);
 
 		/**
 		 * @brief Check whether the stroke is dashed.
-		 * @return True when the stroke is dashed.
+		 * @return True for dashes, false (the default) for a solid stroke.
 		 */
 		bool isDashed(void) const;
 
 		/**
-		 * @brief Set whether the stroke is dashed.
-		 * @param dashed Whether the stroke should be dashed.
-		 * @return Reference to this Line component for chaining.
+		 * @brief Choose between a solid and a dashed stroke.
+		 *
+		 * Marks the component changed only when the value differs.
+		 *
+		 * @param dashed True to draw dashes of getDashLength() separated
+		 * by gaps of getGapLength().
+		 * @return This component, for chaining.
 		 */
 		Line &setDashed(bool dashed);
 
 		/**
 		 * @brief Get the length of one dash.
-		 * @return The dash length.
+		 * @return The dash length, in dp (8 by default).
 		 */
 		float getDashLength(void) const;
 
 		/**
-		 * @brief Set the length of one dash.
-		 * @param dashLength The new dash length.
-		 * @return Reference to this Line component for chaining.
+		 * @brief Set the length of one dash. Used only when the stroke is
+		 * dashed.
+		 *
+		 * Marks the component changed only when the value differs.
+		 *
+		 * @param dashLength The dash length, in dp; 0 or less draws a
+		 * solid stroke.
+		 * @return This component, for chaining.
 		 */
 		Line &setDashLength(float dashLength);
 
 		/**
-		 * @brief Get the length of the gap between dashes.
-		 * @return The gap length.
+		 * @brief Get the gap between two dashes.
+		 * @return The gap length, in dp (8 by default).
 		 */
 		float getGapLength(void) const;
 
 		/**
-		 * @brief Set the length of the gap between dashes.
-		 * @param gapLength The new gap length.
-		 * @return Reference to this Line component for chaining.
+		 * @brief Set the gap between two dashes. Used only when the stroke
+		 * is dashed.
+		 *
+		 * Marks the component changed only when the value differs.
+		 *
+		 * @param gapLength The gap length, in dp; a negative value counts
+		 * as 0.
+		 * @return This component, for chaining.
 		 */
 		Line &setGapLength(float gapLength);
 
 		/**
-		 * @brief Get the stroke placement across the bound.
-		 * @return The placement.
+		 * @brief Get where the stroke sits across the height of the bound.
+		 * @return The placement (Center by default).
 		 */
 		Placement getPlacement(void) const;
 
 		/**
-		 * @brief Set the stroke placement across the bound.
-		 * @param placement The new placement.
-		 * @return Reference to this Line component for chaining.
+		 * @brief Set where the stroke sits across the height of the bound.
+		 *
+		 * A Top or Bottom stroke is also drawn slightly in front of the
+		 * entity, so it shows over a fill drawn by the same entity. Marks
+		 * the component changed only when the value differs.
+		 *
+		 * @param placement The placement of the stroke.
+		 * @return This component, for chaining.
 		 */
 		Line &setPlacement(Placement placement);
 
 		/**
-		 * @brief Set a stroke color that overrides `components::Color`.
+		 * @brief Give the stroke a color of its own, used in place of the
+		 * entity's components::Color.
 		 *
-		 * Lets an entity carry both a fill (`components::Color`) and a
-		 * distinct stroke, such as a filled text field and its underline.
+		 * This lets one entity carry both a fill (components::Color) and a
+		 * stroke of another color, such as a filled text field and its
+		 * underline. Marks the component changed unless the same color was
+		 * already set.
 		 *
-		 * @param color The stroke color.
-		 * @return Reference to this Line component for chaining.
+		 * @param color The stroke color (RGBA).
+		 * @return This component, for chaining.
 		 */
 		Line &setColor(const utility::graphic::Color32Bit &color);
 
 		/**
-		 * @brief Remove the stroke color override.
-		 * @return Reference to this Line component for chaining.
+		 * @brief Draw the stroke in the entity's components::Color again.
+		 *
+		 * Marks the component changed only when a color was set.
+		 *
+		 * @return This component, for chaining.
 		 */
 		Line &clearColor(void);
 
 		/**
-		 * @brief Check whether a stroke color override is set.
-		 * @return True when `setColor()` was called.
+		 * @brief Check whether the stroke has a color of its own.
+		 * @return True after setColor(), false after clearColor() and by
+		 * default.
 		 */
 		bool hasColor(void) const;
 
 		/**
-		 * @brief Get the stroke color override.
-		 * @return The override color (meaningful only when `hasColor()`).
+		 * @brief Get the color given to setColor().
+		 * @return The stroke color. Check hasColor() first: when it is
+		 * false this value is not the color the stroke is drawn in.
 		 */
 		const utility::graphic::Color32Bit &getColor(void) const;
 	};
