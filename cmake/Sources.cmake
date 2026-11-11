@@ -21,6 +21,7 @@ set(GUILLAUME_SOURCES
     sources/components/ellipse.cpp
     sources/components/focus.cpp
     sources/components/glyph.cpp
+    sources/components/hierarchy.cpp
     sources/components/hand_hover_interaction.cpp
     sources/components/hand_pinch_interaction.cpp
     sources/components/hand_poke_interaction.cpp

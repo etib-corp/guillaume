@@ -5,6 +5,7 @@ set(TEST_HEADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/headers")
 set(TEST_SOURCES
     sources/components/test_bound.cpp
     sources/components/test_focus.cpp
+    sources/components/test_hierarchy.cpp
     sources/components/test_text.cpp
     sources/components/test_transform.cpp
     sources/components/test_value.cpp

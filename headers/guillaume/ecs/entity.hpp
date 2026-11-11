@@ -35,6 +35,7 @@
 
 namespace guillaume::ecs
 {
+	class ComponentRegistry;
 
 	/**
 	 * @brief Non-template base class for entities in the ECS architecture.
@@ -82,8 +83,21 @@ namespace guillaume::ecs
 		Signature _signature;			  ///< Entity signature
 		std::int32_t _layer { 0 };		  ///< Rendering/depth layer
 		std::weak_ptr<Entity> _parent;	  ///< Parent entity (if any)
+		ComponentRegistry *_hierarchyRegistry {
+			nullptr
+		};	  ///< Registry holding this entity's Hierarchy (if any)
 
 		protected:
+		/**
+		 * @brief Give the entity a components::Hierarchy in a registry.
+		 *
+		 * From then on setParent mirrors the parent, the children and the
+		 * layer into that component, and getLayer reads it. Called by the
+		 * entity fillers; the registry must outlive the entity's use.
+		 * @param componentRegistry The registry that stores the component.
+		 */
+		void attachHierarchy(ComponentRegistry &componentRegistry);
+
 		/**
 		 * @brief Set the entity's signature based on the specified component
 		 * types.
@@ -130,8 +144,14 @@ namespace guillaume::ecs
 
 		/**
 		 * @brief Set the parent entity.
+		 *
+		 * When the entity has a components::Hierarchy, the component of the
+		 * old and new parents and the layer of every descendant are updated
+		 * too.
 		 * @param parent The new parent entity.
 		 * @return Reference to this Entity for chaining.
+		 * @throws std::invalid_argument When the parent is the entity itself
+		 * or one of its descendants.
 		 */
 		Entity &setParent(std::shared_ptr<Entity> parent);
 
