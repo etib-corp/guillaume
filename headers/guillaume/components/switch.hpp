@@ -66,12 +66,15 @@ namespace guillaume::components
 		ecs::Entity::Identifier _thumb {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Thumb child
+
 		ecs::Entity::Identifier _icon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Thumb icon child
+
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
-		};										 ///< Label child
+		};	  ///< Label child
+
 		ValueChangeHandler _onValueChange {};	 ///< User toggle callback
 
 		public:
