@@ -72,9 +72,6 @@ Versions follow the calendar scheme described in
 - `entities::Badge`, `Chip`, `Tooltip`, `Snackbar`, `LoadingIndicator` and
   `ProgressIndicator` are facades without fields and no longer override
   `update()`. Visible differences:
-  - `Chip::getChildren()` returns every child the chip owns; the system
-    decides which are laid out, so an unselected filter chip reports its
-    hidden check icon too.
   - The chip's accessibility label follows `setLabel()`.
   - An indicator's shape (fixed size, padding, radius, transparent container)
     is enforced every frame; a later `setColor()` or size set through
@@ -106,6 +103,16 @@ Versions follow the calendar scheme described in
   - **Breaking:** a view no longer keeps the entities passed to
     `setEntities()` alive; they must be owned by an entity registry (which is
     what the builders do) or by the caller.
+- **Breaking:** `SurfaceBase::getChildren()` returns the identifiers of the
+  layout children (read from the Layout component) instead of entity
+  handles, and a surface no longer keeps its attached children alive: they
+  must be owned by an entity registry, which is what the builders do.
+- The style, interaction and placement helpers moved from
+  `guillaume/entities/` to `guillaume/systems/` (namespaces
+  `systems::style`, `systems::interaction`, `systems::placement`,
+  `systems::button_style`, `systems::fab_style`). The old headers remain and
+  forward the names into `guillaume::entities`.
+- `systems::Selection` reads a group's members from `components::Hierarchy`.
 - **Breaking:** widgets are created with a static `create()` that returns
   them fully built; their constructors are private and
   `ecs::Entity::initialize()` is removed (`EntityRegistry::addEntity()` no

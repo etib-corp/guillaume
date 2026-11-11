@@ -146,11 +146,11 @@ namespace guillaume::entities::tests
 		tooltip->show();
 
 		ASSERT_FALSE(tooltip->getChildren().empty());
-		EXPECT_EQ(registry
-					  .getComponent<components::Color>(
-						  tooltip->getChildren().back()->getIdentifier())
-					  .getColor(),
-				  schemeColor(SchemeColorRole::InverseOnSurface));
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Color>(tooltip->getChildren().back())
+				.getColor(),
+			schemeColor(SchemeColorRole::InverseOnSurface));
 		EXPECT_TRUE(
 			registry.getComponent<components::Overlay>(tooltip->getIdentifier())
 				.isVisible());

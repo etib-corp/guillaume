@@ -148,8 +148,7 @@ namespace guillaume::entities::tests
 		appBar->setTitle("Title");
 
 		EXPECT_EQ(appBar->getChildren().size(), 1U);
-		EXPECT_NE(appBar->getChildren()[0]->getIdentifier(),
-				  ecs::Entity::InvalidIdentifier);
+		EXPECT_NE(appBar->getChildren()[0], ecs::Entity::InvalidIdentifier);
 	}
 
 	TEST_F(TestAppBar, BuilderAttachesNavigationAndActions)
@@ -169,7 +168,7 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(appBar->getChildren().size(), 4U);
 
 		for (const auto &child: appBar->getChildren()) {
-			EXPECT_NE(child->getIdentifier(), ecs::Entity::InvalidIdentifier);
+			EXPECT_NE(child, ecs::Entity::InvalidIdentifier);
 		}
 	}
 

@@ -59,9 +59,8 @@ namespace guillaume::entities
 	 * The class is a facade without fields: its state is components::Chip
 	 * and systems::Chip styles the chip and arranges its children.
 	 * `build()` only builds the child entities. `getChildren()` returns
-	 * every child built there; the ones currently laid out (the check
-	 * replaces the leading icon while selected) are the children of the
-	 * chip's components::Layout.
+	 * the ones currently laid out (the check replaces the leading icon while
+	 * selected), read from the chip's components::Layout.
 	 *
 	 * @see SurfaceBase
 	 * @see components::Selectable
