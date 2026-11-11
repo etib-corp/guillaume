@@ -31,7 +31,7 @@
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/backdrop.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/navigation_drawer_destination.hpp"
@@ -43,7 +43,7 @@ namespace guillaume::systems
 	{
 		using EntryKind = components::NavigationDrawer::EntryKind;
 		using Variant	= components::NavigationDrawer::Variant;
-		using entities::schemeColor;
+		using style::schemeColor;
 
 		/**
 		 * @brief Whether a child is a destination this system can drive.

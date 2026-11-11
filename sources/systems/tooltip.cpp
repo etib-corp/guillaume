@@ -36,8 +36,8 @@
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/motion/easing.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
@@ -47,8 +47,8 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::Tooltip::Variant;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/// Height of a plain tooltip, in dp.
 		constexpr float PlainHeight = 32.0f;
@@ -196,7 +196,7 @@ namespace guillaume::systems
 		auto &tooltip = componentRegistry.getComponent<components::Tooltip>(
 			entityIdentifier);
 
-		if (entities::isHovered(componentRegistry, tooltip.getAnchor())) {
+		if (interaction::isHovered(componentRegistry, tooltip.getAnchor())) {
 			tooltip.setLeaveTime(0.0f);
 			tooltip.setHoverTime(tooltip.getHoverTime() + deltaTime);
 			if (!tooltip.isVisible()

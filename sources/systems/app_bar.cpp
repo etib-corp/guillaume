@@ -32,7 +32,7 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/typography.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/typography.hpp"
@@ -43,7 +43,7 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::AppBar::Variant;
-		using entities::schemeColor;
+		using style::schemeColor;
 
 		/**
 		 * @brief Push the title text, its typescale role and its accessible

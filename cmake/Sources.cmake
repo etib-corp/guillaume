@@ -97,7 +97,6 @@ set(GUILLAUME_SOURCES
     sources/ecs/system_registry.cpp
     sources/entities/button.cpp
     sources/entities/button_base.cpp
-    sources/entities/button_style.cpp
     sources/entities/app_bar.cpp
     sources/entities/backdrop.cpp
     sources/entities/badge.cpp
@@ -116,13 +115,11 @@ set(GUILLAUME_SOURCES
     sources/entities/search.cpp
     sources/entities/segmented_button.cpp
     sources/entities/extended_floating_action_button.cpp
-    sources/entities/fab_style.cpp
     sources/entities/floating_action_button.cpp
     sources/entities/floating_action_button_menu.cpp
     sources/entities/icon.cpp
     sources/entities/icon_button.cpp
     sources/entities/image.cpp
-    sources/entities/interaction_helpers.cpp
     sources/entities/list.cpp
     sources/entities/mesh.cpp
     sources/entities/view.cpp
@@ -152,6 +149,7 @@ set(GUILLAUME_SOURCES
     sources/systems/backdrop.cpp
     sources/systems/badge.cpp
     sources/systems/button.cpp
+    sources/systems/button_style.cpp
     sources/systems/card.cpp
     sources/systems/checkbox.cpp
     sources/systems/chip.cpp
@@ -164,6 +162,7 @@ set(GUILLAUME_SOURCES
     sources/systems/ellipse_render.cpp
     sources/systems/elevation_render.cpp
     sources/systems/extended_floating_action_button.cpp
+    sources/systems/fab_style.cpp
     sources/systems/floating_action_button.cpp
     sources/systems/floating_action_button_menu.cpp
     sources/systems/focus.cpp
@@ -179,6 +178,7 @@ set(GUILLAUME_SOURCES
     sources/systems/hand_trigger.cpp
     sources/systems/icon_button.cpp
     sources/systems/image_render.cpp
+    sources/systems/interaction_helpers.cpp
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp
     sources/systems/line_render.cpp

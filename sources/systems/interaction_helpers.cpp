@@ -20,7 +20,7 @@
  SOFTWARE.
  */
 
-#include "guillaume/entities/interaction_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
 
 #include <memory>
 #include <utility>
@@ -31,9 +31,9 @@
 #include "guillaume/components/mouse_button_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/style_state.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 
-namespace guillaume::entities
+namespace guillaume::systems::interaction
 {
 	namespace
 	{
@@ -194,9 +194,9 @@ namespace guillaume::entities
 		// A transparent container (text/outlined styles) shows the layer over
 		// nothing, so the result is the content color at the layer opacity.
 		if (base.getAlpha() == 0) {
-			return withAlpha(content, getStateLayerAlpha(*layer));
+			return style::withAlpha(content, getStateLayerAlpha(*layer));
 		}
-		return stateLayer(base, content, *layer);
+		return style::stateLayer(base, content, *layer);
 	}
 
-}	 // namespace guillaume::entities
+}	 // namespace guillaume::systems::interaction

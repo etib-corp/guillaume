@@ -31,8 +31,8 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/layout.hpp"
-#include "guillaume/entities/placement_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/placement_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/motion/easing.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
@@ -70,7 +70,7 @@ namespace guillaume::systems
 			registry.getComponent<components::Borders>(identifier)
 				.setBorderRadius(radius);
 			registry.getComponent<components::Color>(identifier)
-				.setColor(entities::transparentColor());
+				.setColor(style::transparentColor());
 			Layout::apply(registry, identifier, layout.getChildren(), layer);
 		}
 	}	 // namespace
@@ -159,7 +159,7 @@ namespace guillaume::systems
 
 		const auto color = indicatorColor(componentRegistry, entityIdentifier);
 		componentRegistry.getComponent<components::Color>(child).setColor(
-			entities::withAlpha(
+			style::withAlpha(
 				color,
 				static_cast<std::uint8_t>(static_cast<float>(color.getAlpha())
 											  * state.getOpacity()
@@ -173,9 +173,9 @@ namespace guillaume::systems
 					.setStartAngle(-HalfPi + state.getProgress() * TwoPi)
 					.setSweepAngle(ArcSweep);
 			}
-			entities::placeChild(componentRegistry, entityIdentifier, child,
-								 utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-								 layer);
+			placement::placeChild(componentRegistry, entityIdentifier, child,
+								  utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
+								  layer);
 			componentRegistry.getComponent<components::Bound>(child)
 				.setWidth(size)
 				.setHeight(size);
@@ -189,7 +189,7 @@ namespace guillaume::systems
 			componentRegistry.getComponent<components::Borders>(child)
 				.setBorderRadius(full);
 		}
-		entities::placeChild(
+		placement::placeChild(
 			componentRegistry, entityIdentifier, child,
 			utility::graphic::PositionF(
 				state.getProgress()
@@ -272,7 +272,7 @@ namespace guillaume::systems
 		return componentRegistry
 			.getComponent<components::LoadingIndicator>(entityIdentifier)
 			.getIndicatorColor()
-			.value_or(entities::schemeColor(SchemeColorRole::Primary));
+			.value_or(style::schemeColor(SchemeColorRole::Primary));
 	}
 
 	float LoadingIndicator::strokeWidth(

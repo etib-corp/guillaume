@@ -20,7 +20,7 @@
  SOFTWARE.
  */
 
-#include "guillaume/entities/fab_style.hpp"
+#include "guillaume/systems/fab_style.hpp"
 
 #include <array>
 #include <optional>
@@ -28,7 +28,7 @@
 
 #include "guillaume/theme.hpp"
 
-namespace guillaume::entities::fab_style::detail
+namespace guillaume::systems::fab_style::detail
 {
 	namespace
 	{
@@ -118,4 +118,4 @@ namespace guillaume::entities::fab_style::detail
 	{
 		return getActiveColor(palette(variant).content);
 	}
-}	 // namespace guillaume::entities::fab_style::detail
+}	 // namespace guillaume::systems::fab_style::detail

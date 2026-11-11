@@ -31,8 +31,8 @@
 #include "guillaume/components/glyph.hpp"
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -44,9 +44,9 @@ namespace guillaume::systems
 		using Row	  = components::List::Row;
 		using Variant = components::List::Variant;
 		using Ids	  = std::vector<ecs::Entity::Identifier>;
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/// M3 list item padding (16 dp on every side).
 		constexpr float RowPadding = theme::SpacingScale::get(4);
@@ -181,7 +181,7 @@ namespace guillaume::systems
 				return;
 			}
 
-			const bool enabled	 = entities::isEnabled(registry, row.view);
+			const bool enabled	 = interaction::isEnabled(registry, row.view);
 			auto headlineColor	 = enabled
 				  ? schemeColor(SchemeColorRole::OnSurface)
 				  : disabledContentColor();
@@ -189,7 +189,7 @@ namespace guillaume::systems
 				? schemeColor(SchemeColorRole::OnSurfaceVariant)
 				: disabledContentColor();
 			auto iconColor		 = supportingColor;
-			auto rowColor		 = entities::stateLayerColor(
+			auto rowColor		 = interaction::stateLayerColor(
 				   registry, row.view, transparentColor(),
 				   schemeColor(SchemeColorRole::OnSurface));
 
@@ -283,8 +283,8 @@ namespace guillaume::systems
 						accessibility.setExpanded(item->expanded);
 					}
 				}
-				entities::setEnabled(registry, row.view,
-									 !hidden && !item->disabled);
+				interaction::setEnabled(registry, row.view,
+										!hidden && !item->disabled);
 				if (accordion
 					&& row.trailingIcon != ecs::Entity::InvalidIdentifier
 					&& registry.hasComponent<components::Glyph>(
@@ -392,7 +392,7 @@ namespace guillaume::systems
 			return;
 		}
 
-		entities::makeInteractive(
+		interaction::makeInteractive(
 			componentRegistry, row->view,
 			components::AccessibilityRole::ListItem,
 			[registry, identifier, path]() {

@@ -20,7 +20,8 @@
  SOFTWARE.
  */
 
-#include "guillaume/entities/button_style.hpp"
+#include "guillaume/systems/button_style.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 
 #include <array>
 #include <cstddef>
@@ -29,7 +30,7 @@
 
 #include "guillaume/theme.hpp"
 
-namespace guillaume::entities::button_style
+namespace guillaume::systems::button_style
 {
 	namespace
 	{
@@ -45,7 +46,7 @@ namespace guillaume::entities::button_style
 			theme::ShapeRole squareShape;	  ///< Corner shape when square.
 		};
 
-		/// Indexed by Button::Size.
+		/// Indexed by components::CommonButton::Size.
 		constexpr std::array<SizeMetrics, 5> sizeTable { {
 			// ExtraSmall
 			{ 6.0f, 12.0f, 15.0f, 4.0f, theme::ShapeRole::Small,
@@ -77,7 +78,7 @@ namespace guillaume::entities::button_style
 			ModePalette selected;	   ///< Selected toggle.
 		};
 
-		/// Indexed by Button::Color.
+		/// Indexed by components::CommonButton::Color.
 		constexpr std::array<Palette, 6> paletteTable { {
 			// Elevated
 			{ { Role::SurfaceContainerLow, Role::Primary },
@@ -105,7 +106,7 @@ namespace guillaume::entities::button_style
 			  { Role::SecondaryContainer, Role::OnSecondaryContainer } },
 		} };
 
-		const SizeMetrics &metrics(Button::Size size)
+		const SizeMetrics &metrics(components::CommonButton::Size size)
 		{
 			const auto index = static_cast<std::size_t>(size);
 			if (index >= sizeTable.size()) {
@@ -114,8 +115,8 @@ namespace guillaume::entities::button_style
 			return sizeTable[index];
 		}
 
-		const ModePalette &palette(Button::Color style, bool isToggle,
-								   bool isSelected)
+		const ModePalette &palette(components::CommonButton::Color style,
+								   bool isToggle, bool isSelected)
 		{
 			const auto index = static_cast<std::size_t>(style);
 			if (index >= paletteTable.size()) {
@@ -133,38 +134,39 @@ namespace guillaume::entities::button_style
 			return utility::graphic::Color32Bit(0, 0, 0, 0);
 		}
 
-		utility::graphic::Color32Bit getBaseContainerColor(Button::Color style,
-														   bool isToggle,
-														   bool isSelected)
+		utility::graphic::Color32Bit
+			getBaseContainerColor(components::CommonButton::Color style,
+								  bool isToggle, bool isSelected)
 		{
 			const auto role = palette(style, isToggle, isSelected).container;
 			return role ? getActiveColor(*role) : transparent();
 		}
 	}	 // namespace
 
-	float getHeightPadding(Button::Size size)
+	float getHeightPadding(components::CommonButton::Size size)
 	{
 		return metrics(size).heightPadding;
 	}
 
-	float getWidthPadding(Button::Size size, bool compact)
+	float getWidthPadding(components::CommonButton::Size size, bool compact)
 	{
 		// Paper compact buttons halve the horizontal label margin.
 		const float padding = metrics(size).widthPadding;
 		return compact ? padding / 2.0f : padding;
 	}
 
-	float getIconFontSize(Button::Size size)
+	float getIconFontSize(components::CommonButton::Size size)
 	{
 		return metrics(size).iconFontSize;
 	}
 
-	float getSpaceBetweenIconAndLabel(Button::Size size)
+	float getSpaceBetweenIconAndLabel(components::CommonButton::Size size)
 	{
 		return metrics(size).iconLabelGap;
 	}
 
-	float getBorderRadius(Button::Size size, Button::Shape shape,
+	float getBorderRadius(components::CommonButton::Size size,
+						  components::CommonButton::Shape shape,
 						  bool isButtonPressed)
 	{
 		const SizeMetrics &entry = metrics(size);
@@ -172,52 +174,58 @@ namespace guillaume::entities::button_style
 		if (isButtonPressed) {
 			return getShapeRadius(entry.pressedShape);
 		}
-		if (shape == Button::Shape::Round) {
+		if (shape == components::CommonButton::Shape::Round) {
 			return getShapeRadius(theme::ShapeRole::Full);
 		}
 		return getShapeRadius(entry.squareShape);
 	}
 
-	Button::Shape getRestingShape(Button::Shape baseShape, bool isToggle,
-								  bool isSelected, bool isMorph)
+	components::CommonButton::Shape
+		getRestingShape(components::CommonButton::Shape baseShape,
+						bool isToggle, bool isSelected, bool isMorph)
 	{
 		if (!isMorph || !isToggle || !isSelected) {
 			return baseShape;
 		}
 
-		return (baseShape == Button::Shape::Round) ? Button::Shape::Square
-												   : Button::Shape::Round;
+		return (baseShape == components::CommonButton::Shape::Round)
+			? components::CommonButton::Shape::Square
+			: components::CommonButton::Shape::Round;
 	}
 
 	utility::graphic::Color32Bit
-		getContainerColor(Button::Color style, bool isToggle, bool isSelected,
-						  bool isHovered, bool isButtonPressed)
+		getContainerColor(components::CommonButton::Color style, bool isToggle,
+						  bool isSelected, bool isHovered, bool isButtonPressed)
 	{
 		const auto base = getBaseContainerColor(style, isToggle, isSelected);
 
 		if (!isButtonPressed && !isHovered) {
 			return base;
 		}
-		return ButtonBase::applyStateLayer(
+		return ::guillaume::systems::style::stateLayer(
 			base, getContentColor(style, isToggle, isSelected),
 			getStateLayerAlpha(isButtonPressed ? theme::StateLayer::Pressed
 											   : theme::StateLayer::Hovered));
 	}
 
-	utility::graphic::Color32Bit getContentColor(Button::Color style,
-												 bool isToggle, bool isSelected)
+	utility::graphic::Color32Bit
+		getContentColor(components::CommonButton::Color style, bool isToggle,
+						bool isSelected)
 	{
 		return getActiveColor(palette(style, isToggle, isSelected).content);
 	}
 
-	utility::graphic::Color32Bit getBorderColor(Button::Color style,
-												bool isToggle, bool isSelected)
+	utility::graphic::Color32Bit
+		getBorderColor(components::CommonButton::Color style, bool isToggle,
+					   bool isSelected)
 	{
 		// Segmented buttons keep their outline when selected (Paper
 		// SegmentedButtons); outlined toggles drop it.
-		const bool outlined = style == Button::Color::Segmented
-			|| (style == Button::Color::Outlined && !(isToggle && isSelected));
+		const bool outlined =
+			style == components::CommonButton::Color::Segmented
+			|| (style == components::CommonButton::Color::Outlined
+				&& !(isToggle && isSelected));
 
 		return outlined ? getActiveColor(Role::Outline) : transparent();
 	}
-}	 // namespace guillaume::entities::button_style
+}	 // namespace guillaume::systems::button_style

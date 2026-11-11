@@ -35,9 +35,9 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/button_style.hpp"
-#include "guillaume/entities/fab_style.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/button_style.hpp"
+#include "guillaume/systems/fab_style.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
@@ -75,7 +75,7 @@ namespace guillaume::systems
 		const auto &config =
 			registry.getComponent<components::ExtendedFloatingActionButton>(
 				identifier);
-		return entities::fab_style::getLabelFontSize(config.getSize());
+		return fab_style::getLabelFontSize(config.getSize());
 	}
 
 	utility::graphic::Color32Bit ExtendedFloatingActionButton::contentColor(
@@ -88,7 +88,7 @@ namespace guillaume::systems
 			registry.getComponent<components::ExtendedFloatingActionButton>(
 				identifier);
 		return Button::resolveContentColor(
-			button, entities::fab_style::getContentColor(config.getVariant()));
+			button, fab_style::getContentColor(config.getVariant()));
 	}
 
 	void ExtendedFloatingActionButton::elevation(
@@ -148,45 +148,45 @@ namespace guillaume::systems
 
 		if (!visible) {
 			registry.getComponent<components::Color>(identifier)
-				.setColor(entities::transparentColor());
+				.setColor(style::transparentColor());
 			if (icon) {
-				icon.setColor(entities::transparentColor());
+				icon.setColor(style::transparentColor());
 			}
 			if (label) {
-				label.setColor(entities::transparentColor());
+				label.setColor(style::transparentColor());
 			}
 			return;
 		}
 
 		if (disabled) {
 			registry.getComponent<components::Color>(identifier)
-				.setColor(entities::disabledContainerColor());
+				.setColor(style::disabledContainerColor());
 
 			if (icon) {
-				icon.setColor(entities::disabledContentColor());
+				icon.setColor(style::disabledContentColor());
 			}
 
 			if (label) {
-				label.setColor(labelShown ? entities::disabledContentColor()
-										  : entities::transparentColor());
+				label.setColor(labelShown ? style::disabledContentColor()
+										  : style::transparentColor());
 			}
 
 			return;
 		}
 
 		const auto baseContainerColor = Button::resolveContainerColor(
-			button, entities::fab_style::getContainerColor(variant, lowered));
+			button, fab_style::getContainerColor(variant, lowered));
 		const auto contentColor = Button::resolveContentColor(
-			button, entities::fab_style::getContentColor(variant));
+			button, fab_style::getContentColor(variant));
 
 		utility::graphic::Color32Bit containerColor = baseContainerColor;
 
 		if (pressed) {
-			containerColor = entities::stateLayer(
-				baseContainerColor, contentColor, theme::StateLayer::Pressed);
+			containerColor = style::stateLayer(baseContainerColor, contentColor,
+											   theme::StateLayer::Pressed);
 		} else if (hovered) {
-			containerColor = entities::stateLayer(
-				baseContainerColor, contentColor, theme::StateLayer::Hovered);
+			containerColor = style::stateLayer(baseContainerColor, contentColor,
+											   theme::StateLayer::Hovered);
 		}
 
 		registry.getComponent<components::Color>(identifier)
@@ -198,7 +198,7 @@ namespace guillaume::systems
 
 		if (label) {
 			label.setColor(labelShown ? contentColor
-									  : entities::transparentColor());
+									  : style::transparentColor());
 		}
 	}
 
@@ -221,13 +221,13 @@ namespace guillaume::systems
 		const auto &customSize = config.getCustomSize();
 		const bool extended	   = config.isExtended();
 		const float baseHeight =
-			customSize.value_or(entities::fab_style::getContainerSize(size));
-		const float fontHeight = entities::fab_style::getLabelFontSize(size);
+			customSize.value_or(fab_style::getContainerSize(size));
+		const float fontHeight = fab_style::getLabelFontSize(size);
 
 		registry.getComponent<components::Borders>(identifier)
 			.setBorderRadius(customSize.has_value()
 								 ? *customSize / 3.5f
-								 : entities::fab_style::getBorderRadius(size));
+								 : fab_style::getBorderRadius(size));
 
 		if (!icon && !label) {
 			return;
@@ -298,9 +298,9 @@ namespace guillaume::systems
 		if (label) {
 			// A collapsed FAB keeps its label child but hides it.
 			const auto contentColor = Button::resolveContentColor(
-				button, entities::fab_style::getContentColor(variant));
+				button, fab_style::getContentColor(variant));
 			if (!showLabel) {
-				label.setColor(entities::transparentColor());
+				label.setColor(style::transparentColor());
 			} else if (!disabled && visible) {
 				label.setColor(contentColor);
 			}

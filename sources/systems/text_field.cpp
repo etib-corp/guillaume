@@ -36,9 +36,9 @@
 #include "guillaume/components/style_state.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/typography.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/placement_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/placement_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/typography.hpp"
 #include "guillaume/theme.hpp"
@@ -49,10 +49,10 @@ namespace guillaume::systems
 	{
 		using Configuration = components::TextFieldConfiguration;
 		using Variant		= Configuration::Variant;
-		using entities::disabledContainerColor;
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContainerColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/// Paper filled disabled container opacity (onSurface at 4%).
 		constexpr std::uint8_t DisabledFilledAlpha = 10U;
@@ -324,12 +324,12 @@ namespace guillaume::systems
 			const auto label	  = configuration.getLabelEntity();
 
 			if (supporting != invalid) {
-				entities::placeChild(registry, identifier, supporting,
-									 utility::graphic::PositionF(
-										 TextField::Padding,
-										 height + TextField::SupportingGap,
-										 0.0f),
-									 layer);
+				placement::placeChild(registry, identifier, supporting,
+									  utility::graphic::PositionF(
+										  TextField::Padding,
+										  height + TextField::SupportingGap,
+										  0.0f),
+									  layer);
 			}
 
 			if (label != invalid
@@ -341,7 +341,7 @@ namespace guillaume::systems
 				}
 				const float lineHeight =
 					getTypeToken(theme::TypeRole::BodySmall).lineHeight;
-				entities::placeChild(
+				placement::placeChild(
 					registry, identifier, label,
 					utility::graphic::PositionF(x, -lineHeight / 2.0f, 0.0f),
 					layer);
@@ -360,11 +360,11 @@ namespace guillaume::systems
 		ecs::ComponentRegistry *registry		 = &componentRegistry;
 		const ecs::Entity::Identifier identifier = entityIdentifier;
 
-		entities::makeInteractive(componentRegistry, identifier,
-								  components::AccessibilityRole::TextField, {},
-								  [registry, identifier]() {
-									  applyContainer(*registry, identifier);
-								  });
+		interaction::makeInteractive(componentRegistry, identifier,
+									 components::AccessibilityRole::TextField,
+									 {}, [registry, identifier]() {
+										 applyContainer(*registry, identifier);
+									 });
 
 		auto &focus =
 			componentRegistry.getComponent<components::Focus>(identifier);
@@ -405,7 +405,7 @@ namespace guillaume::systems
 	bool TextField::isDisabled(const ecs::ComponentRegistry &componentRegistry,
 							   const ecs::Entity::Identifier &entityIdentifier)
 	{
-		return !entities::isEnabled(componentRegistry, entityIdentifier);
+		return !interaction::isEnabled(componentRegistry, entityIdentifier);
 	}
 
 	bool TextField::isLabelFloating(
@@ -447,7 +447,7 @@ namespace guillaume::systems
 								const ecs::Entity::Identifier &entityIdentifier,
 								bool disabled)
 	{
-		entities::setEnabled(componentRegistry, entityIdentifier, !disabled);
+		interaction::setEnabled(componentRegistry, entityIdentifier, !disabled);
 		apply(componentRegistry, entityIdentifier);
 	}
 
@@ -522,9 +522,8 @@ namespace guillaume::systems
 		} else {
 			color.setColor(
 				disabled
-					? entities::withAlpha(
-						  schemeColor(SchemeColorRole::OnSurface),
-						  DisabledFilledAlpha)
+					? style::withAlpha(schemeColor(SchemeColorRole::OnSurface),
+									   DisabledFilledAlpha)
 					: schemeColor(SchemeColorRole::SurfaceContainerHighest));
 			borders.setBorderRadius(getShapeRadius(theme::ShapeRole::None))
 				.setColor(transparentColor())

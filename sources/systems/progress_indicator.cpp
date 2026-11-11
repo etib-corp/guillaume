@@ -35,8 +35,8 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/ring.hpp"
 #include "guillaume/components/value.hpp"
-#include "guillaume/entities/placement_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/placement_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/motion/easing.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
@@ -71,7 +71,7 @@ namespace guillaume::systems
 			registry.getComponent<components::Borders>(identifier)
 				.setBorderRadius(radius);
 			registry.getComponent<components::Color>(identifier)
-				.setColor(entities::transparentColor());
+				.setColor(style::transparentColor());
 			Layout::apply(registry, identifier, layout.getChildren(), layer);
 		}
 
@@ -110,7 +110,7 @@ namespace guillaume::systems
 		utility::graphic::Color32Bit
 			faded(const utility::graphic::Color32Bit &color, float opacity)
 		{
-			return entities::withAlpha(
+			return style::withAlpha(
 				color,
 				static_cast<std::uint8_t>(
 					static_cast<float>(color.getAlpha()) * opacity + 0.5f));
@@ -245,17 +245,17 @@ namespace guillaume::systems
 		}
 
 		componentRegistry.getComponent<components::Color>(track).setColor(
-			faded(entities::schemeColor(SchemeColorRole::SurfaceVariant),
+			faded(style::schemeColor(SchemeColorRole::SurfaceVariant),
 				  state.getOpacity()));
 		componentRegistry.getComponent<components::Color>(fill).setColor(
 			faded(indicatorColor(componentRegistry, entityIdentifier),
 				  state.getOpacity()));
-		entities::placeChild(componentRegistry, entityIdentifier, track, origin,
-							 layer);
+		placement::placeChild(componentRegistry, entityIdentifier, track,
+							  origin, layer);
 
 		if (circular) {
-			entities::placeChild(componentRegistry, entityIdentifier, fill,
-								 origin, layer);
+			placement::placeChild(componentRegistry, entityIdentifier, fill,
+								  origin, layer);
 			componentRegistry.getComponent<components::Bound>(track)
 				.setWidth(diameter)
 				.setHeight(diameter);
@@ -295,7 +295,7 @@ namespace guillaume::systems
 			const float segment =
 				length * components::ProgressIndicator::IndeterminateSegment;
 
-			entities::placeChild(
+			placement::placeChild(
 				componentRegistry, entityIdentifier, fill,
 				utility::graphic::PositionF(
 					state.getCycle() * (length - segment), 0.0f, 0.0f),
@@ -304,8 +304,8 @@ namespace guillaume::systems
 				.setWidth(segment)
 				.setHeight(height);
 		} else {
-			entities::placeChild(componentRegistry, entityIdentifier, fill,
-								 origin, layer);
+			placement::placeChild(componentRegistry, entityIdentifier, fill,
+								  origin, layer);
 			componentRegistry.getComponent<components::Bound>(fill)
 				.setWidth(length * normalized)
 				.setHeight(height);
@@ -357,7 +357,7 @@ namespace guillaume::systems
 		return componentRegistry
 			.getComponent<components::ProgressIndicator>(entityIdentifier)
 			.getIndicatorColor()
-			.value_or(entities::schemeColor(SchemeColorRole::Primary));
+			.value_or(style::schemeColor(SchemeColorRole::Primary));
 	}
 
 	void ProgressIndicator::update(

@@ -29,9 +29,9 @@
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/ring.hpp"
 #include "guillaume/components/selection.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/placement_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/placement_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -40,9 +40,9 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::RadioButton::Variant;
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 	}	 // namespace
 
 	RadioButton::RadioButton(void)
@@ -56,7 +56,7 @@ namespace guillaume::systems
 		ecs::ComponentRegistry *registry		 = &componentRegistry;
 		const ecs::Entity::Identifier identifier = entityIdentifier;
 
-		entities::makeInteractive(
+		interaction::makeInteractive(
 			componentRegistry, identifier, components::AccessibilityRole::Radio,
 			[registry, identifier]() {
 				press(*registry, identifier);
@@ -92,7 +92,7 @@ namespace guillaume::systems
 				   .getComponent<components::RadioButton>(entityIdentifier)
 				   .getVariant()
 			== Variant::Disabled
-			|| !entities::isEnabled(componentRegistry, entityIdentifier);
+			|| !interaction::isEnabled(componentRegistry, entityIdentifier);
 	}
 
 	void RadioButton::select(ecs::ComponentRegistry &componentRegistry,
@@ -132,8 +132,8 @@ namespace guillaume::systems
 
 		componentRegistry.getComponent<components::Ring>(entityIdentifier)
 			.setThickness(2.0f);
-		entities::setEnabled(componentRegistry, entityIdentifier,
-							 variant != Variant::Disabled);
+		interaction::setEnabled(componentRegistry, entityIdentifier,
+								variant != Variant::Disabled);
 
 		const bool disabled = isDisabled(componentRegistry, entityIdentifier);
 		const bool errored	= (variant == Variant::Error);
@@ -171,8 +171,8 @@ namespace guillaume::systems
 			componentRegistry.getComponent<components::Color>(dot).setColor(
 				selected ? dotColor : transparentColor());
 			if (selected) {
-				entities::centerChild(componentRegistry, entityIdentifier, dot,
-									  layer);
+				placement::centerChild(componentRegistry, entityIdentifier, dot,
+									   layer);
 			}
 		}
 
@@ -193,9 +193,9 @@ namespace guillaume::systems
 				(ring.getWidth() + components::RadioButton::TouchTarget) / 2.0f
 				+ components::RadioButton::LabelGap;
 			const float y = (ring.getHeight() - labelBound.getHeight()) / 2.0f;
-			entities::placeChild(componentRegistry, entityIdentifier, label,
-								 utility::graphic::PositionF(x, y, 0.0f),
-								 layer);
+			placement::placeChild(componentRegistry, entityIdentifier, label,
+								  utility::graphic::PositionF(x, y, 0.0f),
+								  layer);
 		}
 	}
 
