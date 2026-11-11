@@ -121,6 +121,12 @@ To migrate another widget:
    being built), and delete its `initialize()` / `update()` overrides.
 5. Test the system on bare identifiers, without the entity class.
 
+Widgets with children read the tree from `components::Hierarchy` (parent
+identifier, child identifiers, layer). Every entity built on a component
+registry has one, and `ecs::Entity::setParent()` keeps it up to date, so a
+system can place children or compute depth from identifiers without the
+entity object. Systems treat it as read-only.
+
 When no entity overrides `update()` any more, `ecs::Entity::update()` and the
 calls to it in `ecs::System::routine` are deleted, and the entity classes can
 become plain builder functions.

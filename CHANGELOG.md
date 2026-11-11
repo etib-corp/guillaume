@@ -7,11 +7,24 @@ Versions follow the calendar scheme described in
 [docs/VERSIONING.md](docs/VERSIONING.md); breaking changes are marked
 **Breaking**.
 
-## [2026.3.2] - 2026-11-11
+## [Unreleased]
+
+### Added
+
+- `components::Hierarchy` holds an entity's parent identifier, child
+  identifiers and layer. Every entity built on a component registry gets one,
+  and `ecs::Entity::setParent()` keeps it up to date, so systems can walk the
+  tree from identifiers alone. It supersedes the unused `components::Parent`.
+
+### Changed
+
+- `ecs::Entity::setParent()` now updates the layer of every descendant when a
+  subtree is attached, and throws `std::invalid_argument` when the new parent
+  is the entity itself or one of its descendants.
 
 ## [2026.3.3] - 2026-11-11
 
-## [Unreleased]
+Includes the changes released as 2026.3.2 on the same day.
 
 ### Changed
 

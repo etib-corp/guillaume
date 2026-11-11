@@ -49,5 +49,6 @@ namespace guillaume::ecs
 		_componentRegistry
 			.template registerComponentsForEntity<ComponentTypes...>(
 				getIdentifier());
+		attachHierarchy(_componentRegistry);
 	}
 }	 // namespace guillaume::ecs
