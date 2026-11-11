@@ -23,10 +23,12 @@
 #include "guillaume/systems/core_systems.hpp"
 
 #include "guillaume/systems/animation.hpp"
+#include "guillaume/systems/app_bar.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/backdrop.hpp"
 #include "guillaume/systems/badge.hpp"
 #include "guillaume/systems/button.hpp"
+#include "guillaume/systems/card.hpp"
 #include "guillaume/systems/checkbox.hpp"
 #include "guillaume/systems/chip.hpp"
 #include "guillaume/systems/common_button.hpp"
@@ -170,6 +172,8 @@ namespace guillaume::systems
 			std::make_unique<systems::ProgressIndicator>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Tooltip>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Snackbar>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::AppBar>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Card>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

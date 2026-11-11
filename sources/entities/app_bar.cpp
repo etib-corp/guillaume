@@ -21,13 +21,14 @@
  */
 
 #include <memory>
+#include <utility>
 
 #include "guillaume/entities/app_bar.hpp"
 
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/components/accessibility.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/app_bar.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -168,55 +169,21 @@ namespace guillaume::entities
 				   const SurfaceConfig &config, Variant variant,
 				   const std::string &title, const Action &navigation,
 				   const std::vector<Action> &actions, bool elevated)
-		: SurfaceBase<components::Elevation>(registry, config)
-		, _variant(variant)
-		, _title(title)
-		, _navigation(navigation)
-		, _actions(actions)
-		, _elevated(elevated)
-		, _navigationIconEntity()
-		, _titleEntity()
-		, _actionEntities()
+		: SurfaceBase<components::Elevation, components::AppBar>(registry,
+																 config)
 	{
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::AppBar>(getIdentifier())
+			.setVariant(variant)
+			.setTitle(title)
+			.setNavigation(navigation)
+			.setActions(actions)
+			.setElevated(elevated);
+		systems::AppBar::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	AppBar::~AppBar(void)
 	{
-	}
-
-	float AppBar::getVariantHeight(void) const
-	{
-		// Paper Appbar/utils.ts: 64 small/center-aligned, 112 medium,
-		// 152 large; the bottom app bar is 80.
-		switch (_variant) {
-			case Variant::Small:
-			case Variant::CenterAligned:
-				return 64.0f;
-			case Variant::Medium:
-				return 112.0f;
-			case Variant::Large:
-				return 152.0f;
-			case Variant::Bottom:
-				return 80.0f;
-			default:
-				return 64.0f;
-		}
-	}
-
-	theme::TypeRole AppBar::getTitleRole(void) const
-	{
-		switch (_variant) {
-			case Variant::Medium:
-				return theme::TypeRole::HeadlineSmall;
-			case Variant::Large:
-				return theme::TypeRole::HeadlineMedium;
-			case Variant::Small:
-			case Variant::CenterAligned:
-			case Variant::Bottom:
-			default:
-				return theme::TypeRole::TitleLarge;
-		}
 	}
 
 	std::shared_ptr<IconButton> AppBar::buildAction(const Action &action)
@@ -233,170 +200,142 @@ namespace guillaume::entities
 
 	void AppBar::buildContent(void)
 	{
-		if (_navigationIconEntity == nullptr && !_navigation.icon.empty()) {
-			_navigationIconEntity = buildAction(_navigation);
-			// Paper: the leading icon uses onSurface, actions onSurfaceVariant.
-			_navigationIconEntity->setContentColorOverride(
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
+		auto &registry = getComponentRegistry();
+		auto &appBar =
+			registry.getComponent<components::AppBar>(getIdentifier());
+
+		// Which children are missing is decided by systems::AppBar; they are
+		// only built here because that needs shared_from_this().
+		if (systems::AppBar::needsNavigationButton(registry, getIdentifier())) {
+			const auto navigation = buildAction(appBar.getNavigation());
+			if (navigation != nullptr) {
+				appBar.setNavigationButton(navigation->getIdentifier());
+			}
+		}
+
+		if (systems::AppBar::needsTitle(registry, getIdentifier())) {
+			const auto title = buildText(
+				registry, *this, shared_from_this(), appBar.getTitle(),
+				systems::AppBar::titleRole(appBar.getVariant()),
 				schemeColor(SchemeColorRole::OnSurface));
-		}
-
-		if (_titleEntity == nullptr && !_title.empty()) {
-			_titleEntity =
-				buildText(this->getComponentRegistry(), *this,
-						  this->shared_from_this(), _title, getTitleRole(),
-						  schemeColor(SchemeColorRole::OnSurface));
-			if (_titleEntity != nullptr) {
-				auto &registry = this->getComponentRegistry();
-				if (!registry.hasComponent<components::Accessibility>(
-						_titleEntity->getIdentifier())) {
-					registry.addComponent<components::Accessibility>(
-						_titleEntity->getIdentifier());
-				}
-				registry
-					.getComponent<components::Accessibility>(
-						_titleEntity->getIdentifier())
-					.setRole(components::AccessibilityRole::Header)
-					.setLabel(_title)
-					.setFocusable(false);
+			if (title != nullptr) {
+				appBar.setTitleEntity(title->getIdentifier());
+				systems::AppBar::installTitle(registry, getIdentifier());
 			}
 		}
 
-		if (_titleEntity != nullptr) {
-			_titleEntity->setTypeRole(getTitleRole());
-		}
-
-		if (_actionEntities.size() != _actions.size()) {
-			_actionEntities.clear();
-
-			for (const auto &action: _actions) {
-				auto button = buildAction(action);
-				if (button != nullptr) {
-					_actionEntities.push_back(button);
-				}
+		if (systems::AppBar::needsActionButtons(registry, getIdentifier())) {
+			components::AppBar::Identifiers identifiers;
+			for (const auto &action: appBar.getActions()) {
+				const auto button = buildAction(action);
+				identifiers.push_back(button != nullptr
+										  ? button->getIdentifier()
+										  : ecs::Entity::InvalidIdentifier);
 			}
+			appBar.setActionButtons(identifiers);
 		}
-	}
 
-	void AppBar::attachContent(void)
-	{
+		// Hand the layout children to the surface.
 		std::vector<std::shared_ptr<ecs::Entity>> children;
-
-		if (_navigationIconEntity != nullptr) {
-			children.push_back(_navigationIconEntity);
+		if (auto navigation =
+				getEntity<IconButton>(appBar.getNavigationButton())) {
+			children.push_back(std::move(navigation));
 		}
-
-		if (_titleEntity != nullptr) {
-			children.push_back(_titleEntity);
+		if (auto title = getEntity<Text>(appBar.getTitleEntity())) {
+			children.push_back(std::move(title));
 		}
-
-		for (const auto &action: _actionEntities) {
-			children.push_back(action);
+		for (const auto identifier: appBar.getActionButtons()) {
+			if (auto action = getEntity<IconButton>(identifier)) {
+				children.push_back(std::move(action));
+			}
 		}
-
-		SurfaceBase::setChildren(children);
-	}
-
-	void AppBar::applyVariant(void)
-	{
-		auto config = getSurfaceConfig();
-
-		config.axis = components::Layout::Axis::Horizontal;
-		config.crossAxisAlignment =
-			components::Layout::CrossAxisAlignment::Center;
-		config.mainAxisAlignment = (_variant == Variant::CenterAligned)
-			? components::Layout::MainAxisAlignment::SpaceBetween
-			: components::Layout::MainAxisAlignment::Start;
-		if (_variant == Variant::CenterAligned && _navigation.icon.empty()
-			&& _actions.empty()) {
-			config.mainAxisAlignment =
-				components::Layout::MainAxisAlignment::Center;
-		}
-		config.padding		  = HorizontalPadding;
-		config.spacing		  = HorizontalPadding;
-		config.hasFixedHeight = true;
-		config.fixedHeight	  = getVariantHeight();
-
-		setSurfaceConfig(config);
-
-		// Paper: elevated bars (and the bottom bar) use elevation.level2.
-		const bool elevated = _elevated || _variant == Variant::Bottom;
-		setColor(elevated
-					 ? getElevatedSurfaceColor(theme::ElevationLevel::Level2)
-					 : schemeColor(SchemeColorRole::Surface));
-		this->getComponentRegistry()
-			.getComponent<components::Elevation>(this->getIdentifier())
-			.setElevationLevel(_elevated ? theme::ElevationLevel::Level2
-										 : theme::ElevationLevel::Level0);
+		setChildren(children);
 	}
 
 	AppBar &AppBar::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
-		if (_titleEntity != nullptr) {
-			_titleEntity->setTypeRole(getTitleRole());
-		}
+		getComponentRegistry()
+			.getComponent<components::AppBar>(getIdentifier())
+			.setVariant(variant);
+		systems::AppBar::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	AppBar &AppBar::setElevated(bool elevated)
 	{
-		_elevated = elevated;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::AppBar>(getIdentifier())
+			.setElevated(elevated);
+		systems::AppBar::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	bool AppBar::isElevated(void) const
 	{
-		return _elevated;
+		return getComponentRegistry()
+			.getComponent<components::AppBar>(getIdentifier())
+			.isElevated();
 	}
 
 	std::shared_ptr<IconButton> AppBar::getNavigationButton(void) const
 	{
-		return _navigationIconEntity;
+		// The lookup is const because this getter is; the child itself is
+		// shared and mutable, as it always was.
+		return std::const_pointer_cast<IconButton>(getEntity<IconButton>(
+			getComponentRegistry()
+				.getComponent<components::AppBar>(getIdentifier())
+				.getNavigationButton()));
 	}
 
 	std::shared_ptr<IconButton> AppBar::getActionButton(std::size_t index) const
 	{
-		return index < _actionEntities.size() ? _actionEntities[index]
-											  : nullptr;
+		const auto &actions =
+			getComponentRegistry()
+				.getComponent<components::AppBar>(getIdentifier())
+				.getActionButtons();
+
+		if (index >= actions.size()) {
+			return nullptr;
+		}
+		return std::const_pointer_cast<IconButton>(
+			getEntity<IconButton>(actions[index]));
 	}
 
 	std::shared_ptr<Text> AppBar::getTitle(void) const
 	{
-		return _titleEntity;
+		return std::const_pointer_cast<Text>(getEntity<Text>(
+			getComponentRegistry()
+				.getComponent<components::AppBar>(getIdentifier())
+				.getTitleEntity()));
 	}
 
 	AppBar::Variant AppBar::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::AppBar>(getIdentifier())
+			.getVariant();
 	}
 
 	AppBar &AppBar::setTitle(const std::string &title)
 	{
-		_title = title;
-
-		if (_titleEntity != nullptr) {
-			_titleEntity->setContent(title);
-		}
-
+		getComponentRegistry()
+			.getComponent<components::AppBar>(getIdentifier())
+			.setTitle(title);
+		// A first title needs its text child.
+		buildContent();
+		systems::AppBar::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	void AppBar::initialize(void)
 	{
-		update();
-		applyVariant();
 		buildContent();
-		attachContent();
-	}
-
-	void AppBar::update(void)
-	{
-		applyGeometry();
-		applyVariant();
-		buildContent();
-		attachContent();
+		systems::AppBar::apply(getComponentRegistry(), getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "guillaume/entities/card.hpp"
 
@@ -31,9 +32,9 @@
 #include "guillaume/entities/button.hpp"
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/image.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/entities/text.hpp"
+#include "guillaume/systems/card.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -62,23 +63,6 @@ namespace guillaume::entities
 			 */
 			~CardSection(void) override = default;
 		};
-
-		utility::graphic::Color32Bit
-			lerpColor(const utility::graphic::Color32Bit &from,
-					  const utility::graphic::Color32Bit &to, float t)
-		{
-			const auto mix = [t](std::uint8_t a, std::uint8_t b) {
-				return static_cast<std::uint8_t>(
-					static_cast<float>(a)
-					+ (static_cast<float>(b) - static_cast<float>(a)) * t
-					+ 0.5f);
-			};
-			return utility::graphic::Color32Bit(
-				mix(from.getRed(), to.getRed()),
-				mix(from.getGreen(), to.getGreen()),
-				mix(from.getBlue(), to.getBlue()),
-				mix(from.getAlpha(), to.getAlpha()));
-		}
 
 		constexpr float DefaultWidth = 240.0f;
 	}	 // namespace
@@ -167,251 +151,199 @@ namespace guillaume::entities
 
 	Card::Card(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant)
-		: SurfaceBase<components::Elevation, components::Animation>(registry,
-																	config)
-		, _variant(variant)
+		: SurfaceBase<components::Elevation, components::Animation,
+					  components::Card>(registry, config)
 	{
 		getComponentRegistry()
-			.getComponent<components::Animation>(getIdentifier())
-			.setDuration(getMotionDuration(theme::MotionDuration::Short3))
-			.setEasing(theme::MotionScale::standard())
-			.setOnSampleHandler([this](float progress) {
-				const float target = _pressed ? 1.0f : 0.0f;
-				_pressProgress = _pressFrom + (target - _pressFrom) * progress;
-				applyVariant();
-			});
-		applyVariant();
+			.getComponent<components::Card>(getIdentifier())
+			.setVariant(variant);
+		systems::Card::install(getComponentRegistry(), getIdentifier());
+		systems::Card::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Card::~Card(void)
 	{
 	}
 
-	void Card::applyVariant(void)
-	{
-		auto &borders =
-			getComponentRegistry().getComponent<components::Borders>(
-				getIdentifier());
-		auto &elevation =
-			getComponentRegistry().getComponent<components::Elevation>(
-				getIdentifier());
-
-		utility::graphic::Color32Bit container;
-
-		switch (_variant) {
-			case Variant::Elevated: {
-				// Paper raises an elevated card from level 1 to level 2 while
-				// pressed; the shadow and the tonal tint follow the motion.
-				const auto &rest =
-					getElevationToken(theme::ElevationLevel::Level1);
-				const auto &raised =
-					getElevationToken(theme::ElevationLevel::Level2);
-				const float t = _pressProgress;
-				container	  = lerpColor(
-					getElevatedSurfaceColor(theme::ElevationLevel::Level1),
-					getElevatedSurfaceColor(theme::ElevationLevel::Level2), t);
-				elevation.setElevationLevel(
-					t >= 0.5f ? theme::ElevationLevel::Level2
-							  : theme::ElevationLevel::Level1);
-				elevation
-					.setSpread(rest.shadowSpread
-							   + (raised.shadowSpread - rest.shadowSpread) * t)
-					.setColor(utility::graphic::Color32Bit(
-						0, 0, 0,
-						static_cast<std::uint8_t>(
-							static_cast<float>(rest.shadowAlpha)
-							+ (static_cast<float>(raised.shadowAlpha)
-							   - static_cast<float>(rest.shadowAlpha))
-								* t)));
-				borders.setColor(transparentColor()).setWidth(0.0f);
-				break;
-			}
-			case Variant::Filled: {
-				container = schemeColor(SchemeColorRole::SurfaceVariant);
-				borders.setColor(transparentColor()).setWidth(0.0f);
-				elevation.setElevationLevel(theme::ElevationLevel::Level0);
-				break;
-			}
-			case Variant::Outlined:
-			default: {
-				container = schemeColor(SchemeColorRole::Surface);
-				borders.setColor(schemeColor(SchemeColorRole::OutlineVariant))
-					.setWidth(1.0f);
-				elevation.setElevationLevel(theme::ElevationLevel::Level0);
-				break;
-			}
-		}
-
-		if (_interactive) {
-			container = stateLayerColor(
-				getComponentRegistry(), getIdentifier(), container,
-				schemeColor(SchemeColorRole::OnSurface));
-		}
-		setColor(container);
-	}
-
-	void Card::onInteractionChanged(void)
-	{
-		const bool pressed = _variant == Variant::Elevated
-			&& entities::isPressed(getComponentRegistry(), getIdentifier());
-		if (pressed != _pressed) {
-			_pressed   = pressed;
-			_pressFrom = _pressProgress;
-			getComponentRegistry()
-				.getComponent<components::Animation>(getIdentifier())
-				.play();
-		}
-		applyVariant();
-	}
-
 	Card &Card::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.setVariant(variant);
+		systems::Card::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Card::Variant Card::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.getVariant();
 	}
 
 	Card &Card::setOnPress(std::function<void(void)> onPress)
 	{
-		_onPress = std::move(onPress);
-		if (!_interactive) {
-			_interactive = true;
-			makeInteractive(
-				getComponentRegistry(), getIdentifier(),
-				components::AccessibilityRole::Button,
-				[this]() {
-					if (_onPress) {
-						_onPress();
-					}
-				},
-				[this]() {
-					onInteractionChanged();
-				});
-		}
-		applyVariant();
+		systems::Card::setOnPress(getComponentRegistry(), getIdentifier(),
+								  std::move(onPress));
 		return *this;
 	}
 
 	bool Card::isInteractive(void) const
 	{
-		return _interactive;
+		return getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.isInteractive();
 	}
 
 	Card &Card::setDisabled(bool disabled)
 	{
-		setEnabled(getComponentRegistry(), getIdentifier(), !disabled);
-		if (disabled && _pressed) {
-			_pressed	   = false;
-			_pressProgress = 0.0f;
-		}
-		applyVariant();
+		systems::Card::setDisabled(getComponentRegistry(), getIdentifier(),
+								   disabled);
 		return *this;
 	}
 
 	bool Card::isDisabled(void) const
 	{
-		return !isEnabled(getComponentRegistry(), getIdentifier());
+		return systems::Card::isDisabled(getComponentRegistry(),
+										 getIdentifier());
 	}
 
 	Card &Card::setCover(const std::string &texturePath)
 	{
-		_coverPath = texturePath;
-		if (_cover != nullptr) {
-			_cover->setTexturePath(texturePath);
-		}
+		getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.setCoverPath(texturePath);
+		// A first cover needs its image child.
 		buildComposition();
+		systems::Card::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Card &Card::setTitle(const std::string &title, const std::string &subtitle)
 	{
-		_title	  = title;
-		_subtitle = subtitle;
-		if (_titleText != nullptr) {
-			_titleText->setContent(title);
-		}
-		if (_subtitleText != nullptr) {
-			_subtitleText->setContent(subtitle);
-		}
+		getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.setTitle(title)
+			.setSubtitle(subtitle);
+		// A first title needs its section and text children.
 		buildComposition();
+		systems::Card::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Card &Card::setContent(const std::string &content)
 	{
-		_contentText = content;
-		if (_content != nullptr) {
-			_content->setContent(content);
-		}
+		getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.setContentText(content);
+		// A first content needs its text child.
 		buildComposition();
+		systems::Card::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Card &Card::addAction(const std::string &label,
 						  std::function<void(void)> onPress)
 	{
-		_actionSpecs.push_back(ActionSpec { label, std::move(onPress) });
+		getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.addAction(components::Card::Action { label, std::move(onPress) });
+		// Every action needs its button child.
 		buildComposition();
+		systems::Card::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	std::shared_ptr<Image> Card::getCover(void) const
 	{
-		return _cover;
+		// The lookup is const because this getter is; the child itself is
+		// shared and mutable, as it always was.
+		return std::const_pointer_cast<Image>(getEntity<Image>(
+			getComponentRegistry()
+				.getComponent<components::Card>(getIdentifier())
+				.getCover()));
 	}
 
 	std::shared_ptr<ecs::Entity> Card::getTitleSection(void) const
 	{
-		return _titleSection;
+		return std::const_pointer_cast<ecs::Entity>(getEntity<ecs::Entity>(
+			getComponentRegistry()
+				.getComponent<components::Card>(getIdentifier())
+				.getTitleSection()));
 	}
 
 	std::shared_ptr<Text> Card::getContent(void) const
 	{
-		return _content;
+		return std::const_pointer_cast<Text>(
+			getEntity<Text>(getComponentRegistry()
+								.getComponent<components::Card>(getIdentifier())
+								.getContentEntity()));
 	}
 
 	std::shared_ptr<ecs::Entity> Card::getActionsSection(void) const
 	{
-		return _actionsSection;
+		return std::const_pointer_cast<ecs::Entity>(getEntity<ecs::Entity>(
+			getComponentRegistry()
+				.getComponent<components::Card>(getIdentifier())
+				.getActionsSection()));
 	}
 
-	const std::vector<std::shared_ptr<Button>> &Card::getActions(void) const
+	std::vector<std::shared_ptr<Button>> Card::getActions(void) const
 	{
-		return _actions;
+		const auto &card =
+			getComponentRegistry().getComponent<components::Card>(
+				getIdentifier());
+		const auto row = getEntity<CardSection>(card.getActionsSection());
+		std::vector<std::shared_ptr<Button>> actions;
+
+		if (row == nullptr) {
+			return actions;
+		}
+		// The buttons are owned by the actions row.
+		for (const auto identifier: card.getActionButtons()) {
+			if (auto button = std::const_pointer_cast<Button>(
+					row->getEntity<Button>(identifier))) {
+				actions.push_back(std::move(button));
+			}
+		}
+		return actions;
 	}
 
 	float Card::getPressProgress(void) const
 	{
-		return _pressProgress;
+		return getComponentRegistry()
+			.getComponent<components::Card>(getIdentifier())
+			.getPressProgress();
 	}
 
 	void Card::buildComposition(void)
 	{
-		if (!_initialized) {
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
 			return;
 		}
 
-		auto &registry	   = getComponentRegistry();
-		const auto self	   = shared_from_this();
-		const auto &config = getSurfaceConfig();
-		const float width  = config.hasFixedWidth ? config.fixedWidth : 0.0f;
-		const float inner  = std::max(0.0f, width - 2.0f * config.padding);
+		auto &registry	= getComponentRegistry();
+		const auto self = shared_from_this();
+		const float inner =
+			systems::Card::contentWidth(registry, getIdentifier());
+		auto &card = registry.getComponent<components::Card>(getIdentifier());
 
-		if (_cover == nullptr && !_coverPath.empty()) {
+		if (card.getCover() == ecs::Entity::InvalidIdentifier
+			&& !card.getCoverPath().empty()) {
 			Image::Builder builder(registry, *this);
-			builder.withTexturePath(_coverPath);
+			builder.withTexturePath(card.getCoverPath());
 			if (inner > 0.0f) {
 				builder.withSize(inner, CoverHeight);
 			}
-			_cover = builder.registerEntity(self);
+			const auto cover = builder.registerEntity(self);
+			if (cover != nullptr) {
+				card.setCover(cover->getIdentifier());
+			}
 		}
 
-		if (_titleSection == nullptr && !_title.empty()) {
+		if (card.getTitleSection() == ecs::Entity::InvalidIdentifier
+			&& !card.getTitle().empty()) {
 			SurfaceConfig sectionConfig;
 			sectionConfig.axis = components::Layout::Axis::Vertical;
 			sectionConfig.mainAxisAlignment =
@@ -426,22 +358,25 @@ namespace guillaume::entities
 				std::make_shared<CardSection>(registry, sectionConfig);
 			section->setParent(self);
 			this->addEntity(section);
-			_titleSection = section;
+			card.setTitleSection(section->getIdentifier());
 
-			_titleText = buildText(registry, *section, section, _title,
-								   theme::TypeRole::BodyLarge,
-								   schemeColor(SchemeColorRole::OnSurface));
-			_subtitleText =
-				buildText(registry, *section, section, _subtitle,
+			const auto titleText =
+				buildText(registry, *section, section, card.getTitle(),
+						  theme::TypeRole::BodyLarge,
+						  schemeColor(SchemeColorRole::OnSurface));
+			const auto subtitleText =
+				buildText(registry, *section, section, card.getSubtitle(),
 						  theme::TypeRole::BodyMedium,
 						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 
 			std::vector<std::shared_ptr<ecs::Entity>> texts;
-			if (_titleText != nullptr) {
-				texts.push_back(_titleText);
+			if (titleText != nullptr) {
+				card.setTitleText(titleText->getIdentifier());
+				texts.push_back(titleText);
 			}
-			if (_subtitleText != nullptr) {
-				texts.push_back(_subtitleText);
+			if (subtitleText != nullptr) {
+				card.setSubtitleText(subtitleText->getIdentifier());
+				texts.push_back(subtitleText);
 			}
 			section->setChildren(texts);
 			registry.addComponent<components::Accessibility>(
@@ -450,18 +385,22 @@ namespace guillaume::entities
 				.getComponent<components::Accessibility>(
 					section->getIdentifier())
 				.setRole(components::AccessibilityRole::Header)
-				.setLabel(_title);
+				.setLabel(card.getTitle());
 		}
 
-		if (_content == nullptr && !_contentText.empty()) {
-			_content =
-				buildText(registry, *this, self, _contentText,
+		if (card.getContentEntity() == ecs::Entity::InvalidIdentifier
+			&& !card.getContentText().empty()) {
+			const auto content =
+				buildText(registry, *this, self, card.getContentText(),
 						  theme::TypeRole::BodyMedium,
 						  schemeColor(SchemeColorRole::OnSurfaceVariant));
+			if (content != nullptr) {
+				card.setContentEntity(content->getIdentifier());
+			}
 		}
 
-		if (!_actionSpecs.empty()) {
-			if (_actionsSection == nullptr) {
+		if (!card.getActions().empty()) {
+			if (card.getActionsSection() == ecs::Entity::InvalidIdentifier) {
 				SurfaceConfig rowConfig;
 				rowConfig.axis = components::Layout::Axis::Horizontal;
 				rowConfig.mainAxisAlignment =
@@ -472,55 +411,56 @@ namespace guillaume::entities
 				if (inner > 0.0f) {
 					rowConfig.setFixedWidth(inner);
 				}
-				auto row = std::make_shared<CardSection>(registry, rowConfig);
-				row->setParent(self);
-				this->addEntity(row);
-				_actionsSection = row;
+				auto section =
+					std::make_shared<CardSection>(registry, rowConfig);
+				section->setParent(self);
+				this->addEntity(section);
+				card.setActionsSection(section->getIdentifier());
 			}
 
-			auto row = std::static_pointer_cast<CardSection>(_actionsSection);
-			while (_actions.size() < _actionSpecs.size()) {
-				const auto &spec = _actionSpecs[_actions.size()];
+			const auto row	 = getEntity<CardSection>(card.getActionsSection());
+			auto identifiers = card.getActionButtons();
+			while (row != nullptr
+				   && identifiers.size() < card.getActions().size()) {
+				const auto &action = card.getActions()[identifiers.size()];
 				Button::Builder builder(registry, *row);
-				_actions.push_back(builder.withLabel(spec.label)
-									   .withOnClick(spec.onPress)
-									   .withColorStyle(Button::Color::Text)
-									   .registerEntity(row));
+				const auto button = builder.withLabel(action.label)
+										.withOnClick(action.onPress)
+										.withColorStyle(Button::Color::Text)
+										.registerEntity(row);
+				identifiers.push_back(button != nullptr
+										  ? button->getIdentifier()
+										  : ecs::Entity::InvalidIdentifier);
 			}
+			card.setActionButtons(identifiers);
 
-			std::vector<std::shared_ptr<ecs::Entity>> buttons(_actions.begin(),
-															  _actions.end());
-			row->setChildren(buttons);
+			if (row != nullptr) {
+				std::vector<std::shared_ptr<ecs::Entity>> buttons;
+				for (const auto identifier: identifiers) {
+					if (auto button = row->getEntity<Button>(identifier)) {
+						buttons.push_back(std::move(button));
+					}
+				}
+				row->setChildren(buttons);
+			}
 		}
 
+		// Hand the layout children to the surface.
 		std::vector<std::shared_ptr<ecs::Entity>> children;
-		if (_cover != nullptr) {
-			children.push_back(_cover);
-		}
-		if (_titleSection != nullptr) {
-			children.push_back(_titleSection);
-		}
-		if (_content != nullptr) {
-			children.push_back(_content);
-		}
-		if (_actionsSection != nullptr) {
-			children.push_back(_actionsSection);
+		for (const auto identifier:
+			 { card.getCover(), card.getTitleSection(), card.getContentEntity(),
+			   card.getActionsSection() }) {
+			if (auto child = getEntity<ecs::Entity>(identifier)) {
+				children.push_back(std::move(child));
+			}
 		}
 		setChildren(children);
 	}
 
 	void Card::initialize(void)
 	{
-		update();
-		_initialized = true;
 		buildComposition();
-		applyVariant();
-	}
-
-	void Card::update(void)
-	{
-		applyGeometry();
-		applyVariant();
+		systems::Card::apply(getComponentRegistry(), getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

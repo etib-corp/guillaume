@@ -33,6 +33,7 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/app_bar.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/icon.hpp"
 #include "guillaume/entities/icon_button.hpp"
@@ -50,30 +51,25 @@ namespace guillaume::entities
 	 * App bars reuse `SurfaceBase` for the layout, geometry and background
 	 * surface. They arrange their children along a horizontal axis, centered
 	 * on the cross axis. The M3 variants are:
-	 * - `Small`: height 56.
-	 * - `Medium`: height 104.
+	 * - `Small` and `CenterAligned`: height 64.
+	 * - `Medium`: height 112.
 	 * - `Large`: height 152.
 	 * - `Bottom`: height 80.
 	 *
+	 * The class is a facade without fields: its state is components::AppBar
+	 * and systems::AppBar styles the bar and arranges its children.
+	 * `initialize()` only builds the child entities.
+	 *
 	 * @see SurfaceBase
 	 */
-	class AppBar: public SurfaceBase<components::Elevation>
+	class AppBar: public SurfaceBase<components::Elevation, components::AppBar>
 	{
 		public:
-		/**
-		 * @brief App bar variant.
-		 */
-		enum class Variant { Small, CenterAligned, Medium, Large, Bottom };
+		/// App bar variant.
+		using Variant = components::AppBar::Variant;
 
-		/**
-		 * @brief A pressable app bar icon (navigation or action).
-		 */
-		struct Action {
-			std::string icon {};					 ///< Icon glyph.
-			std::function<void(void)> onPress {};	 ///< Press handler.
-			std::string accessibilityLabel {};		 ///< Accessible name.
-			bool disabled { false };				 ///< Whether disabled.
-		};
+		/// A pressable app bar icon (navigation or action).
+		using Action = components::AppBar::Action;
 
 		/**
 		 * @brief Builder used to configure and create `AppBar` entities.
@@ -190,55 +186,6 @@ namespace guillaume::entities
 						   Variant variant);
 		};
 
-		private:
-		Variant _variant { Variant::Small };	///< App bar variant.
-		std::string _title {};					///< Title text.
-		Action _navigation {};					///< Leading navigation action.
-		std::vector<Action> _actions {};		///< Trailing actions.
-		bool _elevated { false };				///< Level-2 tonal elevation.
-		std::shared_ptr<IconButton>
-			_navigationIconEntity;			   ///< Leading icon button child.
-		std::shared_ptr<Text> _titleEntity;	   ///< Title child.
-		std::vector<std::shared_ptr<IconButton>>
-			_actionEntities {};	   ///< Trailing action children.
-
-		private:
-		/**
-		 * @brief Get the fixed height for the current variant.
-		 * @return The app bar height.
-		 */
-		float getVariantHeight(void) const;
-
-		/**
-		 * @brief Get the title typescale role of the current variant.
-		 * @return titleLarge (small/center/bottom), headlineSmall (medium) or
-		 * headlineMedium (large).
-		 */
-		theme::TypeRole getTitleRole(void) const;
-
-		/**
-		 * @brief Build one pressable icon button.
-		 * @param action Action configuration.
-		 * @return The icon button child.
-		 */
-		std::shared_ptr<IconButton> buildAction(const Action &action);
-
-		/**
-		 * @brief Apply the variant-specific geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Build the leading, title and trailing child entities.
-		 */
-		void buildContent(void);
-
-		/**
-		 * @brief Attach the built children to the surface.
-		 */
-		void attachContent(void);
-
-		public:
 		/**
 		 * @brief Construct an AppBar entity.
 		 * @param registry The component registry.
@@ -328,17 +275,29 @@ namespace guillaume::entities
 		/**
 		 * @brief Horizontal padding (Paper: 4 dp).
 		 */
-		static constexpr float HorizontalPadding = 4.0f;
+		static constexpr float HorizontalPadding =
+			components::AppBar::HorizontalPadding;
 
 		/**
-		 * @brief Initialize the app bar derived state.
+		 * @brief Build the navigation, title and action children.
 		 */
 		void initialize(void) override;
 
+		private:
 		/**
-		 * @brief Recompute the app bar derived state.
+		 * @brief Build one pressable icon button.
+		 * @param action Action configuration.
+		 * @return The icon button child.
 		 */
-		void update(void) override;
+		std::shared_ptr<IconButton> buildAction(const Action &action);
+
+		/**
+		 * @brief Build the navigation, title and action child entities that
+		 * are missing and record their identifiers in components::AppBar.
+		 *
+		 * Does nothing until the app bar is owned by a shared pointer.
+		 */
+		void buildContent(void);
 	};
 
 }	 // namespace guillaume::entities

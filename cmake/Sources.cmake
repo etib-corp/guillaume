@@ -9,12 +9,14 @@ set(GUILLAUME_SOURCES
     sources/component_registry.cpp
     sources/components/accessibility.cpp
     sources/components/animation.cpp
+    sources/components/app_bar.cpp
     sources/components/arc.cpp
     sources/components/backdrop.cpp
     sources/components/badge.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/button.cpp
+    sources/components/card.cpp
     sources/components/checkbox.cpp
     sources/components/chip.cpp
     sources/components/clip.cpp
@@ -134,10 +136,12 @@ set(GUILLAUME_SOURCES
     sources/session_storage.cpp
     sources/storage.cpp
     sources/systems/animation.cpp
+    sources/systems/app_bar.cpp
     sources/systems/arc_render.cpp
     sources/systems/backdrop.cpp
     sources/systems/badge.cpp
     sources/systems/button.cpp
+    sources/systems/card.cpp
     sources/systems/checkbox.cpp
     sources/systems/chip.cpp
     sources/systems/clip.cpp
