@@ -608,7 +608,7 @@ namespace guillaume::entities
 
 	void NavigationDrawer::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 
 		if (_destinationEntities.empty()) {
 			buildDestinations();
@@ -620,7 +620,7 @@ namespace guillaume::entities
 
 	void NavigationDrawer::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 
 		for (auto &entity: _destinationEntities) {
 			auto destination =

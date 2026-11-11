@@ -352,7 +352,7 @@ namespace guillaume::entities
 
 	void RadioButton::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 
 		_dot = std::make_shared<RadioDot>(
 			getComponentRegistry(), schemeColor(SchemeColorRole::Primary));
@@ -375,7 +375,7 @@ namespace guillaume::entities
 
 	void RadioButton::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 	}
 

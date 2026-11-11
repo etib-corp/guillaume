@@ -62,6 +62,7 @@ set(TEST_SOURCES
     sources/systems/test_rectangle_render.cpp
     sources/systems/test_shape_render.cpp
     sources/systems/test_surface_render.cpp
+    sources/systems/test_surface_tone.cpp
     sources/systems/test_interaction.cpp
     sources/systems/test_overlay.cpp
     sources/systems/test_keyboard_control.cpp

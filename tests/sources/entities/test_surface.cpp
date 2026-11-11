@@ -30,6 +30,7 @@
 #include <guillaume/components/elevation.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/surface_tone.hpp>
 #include <guillaume/theme.hpp>
 
 namespace guillaume::entities::tests
@@ -76,7 +77,6 @@ namespace guillaume::entities::tests
 			 ++index) {
 			const auto level = static_cast<theme::ElevationLevel>(index);
 			auto surface	 = makeSurface(registry, level);
-			surface->update();
 
 			EXPECT_EQ(
 				registry
@@ -128,8 +128,9 @@ namespace guillaume::entities::tests
 				.getColor(),
 			getElevatedSurfaceColor(theme::ElevationLevel::Level5));
 
+		// The entity holds no behavior: the system restyles it each frame.
 		setActiveScheme(ThemeSchemeRole::Dark);
-		surface->update();
+		systems::SurfaceTone::apply(registry, surface->getIdentifier());
 		EXPECT_EQ(
 			registry.getComponent<components::Color>(surface->getIdentifier())
 				.getColor(),

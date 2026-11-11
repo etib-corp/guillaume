@@ -605,14 +605,14 @@ namespace guillaume::entities
 
 	void List::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		applyVariant();
 		buildItems();
 	}
 
 	void List::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 		buildItems();
 	}

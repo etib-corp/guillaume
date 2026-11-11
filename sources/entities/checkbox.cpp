@@ -359,7 +359,7 @@ namespace guillaume::entities
 
 	void Checkbox::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 
 		_checkIcon =
 			buildIcon(getComponentRegistry(), *this, shared_from_this(),
@@ -385,7 +385,7 @@ namespace guillaume::entities
 
 	void Checkbox::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 	}
 

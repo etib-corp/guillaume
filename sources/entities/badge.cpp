@@ -255,7 +255,7 @@ namespace guillaume::entities
 
 	void Badge::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 
 		if (_variant != Variant::Dot && !_label.empty()) {
 			_labelEntity =
@@ -273,7 +273,7 @@ namespace guillaume::entities
 
 	void Badge::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 	}
 

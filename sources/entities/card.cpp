@@ -511,7 +511,7 @@ namespace guillaume::entities
 
 	void Card::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		_initialized = true;
 		buildComposition();
 		applyVariant();
@@ -519,7 +519,7 @@ namespace guillaume::entities
 
 	void Card::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 	}
 

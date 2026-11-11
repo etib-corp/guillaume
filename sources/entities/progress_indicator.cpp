@@ -618,14 +618,14 @@ namespace guillaume::entities
 
 	void ProgressIndicator::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		buildChildren();
 		applyState();
 	}
 
 	void ProgressIndicator::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		buildChildren();
 		applyState();
 	}

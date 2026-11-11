@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <utility>
 
+#include "guillaume/components/hierarchy.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::systems
@@ -78,11 +79,14 @@ namespace guillaume::systems
 
 		const auto &layout = getComponent<components::Layout>(entityIdentifier);
 
+		// The layer comes from the Hierarchy component, so the system needs
+		// no entity object.
 		std::uint32_t layer = 0;
-		const auto entity =
-			getEntityRegistry().getEntity<ecs::Entity>(entityIdentifier);
-		if (entity != nullptr) {
-			layer = static_cast<std::uint32_t>(entity->getLayer());
+		if (getComponentRegistry().hasComponent<components::Hierarchy>(
+				entityIdentifier)) {
+			layer = static_cast<std::uint32_t>(
+				getComponent<components::Hierarchy>(entityIdentifier)
+					.getLayer());
 		}
 
 		// Only the container's registered layout children are arranged; any

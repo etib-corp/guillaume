@@ -546,7 +546,7 @@ namespace guillaume::entities
 
 	void Search::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		applyVariant();
 		applyOverlay();
 		buildContent();
@@ -555,7 +555,7 @@ namespace guillaume::entities
 
 	void Search::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 		applyOverlay();
 		buildContent();

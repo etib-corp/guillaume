@@ -459,14 +459,14 @@ namespace guillaume::entities
 
 	void LoadingIndicator::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		buildChild();
 		applyState();
 	}
 
 	void LoadingIndicator::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		buildChild();
 	}
 

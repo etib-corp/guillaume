@@ -390,7 +390,7 @@ namespace guillaume::entities
 
 	void Snackbar::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 		applyVariant();
 		applyOverlay();
 		buildContent();
@@ -399,7 +399,7 @@ namespace guillaume::entities
 
 	void Snackbar::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applyVariant();
 		applyOverlay();
 		buildContent();

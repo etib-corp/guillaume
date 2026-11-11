@@ -42,6 +42,7 @@ set(GUILLAUME_SOURCES
     sources/components/scrollable.cpp
     sources/components/selection.cpp
     sources/components/style_state.cpp
+    sources/components/surface_tone.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
     sources/components/transform.cpp
@@ -156,6 +157,7 @@ set(GUILLAUME_SOURCES
     sources/systems/scrim_render.cpp
     sources/systems/shape_mesh.cpp
     sources/systems/style_state.cpp
+    sources/systems/surface_tone.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp

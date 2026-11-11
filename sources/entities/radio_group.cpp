@@ -161,7 +161,7 @@ namespace guillaume::entities
 
 	void RadioGroup::initialize(void)
 	{
-		SurfaceBase::initialize();
+		update();
 
 		_buttons.clear();
 		RadioButton::Builder builder(getComponentRegistry(), *this);
@@ -185,7 +185,7 @@ namespace guillaume::entities
 
 	void RadioGroup::update(void)
 	{
-		SurfaceBase::update();
+		applyGeometry();
 		applySelection();
 	}
 
