@@ -65,9 +65,11 @@ namespace guillaume::components
 		ecs::Entity::Identifier _dot {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Inner dot child
+
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
-		};							 ///< Label child
+		};	  ///< Label child
+
 		PressHandler _onPress {};	 ///< User press callback
 
 		public:
