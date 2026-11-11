@@ -103,6 +103,10 @@ Versions follow the calendar scheme described in
   - **Breaking:** a view no longer keeps the entities passed to
     `setEntities()` alive; they must be owned by an entity registry (which is
     what the builders do) or by the caller.
+- The in-code documentation was rewritten for newcomers: every class says
+  what it is, who writes and reads it and in which phase, with examples.
+  `headers/guillaume/namespaces.hpp` is the map of the modules, and
+  `docs/CODE_CONVENTIONS.md` has the documentation guide.
 - **Breaking:** `SurfaceBase::getChildren()` returns the identifiers of the
   layout children (read from the Layout component) instead of entity
   handles, and a surface no longer keeps its attached children alive: they
@@ -151,6 +155,9 @@ Versions follow the calendar scheme described in
   is the entity itself or one of its descendants.
 
 ### Fixed
+
+- `systems::Button` is registered by `registerCoreSystems()`; its per-frame
+  sync of a button's icon and accessibility state did not run.
 
 - `LocalStorage` waits for a concurrent writer instead of failing when
   several processes open the same storage file for the first time.
