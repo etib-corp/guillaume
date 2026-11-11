@@ -22,6 +22,8 @@
 
 #include "guillaume/local_storage.hpp"
 
+#include <system_error>
+
 #include <sqlite3.h>
 
 namespace guillaume
@@ -31,9 +33,12 @@ namespace guillaume
 		: _storageFilePath(storageFilePath)
 		, _database(nullptr)
 	{
+		// A directory that cannot be created is handled like a file that
+		// cannot be opened: by the in-memory fallback below.
 		const auto parentPath = _storageFilePath.parent_path();
 		if (!parentPath.empty()) {
-			std::filesystem::create_directories(parentPath);
+			std::error_code ignored;
+			std::filesystem::create_directories(parentPath, ignored);
 		}
 
 		if (sqlite3_open_v2(_storageFilePath.string().c_str(), &_database,
@@ -43,7 +48,14 @@ namespace guillaume
 				sqlite3_close(_database);
 				_database = nullptr;
 			}
-			// Fallback to in-memory database if file-based storage fails
+			// Fallback to in-memory database if file-based storage fails.
+			// The data then lives only as long as this object: say so.
+			_persistent = false;
+			getLogger().error()
+				<< "Local storage file cannot be opened: "
+				<< _storageFilePath.string()
+				<< ". Falling back to in-memory storage; nothing will be "
+				   "persisted.";
 			if (sqlite3_open(":memory:", &_database) != SQLITE_OK) {
 				if (_database) {
 					sqlite3_close(_database);
@@ -100,6 +112,11 @@ namespace guillaume
 			sqlite3_finalize(_removeItemStmt);
 			_removeItemStmt = nullptr;
 		}
+	}
+
+	bool LocalStorage::isPersistent(void) const noexcept
+	{
+		return _persistent;
 	}
 
 	std::filesystem::path LocalStorage::defaultStoragePath(void)

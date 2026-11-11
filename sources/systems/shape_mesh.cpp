@@ -231,4 +231,71 @@ namespace guillaume::systems::shape
 		}
 	}
 
+	void buildRoundedStrokeMesh(
+		utility::graphic::Mesh &mesh, const utility::graphic::PositionF &center,
+		const utility::graphic::OrientationF &orientation,
+		const float halfWidth, const float halfHeight, const float radius,
+		const float width, int arcSegments,
+		const utility::graphic::Color32Bit &color)
+	{
+		const float pi = std::acos(-1.0f);
+		if (arcSegments <= 0) {
+			arcSegments = 1;
+		}
+
+		const float stroke = (std::min)({ width, halfWidth, halfHeight });
+		const float outerRadius =
+			std::max(0.0f, (std::min)({ radius, halfWidth, halfHeight }));
+		const float innerHalfWidth	= halfWidth - stroke;
+		const float innerHalfHeight = halfHeight - stroke;
+		const float innerRadius		= std::max(0.0f, outerRadius - stroke);
+
+		// Both loops always sample every corner arc (a zero radius collapses
+		// an arc onto its corner), so outer and inner vertices pair up 1:1.
+		const auto buildLoop = [&](float hw, float hh, float r) {
+			std::vector<utility::math::Vector2F> loop;
+			loop.reserve(static_cast<std::size_t>(4 * (arcSegments + 1)));
+			const auto appendArc = [&](float cx, float cy, float start,
+									   float end) {
+				for (int i = 0; i <= arcSegments; ++i) {
+					const float t =
+						static_cast<float>(i) / static_cast<float>(arcSegments);
+					const float angle = start + (end - start) * t;
+					loop.push_back(
+						utility::math::Vector2F({ cx + std::cos(angle) * r,
+												  cy + std::sin(angle) * r }));
+				}
+			};
+			appendArc(hw - r, -hh + r, -pi / 2.0f, 0.0f);
+			appendArc(hw - r, hh - r, 0.0f, pi / 2.0f);
+			appendArc(-hw + r, hh - r, pi / 2.0f, pi);
+			appendArc(-hw + r, -hh + r, pi, 3.0f * pi / 2.0f);
+			return transformToWorldVertices(loop, center, orientation);
+		};
+
+		const auto outer = buildLoop(halfWidth, halfHeight, outerRadius);
+		const auto inner =
+			buildLoop(innerHalfWidth, innerHalfHeight, innerRadius);
+
+		for (std::size_t i = 0; i < outer.size(); ++i) {
+			mesh.addVertex(createVertex(outer[i], color));
+			mesh.addVertex(createVertex(inner[i], color));
+		}
+
+		const auto count = static_cast<std::uint32_t>(outer.size());
+		for (std::uint32_t i = 0; i < count; ++i) {
+			const std::uint32_t next	   = (i + 1) % count;
+			const std::uint32_t outerIndex = i * 2;
+			const std::uint32_t innerIndex = i * 2 + 1;
+			const std::uint32_t outerNext  = next * 2;
+			const std::uint32_t innerNext  = next * 2 + 1;
+			mesh.addIndex(outerIndex);
+			mesh.addIndex(innerIndex);
+			mesh.addIndex(outerNext);
+			mesh.addIndex(outerNext);
+			mesh.addIndex(innerIndex);
+			mesh.addIndex(innerNext);
+		}
+	}
+
 }	 // namespace guillaume::systems::shape

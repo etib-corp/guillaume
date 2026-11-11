@@ -22,6 +22,12 @@
 
 #include "entities/test_loading_indicator.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
+#include <stdexcept>
+
 #include <memory>
 
 #include <guillaume/components/animation.hpp>
@@ -29,6 +35,7 @@
 #include <guillaume/components/bound.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -42,9 +49,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			LoadingIndicator::Builder builder(registry, entityRegistry);
-			LoadingIndicator::Director director;
 
-			return director.makeLoadingIndicator(builder, nullptr, variant);
+			return builder.makeLoadingIndicator(nullptr, variant);
 		}
 	}	 // namespace
 
@@ -75,6 +81,30 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(loading->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 48.0f);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 48.0f);
+	}
+
+	TEST_F(TestLoadingIndicator, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading = makeLoadingIndicator(registry);
+
+		loading->update();
+
+		const float baseZ =
+			registry
+				.getComponent<components::Transform>(loading->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, loading);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestLoadingIndicator, AnimationRunsAfterInitialize)
@@ -130,21 +160,85 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(loading->getVariant(), LoadingIndicator::Variant::Linear);
 	}
 
-	TEST_F(TestLoadingIndicator, DirectorBuildsAndRegisters)
+	TEST_F(TestLoadingIndicator, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		LoadingIndicator::Builder builder(registry, entityRegistry);
-		LoadingIndicator::Director director;
 
-		auto loading = director.makeLoadingIndicator(
-			builder, parent, LoadingIndicator::Variant::Linear);
+		auto loading = builder.makeLoadingIndicator(
+			parent, LoadingIndicator::Variant::Linear);
 
 		ASSERT_NE(loading, nullptr);
 		EXPECT_EQ(loading->getParent(), parent);
 		EXPECT_EQ(loading->getVariant(), LoadingIndicator::Variant::Linear);
+	}
+
+	TEST_F(TestLoadingIndicator, DefaultsToCircularM3Geometry)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		LoadingIndicator::Builder builder(registry, entityRegistry);
+		auto loading = builder.registerEntity(nullptr);
+		loading->initialize();
+
+		EXPECT_EQ(loading->getVariant(), LoadingIndicator::Variant::Circular);
+		EXPECT_FLOAT_EQ(loading->getSize(), 48.0f);
+		EXPECT_FLOAT_EQ(loading->getStrokeWidth(), 4.0f);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  loading->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::ProgressBar);
+
+		loading->setSize(24.0f);
+		EXPECT_FLOAT_EQ(loading->getStrokeWidth(), 2.0f);
+		EXPECT_THROW(loading->setSize(0.0f), std::invalid_argument);
+	}
+
+	TEST_F(TestLoadingIndicator, HidesWhenStoppedWithFade)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading =
+			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
+		loading->initialize();
+		EXPECT_TRUE(loading->hidesWhenStopped());
+
+		loading->stop();
+		auto &fade = registry.getComponent<components::Animation>(
+			loading->getIdentifier());
+		EXPECT_TRUE(fade.isPlaying());
+		EXPECT_FLOAT_EQ(fade.getDuration(),
+						getMotionDuration(theme::MotionDuration::Short4));
+		fade.advance(1.0f);
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 0.0f);
+
+		loading->start();
+		fade.advance(1.0f);
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 1.0f);
+
+		loading->setHidesWhenStopped(false);
+		loading->stop();
+		fade.advance(1.0f);
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 1.0f);
+	}
+
+	TEST_F(TestLoadingIndicator, ColorOverrideReachesIndicator)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading =
+			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
+		loading->initialize();
+		EXPECT_EQ(
+			loading->getIndicatorColor(),
+			getActiveScheme().getColor(SchemeColorRole::Primary).getColor());
+
+		const auto tertiary =
+			getActiveScheme().getColor(SchemeColorRole::Tertiary).getColor();
+		loading->setIndicatorColor(tertiary);
+		EXPECT_EQ(loading->getIndicatorColor(), tertiary);
 	}
 
 }	 // namespace guillaume::entities::tests

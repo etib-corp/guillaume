@@ -47,14 +47,20 @@ namespace guillaume::systems
 								 components::Color, components::Line>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
+		utility::Engine &_engine;	 ///< utility::Engine.
 
 		public:
+		/**
+		 * @brief Depth lift, in layer steps, of edge-placed strokes so they
+		 * draw over the fill of the entity carrying them.
+		 */
+		static constexpr float StrokeLift = 0.5f;
+
 		/**
 		 * @brief Construct a line rendering system.
 		 * @param engine The engine used to draw lines.
 		 */
-		LineRender(std::unique_ptr<utility::Engine> &engine);
+		LineRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -30,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/hand_button_interaction.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
@@ -132,17 +132,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Switch::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a switch using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The switch variant.
 			 * @param checked The initial checked state.
@@ -151,8 +143,7 @@ namespace guillaume::entities
 			 * @return The newly created switch.
 			 */
 			std::shared_ptr<Switch>
-				makeSwitch(Builder &builder,
-						   std::shared_ptr<ecs::Entity> parent, Variant variant,
+				makeSwitch(std::shared_ptr<ecs::Entity> parent, Variant variant,
 						   bool checked, const std::string &iconGlyph,
 						   const std::string &label);
 		};
@@ -164,6 +155,8 @@ namespace guillaume::entities
 		std::shared_ptr<ecs::Entity> _thumb;	  ///< Thumb child.
 		std::shared_ptr<Icon> _icon;			  ///< Thumb icon child.
 		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
+		std::function<void(bool)>
+			_onValueChange {};	  ///< Called when the user toggles the switch.
 
 		private:
 		/**
@@ -225,7 +218,34 @@ namespace guillaume::entities
 		 * @brief Flip the switch state.
 		 * @return Reference to this switch for chaining.
 		 */
+		/**
+		 * @brief Flip the checked state, as a user activation would.
+		 *
+		 * Does nothing while the switch is disabled. Calls the value-change
+		 * handler with the new state.
+		 *
+		 * @return Reference to this switch for chaining.
+		 */
 		Switch &toggle(void);
+
+		/**
+		 * @brief Set the handler called when the user toggles the switch
+		 * (Paper `onValueChange`).
+		 * @param onValueChange Handler receiving the new checked state.
+		 * @return Reference to this switch for chaining.
+		 */
+		Switch &setOnValueChange(std::function<void(bool)> onValueChange);
+
+		/**
+		 * @brief Check whether the switch is disabled.
+		 * @return True for `Variant::Disabled`.
+		 */
+		bool isDisabled(void) const;
+
+		/**
+		 * @brief Gap between the track and the label.
+		 */
+		static constexpr float LabelGap = 16.0f;
 
 		/**
 		 * @brief Set the switch label.

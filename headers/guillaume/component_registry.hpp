@@ -24,6 +24,7 @@
 
 #include "guillaume/ecs/component_registry_filler.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/animation.hpp"
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
@@ -43,6 +44,7 @@
 #include "guillaume/components/hand_trigger_interaction.hpp"
 #include "guillaume/components/image.hpp"
 #include "guillaume/components/layout.hpp"
+#include "guillaume/components/mesh.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/overlay.hpp"
@@ -53,6 +55,7 @@
 #include "guillaume/components/scrim.hpp"
 #include "guillaume/components/scrollable.hpp"
 #include "guillaume/components/selection.hpp"
+#include "guillaume/components/style_state.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/text_field.hpp"
 #include "guillaume/components/transform.hpp"
@@ -77,13 +80,14 @@ namespace guillaume
 			components::HandThumbStickInteraction,
 			components::HandTriggerInteraction, components::Text,
 			components::Transform, components::Color, components::Borders,
-			components::Image, components::Layout, components::Value,
-			components::Range, components::Scrollable,
+			components::Image, components::Mesh, components::Layout,
+			components::Value, components::Range, components::Scrollable,
 			components::DragInteraction, components::Selectable,
 			components::SelectionGroup, components::Animation,
 			components::Overlay, components::TextField, components::Ellipse,
 			components::Ring, components::Arc, components::Line,
-			components::Elevation, components::Scrim, components::Clip>
+			components::Elevation, components::Scrim, components::Clip,
+			components::StyleState, components::Accessibility>
 	{
 		public:
 		/**

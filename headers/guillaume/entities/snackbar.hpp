@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -30,8 +31,9 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/accessibility.hpp"
+#include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -54,13 +56,30 @@ namespace guillaume::entities
 	 * @see SurfaceBase
 	 * @see components::Overlay
 	 */
-	class Snackbar: public SurfaceBase<components::Overlay>
+	class Snackbar:
+		public SurfaceBase<components::Overlay, components::Elevation,
+						   components::Accessibility>
 	{
 		public:
 		/**
 		 * @brief Snackbar variant.
 		 */
 		enum class Variant { SingleLine, MultiLine, WithAction };
+
+		/**
+		 * @brief Paper `Snackbar.DURATION_SHORT`, in seconds.
+		 */
+		static constexpr float DurationShort = 4.0f;
+
+		/**
+		 * @brief Paper `Snackbar.DURATION_MEDIUM` (the default), in seconds.
+		 */
+		static constexpr float DurationMedium = 7.0f;
+
+		/**
+		 * @brief Paper `Snackbar.DURATION_LONG`, in seconds.
+		 */
+		static constexpr float DurationLong = 10.0f;
 
 		/**
 		 * @brief Builder used to configure and create `Snackbar` entities.
@@ -72,6 +91,10 @@ namespace guillaume::entities
 			Variant _variant { Variant::SingleLine };	 ///< Snackbar variant.
 			std::string _message {};					 ///< Message text.
 			std::string _action {};						 ///< Action label.
+			bool _visible { true };						///< Initial visibility.
+			float _duration { DurationMedium };			///< Display time.
+			std::function<void(void)> _onDismiss {};	///< Dismiss handler.
+			std::function<void(void)> _onAction {};		///< Action handler.
 
 			public:
 			/**
@@ -120,17 +143,37 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withAction(const std::string &action);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Snackbar::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
+			/**
+			 * @brief Set the initial visibility (default shown).
+			 * @param visible Visibility.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withVisible(bool visible);
+
+			/**
+			 * @brief Set the display time (Paper `duration`).
+			 * @param seconds Seconds before auto-dismiss (0: never).
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withDuration(float seconds);
+
+			/**
+			 * @brief Set the dismiss handler (Paper `onDismiss`).
+			 * @param onDismiss Handler.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withOnDismiss(std::function<void(void)> onDismiss);
+
+			/**
+			 * @brief Set the action handler (Paper `action.onPress`).
+			 * @param onAction Handler.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withOnAction(std::function<void(void)> onAction);
+
 			/**
 			 * @brief Create a snackbar using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The snackbar variant.
 			 * @param message The snackbar message.
@@ -138,8 +181,7 @@ namespace guillaume::entities
 			 * @return The newly created snackbar.
 			 */
 			std::shared_ptr<Snackbar>
-				makeSnackbar(Builder &builder,
-							 std::shared_ptr<ecs::Entity> parent,
+				makeSnackbar(std::shared_ptr<ecs::Entity> parent,
 							 Variant variant, const std::string &message,
 							 const std::string &action = "");
 		};
@@ -150,6 +192,20 @@ namespace guillaume::entities
 		std::string _action {};						 ///< Action label.
 		std::shared_ptr<Text> _messageEntity;		 ///< Message child entity.
 		std::shared_ptr<Text> _actionEntity;		 ///< Action child entity.
+		bool _visible { true };	   ///< Whether the snackbar is shown.
+		float _duration { DurationMedium };			///< Display time.
+		std::function<void(void)> _onDismiss {};	///< Dismiss handler.
+		std::function<void(void)> _onAction {};		///< Action handler.
+
+		/**
+		 * @brief Mirror visibility on the overlay and the visuals.
+		 */
+		void applyVisibility(void);
+
+		/**
+		 * @brief Handle a dismissal reported by the overlay system.
+		 */
+		void handleDismiss(void);
 
 		private:
 		/**
@@ -210,6 +266,66 @@ namespace guillaume::entities
 		 * @return Reference to this snackbar for chaining.
 		 */
 		Snackbar &setMessage(const std::string &message);
+
+		/**
+		 * @brief Show or hide the snackbar (Paper `visible`).
+		 *
+		 * Showing restarts the auto-dismiss countdown run by
+		 * `systems::Overlay`; a hidden snackbar paints nothing.
+		 *
+		 * @param visible Visibility.
+		 * @return Reference to this snackbar for chaining.
+		 */
+		Snackbar &setVisible(bool visible);
+
+		/** @brief Show the snackbar. @return *this. */
+		Snackbar &show(void);
+
+		/** @brief Hide the snackbar without calling onDismiss. @return *this.
+		 */
+		Snackbar &hide(void);
+
+		/** @brief Check the visibility. @return True when shown. */
+		bool isVisible(void) const;
+
+		/**
+		 * @brief Set the display time (Paper `duration`).
+		 * @param seconds Seconds before auto-dismiss (0: never).
+		 * @return Reference to this snackbar for chaining.
+		 * @throws std::invalid_argument If @p seconds is negative.
+		 */
+		Snackbar &setDuration(float seconds);
+
+		/** @brief Get the display time. @return Seconds (0: never). */
+		float getDuration(void) const;
+
+		/**
+		 * @brief Set the dismiss handler (Paper `onDismiss`), called on
+		 * auto-dismiss, Escape and action press.
+		 * @param onDismiss Handler.
+		 * @return Reference to this snackbar for chaining.
+		 */
+		Snackbar &setOnDismiss(std::function<void(void)> onDismiss);
+
+		/**
+		 * @brief Set the action handler (Paper `action.onPress`).
+		 * @param onAction Handler.
+		 * @return Reference to this snackbar for chaining.
+		 */
+		Snackbar &setOnAction(std::function<void(void)> onAction);
+
+		/**
+		 * @brief Activate the action as a press would: run the action handler,
+		 * then dismiss.
+		 * @return Reference to this snackbar for chaining.
+		 */
+		Snackbar &pressAction(void);
+
+		/**
+		 * @brief Get the action label entity.
+		 * @return The action entity, or nullptr.
+		 */
+		std::shared_ptr<Text> getActionEntity(void) const;
 
 		/**
 		 * @brief Initialize the snackbar derived state.

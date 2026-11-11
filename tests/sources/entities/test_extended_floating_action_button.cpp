@@ -22,6 +22,16 @@
 
 #include "entities/test_extended_floating_action_button.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <guillaume/components/bound.hpp>
+
+#include <guillaume/components/borders.hpp>
+
 #include <functional>
 #include <memory>
 
@@ -68,21 +78,55 @@ namespace guillaume::entities::tests
 	}
 
 	TEST_F(TestExtendedFloatingActionButton,
-		   DirectorBuildsAndRegistersExtendedFab)
+		   BuilderPresetBuildsAndRegistersExtendedFab)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		ExtendedFloatingActionButton::Builder builder(registry, entityRegistry);
-		ExtendedFloatingActionButton::Director director;
 
-		auto fab = director.makeExtendedFloatingActionButton(
-			builder, parent, "Compose", std::function<void(void)>());
+		auto fab = builder.makeExtendedFloatingActionButton(
+			parent, "Compose", std::function<void(void)>());
 
 		ASSERT_NE(fab, nullptr);
 		EXPECT_EQ(fab->getParent(), parent);
 		EXPECT_EQ(fab->getVariant(),
 				  ExtendedFloatingActionButton::Variant::Primary);
 	}
+	TEST_F(TestExtendedFloatingActionButton, RadiusLabelAndCollapse)
+	{
+		ecs::ComponentRegistry registry;
+		auto fab = std::make_shared<ExtendedFloatingActionButton>(
+			registry, "edit", components::Glyph::Style::Outlined, "Compose",
+			ExtendedFloatingActionButton::Variant::Primary,
+			ExtendedFloatingActionButton::Size::Medium, false, false, "",
+			std::function<void(void)>());
+		fab->initialize();
+		fab->update();
+
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Borders>(fab->getIdentifier())
+				.getTopLeftRadius(),
+			getShapeRadius(theme::ShapeRole::Large));
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Text>(fab->getLabelIdentifier())
+				.getFontSize(),
+			getTypeToken(theme::TypeRole::LabelLarge).fontSize);
+		EXPECT_TRUE(
+			registry.getComponent<components::Elevation>(fab->getIdentifier())
+				.hasShadow());
+
+		fab->setExtended(false);
+		EXPECT_FALSE(fab->isExtended());
+		const auto &bound =
+			registry.getComponent<components::Bound>(fab->getIdentifier());
+		EXPECT_FLOAT_EQ(bound.getWidth(), bound.getHeight());
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(fab->getLabelIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
+	}
+
 }	 // namespace guillaume::entities::tests

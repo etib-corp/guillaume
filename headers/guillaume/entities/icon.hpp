@@ -26,10 +26,10 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/glyph.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/transform.hpp"
@@ -111,19 +111,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withStyle(const components::Glyph::Style &style);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Icon::Builder` to create
-		 * preconfigured icon entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a default icon entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the default icon.
 			 * @param parent The parent entity to which the new icon entity will
 			 * be attached.
 			 * @param iconName The icon name to assign to the created entity.
@@ -136,23 +126,11 @@ namespace guillaume::entities
 			 * @return A shared pointer to the newly created icon entity.
 			 */
 			std::shared_ptr<Icon>
-				makeIcon(Builder &builder, std::shared_ptr<Entity> parent,
+				makeIcon(std::shared_ptr<Entity> parent,
 						 const std::string &iconName, const float &fontSize,
 						 const utility::graphic::Color32Bit &color,
 						 const components::Glyph::Style &style);
 		};
-
-		private:
-		std::string _glyphName {};	  ///< Name of the glyph to be used for this
-									  ///< Icon entity
-		float _fontSize { 24.0f };	  ///< Font size of the icon to be used for
-									  ///< this Icon entity
-		utility::graphic::Color32Bit
-			_color {};	  ///< Color of the icon to be used for this Icon entity
-						  ///< (RGBA)
-		components::Glyph::Style _style {
-			components::Glyph::Style::Outlined
-		};	  ///< Style of the glyph to be used for this Icon entity
 
 		public:
 		/**
@@ -207,14 +185,15 @@ namespace guillaume::entities
 		Icon &setStyle(const components::Glyph::Style &style);
 
 		/**
-		 * @brief Initialize the icon entity's derived state.
+		 * @brief Give the icon a meaning for assistive technologies.
+		 *
+		 * Icons are decorative by default; setting a non-empty label attaches
+		 * an `Accessibility` component with the Image role.
+		 *
+		 * @param label The accessibility label.
+		 * @return Reference to this icon for chaining.
 		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the icon entity's derived state.
-		 */
-		void update(void) override;
+		Icon &setAccessibilityLabel(const std::string &label);
 	};
 
 }	 // namespace guillaume::entities

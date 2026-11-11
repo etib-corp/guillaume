@@ -23,12 +23,12 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 #include <memory>
 #include <string>
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/entities/button_base.hpp"
@@ -51,6 +51,11 @@ namespace guillaume::entities
 		/**
 		 * @brief Size of the extended FAB.
 		 */
+		/**
+		 * @brief Shadow mode (Paper `mode`): elevated or flat.
+		 */
+		enum class Mode { Elevated, Flat };
+
 		enum class Size { Small, Medium, Large };
 
 		/**
@@ -158,18 +163,9 @@ namespace guillaume::entities
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `ExtendedFloatingActionButton`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create an extended FAB using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the extended FAB.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param labelContent The label content to attach.
@@ -178,7 +174,7 @@ namespace guillaume::entities
 			 */
 			std::shared_ptr<ExtendedFloatingActionButton>
 				makeExtendedFloatingActionButton(
-					Builder &builder, std::shared_ptr<Entity> parent,
+					std::shared_ptr<Entity> parent,
 					const std::string &labelContent,
 					std::function<void(void)> onClick);
 		};
@@ -186,9 +182,19 @@ namespace guillaume::entities
 		private:
 		Variant _variant { Variant::Primary };	  ///< Color variant
 		Size _size { Size::Medium };			  ///< Size
-		bool _lowered { false };	///< Whether the FAB is lowered
+		Mode _mode { Mode::Elevated };
+		bool _isExtended {
+			true
+		};	  ///< Whether the label is shown	  ///< Shadow mode
+		std::optional<float> _customSize {};	///< Custom container size
+		bool _lowered { false };				///< Whether the FAB is lowered
 
 		protected:
+		/**
+		 * @brief Resolve the M3 elevation level from the current state.
+		 */
+		void applyElevation(void);
+
 		/**
 		 * @brief Re-apply the visual state (colors, borders, radius) from the
 		 * current interaction/selected state.
@@ -263,6 +269,40 @@ namespace guillaume::entities
 		 * @return Reference to this entity for chaining.
 		 */
 		ExtendedFloatingActionButton &setSize(const Size &size);
+
+		/**
+		 * @brief Set the shadow mode; Flat paints no shadow.
+		 * @param mode New mode.
+		 * @return Reference to this FAB for chaining.
+		 */
+		ExtendedFloatingActionButton &setMode(Mode mode);
+
+		/**
+		 * @brief Get the shadow mode.
+		 * @return The mode.
+		 */
+		Mode getMode(void) const;
+
+		/**
+		 * @brief Override the container height (Paper `customSize`).
+		 * @param size Custom size, or none for the size preset.
+		 * @return Reference to this FAB for chaining.
+		 * @throws std::invalid_argument If @p size is not positive.
+		 */
+		ExtendedFloatingActionButton &setCustomSize(std::optional<float> size);
+
+		/**
+		 * @brief Expand (icon + label) or collapse (icon only) the FAB.
+		 * @param extended New state.
+		 * @return Reference to this FAB for chaining.
+		 */
+		ExtendedFloatingActionButton &setExtended(bool extended);
+
+		/**
+		 * @brief Check whether the label is shown.
+		 * @return True when extended.
+		 */
+		bool isExtended(void) const;
 
 		/**
 		 * @brief Set if the FAB is lowered.

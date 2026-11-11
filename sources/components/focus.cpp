@@ -45,4 +45,18 @@ namespace guillaume::components
 	{
 		return _onFocusLost;
 	}
+	bool Focus::isFocused(void) const
+	{
+		return _focused;
+	}
+
+	void Focus::setFocused(bool focused)
+	{
+		if (_focused == focused) {
+			return;
+		}
+		_focused = focused;
+		setHasChanged(true);
+	}
+
 }	 // namespace guillaume::components

@@ -22,14 +22,9 @@
 
 #pragma once
 
-#include "guillaume/ecs/system_filler.hpp"
+#include "guillaume/systems/hand_event_system.hpp"
 
-#include "guillaume/event/event_manager.hpp"
-#include "guillaume/event/event_bus.hpp"
-
-#include "guillaume/components/bound.hpp"
 #include "guillaume/components/hand_trigger_interaction.hpp"
-#include "guillaume/components/transform.hpp"
 
 #include <utility/event/hand_trigger_event.hpp>
 
@@ -39,40 +34,21 @@ namespace guillaume::systems
 	 * @brief System handling hand trigger interactions.
 	 */
 	class HandTrigger:
-		public ecs::SystemFiller<components::HandTriggerInteraction,
-								 components::Transform, components::Bound>,
-		public event::EventManager<utility::event::HandTriggerEvent>
+		public HandEventSystem<components::HandTriggerInteraction,
+							   utility::event::HandTriggerEvent>
 	{
 		public:
 		/**
-		 * @brief Construct a new HandTrigger system.
+		 * @brief Construct the HandTrigger system and subscribe to hand
+		 * trigger events.
 		 * @param eventBus Reference to the event bus for subscribing to events.
 		 */
-		HandTrigger(event::EventBus &eventBus);
+		explicit HandTrigger(event::EventBus &eventBus);
 
 		/**
-		 * @brief Destructor for the HandTrigger system.
+		 * @brief Default destructor for the HandTrigger system.
 		 */
-		~HandTrigger(void);
-
-		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
-		 */
-		void prepare(void) override;
-
-		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
-		 */
-		void cleanup(void) override;
-
-		/**
-		 * @brief Update the system for a given entity identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
-		 */
-		virtual void
-			update(const ecs::Entity::Identifier &entityIdentifier) override;
+		~HandTrigger(void) override;
 	};
 
 }	 // namespace guillaume::systems

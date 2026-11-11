@@ -30,7 +30,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/parent_entity_filler.hpp"
 
@@ -115,31 +114,33 @@ namespace guillaume::entities
 							   std::function<void(void)> onClick);
 
 			/**
+			 * @brief Add a labelled action (Paper FAB.Group `label`).
+			 * @param iconGlyphName Action icon glyph.
+			 * @param label Visible and accessible label.
+			 * @param onClick Action handler.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &addAction(const std::string &iconGlyphName,
+							   const std::string &label,
+							   std::function<void(void)> onClick);
+
+			/**
 			 * @brief Set the trigger accessibility label.
 			 * @param accessibilityLabel The trigger accessibility label.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `FloatingActionButtonMenu`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a FAB menu using the builder.
-			 * @param builder The builder used to configure and create the menu.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param iconGlyphName The trigger icon glyph name.
 			 * @return A shared pointer to the newly created menu entity.
 			 */
 			std::shared_ptr<FloatingActionButtonMenu>
-				makeFloatingActionButtonMenu(Builder &builder,
-											 std::shared_ptr<Entity> parent,
+				makeFloatingActionButtonMenu(std::shared_ptr<Entity> parent,
 											 const std::string &iconGlyphName);
 		};
 
@@ -148,6 +149,8 @@ namespace guillaume::entities
 		std::vector<Action> _actions {};	   ///< Menu actions.
 		std::string _accessibilityLabel {};	   ///< Trigger accessibility label.
 		bool _isOpen { false };	   ///< Whether the menu is expanded.
+		std::function<void(bool)>
+			_onStateChange {};	  ///< Called with the new open state.
 		std::shared_ptr<ButtonBase> _trigger;	 ///< Trigger child entity
 		std::vector<std::shared_ptr<ButtonBase>>
 			_actionButtons;	   ///< Action child entities
@@ -162,6 +165,12 @@ namespace guillaume::entities
 		 * @brief Lay out the trigger and (when open) the action column.
 		 */
 		void layoutMenu(void);
+
+		/**
+		 * @brief Apply the open state: show/enable open actions, hide closed
+		 * ones, and publish the expanded state on the trigger.
+		 */
+		void applyOpenState(void);
 
 		public:
 		/**
@@ -204,6 +213,15 @@ namespace guillaume::entities
 		 * @return True when open, false otherwise.
 		 */
 		bool isOpen(void) const;
+
+		/**
+		 * @brief Set the handler called when the menu opens or closes (Paper
+		 * `onStateChange`).
+		 * @param onStateChange Handler receiving the new open state.
+		 * @return Reference to this menu for chaining.
+		 */
+		FloatingActionButtonMenu &
+			setOnStateChange(std::function<void(bool)> onStateChange);
 
 		/**
 		 * @brief Get the number of actions.

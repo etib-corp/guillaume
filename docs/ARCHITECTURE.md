@@ -49,6 +49,7 @@ sequenceDiagram
         App->>Engine: clear()
         App->>Engine: update()
         App->>SR: run phases (Event, Measure, Layout, Render)
+        App->>SM: reset component changed flags
         App->>SM: processSceneTransition()
         App->>Engine: present()
     end
@@ -66,6 +67,89 @@ flowchart LR
     C --> D[Set active scene type]
     D --> F[Call onEnter on new scene]
 ```
+
+## How the ECS Is Used
+
+Guillaume stores state the ECS way and composes UI the widget way:
+
+- **Components** are plain state (`Bound`, `Transform`, `Color`, `Layout`,
+  interaction flags…), stored per type in the scene's
+  `ecs::ComponentRegistry`. Storage for a component type is created the first
+  time it is added; there is no central list to register a new component in.
+- **Systems** own everything that happens every frame for a kind of
+  component: input hit-testing, measuring, layout, rendering. Each system
+  declares the components it needs and a phase.
+- **Entities are not bare identifiers.** An entity such as `Button` or
+  `NavigationDrawer` is a class that creates its components and child
+  entities and overrides `update()` to restyle and re-arrange itself. When a
+  system visits an entity whose components changed, `ecs::System::routine`
+  calls that entity's `update()`, then its parent's, so a change propagates up
+  the tree within the same system pass.
+
+So most entities still behave like retained widgets that keep part of their
+state in member fields. **That is the legacy shape, and it is being migrated
+away**: the target is a strict ECS in which an entity is only an identifier,
+all state is in components and all behavior is in systems.
+
+### Target shape and migration recipe
+
+`Divider` is the reference. It is split in three:
+
+| Piece | File | Holds |
+|---|---|---|
+| `components::Divider` | `components/divider.hpp` | Every piece of state: variant, length, thickness, inset, color, origin pose. |
+| `systems::Divider` | `systems/divider.hpp` | Every rule: it turns the configuration into `Transform`, `Bound`, `Line` and `Color`, each frame in the Measure phase. |
+| `entities::Divider` | `entities/divider.hpp` | No fields and no `update()`. A facade whose setters write the component, kept so existing code compiles. |
+
+`systems/test_divider.cpp` drives the system on a bare identifier with five
+components and no `entities::Divider` object at all.
+
+To migrate another widget:
+
+1. Move each member field of the entity class into a `components::X`
+   configuration component. Setters compare before writing and call
+   `setHasChanged(true)`, so an unchanged value never marks the entity dirty.
+2. Move the body of `update()`, `applyGeometry()`, `applyStyleState()` and
+   friends into `systems::X`, as a static `apply(registry, identifier)` that
+   reads and writes components only, plus an `update()` override that calls
+   it. Pick the phase by what it produces: Measure for intrinsic size, Layout
+   for child placement, Event for state driven by input.
+3. Register the system in `sources/systems/core_systems.cpp`.
+4. Reduce the entity class to a facade: add `components::X` to its
+   `EntityFiller` list, make each setter write the component and call
+   `systems::X::apply` (so the result is visible immediately while a scene is
+   being built), and delete its `initialize()` / `update()` overrides.
+5. Test the system on bare identifiers, without the entity class.
+
+When no entity overrides `update()` any more, `ecs::Entity::update()` and the
+calls to it in `ecs::System::routine` are deleted, and the entity classes can
+become plain builder functions.
+
+## Patterns Used
+
+| Pattern | Where | Role |
+|---|---|---|
+| Facade | `Application` | One entry point over engine, scenes, events and systems. |
+| Bridge | `utility::Engine` | Platform rendering and input behind an interface the consumer implements. |
+| State | `Scene` + `SceneManager` | One active scene; every switch goes through `onExit()` / `onEnter()`. |
+| Observer | `event::EventBus`, `event::EventSubscriber` | Engine events fan out to subscribed systems. |
+| Strategy | `ecs::LevelOrderTraveler`, `ecs::ReverseLevelOrderTraveler` | Each phase picks its tree traversal order. |
+| Template Method | `ecs::System::routine` (`prepare` / `update` / `cleanup`), `EntityBuilderBase::buildEntity` | Fixed skeleton, per-type hooks. |
+| Builder | `entities::X::Builder` | Fluent configuration of an entity before it is registered; `makeXxx()` presets cover the common cases. |
+
+## Where Things Are Registered
+
+- **Core systems** are listed once, in `sources/systems/core_systems.cpp`
+  (`systems::registerCoreSystems`). `Application` only calls it.
+- **Sources** are listed explicitly in `cmake/Sources.cmake` and tests in
+  `tests/CMakeLists.txt`; there is no `file(GLOB)`.
+- **Style lookups** for the button family live in
+  `entities/button_style.hpp` and `entities/fab_style.hpp` as one table row per
+  size or variant.
+- **Theme tokens** are read through the free accessors in `theme.hpp`
+  (`getActiveColor`, `getShapeRadius`, …), which resolve against
+  `getActiveTheme()`. Replace it with `setActiveTheme()` before building a
+  scene.
 
 ## Design Goal
 

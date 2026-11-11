@@ -2,16 +2,72 @@
 
 All notable changes to this project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Versions follow the calendar scheme described in
+[docs/VERSIONING.md](docs/VERSIONING.md); breaking changes are marked
+**Breaking**.
 
-## [2026.1.0] - 2026-09-26
-
-## [2026.2.0] - 2026-09-26
-
-## [2026.3.0] - 2026-10-08
+## [2026.3.2] - 2026-11-11
 
 ## [Unreleased]
+
+### Changed
+
+- Core systems are registered by `systems::registerCoreSystems()`
+  (`guillaume/systems/core_systems.hpp`); `guillaume/application.hpp` no longer
+  includes every system header, so include the system headers you use.
+- The hand input systems share `systems::HandEventSystem` /
+  `systems::HandRaySystem` instead of six copies of the same wiring.
+- Button, icon button and FAB styles resolve through lookup tables
+  (`entities/button_style.hpp`, `entities/fab_style.hpp`) instead of `switch`
+  blocks; the default Material 3 theme data moved to
+  `sources/theme/default_theme.cpp`.
+- Added `getActiveColor(role)`; removed the unused `SystemNotFoundException`.
+- **Breaking:** `Application` takes the engine in its constructor and
+  `setEngine()` is removed; the default scene is the first template argument
+  and is no longer repeated (`Application<MyScene>`).
+- **Breaking:** removed `Application::pollEvents/update/clear/present`;
+  engine-backed systems and `SceneManager` take `utility::Engine &`.
+- **Breaking:** entity `Director` classes are folded into their `Builder`
+  (`builder.makeXxx(parent, ...)`); the director manager is removed.
+- **Breaking:** `ecs::Phase` is a scoped enum (`enum class`); cast it
+  explicitly where it was used as an integer.
+- `LocalStorage` logs an error and reports `isPersistent() == false` when it
+  falls back to in-memory storage; a parent directory that cannot be created
+  now takes the same fallback instead of throwing.
+- `Divider` is the first widget migrated to a strict ECS: its state lives in
+  `components::Divider`, its behavior in `systems::Divider`, and
+  `entities::Divider` is a facade without fields or an `update()` override.
+- `Backdrop` and `Text` follow: `components::Backdrop` + `systems::Backdrop`,
+  and `components::Typography` + `systems::Typography`. `entities::Text` no
+  longer keeps its own copy of the content and color: the `Text` and `Color`
+  components are the only source of truth, and a text is fully configured as
+  soon as it is constructed (it no longer needs an `update()` call).
+- **Behavior change:** `entities::Icon`, `entities::Image` and
+  `entities::Mesh` no longer keep private copies of their glyph, paths and
+  size and re-apply them on `update()`. The components are the only source of
+  truth, so a value written directly to a component is no longer overwritten
+  by the entity. `components::Image::getTexturePath()` now returns a
+  reference.
+- `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
+- Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
+
+### Fixed
+
+- `systems::Overlay` was registered twice and ran twice per frame.
+- `systems::GlyphRender` and `systems::MeasureGlyph` no longer crash when the
+  Material Symbols font or code point table is missing from the resource
+  root; icons are skipped and an error is logged.
+- `-DBUILD_DOCS=ON` now enables the documentation target; `BUILD_ALL_DOCS` is
+  kept as a deprecated alias.
+- GoogleTest is no longer installed by `cmake --install`; the bundled fonts
+  are.
+
+## [2026.3.1] - 2026-11-10
+
+Versions 2026.1.0 to 2026.3.0 were tagged without changelog entries, so this
+section lists everything released since 1.0.0.
+
 
 ### Added
 
@@ -21,7 +77,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NavigationDrawer`, `NavigationRail`, `ProgressIndicator`, `RadioButton`,
   `Search`, `SideSheet`, `Slider`, `Snackbar`, `Switch`, `Tabs`, `TextField`,
   `TimePicker`, `Toolbar`, and `Tooltip`, each with a `Builder` + `Director`
-  and `TEST_F` coverage.
+  and `TEST_F` coverage. The families that react-native-paper does not ship
+  were removed again in this release (see **Removed**).
 - Shared entity foundations for component families: `entities::SurfaceBase`
   and `entities::SurfaceConfig`, which arrange children through
   `systems::Layout` instead of hand-rolled geometry, plus
@@ -47,6 +104,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replaced `file(GLOB)` with explicit source lists for reproducible builds.
+- Core systems are registered by `systems::registerCoreSystems()`
+  (`guillaume/systems/core_systems.hpp`); `guillaume/application.hpp` no longer
+  includes every system header, so include the system headers you use.
+- The hand input systems share `systems::HandEventSystem` /
+  `systems::HandRaySystem` instead of six copies of the same wiring.
+- Button, icon button and FAB styles resolve through lookup tables
+  (`entities/button_style.hpp`, `entities/fab_style.hpp`) instead of `switch`
+  blocks; the default Material 3 theme data moved to
+  `sources/theme/default_theme.cpp`.
+- Added `getActiveColor(role)`; removed the unused `SystemNotFoundException`.
+- **Breaking:** `Application` takes the engine in its constructor and
+  `setEngine()` is removed; the default scene is the first template argument
+  and is no longer repeated (`Application<MyScene>`).
+- **Breaking:** removed `Application::pollEvents/update/clear/present`;
+  engine-backed systems and `SceneManager` take `utility::Engine &`.
+- **Breaking:** entity `Director` classes are folded into their `Builder`
+  (`builder.makeXxx(parent, ...)`); the director manager is removed.
+- `SceneManager::switchToScene()` now calls `onExit()` / `onEnter()`.
+- Theme accessors read `getActiveTheme()`; `setActiveTheme()` replaces it.
 - Moved include paths onto the `guillaume` target (target-scoped includes).
 - `Entity::getNextIdentifier` is now atomic (thread-safe identifier generation).
 - `EventBus::subscribe` now takes its listener by value.
@@ -75,6 +151,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `getText/getValue/getLow/getHigh`) are now `const`.
 - Test fixtures are consolidated into the shared
   `tests/headers/entities/family_fixture.hpp` helper.
+- Text and icon children are now consistently lifted one content layer in
+  front of their container surface: `systems::Layout` exposes
+  `ContentLayerOffset`/`contentLayerPose`, and
+  `entities/placement_helpers.hpp` routes manual placement (`placeChild`,
+  `centerChild`, `placeNormalized`) through it, so `Slider`, `Switch`,
+  `ProgressIndicator`, `LoadingIndicator`, `RadioButton` and `TimePicker`
+  match the already-layered `Layout` families.
 
 ### Fixed
 
@@ -87,6 +170,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stale test APIs, missing font asset).
 - Updated the `evan` example to the `entities::Layout` API (the removed
   `entities::Container` was still referenced).
+- Unified every drawable on a single top-left origin convention:
+  `Scene::placeEntitiesInFrontOfView` no longer adds a half-width centre
+  offset, `ScrimRender` now rotates its quad by the transform orientation like
+  the other shape renderers, and the text/glyph renderers re-anchor the glyph
+  box top-left onto the entity position via `systems::anchorTextTopLeft`.
+- `IconButton` and `FloatingActionButton` now position their icon (and the FAB
+  label) instead of leaving it at the default pose.
+- Scenes now place their root entities *after* `onEnter()` builds them.
+  `SceneManager::enterActiveScene` previously called
+  `placeEntitiesInFrontOfView` before `onEnter`, so entities created there
+  (and their text/icon children) were never positioned and stayed at the
+  origin.
+- Entities are no longer moved or rotated when the view changes. The removed
+  `Application::routine` view-flip re-placement (and its `_firstView` state)
+  used to reposition and re-orient every root entity when the view turned
+  more than 90 degrees; entities are now placed once per scene entry and left
+  untouched afterwards.
+- Text and glyphs now render at their entity position regardless of the
+  renderer's model-matrix handling. `systems::TextRender`/`GlyphRender` emit a
+  new `guillaume::TextRenderable` (a `utility::graphic::Text` whose glyph
+  vertices are baked into world space with an identity pose), matching the
+  shape/image renderers that already bake world coordinates. Previously the
+  local-space glyph mesh relied on the engine applying
+  `Renderable::getModelMatrix()`, so text collapsed to the origin.
+- `systems::Layout` now arranges only the container's registered layout
+  children (`components::Layout::getChildren()`, populated by
+  `SurfaceBase::setChildren` and `entities::Layout::setEntities`) instead of
+  rediscovering every child from the entity hierarchy. Manually positioned
+  children (a switch thumb, a slider track/fill/thumb, a radio dot, clock
+  markers, ...) keep their own placement again, so containers no longer
+  compact or mis-position their contents.
+- `components::Bound` now marks itself changed when its width or height is
+  set, so a measured size written by `systems::MeasureText`/`MeasureGlyph`
+  propagates to the parent and containers re-hug their text.
+
+### Removed
+
+- Component families with no react-native-paper equivalent (#114):
+  `BottomSheet`, `Carousel`, `DatePicker`, `NavigationRail`, `SideSheet`,
+  `Slider`, `Tabs`, `TimePicker` and `Toolbar`.
+
+## [2026.3.0] - 2026-10-08
+
+## [2026.2.0] - 2026-09-26
+
+## [2026.1.0] - 2026-09-26
 
 ## [1.0.0] - 2025-08-25
 

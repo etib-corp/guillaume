@@ -6,7 +6,7 @@ if(POLICY CMP0077)
 endif()
 
 project(guillaume
-    VERSION 2026.3.0
+    VERSION 2026.3.2
     DESCRIPTION "A C++ UI framework designed for modern desktop and extended reality (XR) applications."
     HOMEPAGE_URL "https://etib-corp.github.io/guillaume"
     LANGUAGES CXX
@@ -25,11 +25,15 @@ include(CTest)
 # 02. Options & configuration
 option(BUILD_DOCS "Build Doxygen documentation" OFF)
 option(BUILD_DOCS_ONLY "Configure only the documentation target" OFF)
-option(BUILD_ALL_DOCS "Build documentation for all libraries" OFF)
+# Kept as an alias of BUILD_DOCS for existing scripts.
+option(BUILD_ALL_DOCS "Deprecated: use BUILD_DOCS" OFF)
 option(BUILD_BENCHMARKS "Build the benchmark harness" OFF)
 
-if(BUILD_DOCS_ONLY)
+if(BUILD_DOCS_ONLY OR BUILD_ALL_DOCS)
     set(BUILD_DOCS ON)
+endif()
+
+if(BUILD_DOCS_ONLY)
     set(BUILD_TESTING OFF)
 endif()
 
@@ -75,7 +79,6 @@ if(NOT BUILD_DOCS_ONLY)
     target_include_directories(${PROJECT_NAME}
         PUBLIC
             $<BUILD_INTERFACE:${HEADERS_DIR}>
-            $<INSTALL_INTERFACE:include>
             $<BUILD_INTERFACE:${TEMPLATES_DIR}>
             $<INSTALL_INTERFACE:include>
     )
@@ -100,6 +103,12 @@ if(NOT BUILD_DOCS_ONLY)
 
     install(DIRECTORY ${HEADERS_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     install(DIRECTORY ${TEMPLATES_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+    # The bundled Roboto fonts are loaded at runtime as `fonts/<file>` through
+    # the application's resource provider, so ship them with the package.
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/fonts/
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/fonts
+    )
 
     install(EXPORT ${PROJECT_NAME}Targets
         FILE ${PROJECT_NAME}Targets.cmake
@@ -138,7 +147,7 @@ endif()
 
 # 09. Documentations
 
-if(BUILD_ALL_DOCS OR BUILD_DOCS_ONLY)
+if(BUILD_DOCS)
     message(STATUS "Building documentation...")
     include(cmake/Docs.cmake)
     add_subdirectory(docs)

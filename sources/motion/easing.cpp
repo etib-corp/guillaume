@@ -79,7 +79,10 @@ namespace guillaume::motion
 			case Easing::Accelerate:
 				return cubicBezier(clamped, 0.3f, 0.0f, 1.0f, 1.0f);
 			case Easing::Emphasized:
+			case Easing::EmphasizedDecelerate:
 				return cubicBezier(clamped, 0.05f, 0.7f, 0.1f, 1.0f);
+			case Easing::EmphasizedAccelerate:
+				return cubicBezier(clamped, 0.3f, 0.0f, 0.8f, 0.15f);
 			case Easing::Standard:
 			default:
 				return cubicBezier(clamped, 0.2f, 0.0f, 0.0f, 1.0f);

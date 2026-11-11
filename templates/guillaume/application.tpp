@@ -24,15 +24,12 @@
 
 #include <functional>
 
-#include "guillaume/systems/measure_model.hpp"
-#include "guillaume/systems/model_render.hpp"
-#include "guillaume/systems/image_render.hpp"
 
 namespace guillaume
 {
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	template<typename PhaseType>
 	void Application<DefaultSceneType, SceneTypes...>::runPhase(
 		PhaseType &phaseDefinition)
@@ -49,160 +46,58 @@ namespace guillaume
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::registerCoreSystems()
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
+	std::unique_ptr<utility::Engine>
+		Application<DefaultSceneType, SceneTypes...>::requireEngine(
+			std::unique_ptr<utility::Engine> engine)
 	{
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeasureText>(_ressourceProvider,
-												   _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeasureGlyph>(_ressourceProvider,
-													_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MouseMotion>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MouseButton>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Drag>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Scroll>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Selection>());
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandMotion>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandButton>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandPinch>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandPoke>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandSqueeze>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandThumbRest>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandThumbStick>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::HandTrigger>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextRender>(_ressourceProvider, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::GlyphRender>(_ressourceProvider,
-												   _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::KeyboardControl>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextInput>(_eventBus));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::RectangleRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::EllipseRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::RingRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ArcRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::LineRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ElevationRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ScrimRender>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Clip>(_engine));
-		_systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Focus>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Animation>(_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::Overlay>(_eventBus, _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextField>());
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::MeasureModel>(_ressourceProvider,
-													_engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ModelRender>(_ressourceProvider,
-												   _engine));
-		_systemRegistry.registerNewSystem(
-			std::make_unique<systems::ImageRender>(_ressourceProvider,
-												   _engine));
+		if (engine == nullptr) {
+			throw std::invalid_argument(
+				"Application requires a non-null engine");
+		}
+		return engine;
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	Application<DefaultSceneType, SceneTypes...>::Application(
-		std::shared_ptr<utility::RessourceProvider> ressourceProvider)
-		: _ressourceProvider(std::move(ressourceProvider))
-		, _engine(nullptr)
+		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
+		std::unique_ptr<utility::Engine> engine)
+		: _engine(requireEngine(std::move(engine)))
 		, _sceneManager(nullptr)
 		, _eventBus()
 		, _quitEventSubscriber(_eventBus)
 		, _systemRegistry()
 		, _systemPhases()
+		, _ressourceProvider(std::move(ressourceProvider))
 	{
-		registerCoreSystems();
+		systems::registerCoreSystems(_systemRegistry, _eventBus, *_engine,
+									 _ressourceProvider);
+		_engine->setEventCallback(
+			[this](std::shared_ptr<utility::event::Event> &event) {
+				this->_eventBus.publish(std::move(event));
+			});
 		_sceneManager =
 			std::make_unique<SceneManager<DefaultSceneType, SceneTypes...>>(
-				_ressourceProvider);
+				_ressourceProvider, *_engine);
+		_sceneManager->enterActiveScene();
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	Application<DefaultSceneType, SceneTypes...>::~Application(void)
 	{
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::setEngine(
-		std::unique_ptr<utility::Engine> engine)
-	{
-		_engine = std::move(engine);
-		_engine->setEventCallback(
-			[this](std::shared_ptr<utility::event::Event> &event) {
-				this->_eventBus.publish(std::move(event));
-			});
-		_sceneManager->setEngine(_engine.get());
-		_sceneManager->enterActiveScene();
-	}
-
-	static bool hasViewChanged(utility::graphic::ViewF &firstView,
-							   utility::graphic::ViewF &currentView)
-	{
-		auto firstViewForward =
-			firstView.getPose().getOrientation().getForward();
-		auto currentViewForward =
-			currentView.getPose().getOrientation().getForward();
-
-		if (utility::math::dot(utility::math::normalize(firstViewForward),
-							   utility::math::normalize(currentViewForward))
-			< 0.0f) {
-			return true;
-		}
-		return false;
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	void Application<DefaultSceneType, SceneTypes...>::routine(void)
 	{
-		if (!_firstView.has_value()) {
-			_firstView = _engine->getView();
-		}
-		auto &firstView = _firstView.value();
-
-		// Repositioning the scene every frame keeps entity poses in constant
-		// flux, which defeats the render caches keyed on entity state and makes
-		// text objects get torn down and recreated endlessly. The scene is
-		// therefore only re-laid out when the view flips to the other side of
-		// the viewer; scene entry still places the entities once.
-		auto currentView = _engine->getView();
-		if (hasViewChanged(firstView, currentView)) {
-			_sceneManager->getActiveScene()->placeEntitiesInFrontOfView(
-				currentView);
-			_firstView = currentView;
-		}
+		// Entities are placed once per scene entry (see
+		// SceneManager::enterActiveScene) and are deliberately left untouched
+		// afterwards: re-placing them on view changes would move and rotate
+		// them, defeating the render caches keyed on entity state and making
+		// UI jump when the view turns.
 		this->getLogger().debug() << "Current view: " << _engine->getView();
 		this->getLogger().debug()
 			<< "Forward vector: "
@@ -222,35 +117,7 @@ namespace guillaume
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::pollEvents(void)
-	{
-		_engine->pollEvents();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::update(void)
-	{
-		_engine->update();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::clear(void)
-	{
-		_engine->clear();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
-	void Application<DefaultSceneType, SceneTypes...>::present(void)
-	{
-		_engine->present();
-	}
-
-	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	bool Application<DefaultSceneType, SceneTypes...>::shouldQuit(void)
 	{
 		if (_quitEventSubscriber.hasPendingEvents()) {
@@ -261,7 +128,7 @@ namespace guillaume
 	}
 
 	template<InheritFromScene DefaultSceneType, InheritFromScene... SceneTypes>
-		requires IsOneOf<DefaultSceneType, SceneTypes...>
+		requires AllDistinct<DefaultSceneType, SceneTypes...>
 	int Application<DefaultSceneType, SceneTypes...>::run(void)
 	{
 		this->getLogger().info() << "Entering main loop";

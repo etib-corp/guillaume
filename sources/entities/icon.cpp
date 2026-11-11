@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "guillaume/entities/icon.hpp"
+#include "guillaume/theme.hpp"
 #include "guillaume/entities/builder_base.hpp"
 
 namespace guillaume::entities
@@ -47,7 +48,7 @@ namespace guillaume::entities
 	{
 		_glyphName.clear();
 		_fontSize = 24.0f;
-		_color	  = { 255, 255, 255, 255 };
+		_color	  = getActiveColor(SchemeColorRole::OnSurface);
 		_style	  = components::Glyph::Style::Outlined;
 	}
 
@@ -77,13 +78,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Icon> Icon::Director::makeIcon(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &glyphName, const float &fontSize,
-		const utility::graphic::Color32Bit &color,
+	std::shared_ptr<Icon> Icon::Builder::makeIcon(
+		std::shared_ptr<Entity> parent, const std::string &glyphName,
+		const float &fontSize, const utility::graphic::Color32Bit &color,
 		const components::Glyph::Style &style)
 	{
-		return builder.withGlyphName(glyphName)
+		return withGlyphName(glyphName)
 			.withFontSize(fontSize)
 			.withColor(color)
 			.withStyle(style)
@@ -95,11 +95,11 @@ namespace guillaume::entities
 			   const components::Glyph::Style &style)
 		: ecs::EntityFiller<components::Transform, components::Bound,
 							components::Glyph, components::Color>(registry)
-		, _glyphName(glyphName)
-		, _fontSize(fontSize)
-		, _color(color)
-		, _style(style)
 	{
+		setGlyphName(glyphName);
+		setFontSize(fontSize);
+		setColor(color);
+		setStyle(style);
 	}
 
 	Icon::~Icon()
@@ -108,8 +108,6 @@ namespace guillaume::entities
 
 	Icon &Icon::setGlyphName(const std::string &glyphName)
 	{
-		_glyphName = glyphName;
-
 		getComponentRegistry()
 			.getComponent<components::Glyph>(getIdentifier())
 			.setName(glyphName);
@@ -119,8 +117,6 @@ namespace guillaume::entities
 
 	Icon &Icon::setFontSize(const float &fontSize)
 	{
-		_fontSize = fontSize;
-
 		getComponentRegistry()
 			.getComponent<components::Glyph>(getIdentifier())
 			.setFontSize(fontSize);
@@ -130,8 +126,6 @@ namespace guillaume::entities
 
 	Icon &Icon::setColor(const utility::graphic::Color32Bit &color)
 	{
-		_color = color;
-
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
 			.setColor(color);
@@ -139,27 +133,30 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	Icon &Icon::setAccessibilityLabel(const std::string &label)
+	{
+		auto &registry = getComponentRegistry();
+		if (!registry.hasComponent<components::Accessibility>(
+				getIdentifier())) {
+			if (label.empty()) {
+				return *this;
+			}
+			registry.addComponent<components::Accessibility>(getIdentifier());
+		}
+		registry.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(label.empty() ? components::AccessibilityRole::None
+								   : components::AccessibilityRole::Image)
+			.setLabel(label);
+		return *this;
+	}
+
 	Icon &Icon::setStyle(const components::Glyph::Style &style)
 	{
-		_style = style;
-
 		getComponentRegistry()
 			.getComponent<components::Glyph>(getIdentifier())
 			.setStyle(style);
 
 		return *this;
-	}
-
-	void Icon::initialize(void)
-	{
-	}
-
-	void Icon::update(void)
-	{
-		setGlyphName(_glyphName);
-		setFontSize(_fontSize);
-		setColor(_color);
-		setStyle(_style);
 	}
 
 }	 // namespace guillaume::entities

@@ -41,6 +41,26 @@ namespace guillaume::components
 		Bound(void);
 
 		/**
+		 * @brief Set the bound width, marking the component changed.
+		 *
+		 * Overrides `utility::graphic::SizeF::setWidth` so writing a measured
+		 * size (from `systems::MeasureText`/`MeasureGlyph`) propagates through
+		 * the ECS change tracking and parents can re-hug their content.
+		 *
+		 * @param width The new width.
+		 * @return Reference to this Bound for chaining.
+		 */
+		Bound &setWidth(float width) noexcept;
+
+		/**
+		 * @brief Set the bound height, marking the component changed.
+		 *
+		 * @param height The new height.
+		 * @return Reference to this Bound for chaining.
+		 */
+		Bound &setHeight(float height) noexcept;
+
+		/**
 		 * @brief Default destructor for the Bound component.
 		 */
 		~Bound(void) = default;

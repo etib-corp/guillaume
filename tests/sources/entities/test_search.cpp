@@ -22,6 +22,28 @@
 
 #include "entities/test_search.hpp"
 
+#include <guillaume/components/line.hpp>
+
+#include <guillaume/components/layout.hpp>
+
+#include <guillaume/components/glyph.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
+#include <algorithm>
+
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <memory>
 #include <string>
 
@@ -44,10 +66,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Search::Builder builder(registry, entityRegistry);
-			Search::Director director;
 
-			return director.makeSearch(builder, nullptr, variant, "Search",
-									   text);
+			return builder.makeSearch(nullptr, variant, "Search", text);
 		}
 	}	 // namespace
 
@@ -65,10 +85,11 @@ namespace guillaume::entities::tests
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(search->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 28.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::ExtraLarge));
 	}
 
-	TEST_F(TestSearch, FullScreenIsTallAndUnrounded)
+	TEST_F(TestSearch, ViewModeIsInlineWithDivider)
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry, Search::Variant::FullScreen);
@@ -78,11 +99,21 @@ namespace guillaume::entities::tests
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(search->getIdentifier());
-		EXPECT_FLOAT_EQ(bound.getHeight(), 640.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), 72.0f);
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(search->getIdentifier());
-		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(), 0.0f);
+		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
+						getShapeRadius(theme::ShapeRole::None));
+
+		const auto &line =
+			registry.getComponent<components::Line>(search->getIdentifier());
+		EXPECT_FLOAT_EQ(line.getThickness(), 1.0f);
+		EXPECT_EQ(line.getPlacement(), components::Line::Placement::Bottom);
+		EXPECT_EQ(line.getColor(),
+				  getActiveScheme()
+					  .getColor(SchemeColorRole::OutlineVariant)
+					  .getColor());
 	}
 
 	TEST_F(TestSearch, TextFieldComponentCarriesPlaceholder)
@@ -109,7 +140,7 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(search->getText(), "hello");
 	}
 
-	TEST_F(TestSearch, FullScreenOverlayIsModal)
+	TEST_F(TestSearch, ViewModeIsNotModal)
 	{
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry, Search::Variant::FullScreen);
@@ -119,8 +150,8 @@ namespace guillaume::entities::tests
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(search->getIdentifier());
-		EXPECT_TRUE(overlay.isModal());
-		EXPECT_TRUE(overlay.dismissesOnOutsideClick());
+		EXPECT_FALSE(overlay.isModal());
+		EXPECT_FALSE(overlay.dismissesOnOutsideClick());
 	}
 
 	TEST_F(TestSearch, OpenCloseTogglesState)
@@ -137,21 +168,144 @@ namespace guillaume::entities::tests
 		EXPECT_FALSE(search->isOpen());
 	}
 
-	TEST_F(TestSearch, DirectorBuildsAndRegisters)
+	TEST_F(TestSearch, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Search::Builder builder(registry, entityRegistry);
-		Search::Director director;
 
-		auto search = director.makeSearch(
-			builder, parent, Search::Variant::FullScreen, "Search", "query");
+		auto search = builder.makeSearch(parent, Search::Variant::FullScreen,
+										 "Search", "query");
 
 		ASSERT_NE(search, nullptr);
 		EXPECT_EQ(search->getParent(), parent);
 		EXPECT_EQ(search->getVariant(), Search::Variant::FullScreen);
+	}
+
+	TEST_F(TestSearch, ClearIconFollowsTheQuery)
+	{
+		ecs::ComponentRegistry registry;
+		auto search = makeSearch(registry);
+		search->initialize();
+		search->setText("query");
+		search->update();
+
+		bool cleared = false;
+		search->setOnClearIconPress([&cleared]() {
+			cleared = true;
+		});
+
+		const auto clearIdentifier = search->getClearIdentifier();
+		ASSERT_NE(clearIdentifier, ecs::Entity::InvalidIdentifier);
+		EXPECT_GT(registry.getComponent<components::Color>(clearIdentifier)
+					  .getColor()
+					  .getAlpha(),
+				  0);
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(clearIdentifier)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_TRUE(cleared);
+		EXPECT_EQ(search->getText(), "");
+		search->update();
+		EXPECT_EQ(registry.getComponent<components::Color>(clearIdentifier)
+					  .getColor()
+					  .getAlpha(),
+				  0);
+		EXPECT_FALSE(
+			registry.getComponent<components::StyleState>(clearIdentifier)
+				.isEnabled());
+	}
+
+	TEST_F(TestSearch, LeadingIconIsReplaceableAndPressable)
+	{
+		ecs::ComponentRegistry registry;
+		auto search = makeSearch(registry);
+		search->initialize();
+		search->update();
+
+		int presses = 0;
+		search->setOnIconPress([&presses]() {
+			++presses;
+		});
+		search->setIcon("arrow_back");
+		const auto icon = search->getIconIdentifier();
+		registry.getComponent<components::MouseButtonInteraction>(icon)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(presses, 1);
+		EXPECT_EQ(registry.getComponent<components::Glyph>(icon).getName(),
+				  "arrow_back");
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(icon).getRole(),
+			components::AccessibilityRole::Button);
+	}
+
+	TEST_F(TestSearch, PlaceholderShowsWhileEmpty)
+	{
+		ecs::ComponentRegistry registry;
+		auto search = makeSearch(registry);
+		search->initialize();
+		search->setText("");
+		search->update();
+
+		const auto &children =
+			registry.getComponent<components::Layout>(search->getIdentifier())
+				.getChildren();
+		EXPECT_NE(std::find(children.begin(), children.end(),
+							search->getPlaceholderIdentifier()),
+				  children.end());
+		EXPECT_EQ(registry
+					  .getComponent<components::Color>(
+						  search->getPlaceholderIdentifier())
+					  .getColor(),
+				  getActiveScheme()
+					  .getColor(SchemeColorRole::OnSurfaceVariant)
+					  .getColor());
+	}
+
+	TEST_F(TestSearch, LoadingAndElevation)
+	{
+		ecs::ComponentRegistry registry;
+		auto search = makeSearch(registry);
+		search->initialize();
+		search->setLoading(true);
+		search->setElevation(theme::ElevationLevel::Level3);
+		search->update();
+
+		EXPECT_TRUE(search->isLoading());
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Elevation>(search->getIdentifier())
+				.getElevationLevel(),
+			theme::ElevationLevel::Level3);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(search->getIdentifier())
+				.getColor(),
+			getElevatedSurfaceColor(theme::ElevationLevel::Level3));
+	}
+
+	TEST_F(TestSearch, ExposesSearchSemantics)
+	{
+		ecs::ComponentRegistry registry;
+		auto search = makeSearch(registry);
+		search->initialize();
+
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  search->getIdentifier())
+					  .getRole(),
+				  components::AccessibilityRole::Search);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  search->getClearIdentifier())
+					  .getLabel(),
+				  "clear search");
 	}
 
 }	 // namespace guillaume::entities::tests

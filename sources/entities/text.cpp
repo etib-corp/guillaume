@@ -23,7 +23,9 @@
 #include <memory>
 
 #include "guillaume/entities/text.hpp"
+#include "guillaume/systems/typography.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
@@ -37,16 +39,18 @@ namespace guillaume::entities
 
 	std::shared_ptr<Text> Text::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Text>(this->getComponentRegistry(),
-											 _content, _fontSize, _color);
+		auto entity =
+			std::make_shared<Text>(this->getComponentRegistry(), _content,
+								   _typeRole, _color, _fontSize);
 		return entity;
 	}
 
 	void Text::Builder::reset(void)
 	{
 		_content.clear();
-		_fontSize = 24;
-		_color	  = { 255, 255, 255, 255 };
+		_typeRole = theme::TypeRole::BodyMedium;
+		_fontSize.reset();
+		_color = getActiveColor(SchemeColorRole::OnSurface);
 	}
 
 	Text::Builder &Text::Builder::withContent(const std::string &content)
@@ -61,6 +65,13 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	Text::Builder &Text::Builder::withTypeRole(theme::TypeRole role)
+	{
+		_typeRole = role;
+		_fontSize.reset();
+		return *this;
+	}
+
 	Text::Builder &
 		Text::Builder::withColor(const utility::graphic::Color32Bit &color)
 	{
@@ -68,34 +79,68 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<Text> Text::Director::makeText(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &content, const float &fontSize,
-		const utility::graphic::Color32Bit &color)
+	std::shared_ptr<Text> Text::Builder::makeText(
+		std::shared_ptr<Entity> parent, const std::string &content,
+		const float &fontSize, const utility::graphic::Color32Bit &color)
 	{
-		return builder.withContent(content)
+		return withContent(content)
 			.withFontSize(fontSize)
+			.withColor(color)
+			.registerEntity(parent);
+	}
+
+	std::shared_ptr<Text> Text::Builder::makeText(
+		std::shared_ptr<Entity> parent, const std::string &content,
+		theme::TypeRole role, const utility::graphic::Color32Bit &color)
+	{
+		return withContent(content)
+			.withTypeRole(role)
 			.withColor(color)
 			.registerEntity(parent);
 	}
 
 	Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
 			   const float &fontSize, const utility::graphic::Color32Bit &color)
-		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Text, components::Color>(registry)
-		, _content(content)
-		, _fontSize(fontSize)
-		, _color(color)
+		: Text(registry, content, theme::TypeRole::Default, color, fontSize)
 	{
+	}
+
+	Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
+			   theme::TypeRole role, const utility::graphic::Color32Bit &color,
+			   std::optional<float> fontSize)
+		: ecs::EntityFiller<components::Transform, components::Bound,
+							components::Text, components::Color,
+							components::Typography>(registry)
+	{
+		typography().setRole(role).setFontSize(fontSize);
+		setContent(content);
+		setColor(color);
+		applyTypography();
 	}
 
 	Text::~Text()
 	{
 	}
 
+	components::Typography &Text::typography(void)
+	{
+		return getComponentRegistry().getComponent<components::Typography>(
+			getIdentifier());
+	}
+
+	const components::Typography &Text::typography(void) const
+	{
+		return getComponentRegistry().getComponent<components::Typography>(
+			getIdentifier());
+	}
+
+	void Text::applyTypography(void)
+	{
+		systems::Typography::apply(getComponentRegistry(), getIdentifier());
+	}
+
 	Text &Text::setContent(const std::string &content)
 	{
-		_content = content;
 		getComponentRegistry()
 			.getComponent<components::Text>(getIdentifier())
 			.setContent(content);
@@ -104,30 +149,29 @@ namespace guillaume::entities
 
 	Text &Text::setFontSize(const float &fontSize)
 	{
-		_fontSize = fontSize;
-		getComponentRegistry()
-			.getComponent<components::Text>(getIdentifier())
-			.setFontSize(fontSize);
+		typography().setFontSize(fontSize);
+		applyTypography();
 		return *this;
+	}
+
+	Text &Text::setTypeRole(theme::TypeRole role)
+	{
+		typography().setRole(role).setFontSize(std::nullopt);
+		applyTypography();
+		return *this;
+	}
+
+	theme::TypeRole Text::getTypeRole(void) const
+	{
+		return typography().getRole();
 	}
 
 	Text &Text::setColor(const utility::graphic::Color32Bit &color)
 	{
-		_color = color;
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
 			.setColor(color);
 		return *this;
 	}
 
-	void Text::initialize(void)
-	{
-	}
-
-	void Text::update(void)
-	{
-		setContent(_content);
-		setFontSize(_fontSize);
-		setColor(_color);
-	}
 }	 // namespace guillaume::entities

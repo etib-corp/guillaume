@@ -22,6 +22,22 @@
 
 #include "entities/test_checkbox.hpp"
 
+#include <guillaume/entities/style_helpers.hpp>
+
+#include <guillaume/components/transform.hpp>
+
+#include <guillaume/components/text.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
+#include <optional>
+
 #include <memory>
 
 #include <guillaume/components/borders.hpp>
@@ -34,6 +50,27 @@
 
 namespace guillaume::entities::tests
 {
+
+	namespace
+	{
+		template<typename Parent>
+		float labelOffsetX(ecs::ComponentRegistry &registry,
+						   const std::shared_ptr<Parent> &parent)
+		{
+			for (const auto &child: parent->getEntities()) {
+				if (registry.hasComponent<components::Text>(
+						child->getIdentifier())) {
+					return registry
+						.getComponent<components::Transform>(
+							child->getIdentifier())
+						.getPose()
+						.getPosition()
+						.getX();
+				}
+			}
+			return -1.0f;
+		}
+	}	 // namespace
 	namespace
 	{
 		std::shared_ptr<Checkbox>
@@ -45,10 +82,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Checkbox::Builder builder(registry, entityRegistry);
-			Checkbox::Director director;
 
-			return director.makeCheckbox(builder, nullptr, state, variant,
-										 label);
+			return builder.makeCheckbox(nullptr, state, variant, label);
 		}
 	}	 // namespace
 
@@ -111,7 +146,7 @@ namespace guillaume::entities::tests
 		EXPECT_GT(line.getThickness(), 0.0f);
 	}
 
-	TEST_F(TestCheckbox, LabelAddsChildContent)
+	TEST_F(TestCheckbox, LabelSitsOutsideTheBox)
 	{
 		ecs::ComponentRegistry registry;
 		auto checkbox = makeCheckbox(registry, Checkbox::State::Checked,
@@ -120,21 +155,114 @@ namespace guillaume::entities::tests
 		checkbox->initialize();
 		checkbox->update();
 
-		EXPECT_EQ(checkbox->getChildren().size(), 2U);
+		// Only the check glyph is laid out inside the 18 dp box.
+		EXPECT_EQ(checkbox->getChildren().size(), 1U);
+		EXPECT_GE(labelOffsetX(registry, checkbox),
+				  (18.0f + Checkbox::TouchTarget) / 2.0f);
 	}
 
-	TEST_F(TestCheckbox, DirectorBuildsAndRegisters)
+	TEST_F(TestCheckbox, PressTogglesAndExposesSemantics)
+	{
+		ecs::ComponentRegistry registry;
+		auto checkbox = makeCheckbox(registry, Checkbox::State::Indeterminate,
+									 Checkbox::Variant::Enabled, "Accept");
+		checkbox->initialize();
+
+		std::optional<Checkbox::State> reported;
+		checkbox->setOnValueChange([&reported](Checkbox::State state) {
+			reported = state;
+		});
+
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				checkbox->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Checkbox);
+		EXPECT_EQ(accessibility.getChecked(), components::CheckedState::Mixed);
+
+		const auto release =
+			registry
+				.getComponent<components::MouseButtonInteraction>(
+					checkbox->getIdentifier())
+				.getOnButtonReleaseHandler(
+					utility::event::MouseButtonEvent::Button::Left);
+		release();
+		EXPECT_EQ(checkbox->getState(), Checkbox::State::Checked);
+		EXPECT_EQ(reported, Checkbox::State::Checked);
+		EXPECT_EQ(accessibility.getChecked(),
+				  components::CheckedState::Checked);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(checkbox->getIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::Primary));
+
+		release();
+		EXPECT_EQ(checkbox->getState(), Checkbox::State::Unchecked);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Borders>(checkbox->getIdentifier())
+				.getColor(),
+			schemeColor(SchemeColorRole::OnSurfaceVariant));
+	}
+
+	TEST_F(TestCheckbox, DisabledCheckboxIgnoresPress)
+	{
+		ecs::ComponentRegistry registry;
+		auto checkbox = makeCheckbox(registry, Checkbox::State::Unchecked,
+									 Checkbox::Variant::Disabled);
+		checkbox->initialize();
+
+		checkbox->toggle();
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				checkbox->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(checkbox->getState(), Checkbox::State::Unchecked);
+		EXPECT_FALSE(
+			registry
+				.getComponent<components::StyleState>(checkbox->getIdentifier())
+				.isEnabled());
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Borders>(checkbox->getIdentifier())
+				.getColor(),
+			disabledContentColor());
+	}
+
+	TEST_F(TestCheckbox, TargetAndColorOverrides)
+	{
+		ecs::ComponentRegistry registry;
+		auto checkbox = makeCheckbox(registry, Checkbox::State::Checked);
+		checkbox->initialize();
+
+		const auto margin =
+			registry
+				.getComponent<components::MouseHoverInteraction>(
+					checkbox->getIdentifier())
+				.getAccessibilityMargin();
+		EXPECT_FLOAT_EQ(18.0f + 2.0f * static_cast<float>(margin.getWidth()),
+						Checkbox::TouchTarget);
+
+		const utility::graphic::Color32Bit custom(10, 120, 30, 255);
+		checkbox->setCheckedColor(custom);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(checkbox->getIdentifier())
+				.getColor(),
+			custom);
+	}
+
+	TEST_F(TestCheckbox, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Checkbox::Builder builder(registry, entityRegistry);
-		Checkbox::Director director;
 
-		auto checkbox =
-			director.makeCheckbox(builder, parent, Checkbox::State::Checked,
-								  Checkbox::Variant::Error, "Terms");
+		auto checkbox = builder.makeCheckbox(parent, Checkbox::State::Checked,
+											 Checkbox::Variant::Error, "Terms");
 
 		ASSERT_NE(checkbox, nullptr);
 		EXPECT_EQ(checkbox->getParent(), parent);

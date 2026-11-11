@@ -30,6 +30,9 @@
 
 #include <utility/graphic/color.hpp>
 
+#include "guillaume/theme/tokens.hpp"
+#include "guillaume/theme/typescale.hpp"
+
 namespace guillaume
 {
 
@@ -86,6 +89,9 @@ namespace guillaume
 		SurfaceContainer,
 		SurfaceContainerHigh,
 		SurfaceContainerHighest,
+		SurfaceDisabled,	  ///< Disabled container (onSurface at 12%)
+		OnSurfaceDisabled,	  ///< Disabled content (onSurface at 38%)
+		Backdrop,			  ///< Modal backdrop behind dialogs and drawers
 		Count
 	};
 
@@ -412,6 +418,11 @@ namespace guillaume
 			_schemes;	 ///< Schemes indexed by ThemeSchemeRole
 		std::array<Palette, ThemePaletteRole::ThemePaletteCount>
 			_palettes;	  ///< Palettes indexed by ThemePaletteRole
+		theme::Typescale _typescale;			///< Material 3 typescale
+		theme::ShapeScale _shapes;				///< Material 3 shape scale
+		theme::ElevationScale _elevations;		///< Material 3 elevation scale
+		theme::StateLayerScale _stateLayers;	///< Material 3 state layers
+		theme::MotionScale _motion;				///< Material 3 motion scale
 
 		public:
 		/**
@@ -496,9 +507,71 @@ namespace guillaume
 		 * @param palette Palette to set for the role.
 		 */
 		void setPalette(ThemePaletteRole role, const Palette &palette);
+
+		/**
+		 * @brief Get the theme typescale.
+		 * @return Immutable typescale reference.
+		 */
+		const theme::Typescale &getTypescale(void) const;
+
+		/**
+		 * @brief Get the mutable theme typescale.
+		 * @return Mutable typescale reference.
+		 */
+		theme::Typescale &getTypescale(void);
+
+		/**
+		 * @brief Replace the theme typescale.
+		 * @param typescale New typescale.
+		 */
+		void setTypescale(const theme::Typescale &typescale);
+
+		/** @brief Get the shape scale. @return Immutable reference. */
+		const theme::ShapeScale &getShapes(void) const;
+
+		/** @brief Get the mutable shape scale. @return Mutable reference. */
+		theme::ShapeScale &getShapes(void);
+
+		/** @brief Get the elevation scale. @return Immutable reference. */
+		const theme::ElevationScale &getElevations(void) const;
+
+		/** @brief Get the mutable elevation scale. @return Mutable reference.
+		 */
+		theme::ElevationScale &getElevations(void);
+
+		/** @brief Get the state-layer scale. @return Immutable reference. */
+		const theme::StateLayerScale &getStateLayers(void) const;
+
+		/** @brief Get the mutable state-layer scale. @return Mutable
+		 * reference. */
+		theme::StateLayerScale &getStateLayers(void);
+
+		/** @brief Get the motion scale. @return Immutable reference. */
+		const theme::MotionScale &getMotion(void) const;
+
+		/** @brief Get the mutable motion scale. @return Mutable reference. */
+		theme::MotionScale &getMotion(void);
 	};
 
 	extern const Theme defaultTheme;
+
+	/**
+	 * @brief Get the theme every entity and system reads its tokens from.
+	 *
+	 * It starts as a copy of defaultTheme.
+	 * @return Immutable reference to the active theme.
+	 */
+	const Theme &getActiveTheme(void);
+
+	/**
+	 * @brief Replace the active theme.
+	 *
+	 * Call it before building a scene: entities resolve their tokens when
+	 * they are built or restyled, so existing entities keep the colors they
+	 * already resolved until their next update.
+	 * @param theme The theme to copy and activate.
+	 */
+	void setActiveTheme(const Theme &theme);
 
 	/**
 	 * @brief Get the currently active color scheme.
@@ -507,9 +580,65 @@ namespace guillaume
 	const Scheme &getActiveScheme(void);
 
 	/**
+	 * @brief Get a color role from the active scheme.
+	 * @param role The scheme color role.
+	 * @return The role color.
+	 */
+	utility::graphic::Color32Bit getActiveColor(SchemeColorRole role);
+
+	/**
 	 * @brief Set the currently active color scheme.
 	 * @param role The scheme role to activate.
 	 */
 	void setActiveScheme(ThemeSchemeRole role);
+
+	/**
+	 * @brief Get the typescale of the active theme.
+	 * @return Immutable typescale reference.
+	 */
+	const theme::Typescale &getActiveTypescale(void);
+
+	/**
+	 * @brief Get the active theme token of a typescale role.
+	 * @param role Typescale role.
+	 * @return Immutable token reference.
+	 */
+	const theme::TypeToken &getTypeToken(theme::TypeRole role);
+
+	/**
+	 * @brief Resolve a shape role against the active theme.
+	 * @param role Shape role.
+	 * @return The corner radius, in dp.
+	 */
+	float getShapeRadius(theme::ShapeRole role);
+
+	/**
+	 * @brief Get a state-layer alpha of the active theme.
+	 * @param layer State layer.
+	 * @return The alpha in [0, 255].
+	 */
+	std::uint8_t getStateLayerAlpha(theme::StateLayer layer);
+
+	/**
+	 * @brief Get an elevation token of the active theme.
+	 * @param level Elevation level.
+	 * @return Immutable token reference.
+	 */
+	const theme::ElevationToken &getElevationToken(theme::ElevationLevel level);
+
+	/**
+	 * @brief Get the active Surface color tinted for an elevation level.
+	 * @param level Elevation level.
+	 * @return The tinted surface color.
+	 */
+	utility::graphic::Color32Bit
+		getElevatedSurfaceColor(theme::ElevationLevel level);
+
+	/**
+	 * @brief Get a motion duration of the active theme.
+	 * @param duration Duration token.
+	 * @return The duration, in seconds.
+	 */
+	float getMotionDuration(theme::MotionDuration duration);
 
 }	 // namespace guillaume

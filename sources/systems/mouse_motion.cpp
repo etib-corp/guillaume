@@ -21,11 +21,11 @@
  */
 
 #include "guillaume/systems/mouse_motion.hpp"
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
-	MouseMotion::MouseMotion(event::EventBus &eventBus,
-							 std::unique_ptr<utility::Engine> &engine)
+	MouseMotion::MouseMotion(event::EventBus &eventBus, utility::Engine &engine)
 		: ecs::SystemFiller<components::MouseHoverInteraction,
 							components::Transform, components::Bound>(
 			  ecs::Phase::Event)
@@ -60,7 +60,7 @@ namespace guillaume::systems
 
 		utility::graphic::RayF ray;
 		try {
-			ray = _engine->getView().viewPointToRay(position);
+			ray = _engine.getView().viewPointToRay(position);
 		} catch (const std::out_of_range &exception) {
 			this->getLogger().warning()
 				<< "MouseMotion::update: " << exception.what();
@@ -72,10 +72,11 @@ namespace guillaume::systems
 		auto &mouseHoverInteraction =
 			getComponent<components::MouseHoverInteraction>(entityIdentifier);
 
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
 		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
+			isInteractive(this->getComponentRegistry(), entityIdentifier)
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
 
 		if (isIntersecting) {
 			if (!mouseHoverInteraction.isHovered()) {

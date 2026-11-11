@@ -55,13 +55,13 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   //< Shared resource provider for loading
-								   // fonts and glyphs
-		std::unique_ptr<utility::Engine>
-			&_engine;					 ///< utility::Engine instance
+			_ressourceProvider;		 //< Shared resource provider for loading
+									 // fonts and glyphs
+		utility::Engine &_engine;	 ///< utility::Engine instance
 		std::string _defaultFontPath;	 ///< Default font for glyph rendering
 		std::string _glyphCodePath;		 ///< Path to glyph code mapping file
 		std::shared_ptr<utility::graphic::CodePoints> _codePoints;
+		bool _hasFont { false };	///< Whether the icon font could be loaded
 
 		public:
 		/**
@@ -72,7 +72,7 @@ namespace guillaume::systems
 		 */
 		GlyphRender(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<utility::Engine> &engine);
+			utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

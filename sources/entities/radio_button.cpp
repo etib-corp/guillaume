@@ -35,6 +35,9 @@
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/placement_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
+#include "guillaume/components/hand_hover_interaction.hpp"
+#include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
@@ -63,8 +66,8 @@ namespace guillaume::entities
 			{
 				getComponentRegistry()
 					.getComponent<components::Bound>(getIdentifier())
-					.setWidth(8.0f)
-					.setHeight(8.0f);
+					.setWidth(RadioButton::DotSize)
+					.setHeight(RadioButton::DotSize);
 
 				getComponentRegistry()
 					.getComponent<components::Color>(getIdentifier())
@@ -98,7 +101,7 @@ namespace guillaume::entities
 		_variant = Variant::Enabled;
 		_label.clear();
 
-		_config.borderRadius = 10.0f;
+		_config.borderRadius = getShapeRadius(theme::ShapeRole::Full);
 		_config.axis		 = components::Layout::Axis::Horizontal;
 		_config.mainAxisAlignment =
 			components::Layout::MainAxisAlignment::Start;
@@ -130,12 +133,11 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<RadioButton> RadioButton::Director::makeRadioButton(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	std::shared_ptr<RadioButton> RadioButton::Builder::makeRadioButton(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::string &label)
 	{
-		return builder.withVariant(variant).withLabel(label).registerEntity(
-			parent);
+		return withVariant(variant).withLabel(label).registerEntity(parent);
 	}
 
 	RadioButton::RadioButton(ecs::ComponentRegistry &registry,
@@ -148,6 +150,32 @@ namespace guillaume::entities
 		, _dot()
 		, _labelEntity()
 	{
+		makeInteractive(
+			getComponentRegistry(), getIdentifier(),
+			components::AccessibilityRole::Radio,
+			[this]() {
+				if (isDisabled()) {
+					return;
+				}
+				select(true);
+				if (_onPress) {
+					_onPress();
+				}
+			},
+			[this]() {
+				applyVariant();
+			});
+
+		// Grow the 20 dp ring to the 40 dp target without growing it.
+		const auto margin =
+			static_cast<unsigned int>((TouchTarget - config.fixedWidth) / 2.0f);
+		getComponentRegistry()
+			.getComponent<components::MouseHoverInteraction>(getIdentifier())
+			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
+		getComponentRegistry()
+			.getComponent<components::HandHoverInteraction>(getIdentifier())
+			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
+
 		getComponentRegistry()
 			.getComponent<components::Selectable>(getIdentifier())
 			.setOnSelectionChangedHandler([this](bool) {
@@ -168,7 +196,10 @@ namespace guillaume::entities
 
 		ring.setThickness(2.0f);
 
-		const bool disabled = (_variant == Variant::Disabled);
+		setEnabled(getComponentRegistry(), getIdentifier(),
+				   _variant != Variant::Disabled);
+
+		const bool disabled = isDisabled();
 		const bool errored	= (_variant == Variant::Error);
 		const bool selected =
 			getComponentRegistry()
@@ -176,7 +207,7 @@ namespace guillaume::entities
 				.isSelected();
 
 		if (disabled) {
-			setColor(withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U));
+			setColor(disabledContentColor());
 		} else if (errored) {
 			setColor(schemeColor(SchemeColorRole::Error));
 		} else if (selected) {
@@ -184,6 +215,13 @@ namespace guillaume::entities
 		} else {
 			setColor(schemeColor(SchemeColorRole::OnSurfaceVariant));
 		}
+
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setLabel(_label)
+			.setSelected(selected)
+			.setChecked(selected ? components::CheckedState::Checked
+								 : components::CheckedState::Unchecked);
 
 		applyState();
 	}
@@ -195,11 +233,11 @@ namespace guillaume::entities
 				.getComponent<components::Selectable>(getIdentifier())
 				.isSelected();
 
-		const bool disabled = (_variant == Variant::Disabled);
+		const bool disabled = isDisabled();
 		const bool errored	= (_variant == Variant::Error);
 
 		const auto dotColor = disabled
-			? withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U)
+			? disabledContentColor()
 			: (errored ? schemeColor(SchemeColorRole::Error)
 					   : schemeColor(SchemeColorRole::Primary));
 
@@ -218,20 +256,55 @@ namespace guillaume::entities
 
 			if (selected) {
 				centerChild(getComponentRegistry(), getIdentifier(),
-							_dot->getIdentifier());
+							_dot->getIdentifier(),
+							static_cast<std::uint32_t>(getLayer()));
 			}
 		}
 
 		if (_labelEntity != nullptr) {
 			if (disabled) {
-				_labelEntity->setColor(
-					withAlpha(schemeColor(SchemeColorRole::OnSurface), 97U));
+				_labelEntity->setColor(disabledContentColor());
 			} else if (errored) {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::Error));
 			} else {
 				_labelEntity->setColor(schemeColor(SchemeColorRole::OnSurface));
 			}
 		}
+
+		placeLabel();
+	}
+
+	void RadioButton::placeLabel(void)
+	{
+		if (_labelEntity == nullptr) {
+			return;
+		}
+
+		const auto &ring =
+			getComponentRegistry().getComponent<components::Bound>(
+				getIdentifier());
+		const auto &label =
+			getComponentRegistry().getComponent<components::Bound>(
+				_labelEntity->getIdentifier());
+
+		const float x = (ring.getWidth() + TouchTarget) / 2.0f + LabelGap;
+		const float y = (ring.getHeight() - label.getHeight()) / 2.0f;
+		placeChild(getComponentRegistry(), getIdentifier(),
+				   _labelEntity->getIdentifier(),
+				   utility::graphic::PositionF(x, y, 0.0f),
+				   static_cast<std::uint32_t>(getLayer()));
+	}
+
+	bool RadioButton::isDisabled(void) const
+	{
+		return _variant == Variant::Disabled
+			|| !isEnabled(getComponentRegistry(), getIdentifier());
+	}
+
+	RadioButton &RadioButton::setOnPress(std::function<void(void)> onPress)
+	{
+		_onPress = std::move(onPress);
+		return *this;
 	}
 
 	RadioButton &RadioButton::setVariant(Variant variant)
@@ -287,18 +360,15 @@ namespace guillaume::entities
 		this->addEntity(_dot);
 
 		if (!_label.empty()) {
-			_labelEntity = buildText(getComponentRegistry(), *this,
-									 shared_from_this(), _label, 14.0f,
-									 schemeColor(SchemeColorRole::OnSurface));
+			_labelEntity =
+				buildText(getComponentRegistry(), *this, shared_from_this(),
+						  _label, theme::TypeRole::BodyLarge,
+						  schemeColor(SchemeColorRole::OnSurface));
 		}
 
-		// The dot is positioned manually (not through the layout) so that it
-		// stays centered; the label is arranged by the surface layout.
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-		if (_labelEntity != nullptr) {
-			children.push_back(_labelEntity);
-		}
-		setChildren(children);
+		// The dot is centered and the label placed beside the ring manually;
+		// neither is a layout child of the 20 dp surface.
+		setChildren({});
 
 		applyVariant();
 	}

@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -30,7 +31,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/ring.hpp"
 #include "guillaume/components/selection.hpp"
@@ -115,25 +115,16 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
-		};
 
-		/**
-		 * @brief Director that orchestrates `RadioButton::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a radio button using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The radio button variant.
 			 * @param label The radio button label.
 			 * @return The newly created radio button.
 			 */
 			std::shared_ptr<RadioButton>
-				makeRadioButton(Builder &builder,
-								std::shared_ptr<ecs::Entity> parent,
+				makeRadioButton(std::shared_ptr<ecs::Entity> parent,
 								Variant variant, const std::string &label);
 		};
 
@@ -142,6 +133,13 @@ namespace guillaume::entities
 		std::string _label {};					  ///< Label content.
 		std::shared_ptr<ecs::Entity> _dot;		  ///< Inner filled dot child.
 		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
+		std::function<void(void)>
+			_onPress {};	///< Called when the user selects the radio.
+
+		/**
+		 * @brief Place the label beside the ring, outside its 20 dp surface.
+		 */
+		void placeLabel(void);
 
 		private:
 		/**
@@ -204,6 +202,35 @@ namespace guillaume::entities
 		 * @return Reference to this radio button for chaining.
 		 */
 		RadioButton &select(bool selected);
+
+		/**
+		 * @brief Check whether the radio button is disabled.
+		 * @return True for `Variant::Disabled`.
+		 */
+		bool isDisabled(void) const;
+
+		/**
+		 * @brief Set the handler called when the user selects the radio
+		 * (Paper `onPress`). Activation selects the radio first.
+		 * @param onPress Handler.
+		 * @return Reference to this radio button for chaining.
+		 */
+		RadioButton &setOnPress(std::function<void(void)> onPress);
+
+		/**
+		 * @brief Diameter of the selected dot (M3: 10 dp).
+		 */
+		static constexpr float DotSize = 10.0f;
+
+		/**
+		 * @brief Side of the square interactive target (Paper: 36-40 dp).
+		 */
+		static constexpr float TouchTarget = 40.0f;
+
+		/**
+		 * @brief Gap between the target and the label.
+		 */
+		static constexpr float LabelGap = 4.0f;
 
 		/**
 		 * @brief Initialize the radio button derived state and children.

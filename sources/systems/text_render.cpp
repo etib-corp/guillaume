@@ -22,15 +22,15 @@
 
 #include <memory>
 
-#include <utility/graphic/text/text.hpp>
-
 #include "guillaume/systems/text_render.hpp"
+#include "guillaume/text_renderable.hpp"
+#include "guillaume/theme/typescale.hpp"
 
 namespace guillaume::systems
 {
 	TextRender::TextRender(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Text,
 							components::Color>(ecs::Phase::Render)
 		, _ressourceProvider(ressourceProvider)
@@ -51,7 +51,7 @@ namespace guillaume::systems
 
 	void TextRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void TextRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -75,19 +75,22 @@ namespace guillaume::systems
 			<< "Rendering text for entity " << entityIdentifier
 			<< " (content: '" << textComponent.getContent() << "')";
 
-		auto renderable = std::make_shared<utility::graphic::Text>(
+		// Build a world-space text renderable so the glyphs land on the
+		// entity position regardless of the renderer's model-matrix handling.
+		auto renderable = std::make_shared<TextRenderable>(
 			_ressourceProvider, transformComponent.getPose(),
 			colorComponent.getColor(), textComponent.getContent(),
-			textComponent.getFontSize(), _defaultFontPath);
+			textComponent.getFontSize(),
+			theme::fontPath(textComponent.getFontWeight()));
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
-			size_t objectId = _engine->createObject(renderable);
+			size_t objectId = _engine.createObject(renderable);
 			insert(entityIdentifier,
 				   RenderHandle { objectId, renderable, true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

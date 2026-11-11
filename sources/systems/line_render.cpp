@@ -30,7 +30,7 @@
 
 namespace guillaume::systems
 {
-	LineRender::LineRender(std::unique_ptr<utility::Engine> &engine)
+	LineRender::LineRender(utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Color, components::Line>(
 			  ecs::Phase::Render)
@@ -45,7 +45,7 @@ namespace guillaume::systems
 
 	void LineRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void LineRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -60,14 +60,30 @@ namespace guillaume::systems
 		const auto &pose =
 			getComponent<components::Transform>(entityIdentifier).getPose();
 		const auto &bound = getComponent<components::Bound>(entityIdentifier);
-		const auto &color =
-			getComponent<components::Color>(entityIdentifier).getColor();
-		const auto &line = getComponent<components::Line>(entityIdentifier);
+		const auto &line  = getComponent<components::Line>(entityIdentifier);
+		const auto &color = line.hasColor()
+			? line.getColor()
+			: getComponent<components::Color>(entityIdentifier).getColor();
+
+		float centerY = bound.getHeight() / 2.0f;
+		if (line.getPlacement() == components::Line::Placement::Top) {
+			centerY = line.getThickness() / 2.0f;
+		} else if (line.getPlacement() == components::Line::Placement::Bottom) {
+			centerY = bound.getHeight() - line.getThickness() / 2.0f;
+		}
+
+		// Edge-placed strokes share their container's plane; lift them half a
+		// layer so they draw over the container fill without z-fighting.
+		utility::graphic::PositionF lift(0.0f, 0.0f, 0.0f);
+		if (line.getPlacement() != components::Line::Placement::Center) {
+			lift = utility::graphic::PositionF(
+				-pose.getOrientation().getForward() * StrokeLift);
+		}
 
 		const utility::graphic::PositionF center(
-			pose.getPosition().x + bound.getWidth() / 2.0f,
-			pose.getPosition().y + bound.getHeight() / 2.0f,
-			pose.getPosition().z);
+			pose.getPosition().x + bound.getWidth() / 2.0f + lift[0],
+			pose.getPosition().y + centerY + lift[1],
+			pose.getPosition().z + lift[2]);
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
@@ -83,11 +99,11 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable), renderable,
+				   RenderHandle { _engine.createObject(renderable), renderable,
 								  true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

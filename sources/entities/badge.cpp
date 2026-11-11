@@ -20,17 +20,28 @@
  SOFTWARE.
  */
 
+#include <algorithm>
 #include <memory>
+#include <stdexcept>
 
 #include "guillaume/entities/badge.hpp"
 
-#include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
+	namespace
+	{
+		constexpr float DotSize			  = 6.0f;
+		constexpr float SmallSize		  = 16.0f;
+		constexpr float LargeSize		  = 20.0f;
+		constexpr float HorizontalPadding = 3.0f;	 ///< Paper Badge padding.
+		constexpr float LabelScale		  = 0.5f;	 ///< Paper font = size/2.
+	}	 // namespace
+
 	Badge::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 							ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<Badge>(componentRegistry, entityRegistry)
@@ -40,16 +51,15 @@ namespace guillaume::entities
 
 	std::shared_ptr<Badge> Badge::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Badge>(this->getComponentRegistry(),
-											  _config, _variant, _label);
-		return entity;
+		return std::make_shared<Badge>(this->getComponentRegistry(), _config,
+									   _variant, _label);
 	}
 
 	void Badge::Builder::reset(void)
 	{
 		_config		 = SurfaceConfig();
-		_variant	 = Variant::Dot;
-		_label		 = "1";
+		_variant	 = Variant::Large;
+		_label		 = "";
 		_config.axis = components::Layout::Axis::Horizontal;
 		_config.mainAxisAlignment =
 			components::Layout::MainAxisAlignment::Center;
@@ -77,21 +87,28 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<Badge>
-		Badge::Director::makeBadge(Builder &builder,
-								   std::shared_ptr<ecs::Entity> parent,
-								   const std::string &label, Variant variant)
+		Badge::Builder::makeBadge(std::shared_ptr<ecs::Entity> parent,
+								  const std::string &label, Variant variant)
 	{
-		return builder.withLabel(label).withVariant(variant).registerEntity(
-			parent);
+		return withLabel(label).withVariant(variant).registerEntity(parent);
 	}
 
 	Badge::Badge(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 				 Variant variant, const std::string &label)
-		: SurfaceBase<>(registry, config)
+		: SurfaceBase<components::Animation>(registry, config)
 		, _variant(variant)
 		, _label(label)
 		, _labelEntity()
 	{
+		getComponentRegistry()
+			.getComponent<components::Animation>(getIdentifier())
+			.setDuration(getMotionDuration(theme::MotionDuration::Short3))
+			.setEasing(theme::MotionScale::standard())
+			.setOnSampleHandler([this](float progress) {
+				const float target = _visible ? 1.0f : 0.0f;
+				_opacity = _fadeFrom + (target - _fadeFrom) * progress;
+				applyVariant();
+			});
 		applyVariant();
 	}
 
@@ -103,52 +120,57 @@ namespace guillaume::entities
 	{
 		switch (_variant) {
 			case Variant::Dot:
-				return 6.0f;
+				return DotSize;
 			case Variant::Small:
-				return 16.0f;
+				return SmallSize;
 			case Variant::Large:
-				return 24.0f;
 			default:
-				return 6.0f;
+				return LargeSize;
 		}
+	}
+
+	float Badge::getSize(void) const
+	{
+		return _size.value_or(getVariantSize());
 	}
 
 	void Badge::applyVariant(void)
 	{
-		const float size = getVariantSize();
+		const float size = getSize();
 
 		auto config			= getSurfaceConfig();
-		config.borderRadius = size * 0.5f;
+		config.borderRadius = getShapeRadius(theme::ShapeRole::Full);
 		config.padding		= 0.0f;
 		config.spacing		= 0.0f;
 
-		if (_variant == Variant::Dot) {
-			config.hasFixedWidth  = true;
-			config.fixedWidth	  = size;
-			config.hasFixedHeight = true;
-			config.fixedHeight	  = size;
-		} else {
-			const float labelWidth = _labelEntity != nullptr
-				? getComponentRegistry()
-					  .getComponent<components::Bound>(
-						  _labelEntity->getIdentifier())
-					  .getWidth()
-				: 0.0f;
-			const float width =
-				size + (_label.empty() ? 0.0f : labelWidth + size * 0.5f);
-
-			config.hasFixedWidth  = true;
-			config.fixedWidth	  = width;
-			config.hasFixedHeight = true;
-			config.fixedHeight	  = size;
+		float width = size;
+		if (_variant != Variant::Dot && _labelEntity != nullptr) {
+			const float labelWidth = getComponentRegistry()
+										 .getComponent<components::Bound>(
+											 _labelEntity->getIdentifier())
+										 .getWidth();
+			width = std::max(size, labelWidth + 2.0f * HorizontalPadding);
 		}
+		config.hasFixedWidth  = true;
+		config.fixedWidth	  = width;
+		config.hasFixedHeight = true;
+		config.fixedHeight	  = size;
 
 		setSurfaceConfig(config);
 
-		setColor(schemeColor(SchemeColorRole::Error));
+		const auto fade = [this](const utility::graphic::Color32Bit &color) {
+			return withAlpha(
+				color,
+				static_cast<std::uint8_t>(
+					static_cast<float>(color.getAlpha()) * _opacity + 0.5f));
+		};
+		setColor(fade(
+			_containerColor.value_or(schemeColor(SchemeColorRole::Error))));
 
 		if (_labelEntity != nullptr) {
-			_labelEntity->setColor(schemeColor(SchemeColorRole::OnError));
+			_labelEntity->setFontSize(size * LabelScale);
+			_labelEntity->setColor(fade(
+				_contentColor.value_or(schemeColor(SchemeColorRole::OnError))));
 		}
 	}
 
@@ -177,6 +199,60 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	Badge &Badge::setSize(float size)
+	{
+		if (size <= 0.0f) {
+			throw std::invalid_argument("Badge size must be positive");
+		}
+		_size = size;
+		applyVariant();
+		return *this;
+	}
+
+	Badge &Badge::clearSize(void)
+	{
+		_size.reset();
+		applyVariant();
+		return *this;
+	}
+
+	Badge &Badge::setContainerColor(const utility::graphic::Color32Bit &color)
+	{
+		_containerColor = color;
+		applyVariant();
+		return *this;
+	}
+
+	Badge &Badge::setContentColor(const utility::graphic::Color32Bit &color)
+	{
+		_contentColor = color;
+		applyVariant();
+		return *this;
+	}
+
+	Badge &Badge::setVisible(bool visible)
+	{
+		if (_visible == visible) {
+			return *this;
+		}
+		_visible  = visible;
+		_fadeFrom = _opacity;
+		getComponentRegistry()
+			.getComponent<components::Animation>(getIdentifier())
+			.play();
+		return *this;
+	}
+
+	bool Badge::isVisible(void) const
+	{
+		return _visible;
+	}
+
+	float Badge::getOpacity(void) const
+	{
+		return _opacity;
+	}
+
 	void Badge::initialize(void)
 	{
 		SurfaceBase::initialize();
@@ -184,7 +260,7 @@ namespace guillaume::entities
 		if (_variant != Variant::Dot && !_label.empty()) {
 			_labelEntity =
 				buildText(getComponentRegistry(), *this, shared_from_this(),
-						  _label, getVariantSize() * 0.75f,
+						  _label, theme::TypeRole::LabelSmall,
 						  schemeColor(SchemeColorRole::OnError));
 
 			if (_labelEntity != nullptr) {

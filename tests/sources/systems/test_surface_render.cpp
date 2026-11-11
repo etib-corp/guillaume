@@ -85,6 +85,39 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(_engineMock->updateObjectCallCount, 1u);
 	}
 
+	TEST_F(TestSurfaceRender, ScrimKeepsTopLeftOrigin)
+	{
+		const auto entity = createEntity<components::Scrim>(
+			utility::graphic::PoseF(
+				utility::graphic::PositionF(10.0f, 20.0f, 0.0f),
+				utility::graphic::OrientationF()),
+			100.0f, 50.0f);
+
+		_scrimSystem->update(entity);
+
+		// The first local corner (-half, -half) sits on the bound top-left.
+		const auto firstVertex = lastMeshFirstVertex();
+		EXPECT_FLOAT_EQ(firstVertex[0], 10.0f);
+		EXPECT_FLOAT_EQ(firstVertex[1], 20.0f);
+	}
+
+	TEST_F(TestSurfaceRender, ScrimRotatesWithOrientation)
+	{
+		// 180 degrees about Z.
+		const auto entity = createEntity<components::Scrim>(
+			utility::graphic::PoseF(
+				utility::graphic::PositionF(10.0f, 20.0f, 0.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, 1.0f, 0.0f)),
+			100.0f, 50.0f);
+
+		_scrimSystem->update(entity);
+
+		// local (-50, -25) rotated 180 degrees -> (50, 25); center is (60, 45).
+		const auto firstVertex = lastMeshFirstVertex();
+		EXPECT_FLOAT_EQ(firstVertex[0], 110.0f);
+		EXPECT_FLOAT_EQ(firstVertex[1], 70.0f);
+	}
+
 	TEST_F(TestSurfaceRender, ClipResolvesBoundDerivedRect)
 	{
 		const auto entity = createEntity<components::Clip>(

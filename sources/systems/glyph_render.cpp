@@ -22,15 +22,14 @@
 
 #include <memory>
 
-#include <utility/graphic/text/text.hpp>
-
 #include "guillaume/systems/glyph_render.hpp"
+#include "guillaume/text_renderable.hpp"
 
 namespace guillaume::systems
 {
 	GlyphRender::GlyphRender(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Glyph, components::Color>(
 			  ecs::Phase::Render)
@@ -50,6 +49,13 @@ namespace guillaume::systems
 			getLogger().error()
 				<< "Failed to load glyph code asset: " << _glyphCodePath;
 		}
+
+		_hasFont = _ressourceProvider->loadFont(_defaultFontPath) != nullptr;
+		if (!_hasFont) {
+			getLogger().error()
+				<< "Failed to load glyph font: " << _defaultFontPath
+				<< ". Icons will not be rendered.";
+		}
 	}
 
 	GlyphRender::~GlyphRender(void)
@@ -64,7 +70,7 @@ namespace guillaume::systems
 
 	void GlyphRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void GlyphRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -78,6 +84,12 @@ namespace guillaume::systems
 			return;
 		}
 
+		// Without the icon font there is nothing to draw; building the text
+		// renderable would dereference the missing font.
+		if (!_hasFont) {
+			return;
+		}
+
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
 		const auto &glyphComponent =
@@ -88,13 +100,18 @@ namespace guillaume::systems
 		getLogger().debug() << "Rendering glyph '" << glyphComponent.getName()
 							<< "' for entity " << entityIdentifier;
 
-		uint32_t glyphCode = _codePoints->getCode(glyphComponent.getName());
+		// The code point table can be missing (asset not found); fall back
+		// to the placeholder glyph instead of dereferencing a null table.
+		uint32_t glyphCode =
+			_codePoints ? _codePoints->getCode(glyphComponent.getName()) : 0;
 
 		if (glyphCode == 0) {
 			glyphCode = '?';
 		}
 
-		auto renderable = std::make_shared<utility::graphic::Text>(
+		// Build a world-space text renderable so the glyph lands on the
+		// entity position regardless of the renderer's model-matrix handling.
+		auto renderable = std::make_shared<TextRenderable>(
 			_ressourceProvider, transformComponent.getPose(),
 			colorComponent.getColor(),
 			utility::graphic::CodePoints::toUtf8(glyphCode),
@@ -102,12 +119,12 @@ namespace guillaume::systems
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
-			size_t objectId = _engine->createObject(renderable);
+			size_t objectId = _engine.createObject(renderable);
 			insert(entityIdentifier,
 				   RenderHandle { objectId, renderable, true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

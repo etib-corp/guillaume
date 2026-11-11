@@ -22,7 +22,9 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <utility/graphic/color.hpp>
@@ -30,7 +32,6 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/selection.hpp"
@@ -128,17 +129,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Checkbox::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a checkbox using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param state The checkbox state.
 			 * @param variant The checkbox variant.
@@ -146,8 +139,7 @@ namespace guillaume::entities
 			 * @return The newly created checkbox.
 			 */
 			std::shared_ptr<Checkbox>
-				makeCheckbox(Builder &builder,
-							 std::shared_ptr<ecs::Entity> parent, State state,
+				makeCheckbox(std::shared_ptr<ecs::Entity> parent, State state,
 							 Variant variant, const std::string &label);
 		};
 
@@ -157,6 +149,22 @@ namespace guillaume::entities
 		std::string _label {};					  ///< Label content.
 		std::shared_ptr<Icon> _checkIcon;		  ///< Check glyph child.
 		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
+		std::function<void(State)>
+			_onValueChange {};	  ///< Called when the user toggles the box.
+		std::optional<utility::graphic::Color32Bit>
+			_checkedColor {};	 ///< Paper `color` override.
+		std::optional<utility::graphic::Color32Bit>
+			_uncheckedColor {};	   ///< Paper `uncheckedColor` override.
+
+		/**
+		 * @brief Place the label beside the box, outside its 18 dp surface.
+		 */
+		void placeLabel(void);
+
+		/**
+		 * @brief Handle a user activation.
+		 */
+		void pressHandler(void);
 
 		private:
 		/**
@@ -220,6 +228,53 @@ namespace guillaume::entities
 		 * @return True when checked.
 		 */
 		bool isChecked(void) const;
+
+		/**
+		 * @brief Toggle as a user activation would (indeterminate and
+		 * unchecked become checked). Ignored while disabled.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &toggle(void);
+
+		/**
+		 * @brief Check whether the checkbox is disabled.
+		 * @return True for `Variant::Disabled`.
+		 */
+		bool isDisabled(void) const;
+
+		/**
+		 * @brief Set the handler called when the user toggles the box.
+		 * @param onValueChange Handler receiving the new state.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &setOnValueChange(std::function<void(State)> onValueChange);
+
+		/**
+		 * @brief Override the checked container color (Paper `color`).
+		 * @param color Custom color, or none for the theme color.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &
+			setCheckedColor(std::optional<utility::graphic::Color32Bit> color);
+
+		/**
+		 * @brief Override the unchecked outline color (Paper
+		 * `uncheckedColor`).
+		 * @param color Custom color, or none for the theme color.
+		 * @return Reference to this checkbox for chaining.
+		 */
+		Checkbox &setUncheckedColor(
+			std::optional<utility::graphic::Color32Bit> color);
+
+		/**
+		 * @brief Side of the square interactive target (Paper: 36-40 dp).
+		 */
+		static constexpr float TouchTarget = 40.0f;
+
+		/**
+		 * @brief Gap between the target and the label.
+		 */
+		static constexpr float LabelGap = 4.0f;
 
 		/**
 		 * @brief Initialize the checkbox derived state and children.

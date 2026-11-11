@@ -7,8 +7,8 @@ model, scene management, event dispatching, and storage helpers.
 ## Key Concepts
 
 - **Application** — owns the engine, scene manager, event bus, and system
-  registry; drives the main loop (`pollEvents` → `update` → `clear` →
-  `present`).
+  registry; drives the main loop (see the
+  [frame lifecycle](docs/ARCHITECTURE.md#frame-lifecycle)).
 - **ECS** — entities, components, and systems compose the UI. Systems run in
   ordered phases (Event, Measure, Layout, Render) and traverse the entity
   hierarchy.
@@ -17,7 +17,9 @@ model, scene management, event dispatching, and storage helpers.
 - **Events** — an `EventBus` routes typed events to subscribed listeners and
   systems.
 - **Storage** — `LocalStorage` (SQLite-backed, persistent) and
-  `SessionStorage` (in-memory) key-value helpers.
+  `SessionStorage` (in-memory) key-value helpers. If the storage file cannot
+  be opened, `LocalStorage` keeps working in memory and
+  `isPersistent()` returns `false`.
 - **Theme & metadata** — component metadata and theming support.
 
 ## Quickstart
@@ -41,8 +43,8 @@ class MyScene : public guillaume::Scene {
 
 int main() {
     auto resources = std::make_shared<utility::RessourceProvider>(...);
-    guillaume::Application<MyScene> app(resources);
-    app.setEngine(std::make_unique<MyEngine>());
+    guillaume::Application<MyScene> app(resources,
+                                        std::make_unique<MyEngine>());
     return app.run();
 }
 ```
@@ -58,8 +60,9 @@ See the [Getting Started](docs/GETTING_STARTED.md) tutorial and the
 - A C++20 compiler
 - Doxygen + Graphviz (only for `-DBUILD_DOCS=ON`)
 
-Guillaume fetches its dependencies (Utility, SQLite3) via CMake
-`FetchContent`.
+SQLite3, GoogleTest, Google Benchmark and the Doxygen theme are vendored under
+`third_party/`. The sibling `utility` library is fetched with CMake
+`FetchContent`, so the first configure needs network access.
 
 ### Configure and build
 
@@ -77,16 +80,28 @@ Optional options:
 
 ## Consuming as a dependency
 
-Once installed, downstream projects can use `find_package(guillaume)`:
-
-```sh
-cmake --install build --prefix /path/to/prefix
-```
+The supported way today is to build Guillaume as part of your project:
 
 ```cmake
-find_package(guillaume REQUIRED)
-target_link_libraries(my_app PRIVATE guillaume::guillaume)
+include(FetchContent)
+FetchContent_Declare(guillaume
+    GIT_REPOSITORY https://github.com/etib-corp/guillaume.git
+    GIT_TAG v2026.3.1
+)
+FetchContent_MakeAvailable(guillaume)
+target_link_libraries(my_app PRIVATE guillaume)
 ```
+
+Guillaume loads its bundled fonts as `fonts/Roboto-Regular.ttf` and
+`fonts/Roboto-Medium.ttf` through the `utility::RessourceProvider` you pass to
+`Application`, so the resource root must contain the repository's `fonts/`
+directory (installed to `share/guillaume/fonts`).
+
+`cmake --install` also writes a `guillaumeConfig.cmake`, but
+`find_package(guillaume)` does not work yet: the installed `utility` package
+asks for a `glm` package that is not installed alongside it.
+`tests/package_consumer/` is a minimal project that reproduces this and will
+pass once it is fixed in `utility`.
 
 ## API Overview
 
@@ -98,6 +113,7 @@ published to [GitHub Pages](https://etib-corp.github.io/guillaume).
 - [Architecture](docs/ARCHITECTURE.md)
 - [How Guillaume Works](docs/HOW_GUILLAUME_WORKS.md)
 - [Getting Started](docs/GETTING_STARTED.md)
+- [Theming](docs/THEMING.md)
 - [Threading Model](docs/THREADING_MODEL.md)
 - [Versioning & Support](docs/VERSIONING.md)
 - [Engine Coupling](docs/ENGINE_COUPLING.md)

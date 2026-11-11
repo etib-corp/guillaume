@@ -28,6 +28,11 @@
 
 #include "guillaume/ecs/system_filler.hpp"
 #include "guillaume/event/event_bus.hpp"
+#include "guillaume/event/event_manager.hpp"
+
+#include <utility/event/keyboard_event.hpp>
+
+#include <vector>
 
 #include "guillaume/components/focus.hpp"
 #include "guillaume/components/transform.hpp"
@@ -54,15 +59,34 @@ namespace guillaume::systems
 			components::Focus, components::Transform, components::Bound,
 			components::MouseButtonInteraction,
 			components::HandButtonInteraction, components::HandPinchInteraction,
-			components::HandPokeInteraction>
+			components::HandPokeInteraction>,
+		public event::EventManager<utility::event::KeyboardEvent>
 	{
 		private:
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< utility::Engine instance
+		utility::Engine &_engine;	 ///< utility::Engine instance
 		std::optional<ecs::Entity::Identifier>
 			_focusedEntity;	   ///< Currently focused entity identifier
 		std::optional<ecs::Entity::Identifier>
 			_lastFocusedEntity;	   ///< Last entity that had focus
+		std::vector<std::pair<ecs::Entity::Identifier, int>>
+			_focusables;	///< Focusable entities of this frame, tree order,
+							///< with their accessibility focus order
+
+		/**
+		 * @brief Check whether keyboard traversal may focus an entity.
+		 * @param entityIdentifier Entity identifier.
+		 * @return True for enabled entities owning a Focus component that are
+		 * not marked unfocusable by their Accessibility component.
+		 */
+		bool isFocusable(const ecs::Entity::Identifier &entityIdentifier);
+
+		/**
+		 * @brief Mirror the focus flag on Focus and StyleState components.
+		 * @param entityIdentifier Entity identifier.
+		 * @param focused New flag.
+		 */
+		void markFocused(const ecs::Entity::Identifier &entityIdentifier,
+						 bool focused);
 
 		public:
 		/**
@@ -70,8 +94,7 @@ namespace guillaume::systems
 		 * @param eventBus The event bus for focus events.
 		 * @param engine Pointer to the engine for viewport input control.
 		 */
-		Focus(event::EventBus &eventBus,
-			  std::unique_ptr<utility::Engine> &engine);
+		Focus(event::EventBus &eventBus, utility::Engine &engine);
 
 		/**
 		 * @brief Set focus to a specific entity.
@@ -97,6 +120,30 @@ namespace guillaume::systems
 		 * has had focus yet.
 		 */
 		std::optional<ecs::Entity::Identifier> getLastFocusedEntity(void) const;
+
+		/**
+		 * @brief Move the focus to the next or previous focusable entity.
+		 *
+		 * Entities with a positive `Accessibility::focusOrder` come first,
+		 * ascending; the others follow in tree order. Traversal wraps.
+		 *
+		 * @param candidates Focusable entities in tree order with their
+		 * focus order.
+		 * @param backward True for Shift-Tab.
+		 */
+		void traverse(const std::vector<std::pair<ecs::Entity::Identifier, int>>
+						  &candidates,
+					  bool backward);
+
+		/**
+		 * @brief Reset the per-frame focusable list and fetch key events.
+		 */
+		void prepare(void) override;
+
+		/**
+		 * @brief Apply Tab/Shift-Tab traversal over this frame's focusables.
+		 */
+		void cleanup(void) override;
 
 		/**
 		 * @brief Update the Focus system for the specified entity.

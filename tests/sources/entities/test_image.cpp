@@ -22,6 +22,12 @@
 
 #include "entities/test_image.hpp"
 
+#include <guillaume/components/bound.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
+#include <stdexcept>
+
 #include <memory>
 #include <string>
 
@@ -75,31 +81,32 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(component.getTexturePath(), "other.png");
 	}
 
-	TEST_F(TestImage, UpdateReappliesStoredTexturePath)
+	TEST_F(TestImage, ComponentIsTheSourceOfTruthForTheTexturePath)
 	{
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "texture.png");
 
+		// The entity keeps no copy: the path is in the component from
+		// construction, and a direct component change is what it reports.
+		const auto &component =
+			registry.getComponent<components::Image>(image->getIdentifier());
+		EXPECT_EQ(component.getTexturePath(), "texture.png");
+
 		registry.getComponent<components::Image>(image->getIdentifier())
 			.setTexturePath("mutated.png");
 
-		image->update();
-
-		const auto &component =
-			registry.getComponent<components::Image>(image->getIdentifier());
-
-		EXPECT_EQ(component.getTexturePath(), "texture.png");
+		EXPECT_EQ(component.getTexturePath(), "mutated.png");
+		EXPECT_EQ(image->getTexturePath(), "mutated.png");
 	}
 
-	TEST_F(TestImage, DirectorBuildsAndRegistersImage)
+	TEST_F(TestImage, BuilderPresetBuildsAndRegistersImage)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 
 		entities::Image::Builder builder(registry, entityRegistry);
-		entities::Image::Director director;
 
-		auto image = director.makeImage(builder, nullptr, "menu.png");
+		auto image = builder.makeImage(nullptr, "menu.png");
 
 		ASSERT_NE(image, nullptr);
 		EXPECT_NE(
@@ -123,7 +130,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::ImageRender imageRender(ressourceProvider, engine);
+		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "texture.png");
@@ -149,7 +156,7 @@ namespace guillaume::entities::tests
 		auto ressourceProvider =
 			std::make_shared<utility::RessourceProvider>(systemIo);
 
-		guillaume::systems::ImageRender imageRender(ressourceProvider, engine);
+		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
 		auto image = std::make_shared<entities::Image>(registry, "missing.png");
@@ -158,6 +165,33 @@ namespace guillaume::entities::tests
 		imageRender.update(image->getIdentifier());
 
 		EXPECT_EQ(enginePtr->createObjectCallCount, 0);
+	}
+
+	TEST_F(TestImage, SizeAspectAndSemantics)
+	{
+		ecs::ComponentRegistry registry;
+		auto image = std::make_shared<Image>(registry, "images/a.png");
+
+		image->setSize(120.0f, 80.0f);
+		const auto &bound =
+			registry.getComponent<components::Bound>(image->getIdentifier());
+		EXPECT_FLOAT_EQ(bound.getWidth(), 120.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), 80.0f);
+
+		image->setAspectRatio(160.0f, 2.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), 80.0f);
+		EXPECT_FLOAT_EQ(bound.getWidth(), 160.0f);
+		EXPECT_THROW(image->setSize(0.0f, 10.0f), std::invalid_argument);
+
+		EXPECT_EQ(image->getTexturePath(), "images/a.png");
+		image->setAccessibilityLabel("Avatar");
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				image->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::Image);
+		EXPECT_EQ(accessibility.getLabel(), "Avatar");
+		EXPECT_EQ(image->getLoadState(), components::Image::LoadState::Pending);
 	}
 
 }	 // namespace guillaume::entities::tests

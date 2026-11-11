@@ -26,10 +26,11 @@
 #include <vector>
 
 #include "guillaume/mesh_renderable.hpp"
+#include "guillaume/systems/shape_mesh.hpp"
 
 namespace guillaume::systems
 {
-	ScrimRender::ScrimRender(std::unique_ptr<utility::Engine> &engine)
+	ScrimRender::ScrimRender(utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Scrim>(ecs::Phase::Render)
 		, _engine(engine)
@@ -43,7 +44,7 @@ namespace guillaume::systems
 
 	void ScrimRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void ScrimRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -63,23 +64,32 @@ namespace guillaume::systems
 		const float x0 = pose.getPosition().x;
 		const float y0 = pose.getPosition().y;
 		const float z  = pose.getPosition().z;
-		const float x1 = x0 + bound.getWidth();
-		const float y1 = y0 + bound.getHeight();
+
+		// The bound's position is its top-left corner: derive the center by
+		// extending half the size, then rotate the local quad around it. This
+		// matches the other shape renderers (rectangle, ellipse, ring, ...).
+		const float halfWidth  = bound.getWidth() / 2.0f;
+		const float halfHeight = bound.getHeight() / 2.0f;
+
+		const utility::graphic::PositionF center(x0 + halfWidth,
+												 y0 + halfHeight, z);
+
+		const std::vector<utility::math::Vector2F> localVertices {
+			{ -halfWidth, -halfHeight },
+			{ halfWidth, -halfHeight },
+			{ halfWidth, halfHeight },
+			{ -halfWidth, halfHeight },
+		};
+
+		const auto worldVertices = shape::transformToWorldVertices(
+			localVertices, center, pose.getOrientation());
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
 
-		auto addVertex = [&mesh, &color](float x, float y, float z) {
-			utility::graphic::VertexF vertex;
-			vertex.setPosition(utility::graphic::PositionF(x, y, z));
-			vertex.setColor(color);
-			mesh.addVertex(vertex);
-		};
-
-		addVertex(x0, y0, z);
-		addVertex(x1, y0, z);
-		addVertex(x1, y1, z);
-		addVertex(x0, y1, z);
+		for (const auto &worldVertex: worldVertices) {
+			mesh.addVertex(shape::createVertex(worldVertex, color));
+		}
 
 		mesh.addIndex(0);
 		mesh.addIndex(1);
@@ -94,11 +104,11 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable), renderable,
+				   RenderHandle { _engine.createObject(renderable), renderable,
 								  true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

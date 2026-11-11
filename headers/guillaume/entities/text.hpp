@@ -24,14 +24,18 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 #include "guillaume/ecs/entity_filler.hpp"
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/text.hpp"
+#include "guillaume/components/typography.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/color.hpp"
+
+#include "guillaume/theme/typescale.hpp"
+
+#include <optional>
 
 namespace guillaume::entities
 {
@@ -41,7 +45,8 @@ namespace guillaume::entities
 	 */
 	class Text:
 		public ecs::EntityFiller<components::Transform, components::Bound,
-								 components::Text, components::Color>
+								 components::Text, components::Color,
+								 components::Typography>
 	{
 		public:
 		/**
@@ -59,7 +64,9 @@ namespace guillaume::entities
 			private:
 			std::string
 				_content;	 ///< Text content to be set in the Text component
-			float _fontSize;	///< Font size to be set in the Text component
+			theme::TypeRole _typeRole;	  ///< Typescale role of the text
+			std::optional<float>
+				_fontSize;	  ///< Explicit size overriding the role size
 			utility::graphic::Color32Bit
 				_color;	   ///< Color to be set in the Text component (RGBA)
 
@@ -98,7 +105,19 @@ namespace guillaume::entities
 			 * @param fontSize The font size to set.
 			 * @return Reference to the builder for chaining.
 			 */
+			/**
+			 * @brief Override the role font size with an explicit size.
+			 * @param fontSize Font size, in dp.
+			 * @return Reference to this builder for chaining.
+			 */
 			Builder &withFontSize(const float &fontSize);
+
+			/**
+			 * @brief Set the typescale role (default `BodyMedium`).
+			 * @param role Typescale role.
+			 * @return Reference to this builder for chaining.
+			 */
+			Builder &withTypeRole(theme::TypeRole role);
 
 			/**
 			 * @brief Set the color for the Text component.
@@ -106,19 +125,9 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withColor(const utility::graphic::Color32Bit &color);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Text::Builder` to create
-		 * preconfigured text entities.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a default Text entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the default text entity.
 			 * @param parent The parent entity to which the new text entity will
 			 * be attached.
 			 * @param content The text content for the default Text entity.
@@ -127,16 +136,23 @@ namespace guillaume::entities
 			 * @return The entity identifier of the newly created text entity.
 			 */
 			std::shared_ptr<Text>
-				makeText(Builder &builder, std::shared_ptr<Entity> parent,
+				makeText(std::shared_ptr<Entity> parent,
 						 const std::string &content, const float &fontSize,
 						 const utility::graphic::Color32Bit &color);
-		};
 
-		private:
-		std::string
-			_content {};	///< Text content to be set in the Text component
-		float _fontSize { 24.0f };
-		utility::graphic::Color32Bit _color {};
+			/**
+			 * @brief Build a text styled by a typescale role.
+			 * @param parent Parent entity.
+			 * @param content Text content.
+			 * @param role Typescale role.
+			 * @param color Text color.
+			 * @return The registered text entity.
+			 */
+			std::shared_ptr<Text>
+				makeText(std::shared_ptr<Entity> parent,
+						 const std::string &content, theme::TypeRole role,
+						 const utility::graphic::Color32Bit &color);
+		};
 
 		public:
 		/**
@@ -150,6 +166,18 @@ namespace guillaume::entities
 		 */
 		Text(ecs::ComponentRegistry &registry, const std::string &content,
 			 const float &fontSize, const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Construct a text styled by a typescale role.
+		 * @param registry Component registry.
+		 * @param content Text content.
+		 * @param role Typescale role.
+		 * @param color Text color.
+		 * @param fontSize Optional size overriding the role size.
+		 */
+		Text(ecs::ComponentRegistry &registry, const std::string &content,
+			 theme::TypeRole role, const utility::graphic::Color32Bit &color,
+			 std::optional<float> fontSize = std::nullopt);
 
 		/**
 		 * @brief Default destructor for the Text component.
@@ -171,21 +199,42 @@ namespace guillaume::entities
 		Text &setFontSize(const float &fontSize);
 
 		/**
+		 * @brief Set the typescale role and drop any explicit size override.
+		 * @param role Typescale role.
+		 * @return Reference to this text for chaining.
+		 */
+		Text &setTypeRole(theme::TypeRole role);
+
+		/**
+		 * @brief Get the typescale role.
+		 * @return The typescale role.
+		 */
+		theme::TypeRole getTypeRole(void) const;
+
+		/**
 		 * @brief Set the color for this Text component.
 		 * @param color The new color to set (RGBA).
 		 * @return Reference to this Text component for chaining.
 		 */
 		Text &setColor(const utility::graphic::Color32Bit &color);
 
+		private:
 		/**
-		 * @brief Initialize the text entity's derived state.
+		 * @brief Access the typography component.
+		 * @return The component holding the role and explicit size.
 		 */
-		void initialize(void) override;
+		components::Typography &typography(void);
 
 		/**
-		 * @brief Recompute the text entity's derived state.
+		 * @brief Access the typography component.
+		 * @return The component holding the role and explicit size.
 		 */
-		void update(void) override;
+		const components::Typography &typography(void) const;
+
+		/**
+		 * @brief Run systems::Typography on this entity right now.
+		 */
+		void applyTypography(void);
 	};
 
 }	 // namespace guillaume::entities

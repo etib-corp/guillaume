@@ -24,7 +24,7 @@
 
 namespace guillaume::systems
 {
-	Clip::Clip(std::unique_ptr<utility::Engine> &engine)
+	Clip::Clip(utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Clip>(ecs::Phase::Layout)
 		, _engine(engine)
@@ -33,7 +33,7 @@ namespace guillaume::systems
 
 	void Clip::prepare(void)
 	{
-		_engine->clearScissor();
+		_engine.clearScissor();
 	}
 
 	components::Clip::Rect
@@ -71,7 +71,7 @@ namespace guillaume::systems
 									  clip.getMargin());
 		clip.setRect(rect);
 
-		_engine->setScissor(utility::graphic::ScissorRect {
+		_engine.setScissor(utility::graphic::ScissorRect {
 			rect.x, rect.y, rect.width, rect.height });
 	}
 

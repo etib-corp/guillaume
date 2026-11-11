@@ -50,20 +50,9 @@ namespace guillaume::systems
 								 components::Color, components::Ellipse>
 	{
 		private:
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< utility::Engine instance
+		utility::Engine &_engine;	 ///< utility::Engine instance
 
 		private:
-		/**
-		 * @brief Rotate a 3D point by a quaternion.
-		 * @param position Point to rotate.
-		 * @param orientation Orientation used as rotation.
-		 * @return Rotated point.
-		 */
-		utility::graphic::PositionF rotatePositionByQuaternion(
-			const utility::graphic::PositionF &position,
-			const utility::graphic::OrientationF &orientation) const;
-
 		/**
 		 * @brief Build local vertices for an ellipse.
 		 * @param halfWidth Semi-axis along X.
@@ -74,19 +63,6 @@ namespace guillaume::systems
 		std::vector<utility::math::Vector2F>
 			buildLocalEllipseVertices(float halfWidth, float halfHeight,
 									  int segments) const;
-
-		/**
-		 * @brief Transform local vertices to world-space using center and
-		 * orientation.
-		 * @param localVertices Vertices in local space.
-		 * @param center Ellipse world center.
-		 * @param orientation Ellipse world orientation.
-		 * @return World-space vertices.
-		 */
-		std::vector<utility::graphic::PositionF> transformToWorldVertices(
-			const std::vector<utility::math::Vector2F> &localVertices,
-			const utility::graphic::PositionF &center,
-			const utility::graphic::OrientationF &orientation) const;
 
 		/**
 		 * @brief Build the outline vertices of an ellipse in world space.
@@ -103,35 +79,12 @@ namespace guillaume::systems
 			const utility::math::Vector2F &scale,
 			const utility::graphic::SizeF &size, int segments);
 
-		/**
-		 * @brief Convert an outline to OpenGL triangle fan vertices.
-		 * @param mesh Mesh receiving the fan vertices and indices.
-		 * @param center Fan anchor.
-		 * @param outline Outline vertices in draw order.
-		 * @param color Vertex color.
-		 */
-		void buildTriangleFanVertices(
-			utility::graphic::Mesh &mesh,
-			const utility::graphic::PositionF &center,
-			const std::vector<utility::graphic::PositionF> &outline,
-			const utility::graphic::Color32Bit &color);
-
-		/**
-		 * @brief Create one drawable vertex from a position and color.
-		 * @param position Vertex position.
-		 * @param color Vertex color.
-		 * @return Render vertex.
-		 */
-		utility::graphic::VertexF
-			createVertex(const utility::graphic::PositionF &position,
-						 const utility::graphic::Color32Bit &color) const;
-
 		public:
 		/**
 		 * @brief Construct an ellipse rendering system.
 		 * @param engine The engine used to draw ellipses.
 		 */
-		EllipseRender(std::unique_ptr<utility::Engine> &engine);
+		EllipseRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

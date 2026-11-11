@@ -25,57 +25,16 @@
 namespace guillaume::systems
 {
 	HandPinch::HandPinch(event::EventBus &eventBus)
-		: ecs::SystemFiller<components::HandPinchInteraction,
-							components::Transform, components::Bound>(
-			  ecs::Phase::Event)
-		, event::EventManager<utility::event::HandPinchEvent>(eventBus)
+		: HandRaySystem<components::HandPinchInteraction,
+						utility::event::HandPinchEvent>(eventBus)
 	{
 	}
 
-	HandPinch::~HandPinch(void)
+	HandPinch::~HandPinch(void) = default;
+
+	void HandPinch::setEngaged(components::HandPinchInteraction &interaction,
+							   bool engaged)
 	{
+		interaction.setPinching(engaged);
 	}
-
-	void HandPinch::prepare(void)
-	{
-		consumeNextEvent();
-	}
-
-	void HandPinch::cleanup(void)
-	{
-	}
-
-	void HandPinch::update(const ecs::Entity::Identifier &entityIdentifier)
-	{
-		auto pinchEvent = this->getLastEvent();
-		if (!pinchEvent)
-			return;
-
-		auto &transform = this->template getComponent<components::Transform>(
-			entityIdentifier);
-		auto &bound =
-			this->template getComponent<components::Bound>(entityIdentifier);
-		auto &interaction =
-			this->template getComponent<components::HandPinchInteraction>(
-				entityIdentifier);
-
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
-		const auto ray = utility::graphic::RayF(
-			utility::graphic::PositionF(pinchEvent->getPose().getPosition()),
-			pinchEvent->getPose().getOrientation().getForward());
-		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
-
-		if (isIntersecting) {
-			interaction.setPinching(true);
-			const auto &handler = interaction.getOnEventHandler();
-			if (handler) {
-				handler();
-			}
-		} else {
-			interaction.setPinching(false);
-		}
-	}
-
 }	 // namespace guillaume::systems

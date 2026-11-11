@@ -21,11 +21,11 @@
  */
 
 #include "guillaume/systems/mouse_button.hpp"
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
-	MouseButton::MouseButton(event::EventBus &eventBus,
-							 std::unique_ptr<utility::Engine> &engine)
+	MouseButton::MouseButton(event::EventBus &eventBus, utility::Engine &engine)
 		: ecs::SystemFiller<components::MouseButtonInteraction,
 							components::Transform, components::Bound>(
 			  ecs::Phase::Event)
@@ -64,7 +64,7 @@ namespace guillaume::systems
 
 		utility::graphic::RayF ray;
 		try {
-			ray = _engine->getView().viewPointToRay(position);
+			ray = _engine.getView().viewPointToRay(position);
 		} catch (const std::out_of_range &exception) {
 			this->getLogger().warning()
 				<< "MouseButton::update: " << exception.what();
@@ -79,10 +79,11 @@ namespace guillaume::systems
 			this->template getComponent<components::MouseButtonInteraction>(
 				entityIdentifier);
 
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
 		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
+			isInteractive(this->getComponentRegistry(), entityIdentifier)
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
 		const bool isButtonPressed = mouseButtonEvent->isButtonPressed();
 
 		if (isButtonPressed && isIntersecting) {

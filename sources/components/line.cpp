@@ -91,4 +91,50 @@ namespace guillaume::components
 		setHasChanged(true);
 		return *this;
 	}
+	Line::Placement Line::getPlacement(void) const
+	{
+		return _placement;
+	}
+
+	Line &Line::setPlacement(Placement placement)
+	{
+		if (_placement == placement) {
+			return *this;
+		}
+		_placement = placement;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Line &Line::setColor(const utility::graphic::Color32Bit &color)
+	{
+		if (_hasColor && _color == color) {
+			return *this;
+		}
+		_hasColor = true;
+		_color	  = color;
+		setHasChanged(true);
+		return *this;
+	}
+
+	Line &Line::clearColor(void)
+	{
+		if (!_hasColor) {
+			return *this;
+		}
+		_hasColor = false;
+		setHasChanged(true);
+		return *this;
+	}
+
+	bool Line::hasColor(void) const
+	{
+		return _hasColor;
+	}
+
+	const utility::graphic::Color32Bit &Line::getColor(void) const
+	{
+		return _color;
+	}
+
 }	 // namespace guillaume::components

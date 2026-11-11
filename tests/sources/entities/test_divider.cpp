@@ -22,6 +22,8 @@
 
 #include "entities/test_divider.hpp"
 
+#include <guillaume/theme.hpp>
+
 #include <memory>
 
 #include <utility/graphic/color.hpp>
@@ -44,9 +46,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Divider::Builder builder(registry, entityRegistry);
-			Divider::Director director;
 
-			return director.makeDivider(builder, nullptr, length, variant);
+			return builder.makeDivider(nullptr, length, variant);
 		}
 	}	 // namespace
 
@@ -55,13 +56,10 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto divider = makeDivider(registry, 120.0f);
 
-		divider->initialize();
-		divider->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(divider->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 120.0f);
-		EXPECT_FLOAT_EQ(bound.getHeight(), 1.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), Divider::HairlineThickness);
 	}
 
 	TEST_F(TestDivider, InsetTrimsLeadingEdgeOnly)
@@ -70,9 +68,6 @@ namespace guillaume::entities::tests
 			std::make_unique<ecs::ComponentRegistry>();
 		auto divider = makeDivider(*registry, 120.0f, Divider::Variant::Inset);
 		divider->setInset(16.0f);
-
-		divider->initialize();
-		divider->update();
 
 		const auto &bound =
 			registry->getComponent<components::Bound>(divider->getIdentifier());
@@ -91,9 +86,6 @@ namespace guillaume::entities::tests
 		auto divider = makeDivider(registry, 120.0f, Divider::Variant::Middle);
 		divider->setInset(16.0f);
 
-		divider->initialize();
-		divider->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(divider->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 88.0f);
@@ -105,7 +97,6 @@ namespace guillaume::entities::tests
 		auto divider = makeDivider(registry, 120.0f);
 
 		divider->setThickness(4.0f);
-		divider->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Line>(divider->getIdentifier())
@@ -130,21 +121,40 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(color.getColor().getAlpha(), 255);
 	}
 
-	TEST_F(TestDivider, DirectorBuildsAndRegisters)
+	TEST_F(TestDivider, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Divider::Builder builder(registry, entityRegistry);
-		Divider::Director director;
 
-		auto divider = director.makeDivider(builder, parent, 80.0f,
-											Divider::Variant::Middle);
+		auto divider =
+			builder.makeDivider(parent, 80.0f, Divider::Variant::Middle);
 
 		ASSERT_NE(divider, nullptr);
 		EXPECT_EQ(divider->getParent(), parent);
 		EXPECT_EQ(divider->getVariant(), Divider::Variant::Middle);
+	}
+
+	TEST_F(TestDivider, BoldUsesOneDpStroke)
+	{
+		ecs::ComponentRegistry registry;
+		auto divider = makeDivider(registry, 120.0f);
+		EXPECT_FALSE(divider->isBold());
+
+		divider->setBold(true);
+		EXPECT_TRUE(divider->isBold());
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Line>(divider->getIdentifier())
+				.getThickness(),
+			Divider::BoldThickness);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(divider->getIdentifier())
+				.getColor(),
+			getActiveScheme()
+				.getColor(SchemeColorRole::OutlineVariant)
+				.getColor());
 	}
 
 }	 // namespace guillaume::entities::tests

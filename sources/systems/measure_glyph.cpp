@@ -30,7 +30,7 @@ namespace guillaume::systems
 
 	MeasureGlyph::MeasureGlyph(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Glyph, components::Bound,
 							components::Transform, components::Color>(
 			  ecs::Phase::Measure)
@@ -49,6 +49,13 @@ namespace guillaume::systems
 		} else {
 			getLogger().error()
 				<< "Failed to load glyph code asset: " << _glyphCodePath;
+		}
+
+		_hasFont = _ressourceProvider->loadFont(_defaultFontPath) != nullptr;
+		if (!_hasFont) {
+			getLogger().error()
+				<< "Failed to load glyph font: " << _defaultFontPath
+				<< ". Icons will not be measured.";
 		}
 	}
 
@@ -72,6 +79,12 @@ namespace guillaume::systems
 			|| !requireComponent<components::Bound>(entityIdentifier)
 			|| !requireComponent<components::Transform>(entityIdentifier)
 			|| !requireComponent<components::Color>(entityIdentifier)) {
+			return;
+		}
+
+		// Without the icon font the glyph cannot be measured; building the
+		// text would dereference the missing font.
+		if (!_hasFont) {
 			return;
 		}
 
@@ -106,7 +119,8 @@ namespace guillaume::systems
 			return;
 		}
 
-		uint32_t glyphCode = _codePoints->getCode(cacheKey.glyphName);
+		uint32_t glyphCode =
+			_codePoints ? _codePoints->getCode(cacheKey.glyphName) : 0;
 		if (glyphCode == 0) {
 			glyphCode = '?';
 		}
@@ -118,7 +132,7 @@ namespace guillaume::systems
 			_defaultFontPath);
 		text.setColor(utility::graphic::Color32Bit());
 
-		auto textSize = _engine->measureText(text);
+		auto textSize = _engine.measureText(text);
 
 		getComponent<components::Bound>(entityIdentifier)
 			.setWidth(textSize.getWidth())

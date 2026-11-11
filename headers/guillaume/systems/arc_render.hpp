@@ -47,14 +47,14 @@ namespace guillaume::systems
 								 components::Color, components::Arc>
 	{
 		private:
-		std::unique_ptr<utility::Engine> &_engine;	  ///< utility::Engine.
+		utility::Engine &_engine;	 ///< utility::Engine.
 
 		public:
 		/**
 		 * @brief Construct an arc rendering system.
 		 * @param engine The engine used to draw arcs.
 		 */
-		ArcRender(std::unique_ptr<utility::Engine> &engine);
+		ArcRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

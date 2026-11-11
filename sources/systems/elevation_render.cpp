@@ -165,7 +165,7 @@ namespace guillaume::systems
 		}
 	}	 // namespace
 
-	ElevationRender::ElevationRender(std::unique_ptr<utility::Engine> &engine)
+	ElevationRender::ElevationRender(utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Elevation>(ecs::Phase::Render)
 		, _engine(engine)
@@ -179,7 +179,7 @@ namespace guillaume::systems
 
 	void ElevationRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void
@@ -196,6 +196,12 @@ namespace guillaume::systems
 		const auto &bound = getComponent<components::Bound>(entityIdentifier);
 		const auto &elevation =
 			getComponent<components::Elevation>(entityIdentifier);
+
+		// A flat surface paints no shadow; leaving the handle unused lets
+		// cleanup() remove a shadow drawn before the level dropped to 0.
+		if (!elevation.hasShadow()) {
+			return;
+		}
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + bound.getWidth() / 2.0f,
@@ -232,11 +238,11 @@ namespace guillaume::systems
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
 			insert(entityIdentifier,
-				   RenderHandle { _engine->createObject(renderable), renderable,
+				   RenderHandle { _engine.createObject(renderable), renderable,
 								  true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

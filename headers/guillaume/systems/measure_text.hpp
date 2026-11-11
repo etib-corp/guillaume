@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "guillaume/theme/typescale.hpp"
 #include <string>
 
 #include <utility/cache.hpp>
@@ -46,6 +47,9 @@ namespace guillaume::systems
 		utility::graphic::Color32Bit
 			color;	  ///< The color of the text, which may affect its rendering
 					  ///< and measurement
+		theme::FontWeight fontWeight {
+			theme::FontWeight::Regular
+		};	  ///< The font weight, which selects the measured font file
 
 		/**
 		 * @brief Equality operator for MeasureTextCacheKey.
@@ -61,6 +65,9 @@ namespace guillaume::systems
 				return false;
 			}
 			if (color != other.color) {
+				return false;
+			}
+			if (fontWeight != other.fontWeight) {
 				return false;
 			}
 			return true;
@@ -92,7 +99,7 @@ namespace guillaume::systems
 			if (color != other.color) {
 				return color < other.color;
 			}
-			return false;
+			return fontWeight < other.fontWeight;
 		}
 	};
 
@@ -111,7 +118,7 @@ namespace guillaume::systems
 		std::shared_ptr<utility::RessourceProvider>
 			_ressourceProvider;	   ///< Shared resource provider for loading
 								   ///< fonts and glyphs
-		std::unique_ptr<utility::Engine>
+		utility::Engine
 			&_engine;	 ///< utility::Engine instance for text measurement
 		std::string
 			_defaultFontPath;	 ///< Default font used for text measurement
@@ -125,7 +132,7 @@ namespace guillaume::systems
 		 */
 		MeasureText(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-			std::unique_ptr<utility::Engine> &engine);
+			utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

@@ -23,14 +23,15 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include <utility/graphic/color.hpp>
 #include <utility/graphic/pose.hpp>
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/animation.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -52,7 +53,8 @@ namespace guillaume::entities
 	 * @see SurfaceBase
 	 * @see components::Animation
 	 */
-	class LoadingIndicator: public SurfaceBase<components::Animation>
+	class LoadingIndicator:
+		public SurfaceBase<components::Animation, components::Accessibility>
 	{
 		public:
 		/**
@@ -70,9 +72,9 @@ namespace guillaume::entities
 		class Builder: public EntityBuilderBase<LoadingIndicator>
 		{
 			private:
-			SurfaceConfig _config;					 ///< Surface configuration.
-			Variant _variant { Variant::Linear };	 ///< Visual variant.
-			float _size { 48.0f };					 ///< Circular diameter.
+			SurfaceConfig _config;	  ///< Surface configuration.
+			Variant _variant { Variant::Circular };	   ///< Visual variant.
+			float _size { 48.0f };					   ///< Circular diameter.
 
 			public:
 			/**
@@ -115,33 +117,35 @@ namespace guillaume::entities
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withSize(float size);
-		};
 
-		/**
-		 * @brief Director that orchestrates `LoadingIndicator::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a loading indicator using the builder.
-			 * @param builder The builder to configure.
 			 * @param parent The parent entity.
 			 * @param variant The loading indicator variant.
 			 * @return The newly created loading indicator.
 			 */
 			std::shared_ptr<LoadingIndicator>
-				makeLoadingIndicator(Builder &builder,
-									 std::shared_ptr<ecs::Entity> parent,
+				makeLoadingIndicator(std::shared_ptr<ecs::Entity> parent,
 									 Variant variant);
 		};
 
 		private:
-		Variant _variant { Variant::Linear };		///< Visual variant.
+		Variant _variant { Variant::Circular };		///< Visual variant.
 		float _diameter { 48.0f };					///< Circular diameter.
 		std::shared_ptr<ecs::Entity> _animation;	///< Animated child.
 		bool _built { false };		 ///< Whether the child exists.
 		float _progress { 0.0f };	 ///< Latest eased animation progress.
+		bool _hidesWhenStopped { true };	///< Paper `hidesWhenStopped`.
+		float _opacity { 1.0f };			///< Current fade opacity.
+		float _opacityFrom { 1.0f };		///< Opacity when the fade began.
+		float _opacityTarget { 1.0f };		///< Opacity the fade moves to.
+		std::optional<utility::graphic::Color32Bit>
+			_indicatorColor {};	   ///< Indicator color override.
+
+		/**
+		 * @brief Fade toward the opacity implied by the running state.
+		 */
+		void startFade(void);
 
 		private:
 		/**
@@ -199,6 +203,60 @@ namespace guillaume::entities
 		 * @return True when running.
 		 */
 		bool isRunning(void) const;
+
+		/**
+		 * @brief Hide the indicator with a 200 ms fade when it stops (Paper
+		 * `hidesWhenStopped`, default true).
+		 * @param hides New flag.
+		 * @return Reference to this indicator for chaining.
+		 */
+		LoadingIndicator &setHidesWhenStopped(bool hides);
+
+		/**
+		 * @brief Check whether the indicator hides when stopped.
+		 * @return True when it hides.
+		 */
+		bool hidesWhenStopped(void) const;
+
+		/**
+		 * @brief Get the current fade opacity.
+		 * @return Opacity in [0, 1].
+		 */
+		float getOpacity(void) const;
+
+		/**
+		 * @brief Override the indicator color (default `Primary`).
+		 * @param color Indicator color.
+		 * @return Reference to this indicator for chaining.
+		 */
+		LoadingIndicator &
+			setIndicatorColor(const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Get the resolved indicator color.
+		 * @return The indicator color before fading.
+		 */
+		utility::graphic::Color32Bit getIndicatorColor(void) const;
+
+		/**
+		 * @brief Set the circular diameter (Paper `size`).
+		 * @param size Diameter in dp, must be positive.
+		 * @return Reference to this indicator for chaining.
+		 * @throws std::invalid_argument If @p size is not positive.
+		 */
+		LoadingIndicator &setSize(float size);
+
+		/**
+		 * @brief Get the circular diameter.
+		 * @return The diameter, in dp.
+		 */
+		float getSize(void) const;
+
+		/**
+		 * @brief Get the circular stroke width (M3: 4 dp at 48 dp).
+		 * @return The stroke width, in dp.
+		 */
+		float getStrokeWidth(void) const;
 
 		/**
 		 * @brief Initialize the loading indicator derived state and child.

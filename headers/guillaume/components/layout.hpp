@@ -22,7 +22,10 @@
 
 #pragma once
 
+#include <vector>
+
 #include "guillaume/ecs/component.hpp"
+#include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::components
 {
@@ -82,6 +85,8 @@ namespace guillaume::components
 		bool _hasFixedHeight { false };	   ///< Whether the height is forced.
 		float _fixedWidth { 0.0f };		   ///< Forced container width.
 		float _fixedHeight { 0.0f };	   ///< Forced container height.
+		std::vector<ecs::Entity::Identifier>
+			_children {};	 ///< Ordered layout children.
 
 		public:
 		/**
@@ -208,6 +213,38 @@ namespace guillaume::components
 		 * @return Reference to this Layout component for chaining.
 		 */
 		Layout &clearFixedHeight(void);
+
+		/**
+		 * @brief Get the ordered layout children.
+		 *
+		 * Only these children are arranged by `systems::Layout`; children the
+		 * container positions manually (a switch thumb, a slider fill, ...)
+		 * are deliberately left out and keep their own placement.
+		 *
+		 * @return The ordered layout child identifiers.
+		 */
+		const std::vector<ecs::Entity::Identifier> &getChildren(void) const;
+
+		/**
+		 * @brief Replace the ordered layout children.
+		 * @param children The new child identifiers.
+		 * @return Reference to this Layout component for chaining.
+		 */
+		Layout &
+			setChildren(const std::vector<ecs::Entity::Identifier> &children);
+
+		/**
+		 * @brief Append a layout child.
+		 * @param child The child identifier to append.
+		 * @return Reference to this Layout component for chaining.
+		 */
+		Layout &addChild(ecs::Entity::Identifier child);
+
+		/**
+		 * @brief Remove every layout child.
+		 * @return Reference to this Layout component for chaining.
+		 */
+		Layout &clearChildren(void);
 	};
 
 }	 // namespace guillaume::components

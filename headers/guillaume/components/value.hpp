@@ -32,7 +32,7 @@ namespace guillaume::components
 	/**
 	 * @brief Component holding a scalar value within a range.
 	 *
-	 * Reusable by Slider, ProgressIndicator, pickers and Carousel. The value is
+	 * Reusable by ProgressIndicator and other ranged controls. The value is
 	 * kept within `[min, max]` and snapped to `step` when `step` is strictly
 	 * positive. Changing the value triggers the on-changed handler when the
 	 * stored value actually changes.

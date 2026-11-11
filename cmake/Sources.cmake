@@ -7,12 +7,15 @@
 set(GUILLAUME_SOURCES
     sources/application.cpp
     sources/component_registry.cpp
+    sources/components/accessibility.cpp
     sources/components/animation.cpp
     sources/components/arc.cpp
+    sources/components/backdrop.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/clip.cpp
     sources/components/color.cpp
+    sources/components/divider.cpp
     sources/components/drag_interaction.cpp
     sources/components/elevation.cpp
     sources/components/ellipse.cpp
@@ -28,7 +31,7 @@ set(GUILLAUME_SOURCES
     sources/components/image.cpp
     sources/components/layout.cpp
     sources/components/line.cpp
-    sources/components/model.cpp
+    sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
@@ -37,9 +40,11 @@ set(GUILLAUME_SOURCES
     sources/components/scrim.cpp
     sources/components/scrollable.cpp
     sources/components/selection.cpp
+    sources/components/style_state.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
     sources/components/transform.cpp
+    sources/components/typography.cpp
     sources/components/value.cpp
     sources/ecs/component.cpp
     sources/ecs/component_registry.cpp
@@ -50,9 +55,6 @@ set(GUILLAUME_SOURCES
     sources/ecs/entity_builder.cpp
     sources/ecs/entity_builder_manager.cpp
     sources/ecs/entity_builder_manager_filler.cpp
-    sources/ecs/entity_director.cpp
-    sources/ecs/entity_director_manager.cpp
-    sources/ecs/entity_director_manager_filler.cpp
     sources/ecs/entity_filler.cpp
     sources/ecs/entity_registry.cpp
     sources/ecs/entity_registry_container.cpp
@@ -66,47 +68,42 @@ set(GUILLAUME_SOURCES
     sources/ecs/system_registry.cpp
     sources/entities/button.cpp
     sources/entities/button_base.cpp
-    sources/entities/builder_base.cpp
+    sources/entities/button_style.cpp
     sources/entities/app_bar.cpp
+    sources/entities/backdrop.cpp
     sources/entities/badge.cpp
-    sources/entities/bottom_sheet.cpp
     sources/entities/card.cpp
-    sources/entities/carousel.cpp
     sources/entities/checkbox.cpp
     sources/entities/chip.cpp
-    sources/entities/date_picker.cpp
     sources/entities/dialog.cpp
     sources/entities/divider.cpp
     sources/entities/loading_indicator.cpp
     sources/entities/menu.cpp
     sources/entities/navigation_bar.cpp
+    sources/entities/navigation_bar_destination.cpp
     sources/entities/navigation_drawer.cpp
-    sources/entities/navigation_rail.cpp
+    sources/entities/navigation_drawer_destination.cpp
     sources/entities/progress_indicator.cpp
     sources/entities/search.cpp
-    sources/entities/side_sheet.cpp
-    sources/entities/slider.cpp
     sources/entities/segmented_button.cpp
     sources/entities/extended_floating_action_button.cpp
+    sources/entities/fab_style.cpp
     sources/entities/floating_action_button.cpp
     sources/entities/floating_action_button_menu.cpp
     sources/entities/icon.cpp
     sources/entities/icon_button.cpp
     sources/entities/image.cpp
+    sources/entities/interaction_helpers.cpp
     sources/entities/list.cpp
-    sources/entities/model.cpp
-    sources/entities/layout.cpp
+    sources/entities/mesh.cpp
+    sources/entities/view.cpp
     sources/entities/radio_button.cpp
+    sources/entities/radio_group.cpp
     sources/entities/snackbar.cpp
-    sources/entities/split_button.cpp
-    sources/entities/standard_button_group.cpp
     sources/entities/surface.cpp
     sources/entities/switch.cpp
-    sources/entities/tabs.cpp
     sources/entities/text.cpp
     sources/entities/text_field.cpp
-    sources/entities/time_picker.cpp
-    sources/entities/toolbar.cpp
     sources/entities/tooltip.cpp
     sources/event/event_bus.cpp
     sources/event/event_manager.cpp
@@ -122,11 +119,15 @@ set(GUILLAUME_SOURCES
     sources/storage.cpp
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
+    sources/systems/backdrop.cpp
     sources/systems/clip.cpp
+    sources/systems/core_systems.cpp
+    sources/systems/divider.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/elevation_render.cpp
     sources/systems/focus.cpp
+    sources/systems/focus_ring_render.cpp
     sources/systems/glyph_render.cpp
     sources/systems/hand_button.cpp
     sources/systems/hand_motion.cpp
@@ -141,9 +142,9 @@ set(GUILLAUME_SOURCES
     sources/systems/layout.cpp
     sources/systems/line_render.cpp
     sources/systems/measure_glyph.cpp
-    sources/systems/measure_model.cpp
+    sources/systems/measure_mesh.cpp
     sources/systems/measure_text.cpp
-    sources/systems/model_render.cpp
+    sources/systems/mesh_render.cpp
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
     sources/systems/overlay.cpp
@@ -153,8 +154,13 @@ set(GUILLAUME_SOURCES
     sources/systems/selection.cpp
     sources/systems/scrim_render.cpp
     sources/systems/shape_mesh.cpp
+    sources/systems/style_state.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
+    sources/systems/typography.cpp
     sources/theme.cpp
+    sources/theme/default_theme.cpp
+    sources/theme/tokens.cpp
+    sources/theme/typescale.cpp
 )

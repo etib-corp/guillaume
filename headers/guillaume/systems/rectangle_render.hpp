@@ -50,20 +50,9 @@ namespace guillaume::systems
 								 components::Color, components::Borders>
 	{
 		private:
-		std::unique_ptr<utility::Engine>
-			&_engine;	 ///< utility::Engine instance
+		utility::Engine &_engine;	 ///< utility::Engine instance
 
 		private:
-		/**
-		 * @brief Rotate a 3D point by a quaternion.
-		 * @param position Point to rotate.
-		 * @param orientation Orientation used as rotation.
-		 * @return Rotated point.
-		 */
-		utility::graphic::PositionF rotatePositionByQuaternion(
-			const utility::graphic::PositionF &position,
-			const utility::graphic::OrientationF &orientation) const;
-
 		/**
 		 * @brief Compute one corner radius value from Borders component values.
 		 * @param borders Borders component.
@@ -110,19 +99,6 @@ namespace guillaume::systems
 										  float epsilon) const;
 
 		/**
-		 * @brief Transform local vertices to world-space using center and
-		 * orientation.
-		 * @param localVertices Vertices in local space.
-		 * @param center Rectangle world center.
-		 * @param orientation Rectangle world orientation.
-		 * @return World-space vertices.
-		 */
-		std::vector<utility::graphic::PositionF> transformToWorldVertices(
-			const std::vector<utility::math::Vector2F> &localVertices,
-			const utility::graphic::PositionF &center,
-			const utility::graphic::OrientationF &orientation) const;
-
-		/**
 		 * @brief Build the outline vertices of a rounded rectangle in world
 		 * space.
 		 * @param center Rectangle center.
@@ -141,35 +117,17 @@ namespace guillaume::systems
 			const utility::graphic::SizeF &size, float radius,
 			int arcSegments = 16, float epsilon = 0.001f);
 
-		/**
-		 * @brief Convert an outline to OpenGL triangle fan vertices.
-		 * @param center Fan anchor.
-		 * @param outline Outline vertices in draw order.
-		 * @param color Vertex color.
-		 * @note This method appends into the internal _vertices buffer.
-		 */
-		void buildTriangleFanVertices(
-			utility::graphic::Mesh &mesh,
-			const utility::graphic::PositionF &center,
-			const std::vector<utility::graphic::PositionF> &outline,
-			const utility::graphic::Color32Bit &color);
-
-		/**
-		 * @brief Create one drawable vertex from a 2D point and color.
-		 * @param position 2D position.
-		 * @param color Vertex color.
-		 * @return Render vertex.
-		 */
-		utility::graphic::VertexF
-			createVertex(const utility::graphic::PositionF &position,
-						 const utility::graphic::Color32Bit &color) const;
-
 		public:
+		/**
+		 * @brief Depth lift, in layer steps, of the stroke above the fill.
+		 */
+		static constexpr float StrokeLift = 0.5f;
+
 		/**
 		 * @brief Construct a rectangle rendering system.
 		 * @param engine The engine used to draw rectangles.
 		 */
-		RectangleRender(std::unique_ptr<utility::Engine> &engine);
+		RectangleRender(utility::Engine &engine);
 
 		/**
 		 * @brief Default destructor.

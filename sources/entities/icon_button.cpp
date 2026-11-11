@@ -20,11 +20,16 @@
  SOFTWARE.
  */
 
+#include <array>
+#include <cstddef>
 #include <memory>
+#include <optional>
+#include <stdexcept>
 #include <utility>
 
 #include "guillaume/entities/icon_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -119,143 +124,140 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	std::shared_ptr<IconButton> IconButton::Director::makeIconButton(
-		Builder &builder, std::shared_ptr<Entity> parent,
-		const std::string &iconGlyphName, std::function<void(void)> onClick,
-		Variant variant, Size size)
+	std::shared_ptr<IconButton> IconButton::Builder::makeIconButton(
+		std::shared_ptr<Entity> parent, const std::string &iconGlyphName,
+		std::function<void(void)> onClick, Variant variant, Size size)
 	{
-		return builder.withIcon(iconGlyphName)
+		return withIcon(iconGlyphName)
 			.withOnClick(onClick)
 			.withVariant(variant)
 			.withSize(size)
 			.registerEntity(parent);
 	}
 
+	namespace
+	{
+		using Role = SchemeColorRole;
+
+		/// Metrics of one icon button size.
+		struct SizeMetrics {
+			float containerSize;	///< Container extent.
+			float iconFontSize;		///< Icon font size.
+		};
+
+		/// Indexed by IconButton::Size.
+		constexpr std::array<SizeMetrics, 3> sizeTable { {
+			{ 32.0f, 18.0f },	 // Small
+			{ 40.0f, 24.0f },	 // Medium
+			{ 48.0f, 30.0f },	 // Large
+		} };
+
+		/// Paper v5 IconButton/utils.ts colors of one variant. No container
+		/// role means transparent.
+		struct Palette {
+			std::optional<Role> activeContainer;	///< Container when active.
+			std::optional<Role> idleContainer;		///< Container otherwise.
+			Role activeContent;						///< Content when active.
+			Role idleContent;						///< Content otherwise.
+			/// True when a plain (non-toggle) button uses the active palette;
+			/// otherwise only a selected button does.
+			bool plainIsActive;
+		};
+
+		/// Indexed by IconButton::Variant.
+		constexpr std::array<Palette, 4> paletteTable { {
+			// Standard
+			{ std::nullopt, std::nullopt, Role::Primary, Role::OnSurfaceVariant,
+			  false },
+			// Filled
+			{ Role::Primary, Role::SurfaceVariant, Role::OnPrimary,
+			  Role::Primary, true },
+			// Tonal
+			{ Role::SecondaryContainer, Role::SurfaceVariant,
+			  Role::OnSecondaryContainer, Role::OnSurfaceVariant, true },
+			// Outlined
+			{ Role::InverseSurface, std::nullopt, Role::InverseOnSurface,
+			  Role::OnSurfaceVariant, false },
+		} };
+
+		const SizeMetrics &metrics(IconButton::Size size)
+		{
+			const auto index = static_cast<std::size_t>(size);
+			if (index >= sizeTable.size()) {
+				throw std::runtime_error("Invalid icon button size");
+			}
+			return sizeTable[index];
+		}
+
+		const Palette &palette(IconButton::Variant variant)
+		{
+			const auto index = static_cast<std::size_t>(variant);
+			if (index >= paletteTable.size()) {
+				throw std::runtime_error("Invalid icon button variant");
+			}
+			return paletteTable[index];
+		}
+
+		bool isActive(const Palette &entry, bool isToggle, bool isSelected)
+		{
+			return isSelected || (entry.plainIsActive && !isToggle);
+		}
+	}	 // namespace
+
 	static float getContainerSize(IconButton::Size size)
 	{
-		switch (size) {
-			case IconButton::Size::Small:
-				return 32.0f;
-			case IconButton::Size::Medium:
-				return 40.0f;
-			case IconButton::Size::Large:
-				return 48.0f;
-			default:
-				throw std::runtime_error("Invalid icon button size");
-		}
+		return metrics(size).containerSize;
 	}
 
 	static float getIconFontSize(IconButton::Size size)
 	{
-		switch (size) {
-			case IconButton::Size::Small:
-				return 18.0f;
-			case IconButton::Size::Medium:
-				return 24.0f;
-			case IconButton::Size::Large:
-				return 30.0f;
-			default:
-				throw std::runtime_error("Invalid icon button size");
-		}
+		return metrics(size).iconFontSize;
 	}
 
 	static float getBorderRadius(IconButton::Size size)
 	{
-		switch (size) {
-			case IconButton::Size::Small:
-				return 8.0f;
-			case IconButton::Size::Medium:
-				return 12.0f;
-			case IconButton::Size::Large:
-				return 16.0f;
-			default:
-				throw std::runtime_error("Invalid icon button size");
-		}
+		// Paper/M3 icon buttons are circular at every size.
+		static_cast<void>(metrics(size));
+		return getShapeRadius(theme::ShapeRole::Full);
 	}
 
 	static utility::graphic::Color32Bit
-		getDefaultContainerColor(IconButton::Variant variant)
+		getContainerColorFor(IconButton::Variant variant, bool isToggle,
+							 bool isSelected)
 	{
-		const auto &scheme = guillaume::getActiveScheme();
+		const Palette &entry = palette(variant);
+		const auto role		 = isActive(entry, isToggle, isSelected)
+				 ? entry.activeContainer
+				 : entry.idleContainer;
 
-		switch (variant) {
-			case IconButton::Variant::Standard:
-				return utility::graphic::Color32Bit(0, 0, 0, 0);
-			case IconButton::Variant::Filled:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-			case IconButton::Variant::Tonal:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-			case IconButton::Variant::Outlined:
-				return utility::graphic::Color32Bit(0, 0, 0, 0);
-			default:
-				throw std::runtime_error("Invalid icon button variant");
-		}
+		return role ? getActiveColor(*role)
+					: utility::graphic::Color32Bit(0, 0, 0, 0);
 	}
 
 	static utility::graphic::Color32Bit
-		getSelectedContainerColor(IconButton::Variant variant)
+		getContentColor(IconButton::Variant variant, bool isToggle,
+						bool isSelected)
 	{
-		const auto &scheme = guillaume::getActiveScheme();
+		const Palette &entry = palette(variant);
 
-		switch (variant) {
-			case IconButton::Variant::Standard:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-			case IconButton::Variant::Filled:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-			case IconButton::Variant::Tonal:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-			case IconButton::Variant::Outlined:
-				return scheme.getColor(SchemeColorRole::InverseSurface)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid icon button variant");
-		}
+		return getActiveColor(isActive(entry, isToggle, isSelected)
+								  ? entry.activeContent
+								  : entry.idleContent);
 	}
 
+	/**
+	 * Blend a state layer; over a transparent container the layer is the
+	 * content color at the layer opacity.
+	 */
 	static utility::graphic::Color32Bit
-		getContentColor(IconButton::Variant variant, bool isSelected)
+		stateLayerOver(const utility::graphic::Color32Bit &base,
+					   const utility::graphic::Color32Bit &content,
+					   theme::StateLayer layer)
 	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		if (isSelected) {
-			switch (variant) {
-				case IconButton::Variant::Standard:
-					return scheme
-						.getColor(SchemeColorRole::OnSecondaryContainer)
-						.getColor();
-				case IconButton::Variant::Filled:
-					return scheme.getColor(SchemeColorRole::OnPrimary)
-						.getColor();
-				case IconButton::Variant::Tonal:
-					return scheme
-						.getColor(SchemeColorRole::OnSecondaryContainer)
-						.getColor();
-				case IconButton::Variant::Outlined:
-					return scheme.getColor(SchemeColorRole::InverseOnSurface)
-						.getColor();
-				default:
-					throw std::runtime_error("Invalid icon button variant");
-			}
+		if (base.getAlpha() == 0) {
+			return withAlpha(content, getStateLayerAlpha(layer));
 		}
-
-		switch (variant) {
-			case IconButton::Variant::Standard:
-				return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-					.getColor();
-			case IconButton::Variant::Filled:
-				return scheme.getColor(SchemeColorRole::OnPrimary).getColor();
-			case IconButton::Variant::Tonal:
-				return scheme.getColor(SchemeColorRole::OnSecondaryContainer)
-					.getColor();
-			case IconButton::Variant::Outlined:
-				return scheme.getColor(SchemeColorRole::OnSurfaceVariant)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid icon button variant");
-		}
+		return stateLayer(base, content, layer);
 	}
 
 	static utility::graphic::Color32Bit
@@ -276,7 +278,8 @@ namespace guillaume::entities
 
 	utility::graphic::Color32Bit IconButton::getInitialContentColor(void) const
 	{
-		return getContentColor(_variant, _isSelected);
+		return resolveContentColor(
+			getContentColor(_variant, _isToggle, _isSelected));
 	}
 
 	float IconButton::getIconFontSize(void) const
@@ -286,14 +289,20 @@ namespace guillaume::entities
 
 	void IconButton::applyStyleState(void)
 	{
-		if (_isDisabled) {
+		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
-				.setColor(getDisabledContainerColor());
+				.setColor(
+					(_variant == Variant::Filled || _variant == Variant::Tonal)
+						? getDisabledContainerColor()
+						: transparentColor());
 
 			getComponentRegistry()
 				.getComponent<components::Borders>(getIdentifier())
-				.setColor(getDisabledContainerColor());
+				.setColor(_variant == Variant::Outlined
+							  ? getDisabledContainerColor()
+							  : transparentColor())
+				.setWidth(1.0f);
 
 			if (_icon) {
 				_icon->setColor(getDisabledContentColor());
@@ -302,20 +311,19 @@ namespace guillaume::entities
 			return;
 		}
 
-		const auto baseContainerColor = _isSelected
-			? getSelectedContainerColor(_variant)
-			: getDefaultContainerColor(_variant);
+		const auto baseContainerColor = resolveContainerColor(
+			getContainerColorFor(_variant, _isToggle, _isSelected));
+		const auto contentColor = resolveContentColor(
+			getContentColor(_variant, _isToggle, _isSelected));
 
 		utility::graphic::Color32Bit containerColor = baseContainerColor;
 
 		if (isPressed()) {
-			containerColor = ButtonBase::applyStateLayer(
-				baseContainerColor, getContentColor(_variant, _isSelected),
-				31U);
+			containerColor = stateLayerOver(baseContainerColor, contentColor,
+											theme::StateLayer::Pressed);
 		} else if (isHovered()) {
-			containerColor = ButtonBase::applyStateLayer(
-				baseContainerColor, getContentColor(_variant, _isSelected),
-				20U);
+			containerColor = stateLayerOver(baseContainerColor, contentColor,
+											theme::StateLayer::Hovered);
 		}
 
 		getComponentRegistry()
@@ -324,10 +332,11 @@ namespace guillaume::entities
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
-			.setColor(getBorderColor(_variant, _isSelected));
+			.setColor(getBorderColor(_variant, _isSelected))
+			.setWidth(1.0f);
 
 		if (_icon) {
-			_icon->setColor(getContentColor(_variant, _isSelected));
+			_icon->setColor(contentColor);
 		}
 	}
 
@@ -339,6 +348,7 @@ namespace guillaume::entities
 			.getComponent<components::Bound>(getIdentifier())
 			.setWidth(containerSize)
 			.setHeight(containerSize);
+		applyTouchTarget(containerSize, containerSize);
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
@@ -346,6 +356,29 @@ namespace guillaume::entities
 
 		if (_icon) {
 			_icon->setFontSize(getIconFontSize());
+
+			const auto &buttonPose =
+				getComponentRegistry()
+					.getComponent<components::Transform>(getIdentifier())
+					.getPose();
+			const auto &iconBound =
+				getComponentRegistry().getComponent<components::Bound>(
+					_icon->getIdentifier());
+
+			const float iconX = buttonPose.getPosition().x
+				+ (containerSize - iconBound.getWidth()) / 2.0f;
+			const float iconY = buttonPose.getPosition().y
+				+ (containerSize - iconBound.getHeight()) / 2.0f;
+
+			const auto iconPose = ButtonBase::applyLayerToPosition(
+				utility::graphic::PositionF(iconX, iconY,
+											buttonPose.getPosition().z),
+				buttonPose.getOrientation(),
+				static_cast<std::uint32_t>(getLayer()));
+
+			getComponentRegistry()
+				.getComponent<components::Transform>(_icon->getIdentifier())
+				.setPose(iconPose);
 		}
 	}
 

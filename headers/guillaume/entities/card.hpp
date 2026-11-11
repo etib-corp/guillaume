@@ -22,172 +22,289 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <utility/graphic/color.hpp>
 #include <utility/graphic/pose.hpp>
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/animation.hpp"
 #include "guillaume/components/elevation.hpp"
-
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
 
 namespace guillaume::entities
 {
+	class Button;
+	class Image;
+	class Text;
 
 	/**
-	 * @brief Card entity: a surface grouping related content.
+	 * @brief Material 3 card (react-native-paper `Card`).
 	 *
-	 * Cards reuse `SurfaceBase` for the layout/geometry and `components::Color`
-	 * + `components::Elevation` for the M3 variants:
-	 * - `Elevated`: surface container color with a soft shadow.
-	 * - `Filled`: surface container color without a shadow.
-	 * - `Outlined`: transparent fill with an outline border.
+	 * Paper's modes map to `Variant::Elevated` (default, `elevation.level1`
+	 * background, level 1 shadow raised to level 2 while pressed),
+	 * `Variant::Filled` (Paper `contained`, `surfaceVariant`) and
+	 * `Variant::Outlined` (`surface` with an `outlineVariant` stroke).
 	 *
-	 * @see SurfaceBase
-	 * @see components::Elevation
+	 * Content is composed like Paper's `Card.Cover`, `Card.Title`,
+	 * `Card.Content` and `Card.Actions`, always laid out in that order.
+	 * Setting a press handler makes the card interactive (hover/press state
+	 * layers, focus, Button role); a disabled card ignores presses.
 	 */
-	class Card: public SurfaceBase<components::Elevation>
+	class Card: public SurfaceBase<components::Elevation, components::Animation>
 	{
 		public:
 		/**
-		 * @brief Card variant.
+		 * @brief Card variants.
 		 */
-		enum class Variant { Elevated, Filled, Outlined };
+		enum class Variant {
+			Elevated,	 ///< Tonal level-1 surface with shadow.
+			Filled,		 ///< Paper `contained`: surfaceVariant.
+			Outlined	 ///< Surface with an outlineVariant stroke.
+		};
 
 		/**
-		 * @brief Builder used to configure and create `Card` entities.
+		 * @brief Height of `Card.Cover` (Paper: 195 dp).
+		 */
+		static constexpr float CoverHeight = 195.0f;
+
+		/**
+		 * @brief Minimum height of `Card.Title` (Paper: 72 dp).
+		 */
+		static constexpr float TitleMinHeight = 72.0f;
+
+		/**
+		 * @brief Builder for Card entities.
 		 */
 		class Builder: public EntityBuilderBase<Card>
 		{
 			private:
 			SurfaceConfig _config;	  ///< Surface configuration.
 			Variant _variant { Variant::Elevated };	   ///< Card variant.
+			std::function<void(void)> _onPress {};	   ///< Press handler.
+			bool _disabled { false };				   ///< Disabled flag.
 
 			public:
 			/**
-			 * @brief Construct a new Card Builder.
-			 * @param componentRegistry The component registry.
-			 * @param entityRegistry The entity registry.
+			 * @brief Construct a card builder.
+			 * @param componentRegistry Component registry.
+			 * @param entityRegistry Entity registry.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the Card entity from the current configuration.
-			 * @return The newly created Card.
+			 * @brief Build the card.
+			 * @return The card.
 			 */
 			std::shared_ptr<Card> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder.
+			 * @brief Reset to the defaults.
 			 */
 			void reset(void) override;
 
-			/**
-			 * @brief Set the card pose.
-			 * @param pose The new pose.
-			 * @return Reference to the builder for chaining.
-			 */
+			/** @brief Set the pose. @param pose Pose. @return *this. */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
-			/**
-			 * @brief Set the card variant.
-			 * @param variant The new variant.
-			 * @return Reference to the builder for chaining.
+			/** @brief Set the variant. @param variant Variant. @return *this.
 			 */
 			Builder &withVariant(Variant variant);
 
-			/**
-			 * @brief Force the card width.
-			 * @param width The new width.
-			 * @return Reference to the builder for chaining.
-			 */
+			/** @brief Set a fixed width. @param width Width. @return *this. */
 			Builder &withWidth(float width);
 
-			/**
-			 * @brief Force the card height.
-			 * @param height The new height.
-			 * @return Reference to the builder for chaining.
+			/** @brief Set a fixed height. @param height Height. @return *this.
 			 */
 			Builder &withHeight(float height);
 
 			/**
 			 * @brief Set the corner radius.
-			 * @param radius The new corner radius.
-			 * @return Reference to the builder for chaining.
+			 * @param radius Radius.
+			 * @return *this.
 			 */
 			Builder &withBorderRadius(float radius);
-		};
 
-		/**
-		 * @brief Director that orchestrates `Card::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
-			 * @brief Create a card using the builder.
-			 * @param builder The builder to configure.
-			 * @param parent The parent entity.
-			 * @param variant The card variant.
-			 * @return The newly created card.
+			 * @brief Make the card pressable.
+			 * @param onPress Press handler.
+			 * @return *this.
 			 */
-			std::shared_ptr<Card> makeCard(Builder &builder,
-										   std::shared_ptr<ecs::Entity> parent,
+			Builder &withOnPress(std::function<void(void)> onPress);
+
+			/**
+			 * @brief Set the disabled state.
+			 * @param disabled Disabled flag.
+			 * @return *this.
+			 */
+			Builder &withDisabled(bool disabled);
+
+			/**
+			 * @brief Build a card.
+			 * @param parent Parent entity.
+			 * @param variant Variant.
+			 * @return The card.
+			 */
+			std::shared_ptr<Card> makeCard(std::shared_ptr<ecs::Entity> parent,
 										   Variant variant);
 		};
 
-		private:
-		Variant _variant { Variant::Elevated };	   ///< Card variant.
-
-		private:
 		/**
-		 * @brief Apply the variant-specific colors, borders and elevation.
-		 */
-		void applyVariant(void);
-
-		public:
-		/**
-		 * @brief Construct a Card entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The card variant.
+		 * @brief Construct a card.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param variant Variant.
 		 */
 		Card(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			 Variant variant);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destructor.
 		 */
 		~Card(void) override;
 
-		/**
-		 * @brief Set the card variant.
-		 * @param variant The new variant.
-		 * @return Reference to this card for chaining.
-		 */
+		/** @brief Set the variant. @param variant Variant. @return *this. */
 		Card &setVariant(Variant variant);
 
-		/**
-		 * @brief Get the card variant.
-		 * @return The variant.
-		 */
+		/** @brief Get the variant. @return The variant. */
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Initialize the card derived state.
+		 * @brief Make the card pressable (Paper `onPress`).
+		 * @param onPress Press handler; an empty handler keeps the card
+		 * interactive but does nothing on press.
+		 * @return *this.
+		 */
+		Card &setOnPress(std::function<void(void)> onPress);
+
+		/**
+		 * @brief Check whether the card reacts to presses.
+		 * @return True once a press handler was set.
+		 */
+		bool isInteractive(void) const;
+
+		/**
+		 * @brief Set the disabled state (Paper `disabled`).
+		 * @param disabled Disabled flag.
+		 * @return *this.
+		 */
+		Card &setDisabled(bool disabled);
+
+		/** @brief Check the disabled state. @return True when disabled. */
+		bool isDisabled(void) const;
+
+		/**
+		 * @brief Compose a `Card.Cover` image above the other sections.
+		 * @param texturePath Cover texture.
+		 * @return *this.
+		 */
+		Card &setCover(const std::string &texturePath);
+
+		/**
+		 * @brief Compose a `Card.Title` section.
+		 * @param title Title (bodyLarge).
+		 * @param subtitle Optional subtitle (bodyMedium).
+		 * @return *this.
+		 */
+		Card &setTitle(const std::string &title,
+					   const std::string &subtitle = "");
+
+		/**
+		 * @brief Compose a `Card.Content` text.
+		 * @param content Content text (bodyMedium).
+		 * @return *this.
+		 */
+		Card &setContent(const std::string &content);
+
+		/**
+		 * @brief Append a text button to the `Card.Actions` row.
+		 * @param label Action label.
+		 * @param onPress Action handler.
+		 * @return *this.
+		 */
+		Card &addAction(const std::string &label,
+						std::function<void(void)> onPress);
+
+		/** @brief Get the cover entity. @return The cover, or nullptr. */
+		std::shared_ptr<Image> getCover(void) const;
+
+		/** @brief Get the title section. @return The section, or nullptr. */
+		std::shared_ptr<ecs::Entity> getTitleSection(void) const;
+
+		/** @brief Get the content text. @return The text, or nullptr. */
+		std::shared_ptr<Text> getContent(void) const;
+
+		/** @brief Get the actions row. @return The row, or nullptr. */
+		std::shared_ptr<ecs::Entity> getActionsSection(void) const;
+
+		/** @brief Get the action buttons. @return The buttons. */
+		const std::vector<std::shared_ptr<Button>> &getActions(void) const;
+
+		/**
+		 * @brief Get the press-elevation progress (0 at rest, 1 pressed).
+		 * @return The progress in [0, 1].
+		 */
+		float getPressProgress(void) const;
+
+		/**
+		 * @brief Build the composed sections.
 		 */
 		void initialize(void) override;
 
 		/**
-		 * @brief Recompute the card derived state.
+		 * @brief Restyle the card.
 		 */
 		void update(void) override;
+
+		private:
+		/**
+		 * @brief Composition data of one action.
+		 */
+		struct ActionSpec {
+			std::string label;					  ///< Button label.
+			std::function<void(void)> onPress;	  ///< Button handler.
+		};
+
+		Variant _variant { Variant::Elevated };	   ///< Card variant.
+		bool _interactive { false };			   ///< Whether pressable.
+		std::function<void(void)> _onPress {};	   ///< Press handler.
+		bool _pressed { false };				   ///< Last pressed state.
+		float _pressProgress { 0.0f };			   ///< Elevation progress.
+		float _pressFrom { 0.0f };		///< Progress when the motion began.
+		bool _initialized { false };	///< Whether children may be built.
+		std::string _coverPath {};		///< Cover texture.
+		std::string _title {};			///< Title text.
+		std::string _subtitle {};		///< Subtitle text.
+		std::string _contentText {};	///< Content text.
+		std::vector<ActionSpec> _actionSpecs {};		 ///< Requested actions.
+		std::shared_ptr<Image> _cover;					 ///< Cover image.
+		std::shared_ptr<ecs::Entity> _titleSection;		 ///< Title section.
+		std::shared_ptr<Text> _titleText;				 ///< Title text.
+		std::shared_ptr<Text> _subtitleText;			 ///< Subtitle text.
+		std::shared_ptr<Text> _content;					 ///< Content text.
+		std::shared_ptr<ecs::Entity> _actionsSection;	 ///< Actions row.
+		std::vector<std::shared_ptr<Button>> _actions;	  ///< Action buttons.
+
+		/**
+		 * @brief Apply colors, stroke and elevation for the current state.
+		 */
+		void applyVariant(void);
+
+		/**
+		 * @brief React to a hover/press change from the interaction model.
+		 */
+		void onInteractionChanged(void);
+
+		/**
+		 * @brief Create the missing composed sections and order them.
+		 */
+		void buildComposition(void);
 	};
 
 }	 // namespace guillaume::entities

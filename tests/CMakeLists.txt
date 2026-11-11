@@ -17,15 +17,13 @@ set(TEST_SOURCES
     sources/ecs/test_system.cpp
     sources/ecs/test_system_filler.cpp
     sources/ecs/test_system_registry.cpp
+    sources/ecs/test_travelers.cpp
     sources/entities/test_button.cpp
     sources/entities/test_app_bar.cpp
     sources/entities/test_badge.cpp
-    sources/entities/test_bottom_sheet.cpp
     sources/entities/test_card.cpp
-    sources/entities/test_carousel.cpp
     sources/entities/test_checkbox.cpp
     sources/entities/test_chip.cpp
-    sources/entities/test_date_picker.cpp
     sources/entities/test_dialog.cpp
     sources/entities/test_divider.cpp
     sources/entities/test_list.cpp
@@ -33,37 +31,34 @@ set(TEST_SOURCES
     sources/entities/test_menu.cpp
     sources/entities/test_navigation_bar.cpp
     sources/entities/test_navigation_drawer.cpp
-    sources/entities/test_navigation_rail.cpp
     sources/entities/test_progress_indicator.cpp
     sources/entities/test_radio_button.cpp
     sources/entities/test_search.cpp
-    sources/entities/test_side_sheet.cpp
-    sources/entities/test_slider.cpp
     sources/entities/test_snackbar.cpp
+    sources/entities/test_surface.cpp
     sources/entities/test_switch.cpp
-    sources/entities/test_tabs.cpp
     sources/entities/test_text_field.cpp
-    sources/entities/test_time_picker.cpp
-    sources/entities/test_toolbar.cpp
     sources/entities/test_tooltip.cpp
     sources/entities/test_icon.cpp
     sources/entities/test_image.cpp
-    sources/entities/test_layout.cpp
-    sources/entities/test_model.cpp
+    sources/entities/test_view.cpp
+    sources/entities/test_mesh.cpp
     sources/entities/test_text.cpp
     sources/entities/test_segmented_button.cpp
     sources/entities/test_extended_floating_action_button.cpp
     sources/entities/test_floating_action_button.cpp
     sources/entities/test_floating_action_button_menu.cpp
     sources/entities/test_icon_button.cpp
-    sources/entities/test_split_button.cpp
-    sources/entities/test_standard_button_group.cpp
     sources/event/test_event_bus.cpp
     sources/event/test_event_handler.cpp
     sources/event/test_event_subscriber.cpp
     sources/systems/test_focus.cpp
+    sources/systems/test_backdrop.cpp
+    sources/systems/test_divider.cpp
+    sources/systems/test_typography.cpp
     sources/systems/test_ellipse_render.cpp
     sources/systems/test_animation.cpp
+    sources/systems/test_rectangle_render.cpp
     sources/systems/test_shape_render.cpp
     sources/systems/test_surface_render.cpp
     sources/systems/test_interaction.cpp
@@ -73,12 +68,13 @@ set(TEST_SOURCES
     sources/systems/test_text_input.cpp
     sources/systems/test_text_render.cpp
     sources/systems/test_value_interactions.cpp
-    sources/systems/text_glyph_render.cpp
+    sources/systems/test_glyph_render.cpp
     sources/test_application.cpp
     sources/test_ecs.cpp
     sources/test_engine.cpp
     sources/test_metadata.cpp
     sources/test_storage.cpp
+    sources/test_theme.cpp
 )
 
 # Fetch GoogleTest
@@ -89,6 +85,8 @@ FetchContent_Declare(
 )
 # Prevent GoogleTest from overriding our compiler/linker settings on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# GoogleTest is a test-only dependency: keep it out of `cmake --install`.
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Create test executable

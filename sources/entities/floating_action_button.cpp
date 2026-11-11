@@ -20,11 +20,16 @@
  SOFTWARE.
  */
 
+#include <algorithm>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include "guillaume/entities/floating_action_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/fab_style.hpp"
+#include "guillaume/components/elevation.hpp"
+#include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -126,121 +131,63 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<FloatingActionButton>
-		FloatingActionButton::Director::makeFloatingActionButton(
-			Builder &builder, std::shared_ptr<Entity> parent,
-			const std::string &iconGlyphName, std::function<void(void)> onClick,
-			Variant variant, Size size)
+		FloatingActionButton::Builder::makeFloatingActionButton(
+			std::shared_ptr<Entity> parent, const std::string &iconGlyphName,
+			std::function<void(void)> onClick, Variant variant, Size size)
 	{
-		return builder.withIcon(iconGlyphName)
+		return withIcon(iconGlyphName)
 			.withOnClick(onClick)
 			.withVariant(variant)
 			.withSize(size)
 			.registerEntity(parent);
 	}
 
-	static float getContainerSize(FloatingActionButton::Size size)
-	{
-		switch (size) {
-			case FloatingActionButton::Size::Small:
-				return 40.0f;
-			case FloatingActionButton::Size::Medium:
-				return 56.0f;
-			case FloatingActionButton::Size::Large:
-				return 96.0f;
-			default:
-				throw std::runtime_error("Invalid FAB size");
-		}
-	}
-
-	static float getIconFontSize(FloatingActionButton::Size size)
-	{
-		switch (size) {
-			case FloatingActionButton::Size::Small:
-				return 24.0f;
-			case FloatingActionButton::Size::Medium:
-				return 24.0f;
-			case FloatingActionButton::Size::Large:
-				return 36.0f;
-			default:
-				throw std::runtime_error("Invalid FAB size");
-		}
-	}
-
-	static float getBorderRadius(FloatingActionButton::Size size)
-	{
-		switch (size) {
-			case FloatingActionButton::Size::Small:
-				return 12.0f;
-			case FloatingActionButton::Size::Medium:
-				return 16.0f;
-			case FloatingActionButton::Size::Large:
-				return 28.0f;
-			default:
-				throw std::runtime_error("Invalid FAB size");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getContainerColor(FloatingActionButton::Variant variant, bool lowered)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (variant) {
-			case FloatingActionButton::Variant::Surface:
-				return scheme
-					.getColor(lowered ? SchemeColorRole::SurfaceContainerLow
-									  : SchemeColorRole::SurfaceContainerHigh)
-					.getColor();
-			case FloatingActionButton::Variant::Primary:
-				return scheme.getColor(SchemeColorRole::PrimaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Secondary:
-				return scheme.getColor(SchemeColorRole::SecondaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Tertiary:
-				return scheme.getColor(SchemeColorRole::TertiaryContainer)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid FAB variant");
-		}
-	}
-
-	static utility::graphic::Color32Bit
-		getContentColor(FloatingActionButton::Variant variant)
-	{
-		const auto &scheme = guillaume::getActiveScheme();
-
-		switch (variant) {
-			case FloatingActionButton::Variant::Surface:
-				return scheme.getColor(SchemeColorRole::Primary).getColor();
-			case FloatingActionButton::Variant::Primary:
-				return scheme.getColor(SchemeColorRole::OnPrimaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Secondary:
-				return scheme.getColor(SchemeColorRole::OnSecondaryContainer)
-					.getColor();
-			case FloatingActionButton::Variant::Tertiary:
-				return scheme.getColor(SchemeColorRole::OnTertiaryContainer)
-					.getColor();
-			default:
-				throw std::runtime_error("Invalid FAB variant");
-		}
-	}
-
 	utility::graphic::Color32Bit
 		FloatingActionButton::getInitialContentColor(void) const
 	{
-		return getContentColor(_variant);
+		return resolveContentColor(fab_style::getContentColor(_variant));
 	}
 
 	float FloatingActionButton::getIconFontSize(void) const
 	{
-		return ::guillaume::entities::getIconFontSize(_size);
+		return fab_style::getIconFontSize(_size);
+	}
+
+	void FloatingActionButton::applyElevation(void)
+	{
+		// M3 FAB: level 3 at rest (1 when lowered), one level up on hover,
+		// and flat when disabled.
+		auto level = _lowered ? theme::ElevationLevel::Level1
+							  : theme::ElevationLevel::Level3;
+		if (isDisabled() || !isVisible() || _mode == Mode::Flat) {
+			level = theme::ElevationLevel::Level0;
+		} else if (isHovered() && !isPressed()) {
+			level = static_cast<theme::ElevationLevel>(
+				static_cast<std::size_t>(level) + 1);
+		}
+		getComponentRegistry()
+			.getComponent<components::Elevation>(getIdentifier())
+			.setElevationLevel(level);
 	}
 
 	void FloatingActionButton::applyStyleState(void)
 	{
-		if (_isDisabled) {
+		applyElevation();
+
+		if (!isVisible()) {
+			getComponentRegistry()
+				.getComponent<components::Color>(getIdentifier())
+				.setColor(transparentColor());
+			if (_icon) {
+				_icon->setColor(transparentColor());
+			}
+			if (_label) {
+				_label->setColor(transparentColor());
+			}
+			return;
+		}
+
+		if (isDisabled()) {
 			getComponentRegistry()
 				.getComponent<components::Color>(getIdentifier())
 				.setColor(getDisabledContainerColor());
@@ -256,24 +203,19 @@ namespace guillaume::entities
 			return;
 		}
 
-		const auto baseContainerColor = getContainerColor(_variant, _lowered);
+		const auto baseContainerColor = resolveContainerColor(
+			fab_style::getContainerColor(_variant, _lowered));
+		const auto contentColor =
+			resolveContentColor(fab_style::getContentColor(_variant));
 
 		utility::graphic::Color32Bit containerColor = baseContainerColor;
 
 		if (isPressed()) {
-			containerColor = ButtonBase::applyStateLayer(
-				baseContainerColor,
-				guillaume::getActiveScheme()
-					.getColor(SchemeColorRole::OnPrimaryContainer)
-					.getColor(),
-				31U);
+			containerColor = stateLayer(baseContainerColor, contentColor,
+										theme::StateLayer::Pressed);
 		} else if (isHovered()) {
-			containerColor = ButtonBase::applyStateLayer(
-				baseContainerColor,
-				guillaume::getActiveScheme()
-					.getColor(SchemeColorRole::OnPrimaryContainer)
-					.getColor(),
-				20U);
+			containerColor = stateLayer(baseContainerColor, contentColor,
+										theme::StateLayer::Hovered);
 		}
 
 		getComponentRegistry()
@@ -281,29 +223,115 @@ namespace guillaume::entities
 			.setColor(containerColor);
 
 		if (_icon) {
-			_icon->setColor(getContentColor(_variant));
+			_icon->setColor(contentColor);
 		}
 
 		if (_label) {
-			_label->setColor(getContentColor(_variant));
+			_label->setColor(contentColor);
 		}
 	}
 
 	void FloatingActionButton::applyGeometry(void)
 	{
-		const float containerSize = getContainerSize(_size);
+		const float containerSize =
+			_customSize.value_or(fab_style::getContainerSize(_size));
+		const float fontHeight = getIconFontSize();
 
 		getComponentRegistry()
 			.getComponent<components::Bound>(getIdentifier())
 			.setWidth(containerSize)
 			.setHeight(containerSize);
+		applyTouchTarget(containerSize, containerSize);
 
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
-			.setBorderRadius(getBorderRadius(_size));
+			.setBorderRadius(_customSize.has_value()
+								 // Paper: customSize / 3.5 (16 dp at 56 dp).
+								 ? *_customSize / 3.5f
+								 : fab_style::getBorderRadius(_size));
 
 		if (_icon) {
-			_icon->setFontSize(getIconFontSize());
+			_icon->setFontSize(fontHeight);
+		}
+
+		if (_label) {
+			_label->setTypeRole(theme::TypeRole::LabelLarge);
+		}
+
+		if (!_icon && !_label) {
+			return;
+		}
+
+		const auto &buttonPose =
+			getComponentRegistry()
+				.getComponent<components::Transform>(getIdentifier())
+				.getPose();
+
+		const float iconWidth	= _icon
+			  ? getComponentRegistry()
+					.getComponent<components::Bound>(_icon->getIdentifier())
+					.getWidth()
+			  : 0.0f;
+		const float iconHeight	= _icon
+			 ? getComponentRegistry()
+				   .getComponent<components::Bound>(_icon->getIdentifier())
+				   .getHeight()
+			 : 0.0f;
+		const float labelWidth	= _label
+			 ? getComponentRegistry()
+				   .getComponent<components::Bound>(_label->getIdentifier())
+				   .getWidth()
+			 : 0.0f;
+		const float labelHeight = _label
+			? getComponentRegistry()
+				  .getComponent<components::Bound>(_label->getIdentifier())
+				  .getHeight()
+			: 0.0f;
+
+		const float gap			 = (_icon && _label) ? 8.0f : 0.0f;
+		const float contentWidth = iconWidth + gap + labelWidth;
+
+		// Content is centered in the container; when the row is wider than the
+		// container the bound grows so nothing is clipped.
+		const float width = std::max(containerSize, contentWidth);
+		const float startX =
+			buttonPose.getPosition().x + (width - contentWidth) / 2.0f;
+
+		if (_icon) {
+			const float iconY = buttonPose.getPosition().y
+				+ (containerSize - iconHeight) / 2.0f;
+
+			const auto iconPose = ButtonBase::applyLayerToPosition(
+				utility::graphic::PositionF(startX, iconY,
+											buttonPose.getPosition().z),
+				buttonPose.getOrientation(),
+				static_cast<std::uint32_t>(getLayer()));
+
+			getComponentRegistry()
+				.getComponent<components::Transform>(_icon->getIdentifier())
+				.setPose(iconPose);
+		}
+
+		if (_label) {
+			const float labelX = startX + iconWidth + gap;
+			const float labelY = buttonPose.getPosition().y
+				+ (containerSize - labelHeight) / 2.0f;
+
+			const auto labelPose = ButtonBase::applyLayerToPosition(
+				utility::graphic::PositionF(labelX, labelY,
+											buttonPose.getPosition().z),
+				buttonPose.getOrientation(),
+				static_cast<std::uint32_t>(getLayer()));
+
+			getComponentRegistry()
+				.getComponent<components::Transform>(_label->getIdentifier())
+				.setPose(labelPose);
+		}
+
+		if (width > containerSize) {
+			getComponentRegistry()
+				.getComponent<components::Bound>(getIdentifier())
+				.setWidth(width);
 		}
 	}
 
@@ -320,6 +348,34 @@ namespace guillaume::entities
 		, _size(size)
 		, _lowered(lowered)
 	{
+		if (!getComponentRegistry().hasComponent<components::Elevation>(
+				getIdentifier())) {
+			getComponentRegistry().addComponent<components::Elevation>(
+				getIdentifier());
+		}
+	}
+
+	FloatingActionButton &FloatingActionButton::setMode(Mode mode)
+	{
+		_mode = mode;
+		applyStyleState();
+		return *this;
+	}
+
+	FloatingActionButton::Mode FloatingActionButton::getMode(void) const
+	{
+		return _mode;
+	}
+
+	FloatingActionButton &
+		FloatingActionButton::setCustomSize(std::optional<float> size)
+	{
+		if (size.has_value() && *size <= 0.0f) {
+			throw std::invalid_argument("FAB custom size must be positive");
+		}
+		_customSize = size;
+		applyGeometry();
+		return *this;
 	}
 
 	FloatingActionButton::~FloatingActionButton(void)

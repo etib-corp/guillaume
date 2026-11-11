@@ -29,7 +29,7 @@ namespace guillaume::systems
 {
 	ImageRender::ImageRender(
 		std::shared_ptr<utility::RessourceProvider> ressourceProvider,
-		std::unique_ptr<utility::Engine> &engine)
+		utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Image>(ecs::Phase::Render)
 		, _ressourceProvider(ressourceProvider)
@@ -49,7 +49,7 @@ namespace guillaume::systems
 
 	void ImageRender::cleanup(void)
 	{
-		removeUnused(*_engine);
+		removeUnused(_engine);
 	}
 
 	void ImageRender::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -67,19 +67,30 @@ namespace guillaume::systems
 			getComponent<components::Transform>(entityIdentifier);
 		const auto &boundComponent =
 			getComponent<components::Bound>(entityIdentifier);
-		const auto &imageComponent =
+		auto &imageComponent =
 			getComponent<components::Image>(entityIdentifier);
 
-		const std::string &texturePath = imageComponent.getTexturePath();
+		std::string texturePath = imageComponent.getTexturePath();
 
 		getLogger().debug() << "Rendering image '" << texturePath
 							<< "' for entity " << entityIdentifier;
 
+		bool usingFallback = false;
 		if (!_ressourceProvider->loadImageMaterial(texturePath)) {
 			getLogger().warning()
 				<< "Failed to load image material for texture: " << texturePath;
-			return;
+			const std::string &fallback = imageComponent.getFallbackPath();
+			if (fallback.empty()
+				|| !_ressourceProvider->loadImageMaterial(fallback)) {
+				imageComponent.setLoadState(
+					components::Image::LoadState::Failed);
+				return;
+			}
+			texturePath	  = fallback;
+			usingFallback = true;
 		}
+		imageComponent.setLoadState(components::Image::LoadState::Loaded,
+									usingFallback);
 
 		const float halfWidth  = boundComponent.getWidth() / 2.0f;
 		const float halfHeight = boundComponent.getHeight() / 2.0f;
@@ -121,12 +132,12 @@ namespace guillaume::systems
 
 		RenderHandle *handle = find(entityIdentifier);
 		if (handle == nullptr) {
-			size_t objectId = _engine->createObject(renderable);
+			size_t objectId = _engine.createObject(renderable);
 			insert(entityIdentifier,
 				   RenderHandle { objectId, renderable, true });
 		} else {
-			if (!_engine->updateObject(renderable, handle->objectId)) {
-				handle->objectId = _engine->createObject(renderable);
+			if (!_engine.updateObject(renderable, handle->objectId)) {
+				handle->objectId = _engine.createObject(renderable);
 			}
 			handle->renderable = renderable;
 			handle->used	   = true;

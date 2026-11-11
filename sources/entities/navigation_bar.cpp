@@ -20,6 +20,7 @@
  SOFTWARE.
  */
 
+#include "guillaume/entities/navigation_bar_destination.hpp"
 #include "guillaume/entities/navigation_bar.hpp"
 
 #include <cstdint>
@@ -28,6 +29,7 @@
 
 #include "guillaume/ecs/parent_entity_filler.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
@@ -35,11 +37,15 @@
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/transform.hpp"
 
+#include "guillaume/entities/badge.hpp"
+#include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/icon.hpp"
-#include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/interaction_helpers.hpp"
+#include "guillaume/entities/placement_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/entities/text.hpp"
+#include "guillaume/entities/view.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/theme.hpp"
@@ -48,172 +54,24 @@ namespace guillaume::entities
 {
 	namespace
 	{
-		constexpr float NavigationBarHeight = 80.0f;
+		using detail::BarDestination;
 
 		/**
-		 * @brief Internal navigation destination: a selectable layout holding
-		 * an icon and a label.
+		 * @brief M3 navigation bar height.
 		 */
-		class Destination:
-			public std::enable_shared_from_this<Destination>,
-			public ecs::ParentEntityFiller<
-				components::Layout, components::Transform, components::Bound,
-				components::Color, components::Borders, components::Selectable>
+		constexpr float NavigationBarHeight = 80.0f;
+
+		std::vector<NavigationBar::Destination> toDestinations(
+			const std::vector<std::pair<std::string, std::string>> &pairs)
 		{
-			private:
-			std::string _iconGlyph {};		   ///< Icon glyph name.
-			std::string _label {};			   ///< Label text.
-			bool _showLabel { true };		   ///< Whether the label is shown.
-			std::shared_ptr<Icon> _icon {};	   ///< Icon child.
-			std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
-
-			public:
-			/**
-			 * @brief Construct a navigation destination.
-			 * @param registry The component registry.
-			 * @param iconGlyph The icon glyph name.
-			 * @param label The label text.
-			 */
-			Destination(ecs::ComponentRegistry &registry,
-						const std::string &iconGlyph, const std::string &label)
-				: ecs::ParentEntityFiller<
-					  components::Layout, components::Transform,
-					  components::Bound, components::Color, components::Borders,
-					  components::Selectable>(registry)
-				, _iconGlyph(iconGlyph)
-				, _label(label)
-				, _showLabel(true)
-				, _icon()
-				, _labelEntity()
-			{
-				getComponentRegistry()
-					.getComponent<components::Layout>(getIdentifier())
-					.setAxis(components::Layout::Axis::Vertical)
-					.setMainAxisAlignment(
-						components::Layout::MainAxisAlignment::Center)
-					.setCrossAxisAlignment(
-						components::Layout::CrossAxisAlignment::Center)
-					.setSpacing(4.0f)
-					.setPadding(4.0f);
-
-				getComponentRegistry()
-					.getComponent<components::Color>(getIdentifier())
-					.setColor(transparentColor());
-
-				getComponentRegistry()
-					.getComponent<components::Borders>(getIdentifier())
-					.setBorderRadius(0.0f)
-					.setColor(transparentColor());
+			std::vector<NavigationBar::Destination> destinations;
+			destinations.reserve(pairs.size());
+			for (const auto &pair: pairs) {
+				destinations.push_back(NavigationBar::Destination {
+					pair.first, pair.second, "", "" });
 			}
-
-			/**
-			 * @brief Default destructor.
-			 */
-			~Destination(void) override = default;
-
-			/**
-			 * @brief Build the icon and label children.
-			 */
-			void initialize(void) override
-			{
-				_icon =
-					buildIcon(getComponentRegistry(), *this, shared_from_this(),
-							  _iconGlyph, 24.0f,
-							  schemeColor(SchemeColorRole::OnSurfaceVariant));
-
-				if (!_label.empty()) {
-					_labelEntity = buildText(
-						getComponentRegistry(), *this, shared_from_this(),
-						_label, 12.0f,
-						schemeColor(SchemeColorRole::OnSurfaceVariant));
-				}
-
-				applyGeometry();
-			}
-
-			/**
-			 * @brief Set whether the label is shown.
-			 * @param show Whether to show the label.
-			 */
-			void setShowLabel(bool show)
-			{
-				_showLabel = show;
-			}
-
-			/**
-			 * @brief Set the selection change handler.
-			 * @param handler The handler to invoke on selection change.
-			 */
-			void setOnSelectionChanged(
-				const components::Selectable::Handler &handler)
-			{
-				getComponentRegistry()
-					.getComponent<components::Selectable>(getIdentifier())
-					.setOnSelectionChangedHandler(handler);
-			}
-
-			/**
-			 * @brief Set the destination selected state.
-			 * @param selected The new selected state.
-			 */
-			void setSelected(bool selected)
-			{
-				getComponentRegistry()
-					.getComponent<components::Selectable>(getIdentifier())
-					.setSelected(selected);
-			}
-
-			/**
-			 * @brief Whether the destination is selected.
-			 * @return True when selected.
-			 */
-			bool isSelected(void)
-			{
-				return getComponentRegistry()
-					.getComponent<components::Selectable>(getIdentifier())
-					.isSelected();
-			}
-
-			/**
-			 * @brief Apply the selection colors to the icon and label.
-			 * @param selected Whether the destination is selected.
-			 */
-			void applySelectionColor(bool selected)
-			{
-				const auto iconColor = selected
-					? schemeColor(SchemeColorRole::OnSecondaryContainer)
-					: schemeColor(SchemeColorRole::OnSurfaceVariant);
-
-				if (_icon != nullptr) {
-					_icon->setColor(iconColor);
-				}
-
-				if (_labelEntity != nullptr) {
-					_labelEntity->setColor(_showLabel ? iconColor
-													  : transparentColor());
-				}
-			}
-
-			/**
-			 * @brief Arrange the destination content.
-			 */
-			void applyGeometry(void)
-			{
-				std::vector<ecs::Entity::Identifier> children;
-
-				if (_icon != nullptr) {
-					children.push_back(_icon->getIdentifier());
-				}
-
-				if (_labelEntity != nullptr) {
-					children.push_back(_labelEntity->getIdentifier());
-				}
-
-				systems::Layout::apply(getComponentRegistry(), getIdentifier(),
-									   children,
-									   static_cast<std::uint32_t>(getLayer()));
-			}
-		};
+			return destinations;
+		}
 	}	 // namespace
 
 	NavigationBar::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
@@ -226,7 +84,8 @@ namespace guillaume::entities
 	std::shared_ptr<NavigationBar> NavigationBar::Builder::buildEntity(void)
 	{
 		auto entity = std::make_shared<NavigationBar>(
-			this->getComponentRegistry(), _config, _variant, _destinations);
+			this->getComponentRegistry(), _config, _variant, _specs,
+			_onIndexChange);
 		return entity;
 	}
 
@@ -235,13 +94,15 @@ namespace guillaume::entities
 		_config	 = SurfaceConfig();
 		_variant = Variant::WithLabels;
 		_destinations.clear();
+		_specs.clear();
+		_onIndexChange = {};
 
 		_config.axis = components::Layout::Axis::Horizontal;
 		_config.mainAxisAlignment =
 			components::Layout::MainAxisAlignment::SpaceBetween;
 		_config.crossAxisAlignment =
 			components::Layout::CrossAxisAlignment::Center;
-		_config.padding = 8.0f;
+		_config.padding = theme::SpacingScale::get(2);
 		_config.spacing = 0.0f;
 		_config.setFixedWidth(360.0f);
 		_config.setFixedHeight(NavigationBarHeight);
@@ -260,40 +121,72 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	NavigationBar::Builder &
-		NavigationBar::Builder::addDestination(const std::string &iconGlyph,
-											   const std::string &label)
+	NavigationBar::Builder &NavigationBar::Builder::addDestination(
+		const std::string &iconGlyph, const std::string &label,
+		const std::string &focusedIconGlyph, const std::string &badge)
 	{
 		_destinations.emplace_back(iconGlyph, label);
+		_specs.push_back(
+			Destination { iconGlyph, label, focusedIconGlyph, badge });
 		return *this;
 	}
 
-	std::shared_ptr<NavigationBar> NavigationBar::Director::makeNavigationBar(
-		Builder &builder, std::shared_ptr<ecs::Entity> parent, Variant variant,
+	NavigationBar::Builder &NavigationBar::Builder::withOnIndexChange(
+		std::function<void(std::size_t)> onIndexChange)
+	{
+		_onIndexChange = std::move(onIndexChange);
+		return *this;
+	}
+
+	std::shared_ptr<NavigationBar> NavigationBar::Builder::makeNavigationBar(
+		std::shared_ptr<ecs::Entity> parent, Variant variant,
 		const std::vector<std::pair<std::string, std::string>> &destinations)
 	{
-		builder.withVariant(variant);
+		withVariant(variant);
 
 		for (const auto &destination: destinations) {
-			builder.addDestination(destination.first, destination.second);
+			addDestination(destination.first, destination.second);
 		}
 
-		return builder.registerEntity(parent);
+		return registerEntity(parent);
 	}
 
 	NavigationBar::NavigationBar(
 		ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 		Variant variant,
 		const std::vector<std::pair<std::string, std::string>> &destinations)
+		: NavigationBar(registry, config, variant, toDestinations(destinations),
+						{})
+	{
+	}
+
+	NavigationBar::NavigationBar(ecs::ComponentRegistry &registry,
+								 const SurfaceConfig &config, Variant variant,
+								 const std::vector<Destination> &destinations,
+								 std::function<void(std::size_t)> onIndexChange)
 		: SurfaceBase<components::SelectionGroup>(registry, config)
 		, _variant(variant)
 		, _destinations(destinations)
 		, _destinationEntities()
+		, _onIndexChange(std::move(onIndexChange))
+		, _onTabPress()
 		, _updatingSelection(false)
 	{
 		getComponentRegistry()
 			.getComponent<components::SelectionGroup>(getIdentifier())
 			.setAllowEmpty(false);
+
+		if (!getComponentRegistry().hasComponent<components::Accessibility>(
+				getIdentifier())) {
+			getComponentRegistry().addComponent<components::Accessibility>(
+				getIdentifier());
+		}
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::TabList)
+			.setFocusable(false);
+
+		setColor(schemeColor(SchemeColorRole::SurfaceContainer));
 	}
 
 	NavigationBar::~NavigationBar(void)
@@ -304,17 +197,36 @@ namespace guillaume::entities
 	{
 		_destinationEntities.clear();
 
-		for (const auto &destination: _destinations) {
-			auto entity = std::make_shared<Destination>(
-				getComponentRegistry(), destination.first, destination.second);
+		const auto &bound =
+			getComponentRegistry().getComponent<components::Bound>(
+				getIdentifier());
+		const float padding			 = getSurfaceConfig().padding;
+		const float width			 = getSurfaceConfig().hasFixedWidth
+					   ? getSurfaceConfig().fixedWidth
+					   : bound.getWidth();
+		const float destinationWidth = _destinations.empty()
+			? 0.0f
+			: (width - 2.0f * padding)
+				/ static_cast<float>(_destinations.size());
+
+		for (std::size_t i = 0; i < _destinations.size(); ++i) {
+			auto entity = std::make_shared<BarDestination>(
+				getComponentRegistry(), _destinations[i]);
 			entity->setParent(shared_from_this());
 			this->addEntity(entity);
+			getComponentRegistry()
+				.getComponent<components::Layout>(entity->getIdentifier())
+				.setFixedWidth(destinationWidth)
+				.setFixedHeight(NavigationBarHeight - 2.0f * padding);
+			entity->setOnPress([this, i]() {
+				this->pressDestination(i);
+			});
 			_destinationEntities.push_back(entity);
 		}
 
 		for (std::size_t i = 0; i < _destinationEntities.size(); ++i) {
-			auto entity =
-				std::dynamic_pointer_cast<Destination>(_destinationEntities[i]);
+			auto entity = std::dynamic_pointer_cast<BarDestination>(
+				_destinationEntities[i]);
 			if (entity == nullptr) {
 				continue;
 			}
@@ -349,11 +261,13 @@ namespace guillaume::entities
 
 	void NavigationBar::applyVariant(void)
 	{
+		setColor(schemeColor(SchemeColorRole::SurfaceContainer));
+
 		const bool showAllLabels = (_variant == Variant::WithLabels);
 
 		for (std::size_t i = 0; i < _destinationEntities.size(); ++i) {
-			auto entity =
-				std::dynamic_pointer_cast<Destination>(_destinationEntities[i]);
+			auto entity = std::dynamic_pointer_cast<BarDestination>(
+				_destinationEntities[i]);
 			if (entity == nullptr) {
 				continue;
 			}
@@ -377,6 +291,24 @@ namespace guillaume::entities
 		applyVariant();
 	}
 
+	void NavigationBar::pressDestination(std::size_t index)
+	{
+		if (index >= _destinationEntities.size()) {
+			return;
+		}
+
+		if (_onTabPress) {
+			_onTabPress(index);
+		}
+
+		const bool changed = getSelectedIndex() != index;
+		select(index);
+
+		if (changed && _onIndexChange) {
+			_onIndexChange(index);
+		}
+	}
+
 	NavigationBar &NavigationBar::setVariant(Variant variant)
 	{
 		_variant = variant;
@@ -392,9 +324,45 @@ namespace guillaume::entities
 	NavigationBar &NavigationBar::addDestination(const std::string &iconGlyph,
 												 const std::string &label)
 	{
-		_destinations.emplace_back(iconGlyph, label);
+		return addDestination(Destination { iconGlyph, label, "", "" });
+	}
+
+	NavigationBar &NavigationBar::addDestination(const Destination &destination)
+	{
+		_destinations.push_back(destination);
 		buildDestinations();
 		applySelection();
+		return *this;
+	}
+
+	NavigationBar &NavigationBar::setBadge(std::size_t index,
+										   const std::string &badge)
+	{
+		if (index >= _destinations.size()) {
+			return *this;
+		}
+		_destinations[index].badge = badge;
+		if (index < _destinationEntities.size()) {
+			auto entity = std::dynamic_pointer_cast<BarDestination>(
+				_destinationEntities[index]);
+			if (entity != nullptr) {
+				entity->setBadge(badge);
+			}
+		}
+		return *this;
+	}
+
+	NavigationBar &NavigationBar::setOnIndexChange(
+		std::function<void(std::size_t)> onIndexChange)
+	{
+		_onIndexChange = std::move(onIndexChange);
+		return *this;
+	}
+
+	NavigationBar &NavigationBar::setOnTabPress(
+		std::function<void(std::size_t)> onTabPress)
+	{
+		_onTabPress = std::move(onTabPress);
 		return *this;
 	}
 
@@ -416,8 +384,8 @@ namespace guillaume::entities
 	std::size_t NavigationBar::getSelectedIndex(void) const
 	{
 		for (std::size_t i = 0; i < _destinationEntities.size(); ++i) {
-			auto entity =
-				std::dynamic_pointer_cast<Destination>(_destinationEntities[i]);
+			auto entity = std::dynamic_pointer_cast<BarDestination>(
+				_destinationEntities[i]);
 			if (entity != nullptr && entity->isSelected()) {
 				return i;
 			}
@@ -441,6 +409,58 @@ namespace guillaume::entities
 		return _destinationEntities[index]->getIdentifier();
 	}
 
+	namespace
+	{
+		template<typename Getter> ecs::Entity::Identifier destinationPart(
+			const std::vector<std::shared_ptr<ecs::Entity>> &destinations,
+			std::size_t index, Getter getter)
+		{
+			if (index >= destinations.size()) {
+				return ecs::Entity::InvalidIdentifier;
+			}
+			const auto entity =
+				std::dynamic_pointer_cast<BarDestination>(destinations[index]);
+			return entity != nullptr ? getter(*entity)
+									 : ecs::Entity::InvalidIdentifier;
+		}
+	}	 // namespace
+
+	ecs::Entity::Identifier
+		NavigationBar::getIndicatorIdentifier(std::size_t index) const
+	{
+		return destinationPart(_destinationEntities, index,
+							   [](const BarDestination &destination) {
+								   return destination.getIndicatorIdentifier();
+							   });
+	}
+
+	ecs::Entity::Identifier
+		NavigationBar::getIconIdentifier(std::size_t index) const
+	{
+		return destinationPart(_destinationEntities, index,
+							   [](const BarDestination &destination) {
+								   return destination.getIconIdentifier();
+							   });
+	}
+
+	ecs::Entity::Identifier
+		NavigationBar::getLabelIdentifier(std::size_t index) const
+	{
+		return destinationPart(_destinationEntities, index,
+							   [](const BarDestination &destination) {
+								   return destination.getLabelIdentifier();
+							   });
+	}
+
+	ecs::Entity::Identifier
+		NavigationBar::getBadgeIdentifier(std::size_t index) const
+	{
+		return destinationPart(_destinationEntities, index,
+							   [](const BarDestination &destination) {
+								   return destination.getBadgeIdentifier();
+							   });
+	}
+
 	void NavigationBar::initialize(void)
 	{
 		SurfaceBase::initialize();
@@ -457,7 +477,8 @@ namespace guillaume::entities
 		SurfaceBase::update();
 
 		for (auto &entity: _destinationEntities) {
-			auto destination = std::dynamic_pointer_cast<Destination>(entity);
+			auto destination =
+				std::dynamic_pointer_cast<BarDestination>(entity);
 			if (destination != nullptr) {
 				destination->applyGeometry();
 			}

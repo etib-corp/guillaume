@@ -23,6 +23,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,33 +33,37 @@
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 
+#include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
 
-#include "guillaume/entities/layout.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
+#include "guillaume/entities/text.hpp"
+#include "guillaume/entities/view.hpp"
 
 namespace guillaume::entities
 {
 
 	/**
-	 * @brief Menu entity: a transient list of actionable items.
+	 * @brief Menu entity: a transient list of actionable items (Paper `Menu`
+	 * and `Menu.Item`).
 	 *
 	 * Menus reuse `SurfaceBase` for the layout, geometry and background surface
 	 * and `components::Overlay` for the transient overlay behaviour. Each item
-	 * is an `entities::Layout` row holding an optional leading icon and a
-	 * label. The Material Design variants are:
+	 * is a pressable `entities::View` row holding an optional leading icon, a
+	 * `bodyLarge` label and an optional trailing icon. The menu width follows
+	 * its content within the M3 112-280 dp range, and the menu can be anchored
+	 * below or above another entity. The Material Design variants are:
 	 * - `Dropdown`: an anchored menu opened under a trigger.
 	 * - `Context`: a menu opened at the pointer position.
 	 * - `Cascading`: a menu whose items open sub-menus.
 	 *
 	 * @see SurfaceBase
 	 * @see components::Overlay
-	 * @see entities::Layout
+	 * @see entities::View
 	 */
-	class Menu: public SurfaceBase<components::Overlay>
+	class Menu: public SurfaceBase<components::Overlay, components::Elevation>
 	{
 		public:
 		/**
@@ -67,15 +72,45 @@ namespace guillaume::entities
 		enum class Variant { Dropdown, Context, Cascading };
 
 		/**
-		 * @brief Describes a single menu item.
+		 * @brief Surface mode (Paper `mode`).
 		 */
-		struct Item {
-			std::string label;			///< Item label text.
-			std::string leadingIcon;	///< Optional leading icon glyph name.
+		enum class Mode {
+			Elevated,	 ///< Level 2 shadow and tonal tint.
+			Flat		 ///< No shadow.
 		};
 
 		/**
-		 * @brief Builder used to configure and create `Menu` entities.
+		 * @brief Where the menu opens relative to its anchor.
+		 */
+		enum class AnchorPosition {
+			Bottom,	   ///< Below the anchor (Paper default).
+			Top		   ///< Above the anchor.
+		};
+
+		/**
+		 * @brief Menu item.
+		 */
+		struct Item {
+			std::string label;				///< Item label text.
+			std::string leadingIcon;		///< Optional leading icon glyph.
+			std::string trailingIcon {};	///< Optional trailing icon glyph.
+			std::function<void(void)> onPress {};	 ///< Press handler.
+			bool disabled { false };	///< Whether the item is disabled.
+			bool dense { false };		///< Whether the item is 32 dp high.
+		};
+
+		/**
+		 * @brief Smallest M3 menu width.
+		 */
+		static constexpr float MinWidth = 112.0f;
+
+		/**
+		 * @brief Largest M3 menu width.
+		 */
+		static constexpr float MaxWidth = 280.0f;
+
+		/**
+		 * @brief Builder used to configure and create menus.
 		 */
 		class Builder: public EntityBuilderBase<Menu>
 		{
@@ -86,7 +121,7 @@ namespace guillaume::entities
 
 			public:
 			/**
-			 * @brief Construct a new Menu Builder.
+			 * @brief Construct a menu builder.
 			 * @param componentRegistry The component registry.
 			 * @param entityRegistry The entity registry.
 			 */
@@ -94,92 +129,60 @@ namespace guillaume::entities
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the Menu entity from the current configuration.
-			 * @return The newly created Menu.
+			 * @brief Build the menu.
+			 * @return The menu.
 			 */
 			std::shared_ptr<Menu> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder.
+			 * @brief Reset the builder to the M3 defaults.
 			 */
 			void reset(void) override;
 
 			/**
 			 * @brief Set the menu pose.
-			 * @param pose The new pose.
-			 * @return Reference to the builder for chaining.
+			 * @param pose The pose.
+			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
 			 * @brief Set the menu variant.
-			 * @param variant The new variant.
-			 * @return Reference to the builder for chaining.
+			 * @param variant The variant.
+			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withVariant(Variant variant);
 
 			/**
-			 * @brief Append a menu item.
-			 * @param label The item label.
-			 * @param leadingIcon The optional leading icon glyph name.
-			 * @return Reference to the builder for chaining.
+			 * @brief Append an item.
+			 * @param label Item label.
+			 * @param leadingIcon Optional leading icon glyph.
+			 * @return Reference to this builder for chaining.
 			 */
 			Builder &addItem(const std::string &label,
 							 const std::string &leadingIcon = "");
-		};
 
-		/**
-		 * @brief Director that orchestrates `Menu::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
-			 * @brief Create a menu using the builder.
-			 * @param builder The builder to configure.
-			 * @param parent The parent entity.
-			 * @param variant The menu variant.
-			 * @param items The menu items.
-			 * @return The newly created menu.
+			 * @brief Append a fully described item.
+			 * @param item The item.
+			 * @return Reference to this builder for chaining.
 			 */
-			std::shared_ptr<Menu> makeMenu(Builder &builder,
-										   std::shared_ptr<ecs::Entity> parent,
+			Builder &addItem(const Item &item);
+
+			/**
+			 * @brief Build a menu.
+			 * @param parent Parent entity.
+			 * @param variant Menu variant.
+			 * @param items Menu items.
+			 * @return The registered menu.
+			 */
+			std::shared_ptr<Menu> makeMenu(std::shared_ptr<ecs::Entity> parent,
 										   Variant variant,
 										   const std::vector<Item> &items);
 		};
 
-		private:
-		Variant _variant { Variant::Dropdown };			  ///< Menu variant.
-		std::vector<Item> _items {};					  ///< Menu items.
-		std::vector<std::shared_ptr<Layout>> _rows {};	  ///< Item rows.
-		bool _rowsDirty { true };	 ///< Rows must rebuild.
-
-		private:
 		/**
-		 * @brief Apply the variant-specific geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Configure the overlay component for the menu.
-		 */
-		void applyOverlay(void);
-
-		/**
-		 * @brief Build (and attach) the item rows for the current items.
-		 */
-		void buildItems(void);
-
-		/**
-		 * @brief Build one item row entity.
-		 * @param item The item to build a row for.
-		 * @return The newly created row entity.
-		 */
-		std::shared_ptr<Layout> buildRow(const Item &item);
-
-		public:
-		/**
-		 * @brief Construct a Menu entity.
+		 * @brief Construct a menu.
 		 * @param registry The component registry.
 		 * @param config The surface configuration.
 		 * @param variant The menu variant.
@@ -207,7 +210,20 @@ namespace guillaume::entities
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Set the menu items.
+		 * @brief Set the surface mode.
+		 * @param mode The new mode.
+		 * @return Reference to this menu for chaining.
+		 */
+		Menu &setMode(Mode mode);
+
+		/**
+		 * @brief Get the surface mode.
+		 * @return The mode.
+		 */
+		Mode getMode(void) const;
+
+		/**
+		 * @brief Replace the items.
 		 * @param items The new items.
 		 * @return Reference to this menu for chaining.
 		 */
@@ -215,33 +231,81 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Get the number of items.
-		 * @return The number of items.
+		 * @return The item count.
 		 */
 		std::size_t getItemCount(void) const;
 
 		/**
-		 * @brief Get the identifier of an item row entity.
-		 * @param index The index of the item.
-		 * @return The row entity identifier, or InvalidIdentifier when out of
-		 * range.
+		 * @brief Get the row identifier of an item.
+		 * @param index Item index.
+		 * @return The identifier, or InvalidIdentifier.
 		 */
 		ecs::Entity::Identifier getItemIdentifier(std::size_t index) const;
 
 		/**
-		 * @brief Open the menu.
+		 * @brief Enable or disable an item.
+		 * @param index Item index.
+		 * @param disabled Whether the item is disabled.
+		 * @return Reference to this menu for chaining.
+		 */
+		Menu &setItemDisabled(std::size_t index, bool disabled);
+
+		/**
+		 * @brief Anchor the menu to another entity.
+		 * @param anchor Anchor entity identifier (InvalidIdentifier clears).
+		 * @return Reference to this menu for chaining.
+		 */
+		Menu &setAnchor(ecs::Entity::Identifier anchor);
+
+		/**
+		 * @brief Get the anchor entity.
+		 * @return The anchor identifier, or InvalidIdentifier.
+		 */
+		ecs::Entity::Identifier getAnchor(void) const;
+
+		/**
+		 * @brief Set where the menu opens relative to its anchor.
+		 * @param position The anchor position.
+		 * @return Reference to this menu for chaining.
+		 */
+		Menu &setAnchorPosition(AnchorPosition position);
+
+		/**
+		 * @brief Get the anchor position.
+		 * @return The anchor position.
+		 */
+		AnchorPosition getAnchorPosition(void) const;
+
+		/**
+		 * @brief Set the handler called when the menu is dismissed (Paper
+		 * `onDismiss`); it is also reported by outside clicks and Escape.
+		 * @param onDismiss Dismiss handler.
+		 * @return Reference to this menu for chaining.
+		 */
+		Menu &setOnDismiss(std::function<void(void)> onDismiss);
+
+		/**
+		 * @brief Hide the menu as a user dismissal and call the dismiss
+		 * handler.
+		 * @return Reference to this menu for chaining.
+		 */
+		Menu &dismiss(void);
+
+		/**
+		 * @brief Show the menu.
 		 * @return Reference to this menu for chaining.
 		 */
 		Menu &open(void);
 
 		/**
-		 * @brief Close the menu.
+		 * @brief Hide the menu.
 		 * @return Reference to this menu for chaining.
 		 */
 		Menu &close(void);
 
 		/**
-		 * @brief Whether the menu is open.
-		 * @return True when open.
+		 * @brief Check whether the menu is shown.
+		 * @return True when shown.
 		 */
 		bool isOpen(void) const;
 
@@ -258,20 +322,83 @@ namespace guillaume::entities
 		Menu &hide(void);
 
 		/**
-		 * @brief Whether the menu is visible.
-		 * @return True when visible.
+		 * @brief Check whether the menu is shown.
+		 * @return True when shown.
 		 */
 		bool isVisible(void) const;
 
 		/**
-		 * @brief Initialize the menu derived state and children.
+		 * @brief Build the rows.
 		 */
 		void initialize(void) override;
 
 		/**
-		 * @brief Recompute the menu derived state.
+		 * @brief Restyle, size and anchor the menu.
 		 */
 		void update(void) override;
+
+		private:
+		/**
+		 * @brief Built row and its content.
+		 */
+		struct Row {
+			std::shared_ptr<View> view;	   ///< Row container.
+			std::vector<std::shared_ptr<ecs::Entity>>
+				content;					///< Row children.
+			std::shared_ptr<Text> label;	///< Label child.
+			std::vector<std::shared_ptr<ecs::Entity>>
+				icons;	  ///< Leading/trailing icon children.
+		};
+
+		Variant _variant { Variant::Dropdown };	   ///< Menu variant.
+		Mode _mode { Mode::Elevated };			   ///< Surface mode.
+		std::vector<Item> _items {};			   ///< Menu items.
+		std::vector<Row> _rows {};				   ///< Item rows.
+		bool _rowsDirty { true };				   ///< Rows must rebuild.
+		ecs::Entity::Identifier _anchor {
+			ecs::Entity::InvalidIdentifier
+		};	  ///< Anchor entity.
+		AnchorPosition _anchorPosition {
+			AnchorPosition::Bottom
+		};	  ///< Anchor position.
+
+		/**
+		 * @brief Apply the variant geometry and colors.
+		 */
+		void applyVariant(void);
+
+		/**
+		 * @brief Apply the overlay flags.
+		 */
+		void applyOverlay(void);
+
+		/**
+		 * @brief Build or refresh the rows.
+		 */
+		void buildItems(void);
+
+		/**
+		 * @brief Build one row.
+		 * @param index Item index.
+		 * @return The row.
+		 */
+		Row buildRow(std::size_t index);
+
+		/**
+		 * @brief Restyle one row from its interaction state.
+		 * @param index Item index.
+		 */
+		void styleRow(std::size_t index);
+
+		/**
+		 * @brief Size the menu and its rows from the content.
+		 */
+		void applyWidth(void);
+
+		/**
+		 * @brief Move the menu next to its anchor.
+		 */
+		void applyAnchor(void);
 	};
 
 }	 // namespace guillaume::entities

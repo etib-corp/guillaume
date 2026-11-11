@@ -24,6 +24,7 @@
 
 #include "guillaume/entities/divider.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/systems/divider.hpp"
 
 #include "guillaume/theme.hpp"
 
@@ -47,11 +48,9 @@ namespace guillaume::entities
 	void Divider::Builder::reset(void)
 	{
 		_pose	   = utility::graphic::PoseF();
-		_color	   = guillaume::getActiveScheme()
-						 .getColor(SchemeColorRole::OutlineVariant)
-						 .getColor();
+		_color	   = getActiveColor(SchemeColorRole::OutlineVariant);
 		_length	   = 100.0f;
-		_thickness = 1.0f;
+		_thickness = HairlineThickness;
 		_inset	   = 16.0f;
 		_variant   = Variant::FullWidth;
 	}
@@ -95,12 +94,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<Divider>
-		Divider::Director::makeDivider(Builder &builder,
-									   std::shared_ptr<Entity> parent,
-									   float length, Variant variant)
+		Divider::Builder::makeDivider(std::shared_ptr<Entity> parent,
+									  float length, Variant variant)
 	{
-		return builder.withLength(length).withVariant(variant).registerEntity(
-			parent);
+		return withLength(length).withVariant(variant).registerEntity(parent);
 	}
 
 	Divider::Divider(ecs::ComponentRegistry &registry,
@@ -108,147 +105,94 @@ namespace guillaume::entities
 					 const utility::graphic::Color32Bit &color, float length,
 					 float thickness, float inset, Variant variant)
 		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Color, components::Line>(registry)
-		, _pose(pose)
-		, _color(color)
-		, _length(length)
-		, _thickness(thickness)
-		, _inset(inset)
-		, _variant(variant)
+							components::Color, components::Line,
+							components::Divider>(registry)
 	{
 		getComponentRegistry()
 			.getComponent<components::Transform>(getIdentifier())
-			.setPose(_pose);
+			.setPose(pose);
 
-		applyGeometry();
+		config()
+			.setOriginPose(pose)
+			.setAppliedPose(pose)
+			.setColor(color)
+			.setLength(length)
+			.setThickness(thickness)
+			.setInset(inset)
+			.setVariant(variant);
+
+		apply();
 	}
 
 	Divider::~Divider(void)
 	{
 	}
 
-	float Divider::getLeadingInset(void) const
+	components::Divider &Divider::config(void)
 	{
-		switch (_variant) {
-			case Variant::Inset:
-			case Variant::Middle:
-				return _inset;
-			case Variant::FullWidth:
-			default:
-				return 0.0f;
-		}
+		return getComponentRegistry().getComponent<components::Divider>(
+			getIdentifier());
 	}
 
-	float Divider::getTrailingInset(void) const
+	const components::Divider &Divider::config(void) const
 	{
-		switch (_variant) {
-			case Variant::Middle:
-				return _inset;
-			case Variant::Inset:
-			case Variant::FullWidth:
-			default:
-				return 0.0f;
-		}
+		return getComponentRegistry().getComponent<components::Divider>(
+			getIdentifier());
 	}
 
-	void Divider::applyGeometry(void)
+	void Divider::apply(void)
 	{
-		const float leading	 = getLeadingInset();
-		const float trailing = getTrailingInset();
-		const float width	 = _length - leading - trailing;
-
-		auto dividerPose = _pose;
-		dividerPose.setPosition(utility::graphic::PositionF(
-			_pose.getPosition().getX() + leading, _pose.getPosition().getY(),
-			_pose.getPosition().getZ()));
-
-		_appliedPose = dividerPose;
-
-		getComponentRegistry()
-			.getComponent<components::Transform>(getIdentifier())
-			.setPose(dividerPose);
-
-		getComponentRegistry()
-			.getComponent<components::Bound>(getIdentifier())
-			.setWidth(width > 0.0f ? width : 0.0f)
-			.setHeight(_thickness);
-
-		getComponentRegistry()
-			.getComponent<components::Line>(getIdentifier())
-			.setThickness(_thickness);
-
-		getComponentRegistry()
-			.getComponent<components::Color>(getIdentifier())
-			.setColor(_color);
+		systems::Divider::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Divider &Divider::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyGeometry();
+		config().setVariant(variant);
+		apply();
 		return *this;
 	}
 
 	Divider &Divider::setLength(float length)
 	{
-		_length = length;
-		applyGeometry();
+		config().setLength(length);
+		apply();
 		return *this;
 	}
 
 	Divider &Divider::setThickness(float thickness)
 	{
-		_thickness = thickness;
-		applyGeometry();
+		config().setThickness(thickness);
+		apply();
 		return *this;
+	}
+
+	Divider &Divider::setBold(bool bold)
+	{
+		return setThickness(bold ? BoldThickness : HairlineThickness);
+	}
+
+	bool Divider::isBold(void) const
+	{
+		return config().getThickness() >= BoldThickness;
 	}
 
 	Divider &Divider::setInset(float inset)
 	{
-		_inset = inset;
-		applyGeometry();
+		config().setInset(inset);
+		apply();
 		return *this;
 	}
 
 	Divider &Divider::setColor(const utility::graphic::Color32Bit &color)
 	{
-		_color = color;
-		getComponentRegistry()
-			.getComponent<components::Color>(getIdentifier())
-			.setColor(color);
+		config().setColor(color);
+		apply();
 		return *this;
 	}
 
 	Divider::Variant Divider::getVariant(void) const
 	{
-		return _variant;
-	}
-
-	void Divider::initialize(void)
-	{
-		update();
-	}
-
-	void Divider::update(void)
-	{
-		const auto registryPose =
-			getComponentRegistry()
-				.getComponent<components::Transform>(getIdentifier())
-				.getPose();
-
-		// Detect an external move (e.g. Scene placing the entity) and
-		// recompute the origin pose, since `applyGeometry` shifts the entity
-		// by the leading inset.
-		if (registryPose != _appliedPose) {
-			const float leading = getLeadingInset();
-			_pose				= registryPose;
-			_pose.setPosition(utility::graphic::PositionF(
-				registryPose.getPosition().getX() - leading,
-				registryPose.getPosition().getY(),
-				registryPose.getPosition().getZ()));
-		}
-
-		applyGeometry();
+		return config().getVariant();
 	}
 
 }	 // namespace guillaume::entities

@@ -21,6 +21,7 @@
  */
 
 #include <memory>
+#include <stdexcept>
 
 #include "guillaume/entities/image.hpp"
 #include "guillaume/entities/builder_base.hpp"
@@ -40,12 +41,33 @@ namespace guillaume::entities
 		auto entity =
 			std::make_shared<Image>(this->getComponentRegistry(), _texturePath);
 		entity->setTexturePath(_texturePath);
+		entity->setFallbackPath(_fallbackPath);
+		if (_width > 0.0f && _height > 0.0f) {
+			entity->setSize(_width, _height);
+		}
 		return entity;
 	}
 
 	void Image::Builder::reset(void)
 	{
 		_texturePath.clear();
+		_fallbackPath.clear();
+		_width	= 0.0f;
+		_height = 0.0f;
+	}
+
+	Image::Builder &
+		Image::Builder::withFallbackPath(const std::string &fallbackPath)
+	{
+		_fallbackPath = fallbackPath;
+		return *this;
+	}
+
+	Image::Builder &Image::Builder::withSize(float width, float height)
+	{
+		_width	= width;
+		_height = height;
+		return *this;
 	}
 
 	Image::Builder &
@@ -56,19 +78,73 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<Image>
-		Image::Director::makeImage(Builder &builder,
-								   std::shared_ptr<Entity> parent,
-								   const std::string &texturePath)
+		Image::Builder::makeImage(std::shared_ptr<Entity> parent,
+								  const std::string &texturePath)
 	{
-		return builder.withTexturePath(texturePath).registerEntity(parent);
+		return withTexturePath(texturePath).registerEntity(parent);
 	}
 
 	Image::Image(ecs::ComponentRegistry &registry,
 				 const std::string &texturePath)
 		: ecs::EntityFiller<components::Transform, components::Bound,
-							components::Image>(registry)
-		, _texturePath(texturePath)
+							components::Image, components::Accessibility>(
+			  registry)
 	{
+		setTexturePath(texturePath);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setRole(components::AccessibilityRole::Image);
+	}
+
+	const std::string &Image::getTexturePath(void) const
+	{
+		return getComponentRegistry()
+			.getComponent<components::Image>(getIdentifier())
+			.getTexturePath();
+	}
+
+	Image &Image::setFallbackPath(const std::string &fallbackPath)
+	{
+		getComponentRegistry()
+			.getComponent<components::Image>(getIdentifier())
+			.setFallbackPath(fallbackPath);
+		return *this;
+	}
+
+	Image &Image::setSize(float width, float height)
+	{
+		if (width <= 0.0f || height <= 0.0f) {
+			throw std::invalid_argument("Image size must be positive");
+		}
+		getComponentRegistry()
+			.getComponent<components::Bound>(getIdentifier())
+			.setWidth(width)
+			.setHeight(height);
+		return *this;
+	}
+
+	Image &Image::setAspectRatio(float width, float aspectRatio)
+	{
+		if (width <= 0.0f || aspectRatio <= 0.0f) {
+			throw std::invalid_argument(
+				"Image width and aspect ratio must be positive");
+		}
+		return setSize(width, width / aspectRatio);
+	}
+
+	components::Image::LoadState Image::getLoadState(void) const
+	{
+		return getComponentRegistry()
+			.getComponent<components::Image>(getIdentifier())
+			.getLoadState();
+	}
+
+	Image &Image::setAccessibilityLabel(const std::string &label)
+	{
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(getIdentifier())
+			.setLabel(label);
+		return *this;
 	}
 
 	Image::~Image()
@@ -77,22 +153,11 @@ namespace guillaume::entities
 
 	Image &Image::setTexturePath(const std::string &texturePath)
 	{
-		_texturePath = texturePath;
-
 		getComponentRegistry()
 			.getComponent<components::Image>(getIdentifier())
 			.setTexturePath(texturePath);
 
 		return *this;
-	}
-
-	void Image::initialize(void)
-	{
-	}
-
-	void Image::update(void)
-	{
-		setTexturePath(_texturePath);
 	}
 
 }	 // namespace guillaume::entities

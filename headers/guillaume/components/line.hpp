@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <utility/graphic/color.hpp>
+
 #include "guillaume/ecs/component.hpp"
 
 namespace guillaume::components
@@ -39,11 +41,26 @@ namespace guillaume::components
 	 */
 	class Line: public ecs::Component
 	{
+		public:
+		/**
+		 * @brief Where the stroke sits across the bound height.
+		 */
+		enum class Placement {
+			Center,	   ///< Vertically centered (dividers, indicators).
+			Top,	   ///< Along the top edge.
+			Bottom	   ///< Along the bottom edge (text-field underline).
+		};
+
 		private:
 		float _thickness { 2.0f };	   ///< Stroke thickness.
 		bool _dashed { false };		   ///< Whether the stroke is dashed.
 		float _dashLength { 8.0f };	   ///< Length of one dash.
 		float _gapLength { 8.0f };	   ///< Length of the gap between dashes.
+		Placement _placement { Placement::Center };	   ///< Stroke placement.
+		bool _hasColor { false };	 ///< Whether a stroke color overrides
+									 ///< the entity fill color.
+		utility::graphic::Color32Bit _color { 0, 0, 0,
+											  0 };	  ///< Stroke color.
 
 		public:
 		/**
@@ -107,6 +124,48 @@ namespace guillaume::components
 		 * @return Reference to this Line component for chaining.
 		 */
 		Line &setGapLength(float gapLength);
+
+		/**
+		 * @brief Get the stroke placement across the bound.
+		 * @return The placement.
+		 */
+		Placement getPlacement(void) const;
+
+		/**
+		 * @brief Set the stroke placement across the bound.
+		 * @param placement The new placement.
+		 * @return Reference to this Line component for chaining.
+		 */
+		Line &setPlacement(Placement placement);
+
+		/**
+		 * @brief Set a stroke color that overrides `components::Color`.
+		 *
+		 * Lets an entity carry both a fill (`components::Color`) and a
+		 * distinct stroke, such as a filled text field and its underline.
+		 *
+		 * @param color The stroke color.
+		 * @return Reference to this Line component for chaining.
+		 */
+		Line &setColor(const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Remove the stroke color override.
+		 * @return Reference to this Line component for chaining.
+		 */
+		Line &clearColor(void);
+
+		/**
+		 * @brief Check whether a stroke color override is set.
+		 * @return True when `setColor()` was called.
+		 */
+		bool hasColor(void) const;
+
+		/**
+		 * @brief Get the stroke color override.
+		 * @return The override color (meaningful only when `hasColor()`).
+		 */
+		const utility::graphic::Color32Bit &getColor(void) const;
 	};
 
 }	 // namespace guillaume::components

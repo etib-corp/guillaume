@@ -22,6 +22,10 @@
 
 #include "entities/test_progress_indicator.hpp"
 
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <cmath>
 #include <memory>
 
@@ -33,6 +37,7 @@
 #include <guillaume/components/value.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/layout.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -47,10 +52,8 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			ProgressIndicator::Builder builder(registry, entityRegistry);
-			ProgressIndicator::Director director;
 
-			return director.makeProgressIndicator(builder, nullptr, variant,
-												  value);
+			return builder.makeProgressIndicator(nullptr, variant, value);
 		}
 
 		std::shared_ptr<ecs::Entity>
@@ -95,6 +98,30 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Bound>(progress->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 48.0f);
 		EXPECT_FLOAT_EQ(bound.getHeight(), 48.0f);
+	}
+
+	TEST_F(TestProgressIndicator, ChildrenAreLiftedByTheContentLayer)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+
+		progress->update();
+
+		const float baseZ =
+			registry
+				.getComponent<components::Transform>(progress->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getZ();
+		const auto depths = directChildDepths(registry, progress);
+
+		ASSERT_FALSE(depths.empty());
+		for (const float depth: depths) {
+			EXPECT_GE(
+				depth,
+				baseZ
+					+ static_cast<float>(systems::Layout::ContentLayerOffset));
+		}
 	}
 
 	TEST_F(TestProgressIndicator, ValueClampsAndRoundTrips)
@@ -164,23 +191,74 @@ namespace guillaume::entities::tests
 				  ProgressIndicator::Variant::LinearIndeterminate);
 	}
 
-	TEST_F(TestProgressIndicator, DirectorBuildsAndRegisters)
+	TEST_F(TestProgressIndicator, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		ProgressIndicator::Builder builder(registry, entityRegistry);
-		ProgressIndicator::Director director;
 
-		auto progress = director.makeProgressIndicator(
-			builder, parent, ProgressIndicator::Variant::LinearDeterminate,
-			0.75f);
+		auto progress = builder.makeProgressIndicator(
+			parent, ProgressIndicator::Variant::LinearDeterminate, 0.75f);
 
 		ASSERT_NE(progress, nullptr);
 		EXPECT_EQ(progress->getParent(), parent);
 		EXPECT_EQ(progress->getVariant(),
 				  ProgressIndicator::Variant::LinearDeterminate);
+	}
+
+	TEST_F(TestProgressIndicator, ValueChangesAnimateOverShortFour)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 0.5f);
+
+		progress->setValue(1.0f);
+		EXPECT_FLOAT_EQ(progress->getValue(), 1.0f);
+		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 0.5f);
+
+		auto &animation = registry.getComponent<components::Animation>(
+			progress->getIdentifier());
+		EXPECT_FLOAT_EQ(animation.getDuration(),
+						getMotionDuration(theme::MotionDuration::Short4));
+		animation.advance(1.0f);
+		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 1.0f);
+	}
+
+	TEST_F(TestProgressIndicator, ExposesProgressBarValue)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+
+		const auto &accessibility =
+			registry.getComponent<components::Accessibility>(
+				progress->getIdentifier());
+		EXPECT_EQ(accessibility.getRole(),
+				  components::AccessibilityRole::ProgressBar);
+		ASSERT_TRUE(accessibility.getValue().has_value());
+		EXPECT_FLOAT_EQ(accessibility.getValue()->now, 50.0f);
+		EXPECT_FLOAT_EQ(accessibility.getValue()->max, 100.0f);
+	}
+
+	TEST_F(TestProgressIndicator, VisibilityAndColorOverride)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+
+		progress->setVisible(false);
+		registry.getComponent<components::Animation>(progress->getIdentifier())
+			.advance(1.0f);
+		EXPECT_FLOAT_EQ(progress->getOpacity(), 0.0f);
+
+		const auto tertiary =
+			getActiveScheme().getColor(SchemeColorRole::Tertiary).getColor();
+		progress->setIndicatorColor(tertiary);
+		EXPECT_EQ(progress->getIndicatorColor(), tertiary);
+		EXPECT_FLOAT_EQ(ProgressIndicator::IndeterminateSegment, 0.6f);
 	}
 
 }	 // namespace guillaume::entities::tests

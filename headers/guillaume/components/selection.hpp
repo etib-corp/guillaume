@@ -34,7 +34,7 @@ namespace guillaume::components
 	 * @brief Component marking an entity as selectable.
 	 *
 	 * Used together with `components::SelectionGroup` on the parent to provide
-	 * mutually exclusive selection (RadioButton groups, Tabs, navigation
+	 * mutually exclusive selection (RadioButton groups and navigation
 	 * destinations).
 	 *
 	 * @see components::SelectionGroup

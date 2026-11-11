@@ -22,6 +22,22 @@
 
 #include "entities/test_menu.hpp"
 
+#include <guillaume/components/transform.hpp>
+
+#include <guillaume/components/elevation.hpp>
+
+#include <guillaume/theme.hpp>
+
+#include <guillaume/components/style_state.hpp>
+
+#include <guillaume/components/mouse_hover_interaction.hpp>
+
+#include <guillaume/components/mouse_button_interaction.hpp>
+
+#include <guillaume/components/color.hpp>
+
+#include <guillaume/components/accessibility.hpp>
+
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -58,13 +74,12 @@ namespace guillaume::entities::tests
 			ecs::EntityRegistryContainer &entityRegistry =
 				scratchEntityRegistry();
 			Menu::Builder builder(registry, entityRegistry);
-			Menu::Director director;
 
-			return director.makeMenu(builder, nullptr, variant, items);
+			return builder.makeMenu(nullptr, variant, items);
 		}
 	}	 // namespace
 
-	TEST_F(TestMenu, DefaultWidthIsTwoHundred)
+	TEST_F(TestMenu, WidthFollowsContentWithinMaterialRange)
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
@@ -74,7 +89,12 @@ namespace guillaume::entities::tests
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(menu->getIdentifier());
-		EXPECT_FLOAT_EQ(bound.getWidth(), 200.0f);
+		EXPECT_GE(bound.getWidth(), Menu::MinWidth);
+		EXPECT_LE(bound.getWidth(), Menu::MaxWidth);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
+				.getWidth(),
+			bound.getWidth());
 	}
 
 	TEST_F(TestMenu, ItemCountMatchesInput)
@@ -141,22 +161,156 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(menu->getVariant(), Menu::Variant::Context);
 	}
 
-	TEST_F(TestMenu, DirectorBuildsAndRegisters)
+	TEST_F(TestMenu, BuilderPresetBuildsAndRegisters)
 	{
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto parent = std::make_shared<ecs::Entity>();
 
 		Menu::Builder builder(registry, entityRegistry);
-		Menu::Director director;
 
-		auto menu = director.makeMenu(builder, parent, Menu::Variant::Cascading,
-									  makeItems(4));
+		auto menu =
+			builder.makeMenu(parent, Menu::Variant::Cascading, makeItems(4));
 
 		ASSERT_NE(menu, nullptr);
 		EXPECT_EQ(menu->getParent(), parent);
 		EXPECT_EQ(menu->getVariant(), Menu::Variant::Cascading);
 		EXPECT_EQ(menu->getItemCount(), 4U);
+	}
+
+	TEST_F(TestMenu, ItemsArePressableWithMenuSemantics)
+	{
+		ecs::ComponentRegistry registry;
+		int presses		 = 0;
+		auto items		 = makeItems(2);
+		items[0].onPress = [&presses]() {
+			++presses;
+		};
+		items[1].onPress = [&presses]() {
+			++presses;
+		};
+		items[1].disabled = true;
+		auto menu		  = makeMenu(registry, items);
+		menu->initialize();
+		menu->update();
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				menu->getItemIdentifier(0))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				menu->getItemIdentifier(1))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(presses, 1);
+		EXPECT_EQ(
+			registry
+				.getComponent<components::Accessibility>(menu->getIdentifier())
+				.getRole(),
+			components::AccessibilityRole::Menu);
+		EXPECT_EQ(registry
+					  .getComponent<components::Accessibility>(
+						  menu->getItemIdentifier(0))
+					  .getRole(),
+				  components::AccessibilityRole::MenuItem);
+
+		menu->setItemDisabled(0, true);
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				menu->getItemIdentifier(0))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+
+		EXPECT_EQ(presses, 1);
+	}
+
+	TEST_F(TestMenu, ItemsUseBodyLargeLabelsAndDenseHeight)
+	{
+		ecs::ComponentRegistry registry;
+		auto items	   = makeItems(2);
+		items[1].dense = true;
+		auto menu	   = makeMenu(registry, items);
+		menu->initialize();
+		menu->update();
+
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
+				.getHeight(),
+			48.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(menu->getItemIdentifier(1))
+				.getHeight(),
+			32.0f);
+	}
+
+	TEST_F(TestMenu, AnchorPlacesTheMenuBelowOrAbove)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::Entity anchor;
+		registry.registerComponentsForEntity<components::Transform,
+											 components::Bound>(
+			anchor.getIdentifier());
+		registry.getComponent<components::Transform>(anchor.getIdentifier())
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(10.0f, 100.0f, 0.0f),
+				utility::graphic::OrientationF()));
+		registry.getComponent<components::Bound>(anchor.getIdentifier())
+			.setWidth(40.0f)
+			.setHeight(40.0f);
+
+		auto menu = makeMenu(registry, makeItems(1));
+		menu->initialize();
+		menu->setAnchor(anchor.getIdentifier());
+		menu->update();
+
+		auto y = [&]() {
+			return registry
+				.getComponent<components::Transform>(menu->getIdentifier())
+				.getPose()
+				.getPosition()
+				.getY();
+		};
+		EXPECT_GT(y(), 140.0f);
+
+		menu->setAnchorPosition(Menu::AnchorPosition::Top);
+		EXPECT_LT(y(), 100.0f);
+		EXPECT_EQ(menu->getAnchor(), anchor.getIdentifier());
+	}
+
+	TEST_F(TestMenu, ModeControlsElevation)
+	{
+		ecs::ComponentRegistry registry;
+		auto menu = makeMenu(registry, makeItems(1));
+		menu->initialize();
+
+		const auto &elevation =
+			registry.getComponent<components::Elevation>(menu->getIdentifier());
+		EXPECT_EQ(elevation.getElevationLevel(), theme::ElevationLevel::Level2);
+		EXPECT_TRUE(elevation.hasShadow());
+
+		menu->setMode(Menu::Mode::Flat);
+		EXPECT_FALSE(elevation.hasShadow());
+	}
+
+	TEST_F(TestMenu, DismissCallsTheHandler)
+	{
+		ecs::ComponentRegistry registry;
+		auto menu = makeMenu(registry, makeItems(1));
+		menu->initialize();
+
+		bool dismissed = false;
+		menu->setOnDismiss([&dismissed]() {
+			dismissed = true;
+		});
+		menu->show();
+		menu->dismiss();
+
+		EXPECT_TRUE(dismissed);
+		EXPECT_FALSE(menu->isVisible());
 	}
 
 }	 // namespace guillaume::entities::tests

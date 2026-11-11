@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "guillaume/ecs/system_filler.hpp"
@@ -57,6 +58,16 @@ namespace guillaume::systems
 		 * @brief Distance pushed toward the camera per layer.
 		 */
 		static constexpr float LayerDepthStep = 1.0f;
+
+		/**
+		 * @brief Number of layers content is lifted above its container
+		 * surface.
+		 *
+		 * Text and icons are children of the container they decorate, so
+		 * they are pushed this many layers in front of it to avoid
+		 * z-fighting with the container surface.
+		 */
+		static constexpr std::uint32_t ContentLayerOffset = 1;
 
 		/**
 		 * @brief Construct a layout system running in the Layout phase.
@@ -105,6 +116,23 @@ namespace guillaume::systems
 			const utility::graphic::PositionF &position,
 			const utility::graphic::OrientationF &orientation,
 			const std::uint32_t &layer);
+
+		/**
+		 * @brief Lift content in front of its container surface.
+		 *
+		 * Convenience wrapper around `applyLayerToPosition` used by every
+		 * entity that positions text or icon children manually, so they all
+		 * share the same `ContentLayerOffset` separation.
+		 *
+		 * @param position The base position of the content.
+		 * @param orientation The orientation of the container.
+		 * @param containerLayer The layer of the container owning the content.
+		 * @return The offset pose.
+		 */
+		static const utility::graphic::PoseF
+			contentLayerPose(const utility::graphic::PositionF &position,
+							 const utility::graphic::OrientationF &orientation,
+							 const std::uint32_t &containerLayer);
 	};
 
 }	 // namespace guillaume::systems

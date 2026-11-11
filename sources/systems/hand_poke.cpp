@@ -25,57 +25,16 @@
 namespace guillaume::systems
 {
 	HandPoke::HandPoke(event::EventBus &eventBus)
-		: ecs::SystemFiller<components::HandPokeInteraction,
-							components::Transform, components::Bound>(
-			  ecs::Phase::Event)
-		, event::EventManager<utility::event::HandPokeEvent>(eventBus)
+		: HandRaySystem<components::HandPokeInteraction,
+						utility::event::HandPokeEvent>(eventBus)
 	{
 	}
 
-	HandPoke::~HandPoke(void)
+	HandPoke::~HandPoke(void) = default;
+
+	void HandPoke::setEngaged(components::HandPokeInteraction &interaction,
+							  bool engaged)
 	{
+		interaction.setPoking(engaged);
 	}
-
-	void HandPoke::prepare(void)
-	{
-		consumeNextEvent();
-	}
-
-	void HandPoke::cleanup(void)
-	{
-	}
-
-	void HandPoke::update(const ecs::Entity::Identifier &entityIdentifier)
-	{
-		auto pokeEvent = this->getLastEvent();
-		if (!pokeEvent)
-			return;
-
-		auto &transform = this->template getComponent<components::Transform>(
-			entityIdentifier);
-		auto &bound =
-			this->template getComponent<components::Bound>(entityIdentifier);
-		auto &interaction =
-			this->template getComponent<components::HandPokeInteraction>(
-				entityIdentifier);
-
-		const auto size =
-			utility::math::Vector2F({ bound.getWidth(), bound.getHeight() });
-		const auto ray = utility::graphic::RayF(
-			utility::graphic::PositionF(pokeEvent->getPose().getPosition()),
-			pokeEvent->getPose().getOrientation().getForward());
-		const bool isIntersecting =
-			ray.intersectRectangle(transform.getPose(), size);
-
-		if (isIntersecting) {
-			interaction.setPoking(true);
-			const auto &handler = interaction.getOnEventHandler();
-			if (handler) {
-				handler();
-			}
-		} else {
-			interaction.setPoking(false);
-		}
-	}
-
 }	 // namespace guillaume::systems

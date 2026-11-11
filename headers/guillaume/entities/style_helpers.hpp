@@ -66,7 +66,44 @@ namespace guillaume::entities
 	 */
 	inline utility::graphic::Color32Bit schemeColor(SchemeColorRole role)
 	{
-		return guillaume::getActiveScheme().getColor(role).getColor();
+		return guillaume::getActiveColor(role);
+	}
+
+	/**
+	 * @brief Blend a theme state layer of a content color over a base color.
+	 * @param base Container color.
+	 * @param overlay Content color tinting the state layer.
+	 * @param layer State layer whose opacity is used.
+	 * @return The blended color.
+	 */
+	inline utility::graphic::Color32Bit
+		stateLayer(const utility::graphic::Color32Bit &base,
+				   const utility::graphic::Color32Bit &overlay,
+				   theme::StateLayer layer)
+	{
+		return stateLayer(base, overlay, getStateLayerAlpha(layer));
+	}
+
+	/**
+	 * @brief Get the disabled content color (onSurface at 38%).
+	 * @return The disabled content color.
+	 */
+	inline utility::graphic::Color32Bit disabledContentColor(void)
+	{
+		return withAlpha(
+			schemeColor(SchemeColorRole::OnSurface),
+			getStateLayerAlpha(theme::StateLayer::DisabledContent));
+	}
+
+	/**
+	 * @brief Get the disabled container color (onSurface at 12%).
+	 * @return The disabled container color.
+	 */
+	inline utility::graphic::Color32Bit disabledContainerColor(void)
+	{
+		return withAlpha(
+			schemeColor(SchemeColorRole::OnSurface),
+			getStateLayerAlpha(theme::StateLayer::DisabledContainer));
 	}
 
 	/**

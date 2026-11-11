@@ -21,12 +21,13 @@
  */
 
 #include "guillaume/systems/animation.hpp"
+#include "guillaume/theme/tokens.hpp"
 
 #include <algorithm>
 
 namespace guillaume::systems
 {
-	Animation::Animation(std::unique_ptr<utility::Engine> &engine)
+	Animation::Animation(utility::Engine &engine)
 		: ecs::SystemFiller<components::Animation>(ecs::Phase::Event)
 		, _engine(engine)
 		, _lastTime(std::chrono::steady_clock::now())
@@ -36,7 +37,7 @@ namespace guillaume::systems
 
 	void Animation::prepare(void)
 	{
-		const float engineDelta = _engine ? _engine->getDeltaTime() : 0.0f;
+		const float engineDelta = _engine.getDeltaTime();
 
 		if (engineDelta > 0.0f) {
 			_deltaTime = engineDelta;
@@ -56,7 +57,8 @@ namespace guillaume::systems
 		}
 
 		// Clamp large deltas (e.g. after a stall) so animations do not jump.
-		const float deltaTime = std::clamp(_deltaTime, 0.0f, 0.1f);
+		const float deltaTime =
+			std::clamp(_deltaTime, 0.0f, theme::MotionScale::MaxFrameStep);
 
 		getComponent<components::Animation>(entityIdentifier)
 			.advance(deltaTime);

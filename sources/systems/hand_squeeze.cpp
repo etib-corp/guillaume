@@ -25,28 +25,10 @@
 namespace guillaume::systems
 {
 	HandSqueeze::HandSqueeze(event::EventBus &eventBus)
-		: ecs::SystemFiller<components::HandSqueezeInteraction,
-							components::Transform, components::Bound>(
-			  ecs::Phase::Event)
-		, event::EventManager<utility::event::HandSqueezeEvent>(eventBus)
+		: HandEventSystem<components::HandSqueezeInteraction,
+						  utility::event::HandSqueezeEvent>(eventBus)
 	{
 	}
 
-	HandSqueeze::~HandSqueeze(void)
-	{
-	}
-
-	void HandSqueeze::prepare(void)
-	{
-		consumeNextEvent();
-	}
-
-	void HandSqueeze::cleanup(void)
-	{
-	}
-
-	void HandSqueeze::update(const ecs::Entity::Identifier &entityIdentifier)
-	{
-	}
-
+	HandSqueeze::~HandSqueeze(void) = default;
 }	 // namespace guillaume::systems

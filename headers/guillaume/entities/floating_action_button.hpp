@@ -23,12 +23,12 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 #include <memory>
 #include <string>
 
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/ecs/entity_director.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/entities/button_base.hpp"
@@ -50,6 +50,11 @@ namespace guillaume::entities
 		/**
 		 * @brief Size of the FAB.
 		 */
+		/**
+		 * @brief Shadow mode (Paper `mode`): elevated or flat.
+		 */
+		enum class Mode { Elevated, Flat };
+
 		enum class Size { Small, Medium, Large };
 
 		/**
@@ -155,18 +160,9 @@ namespace guillaume::entities
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
-		};
 
-		/**
-		 * @brief Director that orchestrates `FloatingActionButton::Builder`.
-		 */
-		class Director: public EntityDirectorBase
-		{
-			public:
 			/**
 			 * @brief Create a FAB entity using the builder.
-			 * @param builder The builder instance used to configure and create
-			 * the FAB.
 			 * @param parent The parent entity to which the new entity will be
 			 * attached.
 			 * @param iconGlyphName The icon glyph name to attach.
@@ -175,18 +171,26 @@ namespace guillaume::entities
 			 * @param size The size.
 			 * @return A shared pointer to the newly created FAB entity.
 			 */
-			std::shared_ptr<FloatingActionButton> makeFloatingActionButton(
-				Builder &builder, std::shared_ptr<Entity> parent,
-				const std::string &iconGlyphName,
-				std::function<void(void)> onClick, Variant variant, Size size);
+			std::shared_ptr<FloatingActionButton>
+				makeFloatingActionButton(std::shared_ptr<Entity> parent,
+										 const std::string &iconGlyphName,
+										 std::function<void(void)> onClick,
+										 Variant variant, Size size);
 		};
 
 		private:
 		Variant _variant { Variant::Primary };	  ///< Color variant
 		Size _size { Size::Medium };			  ///< Size
+		Mode _mode { Mode::Elevated };			  ///< Shadow mode
+		std::optional<float> _customSize {};	  ///< Custom container size
 		bool _lowered { false };	///< Whether the FAB is lowered
 
 		protected:
+		/**
+		 * @brief Resolve the M3 elevation level from the current state.
+		 */
+		void applyElevation(void);
+
 		/**
 		 * @brief Re-apply the visual state (colors, borders, radius) from the
 		 * current interaction/selected state.
@@ -260,6 +264,27 @@ namespace guillaume::entities
 		 * @return Reference to this FAB for chaining.
 		 */
 		FloatingActionButton &setSize(const Size &size);
+
+		/**
+		 * @brief Set the shadow mode; Flat paints no shadow.
+		 * @param mode New mode.
+		 * @return Reference to this FAB for chaining.
+		 */
+		FloatingActionButton &setMode(Mode mode);
+
+		/**
+		 * @brief Get the shadow mode.
+		 * @return The mode.
+		 */
+		Mode getMode(void) const;
+
+		/**
+		 * @brief Override the container height (Paper `customSize`).
+		 * @param size Custom size, or none for the size preset.
+		 * @return Reference to this FAB for chaining.
+		 * @throws std::invalid_argument If @p size is not positive.
+		 */
+		FloatingActionButton &setCustomSize(std::optional<float> size);
 
 		/**
 		 * @brief Set if the FAB is lowered.

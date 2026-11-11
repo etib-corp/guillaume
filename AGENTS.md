@@ -8,7 +8,7 @@ GUILLAUME is a C++ UI framework designed for modern desktop and extended reality
 
 - **Main language**: C++20 (`CMAKE_CXX_STANDARD 20`)
 - **Build system**: CMake 3.10+ (no presets)
-- **Dependency strategy**: FetchContent (sqlite3, utility, evan, GoogleTest, doxygen-awesome-css)
+- **Dependency strategy**: vendored under `third_party/` and consumed through FetchContent with a local `SOURCE_DIR` (sqlite3, GoogleTest, Google Benchmark, doxygen-awesome-css); `utility` (and `evan`, for the example) are fetched from Git
 - **Test framework**: GoogleTest via `gtest_discover_tests()`
 - **Formatter**: clang-format (LLVM-based, 80-column, tabs, 4-space indent)
 - **CI**: GitHub Actions (Linux/macOS/Windows runners)
@@ -17,7 +17,10 @@ GUILLAUME is a C++ UI framework designed for modern desktop and extended reality
 ## Project layout
 
 - `CMakeLists.txt` — root build configuration
-- `cmake/` — `Docs.cmake` and `Sources.cmake` modules
+- `cmake/` — `Docs.cmake`, `Sources.cmake` (explicit source list) and the package config template
+- `templates/` — `.tpp` template implementations, mirroring `headers/`
+- `third_party/` — vendored dependencies (do not edit)
+- `benchmarks/` — benchmark harness (`BUILD_BENCHMARKS`)
 - `headers/` — GUILLAUME public headers under `guillaume/`
 - `sources/` — GUILLAUME implementation sources
 - `tests/` — GUILLAUME unit tests
@@ -98,17 +101,17 @@ cmake -S . -B build -DBUILD_DOCS=ON
   ```
 
 - **Dependency management**:
-  - Use `FetchContent_Declare()` + `FetchContent_MakeAvailable()` for external deps
+  - Use `FetchContent_Declare()` + `FetchContent_MakeAvailable()` for external deps; vendor the sources under `third_party/` and point `SOURCE_DIR` at them
   - Link dependencies per-target with `PUBLIC`/`PRIVATE` visibility
   - Set dependency options before `FetchContent_MakeAvailable()` (e.g., `set(GLM_BUILD_TESTS OFF)`)
-- **Tests**: Use `enable_testing()`, `FetchContent` for GoogleTest, `gtest_discover_tests()` for auto-discovery
+- **Tests**: GoogleTest comes from `third_party/googletest`; add every new test file to the explicit list in `tests/CMakeLists.txt`; `gtest_discover_tests()` registers the cases
 - **Options**: Use `option()` for user-configurable flags
 
 ## Editing boundaries
 
 - **Do not edit**:
   - `build/` — auto-generated CMake output
-  - Third-party code fetched via FetchContent (e.g., `build/_deps/`)
+  - Third-party code: `third_party/` and anything fetched into `build/_deps/`
   - `.github/workflows/` — CI configuration (requires approval)
 - **Edit with care**:
   - Public headers in `headers/guillaume/` — update docs/tests if API changes
@@ -124,15 +127,15 @@ cmake -S . -B build -DBUILD_DOCS=ON
 - [ ] Configure and build succeeds
 - [ ] Relevant tests pass (`ctest --output-on-failure`)
 - [ ] Formatting applied via `./scripts/run-clang-format.sh`
-- [ ] CMake updated consistently (target-scoped commands, new files added to `GLOB_RECURSE` or explicit lists)
+- [ ] CMake updated consistently (target-scoped commands, new sources added to `cmake/Sources.cmake`, new tests to `tests/CMakeLists.txt`)
 - [ ] Docs/tests updated when behavior or API changes
 - [ ] Namespace and naming conventions followed
 - [ ] No global `include_directories()` or `add_definitions()` introduced
 
 ## Safe example tasks
 
-1. **Add a unit test for an existing function**: Create a new `.cpp` file in `tests/sources/`, write `TEST_F` cases using existing fixtures, ensure `GLOB_RECURSE` picks it up, run `ctest`.
+1. **Add a unit test for an existing function**: Create a new `.cpp` file in `tests/sources/`, write `TEST_F` cases using existing fixtures, add the file to `TEST_SOURCES` in `tests/CMakeLists.txt`, run `ctest`.
 
-2. **Add a source/header pair to an existing module**: Place `.hpp` in `headers/guillaume/` and `.cpp` in `sources/`, follow naming conventions (`PascalCase` class, `camelCase` methods, `_` prefix for members), update namespace nesting, verify build.
+2. **Add a source/header pair to an existing module**: Place `.hpp` in `headers/guillaume/` and `.cpp` in `sources/`, follow naming conventions (`PascalCase` class, `camelCase` methods, `_` prefix for members), update namespace nesting, add the `.cpp` to `cmake/Sources.cmake`, verify build.
 
 3. **Refactor a component to match existing error handling patterns**: Replace raw pointers with `std::unique_ptr` or `std::shared_ptr`, add `const` correctness, use `enum class` for state machines, follow class layout order (public → protected → private).

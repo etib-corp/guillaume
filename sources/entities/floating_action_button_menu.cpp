@@ -25,6 +25,7 @@
 
 #include "guillaume/entities/floating_action_button_menu.hpp"
 #include "guillaume/entities/builder_base.hpp"
+#include "guillaume/entities/extended_floating_action_button.hpp"
 #include "guillaume/entities/floating_action_button.hpp"
 #include "guillaume/systems/layout.hpp"
 
@@ -72,6 +73,15 @@ namespace guillaume::entities
 	}
 
 	FloatingActionButtonMenu::Builder &
+		FloatingActionButtonMenu::Builder::addAction(
+			const std::string &iconGlyphName, const std::string &label,
+			std::function<void(void)> onClick)
+	{
+		_actions.push_back(Action { label, iconGlyphName, std::move(onClick) });
+		return *this;
+	}
+
+	FloatingActionButtonMenu::Builder &
 		FloatingActionButtonMenu::Builder::withAccessibilityLabel(
 			const std::string &accessibilityLabel)
 	{
@@ -80,11 +90,10 @@ namespace guillaume::entities
 	}
 
 	std::shared_ptr<FloatingActionButtonMenu>
-		FloatingActionButtonMenu::Director::makeFloatingActionButtonMenu(
-			Builder &builder, std::shared_ptr<Entity> parent,
-			const std::string &iconGlyphName)
+		FloatingActionButtonMenu::Builder::makeFloatingActionButtonMenu(
+			std::shared_ptr<Entity> parent, const std::string &iconGlyphName)
 	{
-		return builder.withIcon(iconGlyphName).registerEntity(parent);
+		return withIcon(iconGlyphName).registerEntity(parent);
 	}
 
 	FloatingActionButtonMenu::FloatingActionButtonMenu(
@@ -116,20 +125,55 @@ namespace guillaume::entities
 
 	FloatingActionButtonMenu &FloatingActionButtonMenu::open(void)
 	{
-		_isOpen = true;
+		if (!_isOpen) {
+			_isOpen = true;
+			applyOpenState();
+		}
 		return *this;
 	}
 
 	FloatingActionButtonMenu &FloatingActionButtonMenu::close(void)
 	{
-		_isOpen = false;
+		if (_isOpen) {
+			_isOpen = false;
+			applyOpenState();
+		}
 		return *this;
 	}
 
 	FloatingActionButtonMenu &FloatingActionButtonMenu::toggle(void)
 	{
-		_isOpen = !_isOpen;
+		return _isOpen ? close() : open();
+	}
+
+	FloatingActionButtonMenu &FloatingActionButtonMenu::setOnStateChange(
+		std::function<void(bool)> onStateChange)
+	{
+		_onStateChange = std::move(onStateChange);
 		return *this;
+	}
+
+	void FloatingActionButtonMenu::applyOpenState(void)
+	{
+		// Closed actions are hidden and ignore activation, so they cannot be
+		// clicked through while the menu is collapsed.
+		for (auto &button: _actionButtons) {
+			button->setVisible(_isOpen);
+		}
+
+		if (_trigger != nullptr) {
+			getComponentRegistry()
+				.getComponent<components::Accessibility>(
+					_trigger->getIdentifier())
+				.setExpanded(_isOpen);
+			_trigger->setIconGlyphName(_isOpen ? "close" : _iconGlyphName);
+		}
+
+		layoutMenu();
+
+		if (_onStateChange) {
+			_onStateChange(_isOpen);
+		}
 	}
 
 	bool FloatingActionButtonMenu::isOpen(void) const
@@ -162,7 +206,6 @@ namespace guillaume::entities
 	void FloatingActionButtonMenu::triggerHandler(void)
 	{
 		toggle();
-		layoutMenu();
 	}
 
 	void FloatingActionButtonMenu::layoutMenu(void)
@@ -188,25 +231,48 @@ namespace guillaume::entities
 	{
 		FloatingActionButton::Builder triggerBuilder(getComponentRegistry(),
 													 *this);
-		FloatingActionButton::Director triggerDirector;
 
-		_trigger = triggerDirector.makeFloatingActionButton(
-			triggerBuilder, shared_from_this(), _iconGlyphName,
+		_trigger = triggerBuilder.makeFloatingActionButton(
+			shared_from_this(), _iconGlyphName,
 			std::bind(&FloatingActionButtonMenu::triggerHandler, this),
-			FloatingActionButton::Variant::Surface,
+			FloatingActionButton::Variant::Primary,
 			FloatingActionButton::Size::Medium);
+		_trigger->setAccessibilityLabel(_accessibilityLabel);
+		getComponentRegistry()
+			.getComponent<components::Accessibility>(_trigger->getIdentifier())
+			.setExpanded(false);
 
 		FloatingActionButton::Builder actionBuilder(getComponentRegistry(),
 													*this);
-		FloatingActionButton::Director actionDirector;
+		ExtendedFloatingActionButton::Builder labelledBuilder(
+			getComponentRegistry(), *this);
 
 		for (const auto &action: _actions) {
-			auto button = actionDirector.makeFloatingActionButton(
-				actionBuilder, shared_from_this(), action.iconGlyphName,
-				action.onClick, FloatingActionButton::Variant::Surface,
-				FloatingActionButton::Size::Small);
+			std::shared_ptr<ButtonBase> button;
+
+			if (action.label.empty()) {
+				button = actionBuilder.makeFloatingActionButton(
+					shared_from_this(), action.iconGlyphName, action.onClick,
+					FloatingActionButton::Variant::Surface,
+					FloatingActionButton::Size::Small);
+			} else {
+				// A labelled action shows its label beside the icon.
+				button =
+					labelledBuilder.withIcon(action.iconGlyphName)
+						.withLabel(action.label)
+						.withOnClick(action.onClick)
+						.withVariant(
+							ExtendedFloatingActionButton::Variant::Surface)
+						.withSize(ExtendedFloatingActionButton::Size::Small)
+						.withAccessibilityLabel(action.label)
+						.registerEntity(shared_from_this());
+			}
 
 			_actionButtons.push_back(button);
+		}
+
+		for (auto &button: _actionButtons) {
+			button->setVisible(_isOpen);
 		}
 	}
 
