@@ -34,6 +34,7 @@
 
 #include "guillaume/components/hand_button_interaction.hpp"
 #include "guillaume/components/mouse_button_interaction.hpp"
+#include "guillaume/components/switch.hpp"
 #include "guillaume/components/value.hpp"
 
 #include "guillaume/entities/icon.hpp"
@@ -56,15 +57,13 @@ namespace guillaume::entities
 	 * @see components::Value
 	 */
 	class Switch:
-		public SurfaceBase<components::Value,
-						   components::MouseButtonInteraction,
-						   components::HandButtonInteraction>
+		public SurfaceBase<
+			components::Value, components::MouseButtonInteraction,
+			components::HandButtonInteraction, components::Switch>
 	{
 		public:
-		/**
-		 * @brief Switch visual variant.
-		 */
-		enum class Variant { Enabled, Disabled, WithIcon };
+		/// Variant (see components::Switch).
+		using Variant = components::Switch::Variant;
 
 		/**
 		 * @brief Builder used to configure and create `Switch` entities.
@@ -148,27 +147,6 @@ namespace guillaume::entities
 						   const std::string &label);
 		};
 
-		private:
-		Variant _variant { Variant::Enabled };	  ///< Visual variant.
-		std::string _iconGlyph {};				  ///< Thumb icon glyph.
-		std::string _label {};					  ///< Label content.
-		std::shared_ptr<ecs::Entity> _thumb;	  ///< Thumb child.
-		std::shared_ptr<Icon> _icon;			  ///< Thumb icon child.
-		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
-		std::function<void(bool)>
-			_onValueChange {};	  ///< Called when the user toggles the switch.
-
-		private:
-		/**
-		 * @brief Apply the variant-specific colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Reposition the thumb and restyle it from the current value.
-		 */
-		void applyState(void);
-
 		public:
 		/**
 		 * @brief Construct a Switch entity.
@@ -186,7 +164,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~Switch(void) override;
+		~Switch(void) override = default;
 
 		/**
 		 * @brief Set the switch variant.
@@ -245,7 +223,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Gap between the track and the label.
 		 */
-		static constexpr float LabelGap = 16.0f;
+		static constexpr float LabelGap = components::Switch::LabelGap;
 
 		/**
 		 * @brief Set the switch label.
@@ -258,11 +236,6 @@ namespace guillaume::entities
 		 * @brief Initialize the switch derived state and children.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the switch derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

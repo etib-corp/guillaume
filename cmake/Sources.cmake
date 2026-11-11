@@ -13,6 +13,7 @@ set(GUILLAUME_SOURCES
     sources/components/backdrop.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
+    sources/components/checkbox.cpp
     sources/components/clip.cpp
     sources/components/color.cpp
     sources/components/divider.cpp
@@ -36,6 +37,7 @@ set(GUILLAUME_SOURCES
     sources/components/mouse_hover_interaction.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
+    sources/components/radio_button.cpp
     sources/components/range.cpp
     sources/components/ring.cpp
     sources/components/scrim.cpp
@@ -43,6 +45,7 @@ set(GUILLAUME_SOURCES
     sources/components/selection.cpp
     sources/components/style_state.cpp
     sources/components/surface_tone.cpp
+    sources/components/switch.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
     sources/components/transform.cpp
@@ -122,6 +125,7 @@ set(GUILLAUME_SOURCES
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
     sources/systems/backdrop.cpp
+    sources/systems/checkbox.cpp
     sources/systems/clip.cpp
     sources/systems/core_systems.cpp
     sources/systems/divider.cpp
@@ -150,6 +154,7 @@ set(GUILLAUME_SOURCES
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
     sources/systems/overlay.cpp
+    sources/systems/radio_button.cpp
     sources/systems/rectangle_render.cpp
     sources/systems/ring_render.cpp
     sources/systems/scroll.cpp
@@ -158,6 +163,7 @@ set(GUILLAUME_SOURCES
     sources/systems/shape_mesh.cpp
     sources/systems/style_state.cpp
     sources/systems/surface_tone.cpp
+    sources/systems/switch.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp

@@ -133,6 +133,16 @@ state), `systems::Layout` arranges its children, and it overrides neither
 `initialize()` nor `update()`. `entities::Surface` is a facade over
 `components::SurfaceTone` / `systems::SurfaceTone`.
 
+`Checkbox`, `RadioButton` and `Switch` are the reference for widgets with
+children and input. On top of the recipe above:
+
+- The component stores child identifiers, never entity pointers.
+- The system has a static `install(registry, identifier)` that adds the
+  interaction components and wires handlers capturing the registry and the
+  identifier (not `this`), and static actions such as `toggle`.
+- The facade's `initialize()` is kept only to build the child entities, which
+  needs `shared_from_this()`; it holds no rule.
+
 When no entity overrides `update()` any more, `ecs::Entity::update()` and the
 calls to it in `ecs::System::routine` are deleted, and the entity classes can
 become plain builder functions.

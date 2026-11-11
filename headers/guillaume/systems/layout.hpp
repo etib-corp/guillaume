@@ -106,6 +106,15 @@ namespace guillaume::systems
 				  std::uint32_t layer = 0);
 
 		/**
+		 * @brief Get the tree depth of an entity.
+		 * @param registry The registry holding the components.
+		 * @param identifier The entity.
+		 * @return The layer of its components::Hierarchy, or 0 without one.
+		 */
+		static std::uint32_t layerOf(const ecs::ComponentRegistry &registry,
+									 const ecs::Entity::Identifier &identifier);
+
+		/**
 		 * @brief Apply the current layer depth offset to a position.
 		 * @param position The base position.
 		 * @param orientation The orientation.

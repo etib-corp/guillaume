@@ -42,6 +42,7 @@
 #include "guillaume/entities/placement_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/switch.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -50,8 +51,7 @@ namespace guillaume::entities
 	{
 		constexpr float TrackWidth	= 52.0f;
 		constexpr float TrackHeight = 32.0f;
-		constexpr float ThumbSize	= 24.0f;
-		constexpr float ThumbInset	= 4.0f;
+		constexpr float ThumbSize	= components::Switch::ThumbSize;
 
 		/**
 		 * @brief Thumb of a switch, a filled ellipse.
@@ -170,228 +170,119 @@ namespace guillaume::entities
 				   const SurfaceConfig &config, Variant variant, bool checked,
 				   const std::string &iconGlyph, const std::string &label)
 		: SurfaceBase<components::Value, components::MouseButtonInteraction,
-					  components::HandButtonInteraction>(registry, config)
-		, _variant(variant)
-		, _iconGlyph(iconGlyph)
-		, _label(label)
-		, _thumb()
-		, _icon()
-		, _labelEntity()
+					  components::HandButtonInteraction, components::Switch>(
+			  registry, config)
 	{
-		makeInteractive(
-			getComponentRegistry(), getIdentifier(),
-			components::AccessibilityRole::Switch,
-			[this]() {
-				toggle();
-			},
-			[this]() {
-				applyVariant();
-			});
-
-		auto &value = getComponentRegistry().getComponent<components::Value>(
-			getIdentifier());
-		value.setMin(0.0f).setMax(1.0f).setStep(1.0f);
-		value.setOnChangedHandler([this](float) {
-			applyState();
-		});
-		value.setValue(checked ? 1.0f : 0.0f);
-
-		applyVariant();
-	}
-
-	Switch::~Switch(void)
-	{
-	}
-
-	void Switch::applyVariant(void)
-	{
-		setEnabled(getComponentRegistry(), getIdentifier(),
-				   _variant != Variant::Disabled);
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setChecked(isChecked() ? components::CheckedState::Checked
-									: components::CheckedState::Unchecked)
-			.setLabel(_label);
-
-		const bool disabled = isDisabled();
-		const bool on		= isChecked();
-
-		if (disabled) {
-			setColor(disabledContainerColor());
-		} else if (on) {
-			setColor(schemeColor(SchemeColorRole::Primary));
-		} else {
-			setColor(schemeColor(SchemeColorRole::SurfaceVariant));
-		}
-
-		getComponentRegistry()
-			.getComponent<components::Borders>(getIdentifier())
-			.setColor(on ? transparentColor()
-						 : schemeColor(SchemeColorRole::Outline));
-
-		if (_icon != nullptr) {
-			_icon->setColor(
-				disabled ? disabledContentColor()
-						 : schemeColor(on ? SchemeColorRole::OnPrimary
-										  : SchemeColorRole::OnSurfaceVariant));
-		}
-
-		if (_labelEntity != nullptr) {
-			if (disabled) {
-				_labelEntity->setColor(disabledContentColor());
-			} else {
-				_labelEntity->setColor(schemeColor(SchemeColorRole::OnSurface));
-			}
-		}
-	}
-
-	void Switch::applyState(void)
-	{
-		const bool on = getComponentRegistry()
-							.getComponent<components::Value>(getIdentifier())
-							.getValue()
-			>= 0.5f;
-		const bool disabled = (_variant == Variant::Disabled);
-
-		if (_thumb != nullptr) {
-			placeNormalized(getComponentRegistry(), getIdentifier(),
-							_thumb->getIdentifier(), on ? 1.0f : 0.0f,
-							ThumbInset, static_cast<std::uint32_t>(getLayer()));
-
-			const auto thumbColor = disabled
-				? disabledContentColor()
-				: schemeColor(on ? SchemeColorRole::OnPrimary
-								 : SchemeColorRole::Outline);
-
-			getComponentRegistry()
-				.getComponent<components::Color>(_thumb->getIdentifier())
-				.setColor(thumbColor);
-
-			if (_icon != nullptr) {
-				centerChild(getComponentRegistry(), _thumb->getIdentifier(),
-							_icon->getIdentifier(),
-							static_cast<std::uint32_t>(_thumb->getLayer()));
-			}
-		}
-
-		if (_labelEntity != nullptr) {
-			// The label sits beside the 52 dp track instead of inside it.
-			const auto &track =
-				getComponentRegistry().getComponent<components::Bound>(
-					getIdentifier());
-			const auto &label =
-				getComponentRegistry().getComponent<components::Bound>(
-					_labelEntity->getIdentifier());
-			placeChild(getComponentRegistry(), getIdentifier(),
-					   _labelEntity->getIdentifier(),
-					   utility::graphic::PositionF(
-						   track.getWidth() + LabelGap,
-						   (track.getHeight() - label.getHeight()) / 2.0f,
-						   0.0f),
-					   static_cast<std::uint32_t>(getLayer()));
-		}
-
-		applyVariant();
+			.getComponent<components::Switch>(getIdentifier())
+			.setVariant(variant)
+			.setIconGlyph(iconGlyph)
+			.setLabel(label);
+		systems::Switch::install(getComponentRegistry(), getIdentifier());
+		systems::Switch::setChecked(getComponentRegistry(), getIdentifier(),
+									checked);
+		systems::Switch::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Switch &Switch::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Switch>(getIdentifier())
+			.setVariant(variant);
+		systems::Switch::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Switch::Variant Switch::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::Switch>(getIdentifier())
+			.getVariant();
 	}
 
 	Switch &Switch::setChecked(bool checked)
 	{
-		getComponentRegistry()
-			.getComponent<components::Value>(getIdentifier())
-			.setValue(checked ? 1.0f : 0.0f);
+		systems::Switch::setChecked(getComponentRegistry(), getIdentifier(),
+									checked);
 		return *this;
 	}
 
 	bool Switch::isChecked(void) const
 	{
-		return getComponentRegistry()
-				   .getComponent<components::Value>(getIdentifier())
-				   .getValue()
-			>= 0.5f;
+		return systems::Switch::isChecked(getComponentRegistry(),
+										  getIdentifier());
 	}
 
 	Switch &Switch::toggle(void)
 	{
-		if (isDisabled()) {
-			return *this;
-		}
-
-		setChecked(!isChecked());
-		if (_onValueChange) {
-			_onValueChange(isChecked());
-		}
+		systems::Switch::toggle(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Switch &Switch::setOnValueChange(std::function<void(bool)> onValueChange)
 	{
-		_onValueChange = std::move(onValueChange);
+		getComponentRegistry()
+			.getComponent<components::Switch>(getIdentifier())
+			.setOnValueChange(std::move(onValueChange));
 		return *this;
 	}
 
 	bool Switch::isDisabled(void) const
 	{
-		return _variant == Variant::Disabled
-			|| !isEnabled(getComponentRegistry(), getIdentifier());
+		return systems::Switch::isDisabled(getComponentRegistry(),
+										   getIdentifier());
 	}
 
 	Switch &Switch::setLabel(const std::string &label)
 	{
-		_label = label;
+		auto &registry = getComponentRegistry();
+		auto &config =
+			registry.getComponent<components::Switch>(getIdentifier());
 
-		if (_labelEntity != nullptr) {
-			_labelEntity->setContent(label);
+		config.setLabel(label);
+		if (registry.hasComponent<components::Text>(config.getLabelEntity())) {
+			registry.getComponent<components::Text>(config.getLabelEntity())
+				.setContent(label);
 		}
-
-		applyState();
-
+		systems::Switch::apply(registry, getIdentifier());
 		return *this;
 	}
 
 	void Switch::initialize(void)
 	{
-		update();
+		auto &registry = getComponentRegistry();
+		auto &config =
+			registry.getComponent<components::Switch>(getIdentifier());
 
-		_thumb = std::make_shared<SwitchThumb>(
-			getComponentRegistry(), schemeColor(SchemeColorRole::Outline));
-		_thumb->setParent(shared_from_this());
-		this->addEntity(_thumb);
+		const auto thumb = std::make_shared<SwitchThumb>(
+			registry, schemeColor(SchemeColorRole::Outline));
+		thumb->setParent(shared_from_this());
+		this->addEntity(thumb);
+		config.setThumb(thumb->getIdentifier());
 
-		if (!_iconGlyph.empty()) {
-			_icon = buildIcon(getComponentRegistry(), *this, _thumb, _iconGlyph,
-							  16.0f, schemeColor(SchemeColorRole::OnPrimary));
+		if (!config.getIconGlyph().empty()) {
+			const auto icon =
+				buildIcon(registry, *this, thumb, config.getIconGlyph(), 16.0f,
+						  schemeColor(SchemeColorRole::OnPrimary));
+			if (icon != nullptr) {
+				config.setIcon(icon->getIdentifier());
+			}
 		}
 
-		if (!_label.empty()) {
-			_labelEntity =
-				buildText(getComponentRegistry(), *this, shared_from_this(),
-						  _label, theme::TypeRole::BodyLarge,
+		if (!config.getLabel().empty()) {
+			const auto label =
+				buildText(registry, *this, shared_from_this(),
+						  config.getLabel(), theme::TypeRole::BodyLarge,
 						  schemeColor(SchemeColorRole::OnSurface));
+			if (label != nullptr) {
+				config.setLabelEntity(label->getIdentifier());
+			}
 		}
 
-		// The thumb and the label are positioned manually; neither is a
-		// layout child of the track.
+		// The thumb and the label are positioned by systems::Switch; neither
+		// is a layout child of the track.
 		setChildren({});
-
-		applyState();
-	}
-
-	void Switch::update(void)
-	{
-		applyGeometry();
-		applyState();
+		systems::Switch::apply(registry, getIdentifier());
 	}
 
 }	 // namespace guillaume::entities
