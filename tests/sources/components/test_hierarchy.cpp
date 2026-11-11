@@ -245,4 +245,47 @@ namespace guillaume::components::tests
 		EXPECT_EQ(traversal.front(), second);
 	}
 
+	TEST_F(TestHierarchy, RemovingAParentRemovesChildrenRegisteredBesideIt)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entities;
+		auto parent						= std::make_shared<Node>(registry);
+		auto child						= std::make_shared<Node>(registry);
+		auto grandchild					= std::make_shared<Node>(registry);
+		const auto childIdentifier		= child->getIdentifier();
+		const auto grandchildIdentifier = grandchild->getIdentifier();
+		// Builders register children in the registry they are given, which
+		// is not always the parent's own.
+		entities.addEntity(parent);
+		entities.addEntity(child);
+		entities.addEntity(grandchild);
+		child->setParent(parent);
+		grandchild->setParent(child);
+
+		entities.removeEntity(parent->getIdentifier());
+
+		EXPECT_FALSE(registry.hasComponent<Hierarchy>(childIdentifier));
+		EXPECT_FALSE(registry.hasComponent<Hierarchy>(grandchildIdentifier));
+		EXPECT_TRUE(entities.getEntities().empty());
+	}
+
+	TEST_F(TestHierarchy, AChildOutOfReachIsUnlinkedNotLeftDangling)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entities;
+		ecs::EntityRegistryContainer elsewhere;
+		auto parent = std::make_shared<Node>(registry);
+		auto child	= std::make_shared<Node>(registry);
+		entities.addEntity(parent);
+		elsewhere.addEntity(child);
+		child->setParent(parent);
+
+		entities.removeEntity(parent->getIdentifier());
+		parent.reset();
+
+		EXPECT_FALSE(hierarchyOf(registry, child).hasParent());
+		EXPECT_EQ(child->getParent(), nullptr);
+		EXPECT_EQ(elsewhere.getEntities().size(), 1U);
+	}
+
 }	 // namespace guillaume::components::tests

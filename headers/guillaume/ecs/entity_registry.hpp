@@ -57,6 +57,23 @@ namespace guillaume::ecs
 		 */
 		mutable std::size_t _cachedVersion { 0 };
 
+		/**
+		 * @brief Remove one entity, without following its tree children.
+		 * @param identifier The identifier of the entity to remove.
+		 * @param orphans Receives the entities that were parented to the
+		 * removed ones.
+		 * @return True when the entity was found and removed.
+		 */
+		bool removeOne(Entity::Identifier identifier,
+					   std::vector<Entity::Identifier> &orphans);
+
+		/**
+		 * @brief Remove every owned entity, collecting their tree children.
+		 * @param orphans Receives the entities that were parented to the
+		 * removed ones.
+		 */
+		void clearOwned(std::vector<Entity::Identifier> &orphans);
+
 		protected:
 		/**
 		 * @brief Access mutable direct child entities owned by this registry.
@@ -94,9 +111,11 @@ namespace guillaume::ecs
 		 *
 		 * The entity is searched in this registry and in the registries of
 		 * the entities it owns. Everything the removed entity owns is removed
-		 * with it, its components are deleted and it leaves its parent's
-		 * components::Hierarchy. Render systems drop its graphics on the next
-		 * frame.
+		 * with it, and so is every entity parented to it (recursively) that
+		 * can be found from this registry; one registered out of reach is
+		 * only unlinked. Components are deleted and the entity leaves its
+		 * parent's components::Hierarchy. Render systems drop its graphics on
+		 * the next frame.
 		 * @param identifier The identifier of the entity to remove.
 		 * @return True when the entity was found and removed.
 		 */

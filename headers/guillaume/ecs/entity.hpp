@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/default_logger.hpp>
@@ -158,12 +159,13 @@ namespace guillaume::ecs
 		/**
 		 * @brief Drop the entity's place in the tree and all its components.
 		 *
-		 * Removes the entity from its parent's components::Hierarchy and
-		 * deletes every component stored for it. Called by
-		 * EntityRegistry::removeEntity; the entity must not be used
-		 * afterwards.
+		 * Removes the entity from its parent's components::Hierarchy, unlinks
+		 * the entities parented to it and deletes every component stored for
+		 * it. Called by EntityRegistry::removeEntity; the entity must not be
+		 * used afterwards.
+		 * @return The identifiers of the entities that were parented to it.
 		 */
-		void releaseComponents(void);
+		std::vector<Identifier> releaseComponents(void);
 
 		/**
 		 * @brief Get the parent entity.

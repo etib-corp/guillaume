@@ -171,25 +171,37 @@ namespace guillaume::ecs
 		return *this;
 	}
 
-	void Entity::releaseComponents(void)
+	std::vector<Entity::Identifier> Entity::releaseComponents(void)
 	{
+		std::vector<Identifier> children;
+
 		_parent.reset();
 		if (_hierarchyRegistry == nullptr) {
-			return;
+			return children;
 		}
 
 		auto &registry = *_hierarchyRegistry;
 		if (registry.hasComponent<components::Hierarchy>(_identifier)) {
-			const Identifier parent =
-				registry.getComponent<components::Hierarchy>(_identifier)
-					.getParentIdentifier();
+			const auto &hierarchy =
+				registry.getComponent<components::Hierarchy>(_identifier);
+			const Identifier parent = hierarchy.getParentIdentifier();
+
+			children = hierarchy.getChildIdentifiers();
 			if (registry.hasComponent<components::Hierarchy>(parent)) {
 				registry.getComponent<components::Hierarchy>(parent)
 					.removeChild(_identifier);
 			}
+			// No child may keep pointing at an entity that is gone.
+			for (const auto child: children) {
+				if (registry.hasComponent<components::Hierarchy>(child)) {
+					registry.getComponent<components::Hierarchy>(child)
+						.setParentIdentifier(InvalidIdentifier);
+				}
+			}
 		}
 		registry.removeEntity(_identifier);
 		_hierarchyRegistry = nullptr;
+		return children;
 	}
 
 	std::shared_ptr<Entity> Entity::getParent(void) const noexcept
