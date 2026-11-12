@@ -102,6 +102,13 @@ Versions follow the calendar scheme described in
 - `ecs::Entity::setParent()` now updates the layer of every descendant when a
   subtree is attached, and throws `std::invalid_argument` when the new parent
   is the entity itself or one of its descendants.
+### Fixed
+
+- Releases are cut again. The version bump runs on the push to `main`
+  instead of on the pull request event, which only had a read-only token for
+  pull requests opened from a fork, and it calls the release workflow
+  directly, since a tag pushed by a workflow does not start other workflows.
+
 
 ## [2026.3.3] - 2026-11-11
 
