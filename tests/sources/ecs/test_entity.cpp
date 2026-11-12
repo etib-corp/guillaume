@@ -65,4 +65,9 @@ namespace guillaume::ecs::tests
 
 		EXPECT_EQ(entity.getLayer(), 0);
 	}
+
+	TEST(TestEntityRegistry, AddNullThrows) {
+		LocalEntityRegistry reg;
+		EXPECT_THROW(reg.addEntity(nullptr), std::invalid_argument);
+	}
 }	 // namespace guillaume::ecs::tests
