@@ -30,6 +30,7 @@
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/theme.hpp"
+#include "guillaume/systems/common_button.hpp"
 
 namespace guillaume::entities
 {
@@ -184,283 +185,116 @@ namespace guillaume::entities
 		: ButtonBase(registry, iconGlyphName, iconStyle, labelContent, isToggle,
 					 isMorph, isDisabled, isTrailingIcon, accessibilityLabel,
 					 std::move(onClick))
-		, _colorStyle(colorStyle)
-		, _shape(shape)
-		, _size(size)
 	{
-		if (!getComponentRegistry().hasComponent<components::Elevation>(
-				getIdentifier())) {
-			getComponentRegistry().addComponent<components::Elevation>(
-				getIdentifier());
-		}
 		getComponentRegistry()
-			.getComponent<components::Elevation>(getIdentifier())
-			.setElevationLevel(theme::ElevationLevel::Level0);
-	}
-
-	Button::~Button(void)
-	{
+			.addComponent<components::CommonButton>(getIdentifier())
+			.setColorStyle(colorStyle)
+			.setShape(shape)
+			.setSize(size);
+		setSignature(getSignature()
+					 | getSignatureFromTypes<components::CommonButton>());
+		systems::CommonButton::install(getComponentRegistry(), getIdentifier());
 	}
 
 	float Button::getIconFontSize(void) const
 	{
-		return button_style::getIconFontSize(_size);
+		return systems::CommonButton::iconFontSize(getComponentRegistry(),
+												   getIdentifier());
 	}
 
 	utility::graphic::Color32Bit Button::getInitialContentColor(void) const
 	{
-		return button_style::getContentColor(_colorStyle, _isToggle,
-											 _isSelected);
-	}
-
-	void Button::applyStyleState(void)
-	{
-		// M3 elevated buttons rest at level 1 and lift to level 2 on hover;
-		// every other style, and any disabled button, is flat.
-		auto level = theme::ElevationLevel::Level0;
-		if (_colorStyle == Color::Elevated && !isDisabled()) {
-			level = (isHovered() && !isPressed())
-				? theme::ElevationLevel::Level2
-				: theme::ElevationLevel::Level1;
-		}
-		getComponentRegistry()
-			.getComponent<components::Elevation>(getIdentifier())
-			.setElevationLevel(level);
-
-		if (isDisabled()) {
-			getComponentRegistry()
-				.getComponent<components::Color>(getIdentifier())
-				.setColor(getDisabledContainerColor());
-
-			getComponentRegistry()
-				.getComponent<components::Borders>(getIdentifier())
-				.setColor(getDisabledBorderColor())
-				.setWidth(1.0f);
-
-			if (_icon) {
-				_icon->setColor(getDisabledContentColor());
-			}
-
-			if (_label) {
-				_label->setColor(getDisabledContentColor());
-			}
-
-			return;
-		}
-
-		getComponentRegistry()
-			.getComponent<components::Color>(getIdentifier())
-			.setColor(resolveContainerColor(button_style::getContainerColor(
-				_colorStyle, _isToggle, _isSelected, isHovered(),
-				isPressed())));
-
-		getComponentRegistry()
-			.getComponent<components::Borders>(getIdentifier())
-			.setColor(button_style::getBorderColor(_colorStyle, _isToggle,
-												   _isSelected))
-			.setWidth(1.0f);
-
-		if (_icon) {
-			_icon->setColor(resolveContentColor(button_style::getContentColor(
-				_colorStyle, _isToggle, _isSelected)));
-		}
-
-		if (_label) {
-			_label->setColor(resolveContentColor(button_style::getContentColor(
-				_colorStyle, _isToggle, _isSelected)));
-		}
-	}
-
-	void Button::applyGeometry(void)
-	{
-		const float radius = button_style::getBorderRadius(
-			_size,
-			button_style::getRestingShape(_shape, _isToggle, _isSelected,
-										  _isMorph),
-			isPressed());
-
-		getComponentRegistry()
-			.getComponent<components::Borders>(getIdentifier())
-			.setBorderRadius(radius);
-
-		if (!_icon && !_label) {
-			return;
-		}
-
-		const float fontHeight = getIconFontSize();
-
-		if (_icon) {
-			_icon->setFontSize(fontHeight);
-		}
-
-		if (_label) {
-			_label->setTypeRole(theme::TypeRole::LabelLarge);
-			std::string content = _labelContent;
-			if (_isUppercase) {
-				std::transform(content.begin(), content.end(), content.begin(),
-							   [](unsigned char character) {
-								   return static_cast<char>(
-									   std::toupper(character));
-							   });
-			}
-			_label->setContent(content);
-		}
-
-		const auto &buttonPose =
-			getComponentRegistry()
-				.getComponent<components::Transform>(getIdentifier())
-				.getPose();
-
-		const bool hasIcon	= _icon != nullptr;
-		const bool hasLabel = _label != nullptr;
-
-		const float iconWidth	= hasIcon
-			  ? getComponentRegistry()
-					.getComponent<components::Bound>(_icon->getIdentifier())
-					.getWidth()
-			  : 0.0f;
-		const float iconHeight	= hasIcon
-			 ? getComponentRegistry()
-				   .getComponent<components::Bound>(_icon->getIdentifier())
-				   .getHeight()
-			 : 0.0f;
-		const float labelWidth	= hasLabel
-			 ? getComponentRegistry()
-				   .getComponent<components::Bound>(_label->getIdentifier())
-				   .getWidth()
-			 : 0.0f;
-		const float labelHeight = hasLabel
-			? getComponentRegistry()
-				  .getComponent<components::Bound>(_label->getIdentifier())
-				  .getHeight()
-			: 0.0f;
-
-		const float gap = (!_iconGlyphName.empty() && !_labelContent.empty())
-			? button_style::getSpaceBetweenIconAndLabel(_size)
-			: 0.0f;
-		const float contentWidth  = iconWidth + gap + labelWidth;
-		const float contentHeight = std::max(iconHeight, labelHeight);
-
-		// The label typography (labelLarge) is independent of the icon size;
-		// the container grows to the larger child and to the M3 minimums.
-		const float minHeight = (_size == Size::ExtraSmall) ? 0.0f : MinHeight;
-		const float buttonWidth = std::max(
-			{ contentWidth
-				  + button_style::getWidthPadding(_size, _isCompact) * 2.0f,
-			  MinWidth, _minWidth });
-		const float buttonHeight = std::max(
-			contentHeight + button_style::getHeightPadding(_size) * 2.0f,
-			minHeight);
-
-		const auto place = [&](const std::shared_ptr<ecs::Entity> &child,
-							   float x, float childHeight) {
-			const float y = (buttonHeight - childHeight) / 2.0f;
-			getComponentRegistry()
-				.getComponent<components::Transform>(child->getIdentifier())
-				.setPose(ButtonBase::applyLayerToPosition(
-					utility::graphic::PositionF(buttonPose.getPosition().x + x,
-												buttonPose.getPosition().y + y,
-												buttonPose.getPosition().z),
-					buttonPose.getOrientation(),
-					static_cast<std::uint32_t>(getLayer())));
-		};
-
-		float cursor = (buttonWidth - contentWidth) / 2.0f;
-		if (_isTrailingIcon) {
-			if (hasLabel) {
-				place(_label, cursor, labelHeight);
-				cursor += labelWidth + gap;
-			}
-			if (hasIcon) {
-				place(_icon, cursor, iconHeight);
-			}
-		} else {
-			if (hasIcon) {
-				place(_icon, cursor, iconHeight);
-				cursor += iconWidth + gap;
-			}
-			if (hasLabel) {
-				place(_label, cursor, labelHeight);
-			}
-		}
-
-		getComponentRegistry()
-			.getComponent<components::Bound>(getIdentifier())
-			.setWidth(buttonWidth)
-			.setHeight(buttonHeight);
-		applyTouchTarget(buttonWidth, buttonHeight);
+		return systems::CommonButton::contentColor(getComponentRegistry(),
+												   getIdentifier());
 	}
 
 	Button &Button::setMinWidth(float minWidth)
 	{
-		_minWidth = minWidth;
-		applyGeometry();
+		getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.setMinWidth(minWidth);
+		restyle();
 		return *this;
 	}
 
 	Button &Button::setCompact(bool compact)
 	{
-		_isCompact = compact;
-		applyGeometry();
+		getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.setCompact(compact);
+		restyle();
 		return *this;
-	}
-
-	bool Button::isCompact(void) const
-	{
-		return _isCompact;
 	}
 
 	Button &Button::setUppercase(bool uppercase)
 	{
-		_isUppercase = uppercase;
-		applyGeometry();
+		getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.setUppercase(uppercase);
+		restyle();
 		return *this;
-	}
-
-	bool Button::isUppercase(void) const
-	{
-		return _isUppercase;
 	}
 
 	Button &Button::setColorStyle(const Color &colorStyle)
 	{
-		_colorStyle = colorStyle;
-
-		applyStyleState();
-
+		getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.setColorStyle(colorStyle);
+		restyle();
 		return *this;
 	}
 
 	Button &Button::setShape(const Shape &shape)
 	{
-		_shape = shape;
-
-		applyStyleState();
-
+		getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.setShape(shape);
+		restyle();
 		return *this;
 	}
 
 	Button &Button::setSize(const Size &size)
 	{
-		_size = size;
-
-		applyGeometry();
-
+		getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.setSize(size);
+		restyle();
 		return *this;
+	}
+
+	bool Button::isCompact(void) const
+	{
+		return getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.isCompact();
+	}
+
+	bool Button::isUppercase(void) const
+	{
+		return getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.isUppercase();
 	}
 
 	Button::Color Button::getColorStyle(void) const
 	{
-		return _colorStyle;
+		return getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.getColorStyle();
 	}
 
 	Button::Shape Button::getShape(void) const
 	{
-		return _shape;
+		return getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.getShape();
 	}
 
 	Button::Size Button::getSize(void) const
 	{
-		return _size;
+		return getComponentRegistry()
+			.getComponent<components::CommonButton>(getIdentifier())
+			.getSize();
 	}
+
 }	 // namespace guillaume::entities

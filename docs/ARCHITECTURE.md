@@ -143,6 +143,14 @@ children and input. On top of the recipe above:
 - The facade's `initialize()` is kept only to build the child entities, which
   needs `shared_from_this()`; it holds no rule.
 
+The button family shows how a class hierarchy with virtual hooks maps to
+components: `components::Button` + `systems::Button` carry what `ButtonBase`
+shared (input, toggle, callbacks), and each subclass became a variant
+component and system (`CommonButton`, `IconButton`, `FloatingActionButton`,
+`ExtendedFloatingActionButton`). The variant system registers its static
+`apply` in `components::Button` as the restyle function, which replaces the
+virtual `applyStyleState()` / `applyGeometry()` calls.
+
 When no entity overrides `update()` any more, `ecs::Entity::update()` and the
 calls to it in `ecs::System::routine` are deleted, and the entity classes can
 become plain builder functions.

@@ -26,6 +26,12 @@ Versions follow the calendar scheme described in
   style them and place their children each frame. The systems expose the
   actions as static functions (`toggle`, `press`, `setState`, `setChecked`)
   that work on an identifier.
+- The button family follows the strict ECS. `components::Button` holds the
+  state every button shares (content, toggle, callbacks, loading, visibility,
+  color overrides, child identifiers) and `systems::Button` turns input into
+  it. Each variant has a configuration component and a Layout-phase system
+  that styles and lays it out: `CommonButton` (for `entities::Button`),
+  `IconButton`, `FloatingActionButton`, `ExtendedFloatingActionButton`.
 - `systems::Layout::layerOf()` returns an entity's tree depth from its
   `components::Hierarchy`.
 
@@ -35,6 +41,14 @@ Versions follow the calendar scheme described in
   and no longer override `update()`; `initialize()` only builds their child
   entities. Their `State` / `Variant` enums are now aliases of the component
   enums, so existing spellings keep compiling.
+- `entities::ButtonBase`, `Button`, `IconButton`, `FloatingActionButton` and
+  `ExtendedFloatingActionButton` are facades without fields. `ButtonBase` no
+  longer overrides `update()` and its `applyStyleState()` / `applyGeometry()`
+  virtuals are gone: subclasses outside the library must provide a variant
+  system and register it with `components::Button::setRestyle()`. Enums such
+  as `Button::Color` are aliases of the component enums.
+- `components::Elevation::setElevationLevel()` only marks the component
+  changed when the resolved shadow differs.
 - `entities::SurfaceBase` keeps no copy of its configuration and no longer
   overrides `initialize()` / `update()`: the Transform, Color, Borders and
   Layout components are the state and `systems::Layout` arranges the children.
