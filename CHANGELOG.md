@@ -157,7 +157,9 @@ Versions follow the calendar scheme described in
 - An extended FAB with a hidden label no longer has its label color
   rewritten twice per frame.
 
-## [2026.3.2] - 2026-11-11
+## [2026.3.3] - 2026-11-11
+
+Includes the changes released as 2026.3.2 on the same day.
 
 ### Changed
 
