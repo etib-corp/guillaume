@@ -21,35 +21,37 @@
  */
 
 #include <memory>
+#include <utility>
 
 #include "guillaume/entities/dialog.hpp"
 
-#include "guillaume/components/accessibility.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/content_helpers.hpp"
-#include "guillaume/entities/overlay_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/dialog.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
 	namespace
 	{
-		/**
-		 * @brief M3 dialog width (basic dialogs are 280-560 dp wide).
-		 */
-		constexpr float DialogWidth = 320.0f;
+		/// M3 dialog width, in dp.
+		constexpr float DialogWidth = components::Dialog::Width;
+
+		/// M3 dialog padding, in dp.
+		constexpr float DialogPadding = systems::Dialog::Padding;
+
+		/// Gap between dialog sections, in dp.
+		constexpr float DialogSpacing = systems::Dialog::Spacing;
+
+		/// Size of the hero icon, in dp.
+		constexpr float HeroIconSize = 24.0f;
 
 		/**
-		 * @brief M3 dialog padding.
+		 * @brief Turn action labels into actions without a press handler.
+		 * @param labels The action labels.
+		 * @return One action per label.
 		 */
-		constexpr float DialogPadding = theme::SpacingScale::get(6);
-
-		/**
-		 * @brief Gap between dialog sections.
-		 */
-		constexpr float DialogSpacing = theme::SpacingScale::get(4);
-
 		std::vector<Dialog::Action>
 			toActions(const std::vector<std::string> &labels)
 		{
@@ -173,272 +175,79 @@ namespace guillaume::entities
 				   const std::string &title, const std::string &message,
 				   const std::vector<Action> &actions, const std::string &icon,
 				   std::function<void(void)> onDismiss)
-		: SurfaceBase<components::Overlay, components::Elevation>(registry,
-																  config)
-		, _variant(variant)
-		, _title(title)
-		, _message(message)
-		, _actions(actions)
-		, _icon(icon)
-		, _iconEntity()
-		, _titleEntity()
-		, _messageEntity()
-		, _actionEntities()
-		, _actionRow()
-		, _backdrop()
+		: SurfaceBase<components::Overlay, components::Elevation,
+					  components::Accessibility, components::Dialog>(registry,
+																	 config)
 	{
 		getComponentRegistry()
-			.getComponent<components::Elevation>(getIdentifier())
-			.setElevationLevel(theme::ElevationLevel::Level3);
-
-		if (!getComponentRegistry().hasComponent<components::Accessibility>(
-				getIdentifier())) {
-			getComponentRegistry().addComponent<components::Accessibility>(
-				getIdentifier());
-		}
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setRole(components::AccessibilityRole::Dialog)
-			.setLabel(title)
-			.setFocusable(false);
-
+			.getComponent<components::Dialog>(getIdentifier())
+			.setVariant(variant)
+			.setTitle(title)
+			.setMessage(message)
+			.setActions(actions)
+			.setIcon(icon);
 		getComponentRegistry()
 			.getComponent<components::Overlay>(getIdentifier())
 			.setOnDismissHandler(std::move(onDismiss));
-
-		applyVariant();
-		applyOverlay();
-	}
-
-	Dialog::~Dialog(void)
-	{
-	}
-
-	void Dialog::applyVariant(void)
-	{
-		auto config = SurfaceConfig::panel(
-			DialogWidth, components::Layout::Axis::Vertical, DialogSpacing);
-		config.padding = DialogPadding;
-		// M3: with a hero icon, the icon and the headline are centred.
-		config.crossAxisAlignment = _iconEntity != nullptr
-			? components::Layout::CrossAxisAlignment::Center
-			: components::Layout::CrossAxisAlignment::Start;
-
-		switch (_variant) {
-			case Variant::Alert:
-			case Variant::Simple:
-			case Variant::Confirmation: {
-				config.hasFixedHeight = false;
-				break;
-			}
-			case Variant::FullScreen:
-			default: {
-				config.borderRadius	  = getShapeRadius(theme::ShapeRole::None);
-				config.hasFixedHeight = true;
-				config.fixedHeight	  = 640.0f;
-				break;
-			}
-		}
-
-		setSurfaceConfig(config);
-		setColor(getElevatedSurfaceColor(theme::ElevationLevel::Level3));
-	}
-
-	void Dialog::applyOverlay(void)
-	{
-		auto &overlay =
-			this->getComponentRegistry().getComponent<components::Overlay>(
-				this->getIdentifier());
-
-		overlay.setModal(true);
-		overlay.setDismissOnOutsideClick(_variant != Variant::FullScreen);
-		overlay.setDismissOnEscape(true);
-
-		if (_backdrop != nullptr) {
-			// A full-screen dialog covers the viewport and needs no backdrop.
-			_backdrop->setVisible(overlay.isVisible()
-								  && _variant != Variant::FullScreen);
-			const auto &bound =
-				getComponentRegistry().getComponent<components::Bound>(
-					getIdentifier());
-			_backdrop->follow(
-				getComponentRegistry()
-					.getComponent<components::Transform>(getIdentifier())
-					.getPose(),
-				bound.getWidth(), bound.getHeight());
-		}
-	}
-
-	void Dialog::buildContent(void)
-	{
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-
-		if (_backdrop == nullptr) {
-			_backdrop = std::make_shared<Backdrop>(getComponentRegistry());
-			_backdrop->setParent(this->shared_from_this());
-			this->addEntity(_backdrop);
-		}
-
-		const std::string icon = !_icon.empty()
-			? _icon
-			: (_variant == Variant::Confirmation ? std::string("info")
-												 : std::string());
-		if (_iconEntity == nullptr && !icon.empty()) {
-			_iconEntity = buildIcon(this->getComponentRegistry(), *this,
-									this->shared_from_this(), icon, 24.0f,
-									schemeColor(SchemeColorRole::Secondary));
-		}
-
-		if (_iconEntity != nullptr) {
-			_iconEntity->setColor(schemeColor(SchemeColorRole::Secondary));
-		}
-
-		if (_titleEntity == nullptr && !_title.empty()) {
-			buildTitle();
-		}
-
-		if (_messageEntity == nullptr && !_message.empty()) {
-			_messageEntity = buildText(
-				this->getComponentRegistry(), *this, this->shared_from_this(),
-				_message, theme::TypeRole::BodyMedium,
-				schemeColor(SchemeColorRole::OnSurfaceVariant));
-		}
-
-		if (_actionRow == nullptr && !_actions.empty()) {
-			buildActionRow();
-		}
-
-		if (_iconEntity != nullptr) {
-			children.push_back(_iconEntity);
-		}
-
-		if (_titleEntity != nullptr) {
-			children.push_back(_titleEntity);
-		}
-
-		if (_messageEntity != nullptr) {
-			children.push_back(_messageEntity);
-		}
-
-		if (_actionRow != nullptr) {
-			children.push_back(_actionRow);
-		}
-
-		setChildren(children);
-	}
-
-	void Dialog::buildTitle(void)
-	{
-		_titleEntity = buildText(this->getComponentRegistry(), *this,
-								 this->shared_from_this(), _title,
-								 theme::TypeRole::HeadlineSmall,
-								 schemeColor(SchemeColorRole::OnSurface));
-		if (_titleEntity != nullptr) {
-			getComponentRegistry().addComponent<components::Accessibility>(
-				_titleEntity->getIdentifier());
-			getComponentRegistry()
-				.getComponent<components::Accessibility>(
-					_titleEntity->getIdentifier())
-				.setRole(components::AccessibilityRole::Header)
-				.setLabel(_title)
-				.setFocusable(false);
-		}
-	}
-
-	void Dialog::buildActionRow(void)
-	{
-		View::Builder rowBuilder(this->getComponentRegistry(), *this);
-		_actionRow = rowBuilder.makeDefaultView(this->shared_from_this(),
-												utility::graphic::PoseF(), {});
-		_actionRow->setColor(transparentColor());
-		_actionRow->setAxis(components::Layout::Axis::Horizontal);
-		_actionRow->setMainAxisAlignment(
-			components::Layout::MainAxisAlignment::End);
-		_actionRow->setCrossAxisAlignment(
-			components::Layout::CrossAxisAlignment::Center);
-		_actionRow->setSpacing(theme::SpacingScale::get(2));
-		_actionRow->setPadding(0.0f);
-		_actionRow->setFixedWidth(DialogWidth - 2.0f * DialogPadding);
-
-		std::vector<std::shared_ptr<ecs::Entity>> buttons;
-		for (const auto &action: _actions) {
-			if (action.label.empty()) {
-				continue;
-			}
-			Button::Builder buttonBuilder(this->getComponentRegistry(),
-										  *_actionRow);
-			auto button = buttonBuilder.withLabel(action.label)
-							  .withColorStyle(Button::Color::Text)
-							  .withShape(Button::Shape::Round)
-							  .withSize(Button::Size::Small)
-							  .withOnClick(action.onPress)
-							  .registerEntity(_actionRow);
-			if (button != nullptr) {
-				_actionEntities.push_back(button);
-				buttons.push_back(button);
-			}
-		}
-		_actionRow->setEntities(buttons);
+		systems::Dialog::install(getComponentRegistry(), getIdentifier());
+		systems::Dialog::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Dialog &Dialog::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
-		applyOverlay();
+		getComponentRegistry()
+			.getComponent<components::Dialog>(getIdentifier())
+			.setVariant(variant);
+		// A Confirmation dialog may need its default hero icon.
+		buildContent();
+		systems::Dialog::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Dialog::Variant Dialog::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::Dialog>(getIdentifier())
+			.getVariant();
 	}
 
 	Dialog &Dialog::setTitle(const std::string &title)
 	{
-		_title = title;
-
-		if (_titleEntity != nullptr) {
-			_titleEntity->setContent(title);
-		}
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setLabel(title);
-
+			.getComponent<components::Dialog>(getIdentifier())
+			.setTitle(title);
+		buildContent();
+		systems::Dialog::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Dialog &Dialog::setMessage(const std::string &message)
 	{
-		_message = message;
-
-		if (_messageEntity != nullptr) {
-			_messageEntity->setContent(message);
-		}
-
+		getComponentRegistry()
+			.getComponent<components::Dialog>(getIdentifier())
+			.setMessage(message);
+		buildContent();
+		systems::Dialog::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Dialog &Dialog::show(void)
 	{
-		setOverlayVisible(this->getComponentRegistry(), this->getIdentifier(),
-						  true);
-		applyOverlay();
+		systems::Dialog::show(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Dialog &Dialog::hide(void)
 	{
-		setOverlayVisible(this->getComponentRegistry(), this->getIdentifier(),
-						  false);
-		applyOverlay();
+		systems::Dialog::hide(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	bool Dialog::isVisible(void) const
 	{
-		return isOverlayVisible(this->getComponentRegistry(),
-								this->getIdentifier());
+		return getComponentRegistry()
+			.getComponent<components::Overlay>(getIdentifier())
+			.isVisible();
 	}
 
 	Dialog &Dialog::open(void)
@@ -458,16 +267,7 @@ namespace guillaume::entities
 
 	Dialog &Dialog::dismiss(void)
 	{
-		if (!isVisible()) {
-			return *this;
-		}
-		hide();
-		if (const auto handler =
-				getComponentRegistry()
-					.getComponent<components::Overlay>(getIdentifier())
-					.getOnDismissHandler()) {
-			handler();
-		}
+		systems::Dialog::dismiss(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
@@ -481,49 +281,177 @@ namespace guillaume::entities
 
 	std::size_t Dialog::getActionCount(void) const
 	{
-		return _actionEntities.size();
+		return getComponentRegistry()
+			.getComponent<components::Dialog>(getIdentifier())
+			.getActionEntities()
+			.size();
 	}
 
 	ecs::Entity::Identifier Dialog::getActionIdentifier(std::size_t index) const
 	{
-		if (index >= _actionEntities.size()) {
-			return ecs::Entity::InvalidIdentifier;
-		}
-		return _actionEntities[index]->getIdentifier();
+		const auto &actions =
+			getComponentRegistry()
+				.getComponent<components::Dialog>(getIdentifier())
+				.getActionEntities();
+
+		return index < actions.size() ? actions[index]
+									  : ecs::Entity::InvalidIdentifier;
 	}
 
 	ecs::Entity::Identifier Dialog::getActionRowIdentifier(void) const
 	{
-		return _actionRow != nullptr ? _actionRow->getIdentifier()
-									 : ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Dialog>(getIdentifier())
+			.getActionRow();
 	}
 
 	ecs::Entity::Identifier Dialog::getBackdropIdentifier(void) const
 	{
-		return _backdrop != nullptr ? _backdrop->getIdentifier()
-									: ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Dialog>(getIdentifier())
+			.getBackdrop();
 	}
 
 	ecs::Entity::Identifier Dialog::getIconIdentifier(void) const
 	{
-		return _iconEntity != nullptr ? _iconEntity->getIdentifier()
-									  : ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Dialog>(getIdentifier())
+			.getIconEntity();
 	}
 
 	void Dialog::initialize(void)
 	{
-		update();
 		buildContent();
-		applyVariant();
-		applyOverlay();
+		systems::Dialog::apply(getComponentRegistry(), getIdentifier());
 	}
 
-	void Dialog::update(void)
+	void Dialog::buildContent(void)
 	{
-		applyGeometry();
-		buildContent();
-		applyVariant();
-		applyOverlay();
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
+		auto &registry = getComponentRegistry();
+		auto &dialog =
+			registry.getComponent<components::Dialog>(getIdentifier());
+
+		if (dialog.getBackdrop() == ecs::Entity::InvalidIdentifier) {
+			const auto backdrop = std::make_shared<Backdrop>(registry);
+			backdrop->setParent(shared_from_this());
+			addEntity(backdrop);
+			dialog.setBackdrop(backdrop->getIdentifier());
+		}
+
+		const std::string glyph = dialog.getEffectiveIcon();
+		if (dialog.getIconEntity() == ecs::Entity::InvalidIdentifier
+			&& !glyph.empty()) {
+			const auto icon = buildIcon(
+				registry, *this, shared_from_this(), glyph, HeroIconSize,
+				schemeColor(SchemeColorRole::Secondary));
+			if (icon != nullptr) {
+				dialog.setIconEntity(icon->getIdentifier());
+			}
+		}
+
+		if (dialog.getTitleEntity() == ecs::Entity::InvalidIdentifier
+			&& !dialog.getTitle().empty()) {
+			const auto title =
+				buildText(registry, *this, shared_from_this(),
+						  dialog.getTitle(), theme::TypeRole::HeadlineSmall,
+						  schemeColor(SchemeColorRole::OnSurface));
+			if (title != nullptr) {
+				dialog.setTitleEntity(title->getIdentifier());
+				systems::Dialog::installTitle(registry, getIdentifier());
+			}
+		}
+
+		if (dialog.getMessageEntity() == ecs::Entity::InvalidIdentifier
+			&& !dialog.getMessage().empty()) {
+			const auto message =
+				buildText(registry, *this, shared_from_this(),
+						  dialog.getMessage(), theme::TypeRole::BodyMedium,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
+			if (message != nullptr) {
+				dialog.setMessageEntity(message->getIdentifier());
+			}
+		}
+
+		if (dialog.getActionRow() == ecs::Entity::InvalidIdentifier
+			&& !dialog.getActions().empty()) {
+			buildActionRow();
+		}
+
+		// Hand the layout children to the surface.
+		Children children;
+		if (auto icon = getEntity<Icon>(dialog.getIconEntity())) {
+			children.push_back(std::move(icon));
+		}
+		if (auto title = getEntity<Text>(dialog.getTitleEntity())) {
+			children.push_back(std::move(title));
+		}
+		if (auto message = getEntity<Text>(dialog.getMessageEntity())) {
+			children.push_back(std::move(message));
+		}
+		if (auto row = getEntity<View>(dialog.getActionRow())) {
+			children.push_back(std::move(row));
+		}
+		setChildren(children);
+	}
+
+	void Dialog::buildActionRow(void)
+	{
+		auto &registry = getComponentRegistry();
+		auto &dialog =
+			registry.getComponent<components::Dialog>(getIdentifier());
+
+		View::Builder rowBuilder(registry, *this);
+		const auto row = rowBuilder.makeDefaultView(
+			shared_from_this(), utility::graphic::PoseF(), {});
+		if (row == nullptr) {
+			return;
+		}
+		row->setColor(transparentColor());
+		row->setAxis(components::Layout::Axis::Horizontal);
+		row->setMainAxisAlignment(components::Layout::MainAxisAlignment::End);
+		row->setCrossAxisAlignment(
+			components::Layout::CrossAxisAlignment::Center);
+		row->setSpacing(theme::SpacingScale::get(2));
+		row->setPadding(0.0f);
+		row->setFixedWidth(DialogWidth - 2.0f * DialogPadding);
+
+		// The press handlers outlive this call: capture the registry and
+		// the identifier, never the entity object.
+		ecs::ComponentRegistry *registryPointer	 = &registry;
+		const ecs::Entity::Identifier identifier = getIdentifier();
+		const auto &actions						 = dialog.getActions();
+		std::vector<std::shared_ptr<ecs::Entity>> buttons;
+		std::vector<ecs::Entity::Identifier> identifiers;
+
+		for (std::size_t index = 0; index < actions.size(); ++index) {
+			if (actions[index].label.empty()) {
+				continue;
+			}
+			Button::Builder buttonBuilder(registry, *row);
+			const auto button =
+				buttonBuilder.withLabel(actions[index].label)
+					.withColorStyle(Button::Color::Text)
+					.withShape(Button::Shape::Round)
+					.withSize(Button::Size::Small)
+					.withOnClick([registryPointer, identifier, index]() {
+						systems::Dialog::pressAction(*registryPointer,
+													 identifier, index);
+					})
+					.registerEntity(row);
+			if (button != nullptr) {
+				buttons.push_back(button);
+				identifiers.push_back(button->getIdentifier());
+			}
+		}
+		row->setEntities(buttons);
+
+		dialog.setActionEntities(identifiers)
+			.setActionRow(row->getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

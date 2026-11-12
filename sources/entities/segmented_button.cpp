@@ -27,10 +27,31 @@
 #include "guillaume/entities/segmented_button.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/button.hpp"
-#include "guillaume/systems/layout.hpp"
+#include "guillaume/systems/segmented_button.hpp"
 
 namespace guillaume::entities
 {
+	namespace
+	{
+		/**
+		 * @brief Turn plain labels into segment configurations.
+		 * @param labels The segment labels.
+		 * @return One default configuration per label.
+		 */
+		std::vector<SegmentedButton::Segment>
+			segmentsFromLabels(const std::vector<std::string> &labels)
+		{
+			std::vector<SegmentedButton::Segment> segments;
+
+			segments.reserve(labels.size());
+			for (const auto &label: labels) {
+				segments.push_back(
+					SegmentedButton::Segment { label, {}, false, {} });
+			}
+			return segments;
+		}
+	}	 // namespace
+
 	SegmentedButton::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 									  ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<SegmentedButton>(componentRegistry, entityRegistry)
@@ -98,145 +119,37 @@ namespace guillaume::entities
 			.registerEntity(parent);
 	}
 
-	void SegmentedButton::segmentChangeHandler(std::size_t index)
-	{
-		if (index >= _segments.size()) {
-			return;
-		}
-
-		bool nowSelected = _segments[index]->isSelected();
-
-		// Paper single-select commits the pressed value: pressing the
-		// selected segment keeps it selected instead of clearing it.
-		if (_selectionMode == SelectionMode::Single && !nowSelected) {
-			_segments[index]->setSelected(true);
-			nowSelected = true;
-		}
-
-		if (_selectionMode == SelectionMode::Single && nowSelected) {
-			for (std::size_t i = 0; i < _segments.size(); ++i) {
-				if (i != index) {
-					_segments[i]->setSelected(false);
-				}
-			}
-		}
-
-		applySegmentIcons();
-		layoutSegments();
-
-		if (_onChange) {
-			_onChange(index);
-		}
-	}
-
-	void SegmentedButton::applySegmentIcons(void)
-	{
-		for (std::size_t i = 0; i < _segments.size(); ++i) {
-			const std::string icon =
-				i < _segmentConfigs.size() ? _segmentConfigs[i].icon : "";
-			_segments[i]->setIconGlyphName(_segments[i]->isSelected() ? "check"
-																	  : icon);
-		}
-	}
-
-	void SegmentedButton::layoutSegments(void)
-	{
-		// Equalize the segment widths (at least MinSegmentWidth).
-		float width = MinSegmentWidth;
-		for (const auto &segment: _segments) {
-			width = std::max(
-				width,
-				getComponentRegistry()
-					.getComponent<components::Bound>(segment->getIdentifier())
-					.getWidth());
-		}
-		for (auto &segment: _segments) {
-			if (auto button = std::dynamic_pointer_cast<Button>(segment)) {
-				button->setMinWidth(width);
-			}
-		}
-
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		childIdentifiers.reserve(_segments.size());
-
-		for (const auto &segment: _segments) {
-			childIdentifiers.push_back(segment->getIdentifier());
-		}
-
-		systems::Layout::apply(getComponentRegistry(), getIdentifier(),
-							   childIdentifiers,
-							   static_cast<std::uint32_t>(getLayer()));
-
-		if (_segments.empty()) {
-			return;
-		}
-
-		const float height =
-			getComponentRegistry()
-				.getComponent<components::Bound>(getIdentifier())
-				.getHeight();
-		const float radius		= height * 0.5f;
-		const std::size_t count = _segments.size();
-
-		for (std::size_t i = 0; i < count; ++i) {
-			const auto segmentId = _segments[i]->getIdentifier();
-			auto &borders =
-				getComponentRegistry().getComponent<components::Borders>(
-					segmentId);
-
-			const bool isFirst = (i == 0);
-			const bool isLast  = (i == count - 1);
-
-			borders.setTopLeftRadius(isFirst ? radius : 0.0f);
-			borders.setBottomLeftRadius(isFirst ? radius : 0.0f);
-			borders.setTopRightRadius(isLast ? radius : 0.0f);
-			borders.setBottomRightRadius(isLast ? radius : 0.0f);
-		}
-	}
-
 	SegmentedButton::SegmentedButton(ecs::ComponentRegistry &registry,
 									 const std::vector<std::string> &labels,
 									 SelectionMode selectionMode,
 									 std::function<void(std::size_t)> onChange)
-		: ecs::ParentEntityFiller<components::Transform, components::Bound,
-								  components::Layout>(registry)
-		, _labels(labels)
-		, _selectionMode(selectionMode)
-		, _segments()
-		, _onChange(std::move(onChange))
+		: SegmentedButton(registry, segmentsFromLabels(labels), selectionMode,
+						  std::move(onChange))
 	{
-		getComponentRegistry()
-			.getComponent<components::Layout>(getIdentifier())
-			.setAxis(components::Layout::Axis::Horizontal)
-			.setMainAxisAlignment(components::Layout::MainAxisAlignment::Start)
-			.setCrossAxisAlignment(
-				components::Layout::CrossAxisAlignment::Center)
-			.setSpacing(0.0f)
-			.setPadding(0.0f);
 	}
 
 	SegmentedButton::SegmentedButton(ecs::ComponentRegistry &registry,
 									 const std::vector<Segment> &segments,
 									 SelectionMode selectionMode,
 									 std::function<void(std::size_t)> onChange)
-		: SegmentedButton(registry, std::vector<std::string> {}, selectionMode,
-						  std::move(onChange))
+		: ecs::ParentEntityFiller<components::Transform, components::Bound,
+								  components::Layout,
+								  components::SegmentedButton>(registry)
 	{
-		_segmentConfigs = segments;
-		for (const auto &segment: segments) {
-			_labels.push_back(segment.label);
-		}
+		getComponentRegistry()
+			.getComponent<components::SegmentedButton>(getIdentifier())
+			.setSegments(segments)
+			.setSelectionMode(selectionMode)
+			.setOnChange(std::move(onChange));
+		systems::SegmentedButton::install(getComponentRegistry(),
+										  getIdentifier());
 	}
 
 	SegmentedButton &SegmentedButton::setSegmentDisabled(std::size_t index,
 														 bool disabled)
 	{
-		if (index < _segments.size()) {
-			_segments[index]->setDisabled(disabled);
-		}
-		if (index < _segmentConfigs.size()) {
-			_segmentConfigs[index].disabled = disabled;
-		}
+		systems::SegmentedButton::setSegmentDisabled(
+			getComponentRegistry(), getIdentifier(), index, disabled);
 		return *this;
 	}
 
@@ -246,109 +159,73 @@ namespace guillaume::entities
 
 	SegmentedButton &SegmentedButton::select(std::size_t index)
 	{
-		if (index >= _segments.size()) {
-			return *this;
-		}
-
-		if (_selectionMode == SelectionMode::Single) {
-			for (std::size_t i = 0; i < _segments.size(); ++i) {
-				_segments[i]->setSelected(i == index);
-			}
-		} else {
-			_segments[index]->setSelected(true);
-		}
-
-		applySegmentIcons();
-		layoutSegments();
-
+		systems::SegmentedButton::select(getComponentRegistry(),
+										 getIdentifier(), index);
 		return *this;
 	}
 
 	SegmentedButton &SegmentedButton::deselect(std::size_t index)
 	{
-		if (index >= _segments.size()) {
-			return *this;
-		}
-
-		_segments[index]->setSelected(false);
-
-		applySegmentIcons();
-		layoutSegments();
-
+		systems::SegmentedButton::deselect(getComponentRegistry(),
+										   getIdentifier(), index);
 		return *this;
 	}
 
 	bool SegmentedButton::isSelected(std::size_t index) const
 	{
-		if (index >= _segments.size()) {
-			return false;
-		}
-
-		return _segments[index]->isSelected();
+		return systems::SegmentedButton::isSelected(getComponentRegistry(),
+													getIdentifier(), index);
 	}
 
 	std::vector<std::size_t> SegmentedButton::getSelectedIndices(void) const
 	{
-		std::vector<std::size_t> indices;
-
-		for (std::size_t i = 0; i < _segments.size(); ++i) {
-			if (_segments[i]->isSelected()) {
-				indices.push_back(i);
-			}
-		}
-
-		return indices;
+		return systems::SegmentedButton::selectedIndices(getComponentRegistry(),
+														 getIdentifier());
 	}
 
 	std::size_t SegmentedButton::getSegmentCount(void) const
 	{
-		return _segments.size();
+		return getComponentRegistry()
+			.getComponent<components::SegmentedButton>(getIdentifier())
+			.getButtons()
+			.size();
 	}
 
 	ecs::Entity::Identifier
 		SegmentedButton::getSegmentIdentifier(std::size_t index) const
 	{
-		if (index >= _segments.size()) {
-			return ecs::Entity::InvalidIdentifier;
-		}
+		const auto &buttons =
+			getComponentRegistry()
+				.getComponent<components::SegmentedButton>(getIdentifier())
+				.getButtons();
 
-		return _segments[index]->getIdentifier();
+		return index < buttons.size() ? buttons[index]
+									  : ecs::Entity::InvalidIdentifier;
 	}
 
 	void SegmentedButton::initialize(void)
 	{
-		Button::Builder buttonBuilder(getComponentRegistry(), *this);
+		auto &registry = getComponentRegistry();
+		// Copy: building children may move the component storage.
+		const std::vector<Segment> segments =
+			registry.getComponent<components::SegmentedButton>(getIdentifier())
+				.getSegments();
 
-		for (std::size_t i = 0; i < _labels.size(); ++i) {
-			auto segment = buttonBuilder.makeButton(
-				shared_from_this(), _labels[i],
-				std::bind(&SegmentedButton::segmentChangeHandler, this, i),
+		std::vector<ecs::Entity::Identifier> identifiers;
+		Button::Builder buttonBuilder(registry, *this);
+		for (const auto &segment: segments) {
+			// systems::SegmentedButton::install wires the click and applies
+			// the segment options.
+			const auto button = buttonBuilder.makeButton(
+				shared_from_this(), segment.label, std::function<void(void)>(),
 				Button::Color::Segmented, Button::Shape::Square,
 				Button::Size::Medium, false);
-
-			segment->setIsToggle(true);
-
-			if (i < _segmentConfigs.size()) {
-				const auto &config = _segmentConfigs[i];
-				segment->setIconGlyphName(config.icon);
-				segment->setDisabled(config.disabled);
-				if (!config.accessibilityLabel.empty()) {
-					segment->setAccessibilityLabel(config.accessibilityLabel);
-				}
-			}
-
-			_segments.push_back(segment);
+			identifiers.push_back(button->getIdentifier());
 		}
 
-		applySegmentIcons();
-	}
-
-	void SegmentedButton::update(void)
-	{
-		for (auto &segment: _segments) {
-			segment->update();
-		}
-
-		layoutSegments();
+		registry.getComponent<components::SegmentedButton>(getIdentifier())
+			.setButtons(identifiers);
+		systems::SegmentedButton::install(registry, getIdentifier());
+		systems::SegmentedButton::apply(registry, getIdentifier());
 	}
 }	 // namespace guillaume::entities

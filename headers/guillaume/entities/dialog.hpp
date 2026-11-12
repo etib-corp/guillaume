@@ -34,6 +34,8 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/accessibility.hpp"
+#include "guillaume/components/dialog.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
 
@@ -51,32 +53,32 @@ namespace guillaume::entities
 	/**
 	 * @brief Dialog entity: a centered or full-screen overlay panel.
 	 *
-	 * Dialogs reuse `SurfaceBase` for the layout, geometry and background
-	 * surface and `components::Overlay` for the transient overlay behaviour.
-	 * The Material Design variants are:
+	 * A facade without state: the configuration lives in
+	 * `components::Dialog`, the visibility in `components::Overlay`, and
+	 * `systems::Dialog` holds every rule. This class only builds the child
+	 * entities (backdrop, icon, title, message, action row and buttons) and
+	 * forwards its setters to the component and the system. The Material
+	 * Design variants are:
 	 * - `Alert`: a title, a message and a row of textual actions.
 	 * - `Simple`: a title followed by a list of option labels.
 	 * - `Confirmation`: an icon, a title and a message.
 	 * - `FullScreen`: a full-height panel without corners.
 	 *
 	 * @see SurfaceBase
+	 * @see components::Dialog
 	 * @see components::Overlay
+	 * @see systems::Dialog
 	 */
-	class Dialog: public SurfaceBase<components::Overlay, components::Elevation>
+	class Dialog:
+		public SurfaceBase<components::Overlay, components::Elevation,
+						   components::Accessibility, components::Dialog>
 	{
 		public:
-		/**
-		 * @brief Dialog variant.
-		 */
-		enum class Variant { Alert, Simple, Confirmation, FullScreen };
+		/// Dialog variant.
+		using Variant = components::Dialog::Variant;
 
-		/**
-		 * @brief One dialog action, rendered as a text button.
-		 */
-		struct Action {
-			std::string label;					  ///< Button label.
-			std::function<void(void)> onPress;	  ///< Press handler.
-		};
+		/// One dialog action, rendered as a text button.
+		using Action = components::Dialog::Action;
 
 		/**
 		 * @brief Builder used to configure and create `Dialog` entities.
@@ -177,48 +179,6 @@ namespace guillaume::entities
 						   const std::vector<std::string> &actions = {});
 		};
 
-		private:
-		Variant _variant { Variant::Alert };	 ///< Dialog variant.
-		std::string _title {};					 ///< Dialog title.
-		std::string _message {};				 ///< Dialog message.
-		std::vector<Action> _actions {};		 ///< Dialog actions.
-		std::string _icon {};					 ///< Hero icon glyph.
-		std::shared_ptr<Icon> _iconEntity;		 ///< Hero icon child.
-		std::shared_ptr<Text> _titleEntity;		 ///< Title child.
-		std::shared_ptr<Text> _messageEntity;	 ///< Message child.
-		std::vector<std::shared_ptr<Button>>
-			_actionEntities {};					///< Action buttons.
-		std::shared_ptr<View> _actionRow;		///< Right-aligned action row.
-		std::shared_ptr<Backdrop> _backdrop;	///< Modal backdrop.
-
-		private:
-		/**
-		 * @brief Apply the variant-specific geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Configure the overlay component for the current variant.
-		 */
-		void applyOverlay(void);
-
-		/**
-		 * @brief Build the title, message, icon and action child entities.
-		 */
-		void buildContent(void);
-
-		/**
-		 * @brief Create the title text and mark it as a header for
-		 * accessibility.
-		 */
-		void buildTitle(void);
-
-		/**
-		 * @brief Create the action row and one text button per action.
-		 */
-		void buildActionRow(void);
-
-		public:
 		/**
 		 * @brief Construct a Dialog entity.
 		 * @param registry The component registry.
@@ -253,7 +213,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~Dialog(void) override;
+		~Dialog(void) override = default;
 
 		/**
 		 * @brief Set the dialog variant.
@@ -366,14 +326,25 @@ namespace guillaume::entities
 		ecs::Entity::Identifier getIconIdentifier(void) const;
 
 		/**
-		 * @brief Initialize the dialog derived state and children.
+		 * @brief Build the child entities and style the dialog.
 		 */
 		void initialize(void) override;
 
+		private:
 		/**
-		 * @brief Recompute the dialog derived state.
+		 * @brief Build the backdrop, icon, title, message and action
+		 * children that are missing, record their identifiers in
+		 * components::Dialog and hand the layout children to the surface.
+		 *
+		 * Does nothing until the dialog is owned by a shared pointer.
 		 */
-		void update(void) override;
+		void buildContent(void);
+
+		/**
+		 * @brief Create the action row and one text button per action, and
+		 * record their identifiers in components::Dialog.
+		 */
+		void buildActionRow(void);
 	};
 
 }	 // namespace guillaume::entities

@@ -34,7 +34,9 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/elevation.hpp"
+#include "guillaume/components/menu.hpp"
 #include "guillaume/components/overlay.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -49,65 +51,45 @@ namespace guillaume::entities
 	 * @brief Menu entity: a transient list of actionable items (Paper `Menu`
 	 * and `Menu.Item`).
 	 *
-	 * Menus reuse `SurfaceBase` for the layout, geometry and background surface
-	 * and `components::Overlay` for the transient overlay behaviour. Each item
-	 * is a pressable `entities::View` row holding an optional leading icon, a
-	 * `bodyLarge` label and an optional trailing icon. The menu width follows
-	 * its content within the M3 112-280 dp range, and the menu can be anchored
-	 * below or above another entity. The Material Design variants are:
+	 * A facade without state: the configuration lives in `components::Menu`,
+	 * the visibility in `components::Overlay`, and `systems::Menu` holds
+	 * every rule. This class only builds the row entities and forwards its
+	 * setters to the component and the system. Each item is a pressable row
+	 * holding an optional leading icon, a `bodyLarge` label and an optional
+	 * trailing icon. The menu width follows its content within the M3
+	 * 112-280 dp range, and the menu can be anchored below or above another
+	 * entity. The Material Design variants are:
 	 * - `Dropdown`: an anchored menu opened under a trigger.
 	 * - `Context`: a menu opened at the pointer position.
 	 * - `Cascading`: a menu whose items open sub-menus.
 	 *
 	 * @see SurfaceBase
+	 * @see components::Menu
 	 * @see components::Overlay
-	 * @see entities::View
+	 * @see systems::Menu
 	 */
-	class Menu: public SurfaceBase<components::Overlay, components::Elevation>
+	class Menu:
+		public SurfaceBase<components::Overlay, components::Elevation,
+						   components::Accessibility, components::Menu>
 	{
 		public:
-		/**
-		 * @brief Menu variant.
-		 */
-		enum class Variant { Dropdown, Context, Cascading };
+		/// Menu variant.
+		using Variant = components::Menu::Variant;
 
-		/**
-		 * @brief Surface mode (Paper `mode`).
-		 */
-		enum class Mode {
-			Elevated,	 ///< Level 2 shadow and tonal tint.
-			Flat		 ///< No shadow.
-		};
+		/// Surface mode (Paper `mode`).
+		using Mode = components::Menu::Mode;
 
-		/**
-		 * @brief Where the menu opens relative to its anchor.
-		 */
-		enum class AnchorPosition {
-			Bottom,	   ///< Below the anchor (Paper default).
-			Top		   ///< Above the anchor.
-		};
+		/// Where the menu opens relative to its anchor.
+		using AnchorPosition = components::Menu::AnchorPosition;
 
-		/**
-		 * @brief Menu item.
-		 */
-		struct Item {
-			std::string label;				///< Item label text.
-			std::string leadingIcon;		///< Optional leading icon glyph.
-			std::string trailingIcon {};	///< Optional trailing icon glyph.
-			std::function<void(void)> onPress {};	 ///< Press handler.
-			bool disabled { false };	///< Whether the item is disabled.
-			bool dense { false };		///< Whether the item is 32 dp high.
-		};
+		/// Menu item.
+		using Item = components::Menu::Item;
 
-		/**
-		 * @brief Smallest M3 menu width.
-		 */
-		static constexpr float MinWidth = 112.0f;
+		/// Smallest M3 menu width.
+		static constexpr float MinWidth = components::Menu::MinWidth;
 
-		/**
-		 * @brief Largest M3 menu width.
-		 */
-		static constexpr float MaxWidth = 280.0f;
+		/// Largest M3 menu width.
+		static constexpr float MaxWidth = components::Menu::MaxWidth;
 
 		/**
 		 * @brief Builder used to configure and create menus.
@@ -194,7 +176,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~Menu(void) override;
+		~Menu(void) override = default;
 
 		/**
 		 * @brief Set the menu variant.
@@ -223,7 +205,7 @@ namespace guillaume::entities
 		Mode getMode(void) const;
 
 		/**
-		 * @brief Replace the items.
+		 * @brief Replace the items and rebuild the rows.
 		 * @param items The new items.
 		 * @return Reference to this menu for chaining.
 		 */
@@ -328,77 +310,19 @@ namespace guillaume::entities
 		bool isVisible(void) const;
 
 		/**
-		 * @brief Build the rows.
+		 * @brief Build the rows and style the menu.
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Restyle, size and anchor the menu.
-		 */
-		void update(void) override;
-
 		private:
 		/**
-		 * @brief Built row and its content.
-		 */
-		struct Row {
-			std::shared_ptr<View> view;	   ///< Row container.
-			std::vector<std::shared_ptr<ecs::Entity>>
-				content;					///< Row children.
-			std::shared_ptr<Text> label;	///< Label child.
-			std::vector<std::shared_ptr<ecs::Entity>>
-				icons;	  ///< Leading/trailing icon children.
-		};
-
-		Variant _variant { Variant::Dropdown };	   ///< Menu variant.
-		Mode _mode { Mode::Elevated };			   ///< Surface mode.
-		std::vector<Item> _items {};			   ///< Menu items.
-		std::vector<Row> _rows {};				   ///< Item rows.
-		bool _rowsDirty { true };				   ///< Rows must rebuild.
-		ecs::Entity::Identifier _anchor {
-			ecs::Entity::InvalidIdentifier
-		};	  ///< Anchor entity.
-		AnchorPosition _anchorPosition {
-			AnchorPosition::Bottom
-		};	  ///< Anchor position.
-
-		/**
-		 * @brief Apply the variant geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Apply the overlay flags.
-		 */
-		void applyOverlay(void);
-
-		/**
-		 * @brief Build or refresh the rows.
+		 * @brief Build one row per item when the rows are stale, record
+		 * their identifiers in components::Menu and hand them to the
+		 * surface as layout children.
+		 *
+		 * Does nothing until the menu is owned by a shared pointer.
 		 */
 		void buildItems(void);
-
-		/**
-		 * @brief Build one row.
-		 * @param index Item index.
-		 * @return The row.
-		 */
-		Row buildRow(std::size_t index);
-
-		/**
-		 * @brief Restyle one row from its interaction state.
-		 * @param index Item index.
-		 */
-		void styleRow(std::size_t index);
-
-		/**
-		 * @brief Size the menu and its rows from the content.
-		 */
-		void applyWidth(void);
-
-		/**
-		 * @brief Move the menu next to its anchor.
-		 */
-		void applyAnchor(void);
 	};
 
 }	 // namespace guillaume::entities

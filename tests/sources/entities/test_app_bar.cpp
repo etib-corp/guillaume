@@ -41,6 +41,7 @@
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/entities/style_helpers.hpp>
+#include <guillaume/systems/app_bar.hpp>
 #include <guillaume/systems/layout.hpp>
 #include <guillaume/theme.hpp>
 
@@ -88,7 +89,9 @@ namespace guillaume::entities::tests
 				utility::graphic::PositionF(100.0f, 50.0f, 0.0f),
 				utility::graphic::OrientationF()));
 
-		appBar->update();
+		// The pose was written behind the facade: run the system as a frame
+		// would.
+		systems::AppBar::apply(registry, appBar->getIdentifier());
 
 		const auto positions = directChildPositions(registry, appBar);
 		ASSERT_EQ(positions.size(), 1u);

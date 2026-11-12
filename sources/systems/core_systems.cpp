@@ -23,17 +23,21 @@
 #include "guillaume/systems/core_systems.hpp"
 
 #include "guillaume/systems/animation.hpp"
+#include "guillaume/systems/app_bar.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/backdrop.hpp"
 #include "guillaume/systems/badge.hpp"
 #include "guillaume/systems/button.hpp"
+#include "guillaume/systems/card.hpp"
 #include "guillaume/systems/checkbox.hpp"
 #include "guillaume/systems/chip.hpp"
 #include "guillaume/systems/common_button.hpp"
 #include "guillaume/systems/extended_floating_action_button.hpp"
 #include "guillaume/systems/floating_action_button.hpp"
+#include "guillaume/systems/floating_action_button_menu.hpp"
 #include "guillaume/systems/icon_button.hpp"
 #include "guillaume/systems/clip.hpp"
+#include "guillaume/systems/dialog.hpp"
 #include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/drag.hpp"
 #include "guillaume/systems/elevation_render.hpp"
@@ -57,6 +61,7 @@
 #include "guillaume/systems/measure_glyph.hpp"
 #include "guillaume/systems/measure_mesh.hpp"
 #include "guillaume/systems/measure_text.hpp"
+#include "guillaume/systems/menu.hpp"
 #include "guillaume/systems/mesh_render.hpp"
 #include "guillaume/systems/mouse_button.hpp"
 #include "guillaume/systems/mouse_motion.hpp"
@@ -66,8 +71,10 @@
 #include "guillaume/systems/ring_render.hpp"
 #include "guillaume/systems/scrim_render.hpp"
 #include "guillaume/systems/scroll.hpp"
+#include "guillaume/systems/segmented_button.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/systems/radio_button.hpp"
+#include "guillaume/systems/radio_group.hpp"
 #include "guillaume/systems/snackbar.hpp"
 #include "guillaume/systems/style_state.hpp"
 #include "guillaume/systems/surface_tone.hpp"
@@ -170,6 +177,16 @@ namespace guillaume::systems
 			std::make_unique<systems::ProgressIndicator>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Tooltip>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Snackbar>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::AppBar>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Card>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::RadioGroup>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::SegmentedButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::FloatingActionButtonMenu>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Dialog>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Menu>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

@@ -35,6 +35,7 @@
 
 #include "guillaume/components/transform.hpp"
 #include "guillaume/components/bound.hpp"
+#include "guillaume/components/floating_action_button_menu.hpp"
 #include "guillaume/components/layout.hpp"
 
 #include "guillaume/entities/button_base.hpp"
@@ -46,22 +47,20 @@ namespace guillaume::entities
 	 * @brief Floating action button menu (speed dial) entity. A trigger
 	 * `FloatingActionButton` that expands a column of smaller action buttons
 	 * when opened.
+	 *
+	 * The class is a facade: its state lives in
+	 * components::FloatingActionButtonMenu and its rules in
+	 * systems::FloatingActionButtonMenu.
 	 */
 	class FloatingActionButtonMenu:
 		public std::enable_shared_from_this<FloatingActionButtonMenu>,
 		public ecs::ParentEntityFiller<components::Transform, components::Bound,
-									   components::Layout>
+									   components::Layout,
+									   components::FloatingActionButtonMenu>
 	{
 		public:
-		/**
-		 * @brief Describes a single action in the menu.
-		 */
-		struct Action {
-			std::string label;			  ///< Accessibility/action label
-			std::string iconGlyphName;	  ///< Icon glyph name
-			std::function<void(void)>
-				onClick;	///< Click handler for the action
-		};
+		/// Describes a single action in the menu.
+		using Action = components::FloatingActionButtonMenu::Action;
 
 		/**
 		 * @brief Builder used to configure and create
@@ -144,35 +143,6 @@ namespace guillaume::entities
 											 const std::string &iconGlyphName);
 		};
 
-		private:
-		std::string _iconGlyphName {};		   ///< Trigger icon glyph name.
-		std::vector<Action> _actions {};	   ///< Menu actions.
-		std::string _accessibilityLabel {};	   ///< Trigger accessibility label.
-		bool _isOpen { false };	   ///< Whether the menu is expanded.
-		std::function<void(bool)>
-			_onStateChange {};	  ///< Called with the new open state.
-		std::shared_ptr<ButtonBase> _trigger;	 ///< Trigger child entity
-		std::vector<std::shared_ptr<ButtonBase>>
-			_actionButtons;	   ///< Action child entities
-
-		private:
-		/**
-		 * @brief Trigger click handler that toggles the menu.
-		 */
-		void triggerHandler(void);
-
-		/**
-		 * @brief Lay out the trigger and (when open) the action column.
-		 */
-		void layoutMenu(void);
-
-		/**
-		 * @brief Apply the open state: show/enable open actions, hide closed
-		 * ones, and publish the expanded state on the trigger.
-		 */
-		void applyOpenState(void);
-
-		public:
 		/**
 		 * @brief Construct a FloatingActionButtonMenu entity.
 		 * @param registry Reference to the component registry.
@@ -244,14 +214,23 @@ namespace guillaume::entities
 		ecs::Entity::Identifier getActionIdentifier(std::size_t index) const;
 
 		/**
-		 * @brief Initialize the menu entity's derived state.
+		 * @brief Build the trigger and action button children and record
+		 * their identifiers in components::FloatingActionButtonMenu.
 		 */
 		void initialize(void) override;
 
+		private:
 		/**
-		 * @brief Recompute the menu entity's derived state.
+		 * @brief Access the menu state.
+		 * @return The components::FloatingActionButtonMenu of this entity.
 		 */
-		void update(void) override;
+		components::FloatingActionButtonMenu &state(void);
+
+		/**
+		 * @brief Access the menu state.
+		 * @return The components::FloatingActionButtonMenu of this entity.
+		 */
+		const components::FloatingActionButtonMenu &state(void) const;
 	};
 
 }	 // namespace guillaume::entities

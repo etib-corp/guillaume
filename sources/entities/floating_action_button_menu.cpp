@@ -27,7 +27,7 @@
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/extended_floating_action_button.hpp"
 #include "guillaume/entities/floating_action_button.hpp"
-#include "guillaume/systems/layout.hpp"
+#include "guillaume/systems/floating_action_button_menu.hpp"
 
 namespace guillaume::entities
 {
@@ -101,158 +101,115 @@ namespace guillaume::entities
 		const std::vector<Action> &actions,
 		const std::string &accessibilityLabel)
 		: ecs::ParentEntityFiller<components::Transform, components::Bound,
-								  components::Layout>(registry)
-		, _iconGlyphName(iconGlyphName)
-		, _actions(actions)
-		, _accessibilityLabel(accessibilityLabel)
-		, _isOpen(false)
-		, _trigger()
-		, _actionButtons()
+								  components::Layout,
+								  components::FloatingActionButtonMenu>(
+			  registry)
 	{
-		getComponentRegistry()
-			.getComponent<components::Layout>(getIdentifier())
-			.setAxis(components::Layout::Axis::Vertical)
-			.setMainAxisAlignment(components::Layout::MainAxisAlignment::End)
-			.setCrossAxisAlignment(
-				components::Layout::CrossAxisAlignment::Center)
-			.setSpacing(16.0f)
-			.setPadding(0.0f);
+		state()
+			.setIconGlyphName(iconGlyphName)
+			.setActions(actions)
+			.setAccessibilityLabel(accessibilityLabel);
+		systems::FloatingActionButtonMenu::install(getComponentRegistry(),
+												   getIdentifier());
 	}
 
 	FloatingActionButtonMenu::~FloatingActionButtonMenu(void)
 	{
 	}
 
+	components::FloatingActionButtonMenu &FloatingActionButtonMenu::state(void)
+	{
+		return getComponentRegistry()
+			.getComponent<components::FloatingActionButtonMenu>(
+				getIdentifier());
+	}
+
+	const components::FloatingActionButtonMenu &
+		FloatingActionButtonMenu::state(void) const
+	{
+		return getComponentRegistry()
+			.getComponent<components::FloatingActionButtonMenu>(
+				getIdentifier());
+	}
+
 	FloatingActionButtonMenu &FloatingActionButtonMenu::open(void)
 	{
-		if (!_isOpen) {
-			_isOpen = true;
-			applyOpenState();
-		}
+		systems::FloatingActionButtonMenu::open(getComponentRegistry(),
+												getIdentifier());
 		return *this;
 	}
 
 	FloatingActionButtonMenu &FloatingActionButtonMenu::close(void)
 	{
-		if (_isOpen) {
-			_isOpen = false;
-			applyOpenState();
-		}
+		systems::FloatingActionButtonMenu::close(getComponentRegistry(),
+												 getIdentifier());
 		return *this;
 	}
 
 	FloatingActionButtonMenu &FloatingActionButtonMenu::toggle(void)
 	{
-		return _isOpen ? close() : open();
+		systems::FloatingActionButtonMenu::toggle(getComponentRegistry(),
+												  getIdentifier());
+		return *this;
 	}
 
 	FloatingActionButtonMenu &FloatingActionButtonMenu::setOnStateChange(
 		std::function<void(bool)> onStateChange)
 	{
-		_onStateChange = std::move(onStateChange);
+		state().setOnStateChange(std::move(onStateChange));
 		return *this;
-	}
-
-	void FloatingActionButtonMenu::applyOpenState(void)
-	{
-		// Closed actions are hidden and ignore activation, so they cannot be
-		// clicked through while the menu is collapsed.
-		for (auto &button: _actionButtons) {
-			button->setVisible(_isOpen);
-		}
-
-		if (_trigger != nullptr) {
-			getComponentRegistry()
-				.getComponent<components::Accessibility>(
-					_trigger->getIdentifier())
-				.setExpanded(_isOpen);
-			_trigger->setIconGlyphName(_isOpen ? "close" : _iconGlyphName);
-		}
-
-		layoutMenu();
-
-		if (_onStateChange) {
-			_onStateChange(_isOpen);
-		}
 	}
 
 	bool FloatingActionButtonMenu::isOpen(void) const
 	{
-		return _isOpen;
+		return state().isOpen();
 	}
 
 	std::size_t FloatingActionButtonMenu::getActionCount(void) const
 	{
-		return _actionButtons.size();
+		return state().getActionButtons().size();
 	}
 
 	ecs::Entity::Identifier
 		FloatingActionButtonMenu::getTriggerIdentifier(void) const
 	{
-		return _trigger != nullptr ? _trigger->getIdentifier()
-								   : ecs::Entity::InvalidIdentifier;
+		return state().getTrigger();
 	}
 
 	ecs::Entity::Identifier
 		FloatingActionButtonMenu::getActionIdentifier(std::size_t index) const
 	{
-		if (index >= _actionButtons.size()) {
-			return ecs::Entity::InvalidIdentifier;
-		}
+		const auto &buttons = state().getActionButtons();
 
-		return _actionButtons[index]->getIdentifier();
-	}
-
-	void FloatingActionButtonMenu::triggerHandler(void)
-	{
-		toggle();
-	}
-
-	void FloatingActionButtonMenu::layoutMenu(void)
-	{
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-
-		if (_isOpen) {
-			for (const auto &button: _actionButtons) {
-				childIdentifiers.push_back(button->getIdentifier());
-			}
-		}
-
-		if (_trigger != nullptr) {
-			childIdentifiers.push_back(_trigger->getIdentifier());
-		}
-
-		systems::Layout::apply(getComponentRegistry(), getIdentifier(),
-							   childIdentifiers,
-							   static_cast<std::uint32_t>(getLayer()));
+		return index < buttons.size() ? buttons[index]
+									  : ecs::Entity::InvalidIdentifier;
 	}
 
 	void FloatingActionButtonMenu::initialize(void)
 	{
-		FloatingActionButton::Builder triggerBuilder(getComponentRegistry(),
-													 *this);
+		auto &registry = getComponentRegistry();
+		// Copies: building children may move the component storage.
+		const std::string iconGlyphName	  = state().getIconGlyphName();
+		const std::vector<Action> actions = state().getActions();
 
-		_trigger = triggerBuilder.makeFloatingActionButton(
-			shared_from_this(), _iconGlyphName,
-			std::bind(&FloatingActionButtonMenu::triggerHandler, this),
+		// systems::FloatingActionButtonMenu::install wires every click.
+		FloatingActionButton::Builder triggerBuilder(registry, *this);
+		const auto trigger = triggerBuilder.makeFloatingActionButton(
+			shared_from_this(), iconGlyphName, std::function<void(void)>(),
 			FloatingActionButton::Variant::Primary,
 			FloatingActionButton::Size::Medium);
-		_trigger->setAccessibilityLabel(_accessibilityLabel);
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(_trigger->getIdentifier())
-			.setExpanded(false);
 
-		FloatingActionButton::Builder actionBuilder(getComponentRegistry(),
-													*this);
-		ExtendedFloatingActionButton::Builder labelledBuilder(
-			getComponentRegistry(), *this);
+		FloatingActionButton::Builder actionBuilder(registry, *this);
+		ExtendedFloatingActionButton::Builder labelledBuilder(registry, *this);
+		std::vector<ecs::Entity::Identifier> identifiers;
 
-		for (const auto &action: _actions) {
+		for (const auto &action: actions) {
 			std::shared_ptr<ButtonBase> button;
 
 			if (action.label.empty()) {
 				button = actionBuilder.makeFloatingActionButton(
-					shared_from_this(), action.iconGlyphName, action.onClick,
+					shared_from_this(), action.iconGlyphName,
+					std::function<void(void)>(),
 					FloatingActionButton::Variant::Surface,
 					FloatingActionButton::Size::Small);
 			} else {
@@ -260,7 +217,6 @@ namespace guillaume::entities
 				button =
 					labelledBuilder.withIcon(action.iconGlyphName)
 						.withLabel(action.label)
-						.withOnClick(action.onClick)
 						.withVariant(
 							ExtendedFloatingActionButton::Variant::Surface)
 						.withSize(ExtendedFloatingActionButton::Size::Small)
@@ -268,22 +224,13 @@ namespace guillaume::entities
 						.registerEntity(shared_from_this());
 			}
 
-			_actionButtons.push_back(button);
+			identifiers.push_back(button->getIdentifier());
 		}
 
-		for (auto &button: _actionButtons) {
-			button->setVisible(_isOpen);
-		}
-	}
-
-	void FloatingActionButtonMenu::update(void)
-	{
-		_trigger->update();
-
-		for (auto &button: _actionButtons) {
-			button->update();
-		}
-
-		layoutMenu();
+		state()
+			.setTrigger(trigger->getIdentifier())
+			.setActionButtons(identifiers);
+		systems::FloatingActionButtonMenu::install(registry, getIdentifier());
+		systems::FloatingActionButtonMenu::apply(registry, getIdentifier());
 	}
 }	 // namespace guillaume::entities

@@ -109,4 +109,20 @@ namespace guillaume::components
 		}
 		return *this;
 	}
+
+	const std::optional<CommonButton::Corners> &
+		CommonButton::getCorners(void) const noexcept
+	{
+		return _corners;
+	}
+
+	CommonButton &
+		CommonButton::setCorners(const std::optional<Corners> &corners)
+	{
+		if (_corners != corners) {
+			_corners = corners;
+			setHasChanged(true);
+		}
+		return *this;
+	}
 }	 // namespace guillaume::components

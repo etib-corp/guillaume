@@ -34,6 +34,7 @@
 #include "guillaume/ecs/entity_builder.hpp"
 
 #include "guillaume/components/animation.hpp"
+#include "guillaume/components/card.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
@@ -56,28 +57,29 @@ namespace guillaume::entities
 	 * `Card.Content` and `Card.Actions`, always laid out in that order.
 	 * Setting a press handler makes the card interactive (hover/press state
 	 * layers, focus, Button role); a disabled card ignores presses.
+	 *
+	 * The class is a facade without fields: its state is components::Card
+	 * and systems::Card styles the card, runs its press elevation and
+	 * arranges its sections. `initialize()` only builds the child entities.
 	 */
-	class Card: public SurfaceBase<components::Elevation, components::Animation>
+	class Card:
+		public SurfaceBase<components::Elevation, components::Animation,
+						   components::Card>
 	{
 		public:
-		/**
-		 * @brief Card variants.
-		 */
-		enum class Variant {
-			Elevated,	 ///< Tonal level-1 surface with shadow.
-			Filled,		 ///< Paper `contained`: surfaceVariant.
-			Outlined	 ///< Surface with an outlineVariant stroke.
-		};
+		/// Card variants.
+		using Variant = components::Card::Variant;
 
 		/**
 		 * @brief Height of `Card.Cover` (Paper: 195 dp).
 		 */
-		static constexpr float CoverHeight = 195.0f;
+		static constexpr float CoverHeight = components::Card::CoverHeight;
 
 		/**
 		 * @brief Minimum height of `Card.Title` (Paper: 72 dp).
 		 */
-		static constexpr float TitleMinHeight = 72.0f;
+		static constexpr float TitleMinHeight =
+			components::Card::TitleMinHeight;
 
 		/**
 		 * @brief Builder for Card entities.
@@ -243,8 +245,14 @@ namespace guillaume::entities
 		/** @brief Get the actions row. @return The row, or nullptr. */
 		std::shared_ptr<ecs::Entity> getActionsSection(void) const;
 
-		/** @brief Get the action buttons. @return The buttons. */
-		const std::vector<std::shared_ptr<Button>> &getActions(void) const;
+		/**
+		 * @brief Get the action buttons.
+		 *
+		 * The card keeps no list of them: the buttons are resolved from the
+		 * identifiers recorded in components::Card on every call.
+		 * @return The buttons, in the order they were added.
+		 */
+		std::vector<std::shared_ptr<Button>> getActions(void) const;
 
 		/**
 		 * @brief Get the press-elevation progress (0 at rest, 1 pressed).
@@ -257,52 +265,12 @@ namespace guillaume::entities
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Restyle the card.
-		 */
-		void update(void) override;
-
 		private:
 		/**
-		 * @brief Composition data of one action.
-		 */
-		struct ActionSpec {
-			std::string label;					  ///< Button label.
-			std::function<void(void)> onPress;	  ///< Button handler.
-		};
-
-		Variant _variant { Variant::Elevated };	   ///< Card variant.
-		bool _interactive { false };			   ///< Whether pressable.
-		std::function<void(void)> _onPress {};	   ///< Press handler.
-		bool _pressed { false };				   ///< Last pressed state.
-		float _pressProgress { 0.0f };			   ///< Elevation progress.
-		float _pressFrom { 0.0f };		///< Progress when the motion began.
-		bool _initialized { false };	///< Whether children may be built.
-		std::string _coverPath {};		///< Cover texture.
-		std::string _title {};			///< Title text.
-		std::string _subtitle {};		///< Subtitle text.
-		std::string _contentText {};	///< Content text.
-		std::vector<ActionSpec> _actionSpecs {};		 ///< Requested actions.
-		std::shared_ptr<Image> _cover;					 ///< Cover image.
-		std::shared_ptr<ecs::Entity> _titleSection;		 ///< Title section.
-		std::shared_ptr<Text> _titleText;				 ///< Title text.
-		std::shared_ptr<Text> _subtitleText;			 ///< Subtitle text.
-		std::shared_ptr<Text> _content;					 ///< Content text.
-		std::shared_ptr<ecs::Entity> _actionsSection;	 ///< Actions row.
-		std::vector<std::shared_ptr<Button>> _actions;	  ///< Action buttons.
-
-		/**
-		 * @brief Apply colors, stroke and elevation for the current state.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief React to a hover/press change from the interaction model.
-		 */
-		void onInteractionChanged(void);
-
-		/**
-		 * @brief Create the missing composed sections and order them.
+		 * @brief Create the missing composed sections, record their
+		 * identifiers in components::Card and order them.
+		 *
+		 * Does nothing until the card is owned by a shared pointer.
 		 */
 		void buildComposition(void);
 	};

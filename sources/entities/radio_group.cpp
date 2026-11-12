@@ -22,10 +22,9 @@
 
 #include "guillaume/entities/radio_group.hpp"
 
-#include <stdexcept>
 #include <utility>
 
-#include "guillaume/components/accessibility.hpp"
+#include "guillaume/systems/radio_group.hpp"
 
 namespace guillaume::entities
 {
@@ -101,92 +100,86 @@ namespace guillaume::entities
 						   const std::vector<std::string> &options,
 						   std::optional<std::size_t> value,
 						   std::function<void(std::size_t)> onValueChange)
-		: SurfaceBase<>(registry, config)
-		, _options(options)
-		, _value(value)
-		, _onValueChange(std::move(onValueChange))
+		: SurfaceBase<components::RadioGroup>(registry, config)
 	{
-		if (!getComponentRegistry().hasComponent<components::Accessibility>(
-				getIdentifier())) {
-			getComponentRegistry().addComponent<components::Accessibility>(
-				getIdentifier());
-		}
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setRole(components::AccessibilityRole::RadioGroup)
-			.setFocusable(false);
+			.getComponent<components::RadioGroup>(getIdentifier())
+			.setOptions(options)
+			.setValue(value)
+			.setOnValueChange(std::move(onValueChange));
+		systems::RadioGroup::install(getComponentRegistry(), getIdentifier());
 	}
 
 	RadioGroup &RadioGroup::setValue(std::size_t index)
 	{
-		if (index >= _options.size()) {
-			throw std::out_of_range("RadioGroup option index out of range");
-		}
-		_value = index;
-		applySelection();
+		systems::RadioGroup::select(getComponentRegistry(), getIdentifier(),
+									index);
 		return *this;
 	}
 
 	std::optional<std::size_t> RadioGroup::getValue(void) const
 	{
-		return _value;
+		return getComponentRegistry()
+			.getComponent<components::RadioGroup>(getIdentifier())
+			.getValue();
 	}
 
 	std::size_t RadioGroup::getOptionCount(void) const
 	{
-		return _options.size();
+		return getComponentRegistry()
+			.getComponent<components::RadioGroup>(getIdentifier())
+			.getOptions()
+			.size();
 	}
 
 	std::shared_ptr<RadioButton> RadioGroup::getOption(std::size_t index) const
 	{
-		return index < _buttons.size() ? _buttons[index] : nullptr;
+		const auto &buttons =
+			getComponentRegistry()
+				.getComponent<components::RadioGroup>(getIdentifier())
+				.getButtons();
+
+		if (index >= buttons.size()) {
+			return nullptr;
+		}
+		// The lookup is const because this getter is; the child itself is
+		// shared and mutable, as it always was.
+		return std::const_pointer_cast<RadioButton>(
+			getEntity<RadioButton>(buttons[index]));
 	}
 
 	RadioGroup &RadioGroup::setOnValueChange(
 		std::function<void(std::size_t)> onValueChange)
 	{
-		_onValueChange = std::move(onValueChange);
+		getComponentRegistry()
+			.getComponent<components::RadioGroup>(getIdentifier())
+			.setOnValueChange(std::move(onValueChange));
 		return *this;
-	}
-
-	void RadioGroup::applySelection(void)
-	{
-		for (std::size_t i = 0; i < _buttons.size(); ++i) {
-			const bool selected = _value.has_value() && *_value == i;
-			if (_buttons[i]->isSelected() != selected) {
-				_buttons[i]->select(selected);
-			}
-		}
 	}
 
 	void RadioGroup::initialize(void)
 	{
-		update();
+		auto &registry = getComponentRegistry();
+		// Copy: building children may move the component storage.
+		const std::vector<std::string> options =
+			registry.getComponent<components::RadioGroup>(getIdentifier())
+				.getOptions();
 
-		_buttons.clear();
-		RadioButton::Builder builder(getComponentRegistry(), *this);
-		for (std::size_t i = 0; i < _options.size(); ++i) {
-			auto button = builder.withLabel(_options[i])
-							  .registerEntity(shared_from_this());
-			button->setOnPress([this, i]() {
-				const bool changed = !_value.has_value() || *_value != i;
-				_value			   = i;
-				applySelection();
-				if (changed && _onValueChange) {
-					_onValueChange(i);
-				}
-			});
-			_buttons.push_back(button);
+		std::vector<ecs::Entity::Identifier> identifiers;
+		Children children;
+		RadioButton::Builder builder(registry, *this);
+		for (const auto &option: options) {
+			const auto button =
+				builder.withLabel(option).registerEntity(shared_from_this());
+			identifiers.push_back(button->getIdentifier());
+			children.push_back(button);
 		}
 
-		setChildren(Children(_buttons.begin(), _buttons.end()));
-		applySelection();
-	}
-
-	void RadioGroup::update(void)
-	{
-		applyGeometry();
-		applySelection();
+		registry.getComponent<components::RadioGroup>(getIdentifier())
+			.setButtons(identifiers);
+		setChildren(children);
+		systems::RadioGroup::install(registry, getIdentifier());
+		systems::RadioGroup::apply(registry, getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

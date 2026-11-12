@@ -36,6 +36,7 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/layout.hpp"
+#include "guillaume/components/segmented_button.hpp"
 
 #include "guillaume/entities/button_base.hpp"
 
@@ -44,32 +45,28 @@ namespace guillaume::entities
 
 	/**
 	 * @brief Segmented button entity grouping multiple toggle buttons.
+	 *
+	 * The class is a facade: its state lives in components::SegmentedButton
+	 * and its rules in systems::SegmentedButton.
 	 */
 	class SegmentedButton:
 		public std::enable_shared_from_this<SegmentedButton>,
 		public ecs::ParentEntityFiller<components::Transform, components::Bound,
-									   components::Layout>
+									   components::Layout,
+									   components::SegmentedButton>
 	{
 		public:
-		/**
-		 * @brief Selection mode of the segmented button.
-		 */
-		enum class SelectionMode { Single, Multi };
+		/// Selection mode of the segmented button.
+		using SelectionMode = components::SegmentedButton::SelectionMode;
 
-		/**
-		 * @brief Per-segment configuration (Paper `buttons[]` entry).
-		 */
-		struct Segment {
-			std::string label {};				  ///< Visible label.
-			std::string icon {};				  ///< Optional leading icon.
-			bool disabled { false };			  ///< Whether disabled.
-			std::string accessibilityLabel {};	  ///< Accessible name.
-		};
+		/// Per-segment configuration (Paper `buttons[]` entry).
+		using Segment = components::SegmentedButton::Segment;
 
 		/**
 		 * @brief Minimum segment width (Paper SegmentedButtons: 76 dp).
 		 */
-		static constexpr float MinSegmentWidth = 76.0f;
+		static constexpr float MinSegmentWidth =
+			components::SegmentedButton::MinSegmentWidth;
 
 		/**
 		 * @brief Builder used to configure and create `SegmentedButton`
@@ -154,37 +151,6 @@ namespace guillaume::entities
 									std::function<void(std::size_t)> onChange);
 		};
 
-		private:
-		std::vector<std::string> _labels {};		///< Labels of the segments
-		std::vector<Segment> _segmentConfigs {};	///< Segment options
-		SelectionMode _selectionMode {
-			SelectionMode::Single
-		};	  ///< Selection mode
-		std::vector<std::shared_ptr<ButtonBase>>
-			_segments;	  ///< Internal child button entities
-		std::function<void(std::size_t)>
-			_onChange {};	 ///< Change event handler (selected index)
-
-		private:
-		/**
-		 * @brief Change event handler for a segment.
-		 * @param index The index of the segment that changed.
-		 */
-		void segmentChangeHandler(std::size_t index);
-
-		/**
-		 * @brief Lay out the segments in a connected row and apply connected
-		 * corner radii.
-		 */
-		void layoutSegments(void);
-
-		/**
-		 * @brief Show the check glyph on selected segments and the configured
-		 * icon on the others.
-		 */
-		void applySegmentIcons(void);
-
-		public:
 		/**
 		 * @brief Default constructor for the SegmentedButton entity.
 		 * @param registry Reference to the component registry.
@@ -264,14 +230,10 @@ namespace guillaume::entities
 		ecs::Entity::Identifier getSegmentIdentifier(std::size_t index) const;
 
 		/**
-		 * @brief Initialize the segmented button entity's derived state.
+		 * @brief Build the segment button children and record their
+		 * identifiers in components::SegmentedButton.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the segmented button entity's derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities
