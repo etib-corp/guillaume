@@ -25,8 +25,10 @@
 #include "guillaume/systems/animation.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/backdrop.hpp"
+#include "guillaume/systems/badge.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/checkbox.hpp"
+#include "guillaume/systems/chip.hpp"
 #include "guillaume/systems/common_button.hpp"
 #include "guillaume/systems/extended_floating_action_button.hpp"
 #include "guillaume/systems/floating_action_button.hpp"
@@ -51,6 +53,7 @@
 #include "guillaume/systems/keyboard_control.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/line_render.hpp"
+#include "guillaume/systems/loading_indicator.hpp"
 #include "guillaume/systems/measure_glyph.hpp"
 #include "guillaume/systems/measure_mesh.hpp"
 #include "guillaume/systems/measure_text.hpp"
@@ -58,18 +61,21 @@
 #include "guillaume/systems/mouse_button.hpp"
 #include "guillaume/systems/mouse_motion.hpp"
 #include "guillaume/systems/overlay.hpp"
+#include "guillaume/systems/progress_indicator.hpp"
 #include "guillaume/systems/rectangle_render.hpp"
 #include "guillaume/systems/ring_render.hpp"
 #include "guillaume/systems/scrim_render.hpp"
 #include "guillaume/systems/scroll.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/systems/radio_button.hpp"
+#include "guillaume/systems/snackbar.hpp"
 #include "guillaume/systems/style_state.hpp"
 #include "guillaume/systems/surface_tone.hpp"
 #include "guillaume/systems/switch.hpp"
 #include "guillaume/systems/text_field.hpp"
 #include "guillaume/systems/text_input.hpp"
 #include "guillaume/systems/text_render.hpp"
+#include "guillaume/systems/tooltip.hpp"
 #include "guillaume/systems/typography.hpp"
 
 namespace guillaume::systems
@@ -156,6 +162,14 @@ namespace guillaume::systems
 			std::make_unique<systems::FloatingActionButton>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::ExtendedFloatingActionButton>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Badge>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Chip>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::LoadingIndicator>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::ProgressIndicator>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Tooltip>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Snackbar>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

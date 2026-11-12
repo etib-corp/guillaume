@@ -32,6 +32,7 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/chip.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/selection.hpp"
 
@@ -54,22 +55,26 @@ namespace guillaume::entities
 	 * - `Input`: label plus a trailing remove icon.
 	 * - `Suggestion`: label only.
 	 *
+	 * The class is a facade without fields: its state is components::Chip
+	 * and systems::Chip styles the chip and arranges its children.
+	 * `initialize()` only builds the child entities. `getChildren()` returns
+	 * every child built there; the ones currently laid out (the check
+	 * replaces the leading icon while selected) are the children of the
+	 * chip's components::Layout.
+	 *
 	 * @see SurfaceBase
 	 * @see components::Selectable
 	 */
 	class Chip:
-		public SurfaceBase<components::Selectable, components::Elevation>
+		public SurfaceBase<components::Selectable, components::Elevation,
+						   components::Chip>
 	{
 		public:
-		/**
-		 * @brief Chip variant.
-		 */
-		enum class Variant { Assist, Filter, Input, Suggestion };
+		/// Chip variant.
+		using Variant = components::Chip::Variant;
 
-		/**
-		 * @brief Paper chip mode: tonal flat (default) or outlined.
-		 */
-		enum class Mode { Flat, Outlined };
+		/// Paper chip mode: tonal flat (default) or outlined.
+		using Mode = components::Chip::Mode;
 
 		/**
 		 * @brief Builder used to configure and create `Chip` entities.
@@ -154,36 +159,6 @@ namespace guillaume::entities
 										   bool selected);
 		};
 
-		private:
-		Variant _variant { Variant::Assist };	  ///< Chip variant.
-		std::string _label {};					  ///< Chip label.
-		std::string _iconGlyph {};				  ///< Leading icon glyph.
-		std::shared_ptr<Icon> _leadingIcon;		  ///< Leading icon child.
-		std::shared_ptr<Icon> _trailingIcon;	  ///< Trailing icon child.
-		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
-		std::shared_ptr<Icon> _checkIcon;		  ///< Selected check child.
-		Mode _mode { Mode::Flat };				  ///< Chip mode.
-		bool _compact { false };				  ///< Compact padding.
-		bool _elevated { false };				  ///< Level-1 shadow.
-		bool _showSelectedOverlay { false };	  ///< Selected state layer.
-		bool _showSelectedCheck { true };		  ///< Check when selected.
-		std::function<void(void)> _onPress {};	  ///< Activation handler.
-		std::function<void(void)> _onClose {};	  ///< Close-icon handler.
-
-		private:
-		void applyVariant(void);
-
-		/**
-		 * @brief Rebuild the layout children (check shown only when selected).
-		 */
-		void attachChildren(void);
-
-		/**
-		 * @brief Handle an activation: toggle filter chips, then notify.
-		 */
-		void pressHandler(void);
-
-		public:
 		/**
 		 * @brief Construct a Chip entity.
 		 * @param registry The component registry.
@@ -303,14 +278,9 @@ namespace guillaume::entities
 		ecs::Entity::Identifier getCloseIconIdentifier(void) const;
 
 		/**
-		 * @brief Initialize the chip derived state and children.
+		 * @brief Build the icon and label children.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the chip derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

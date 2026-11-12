@@ -33,6 +33,7 @@
 
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/animation.hpp"
+#include "guillaume/components/progress_indicator.hpp"
 #include "guillaume/components/value.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -54,23 +55,23 @@ namespace guillaume::entities
 	 * - `CircularDeterminate`: a 48x48 ring whose arc spans the value.
 	 * - `CircularIndeterminate`: a 48x48 ring with a rotating arc.
 	 *
+	 * This class is a facade without fields: the state lives in
+	 * `components::ProgressIndicator` (and `components::Value`) and the rules
+	 * in `systems::ProgressIndicator`.
+	 *
 	 * @see SurfaceBase
 	 * @see components::Value
+	 * @see components::ProgressIndicator
+	 * @see systems::ProgressIndicator
 	 */
 	class ProgressIndicator:
 		public SurfaceBase<components::Value, components::Animation,
-						   components::Accessibility>
+						   components::Accessibility,
+						   components::ProgressIndicator>
 	{
 		public:
-		/**
-		 * @brief Progress indicator visual variant.
-		 */
-		enum class Variant {
-			LinearDeterminate,		 ///< Linear determinate bar.
-			LinearIndeterminate,	 ///< Linear indeterminate bar.
-			CircularDeterminate,	 ///< Circular determinate ring.
-			CircularIndeterminate	 ///< Circular indeterminate ring.
-		};
+		/// Variant (see components::ProgressIndicator).
+		using Variant = components::ProgressIndicator::Variant;
 
 		/**
 		 * @brief Builder used to configure and create `ProgressIndicator`
@@ -152,57 +153,6 @@ namespace guillaume::entities
 				makeProgressIndicator(std::shared_ptr<ecs::Entity> parent,
 									  Variant variant, float value);
 		};
-
-		private:
-		Variant _variant { Variant::LinearDeterminate };	///< Variant.
-		float _trackLength { 200.0f };			///< Linear track length.
-		float _diameter { 48.0f };				///< Circular diameter.
-		std::shared_ptr<ecs::Entity> _track;	///< Track child entity.
-		std::shared_ptr<ecs::Entity> _fill;		///< Fill child entity.
-		bool _built { false };					///< Whether children exist.
-		float _displayed { 0.0f };	  ///< Value currently drawn (animated).
-		float _valueFrom { 0.0f };	  ///< Value when the transition began.
-		bool _visible { true };		  ///< Target visibility (Paper `visible`).
-		float _opacity { 1.0f };	  ///< Current fade opacity.
-		float _opacityFrom { 1.0f };	///< Opacity when the fade began.
-		std::optional<utility::graphic::Color32Bit>
-			_indicatorColor {};	   ///< Fill color override (Paper `color`).
-
-		/**
-		 * @brief Start a 200 ms transition toward the target value/opacity.
-		 */
-		void startTransition(void);
-
-		/**
-		 * @brief Apply the global fade to a color.
-		 * @param color Color to fade.
-		 * @return The faded color.
-		 */
-		utility::graphic::Color32Bit
-			faded(const utility::graphic::Color32Bit &color) const;
-
-		private:
-		/**
-		 * @brief Build (and attach) the track and fill children.
-		 */
-		void buildChildren(void);
-
-		/**
-		 * @brief Refresh the track and fill geometry from the current value.
-		 */
-		void applyState(void);
-
-		/**
-		 * @brief Whether the current variant is circular.
-		 * @return True for circular variants.
-		 */
-		bool isCircular(void) const;
-
-		/**
-		 * @brief Whether the current variant is indeterminate.
-		 * @return True for indeterminate variants.
-		 */
-		bool isIndeterminate(void) const;
 
 		public:
 		/**
@@ -292,17 +242,20 @@ namespace guillaume::entities
 		 * @brief Indeterminate segment length, as a fraction of the track
 		 * (Paper uses 60%).
 		 */
-		static constexpr float IndeterminateSegment = 0.6f;
+		static constexpr float IndeterminateSegment =
+			components::ProgressIndicator::IndeterminateSegment;
 
 		/**
-		 * @brief Initialize the progress indicator derived state and children.
+		 * @brief Build the track and fill children of the progress indicator.
 		 */
 		void initialize(void) override;
 
+		private:
 		/**
-		 * @brief Recompute the progress indicator derived state.
+		 * @brief Build (and attach) the track and fill children of the
+		 * current variant, unless they already exist.
 		 */
-		void update(void) override;
+		void buildChildren(void);
 	};
 
 }	 // namespace guillaume::entities

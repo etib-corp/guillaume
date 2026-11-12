@@ -38,6 +38,7 @@
 #include <guillaume/components/layout.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/badge.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -94,7 +95,7 @@ namespace guillaume::entities::tests
 			.getComponent<components::Bound>(
 				badge->getChildren().front()->getIdentifier())
 			.setWidth(30.0f);
-		badge->update();
+		systems::Badge::apply(registry, badge->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 36.0f);
 	}
 

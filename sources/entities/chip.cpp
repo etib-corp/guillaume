@@ -29,6 +29,7 @@
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/interaction_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/chip.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -112,329 +113,207 @@ namespace guillaume::entities
 	Chip::Chip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			   Variant variant, const std::string &label,
 			   const std::string &iconGlyph, bool selected)
-		: SurfaceBase<components::Selectable, components::Elevation>(registry,
-																	 config)
-		, _variant(variant)
-		, _label(label)
-		, _iconGlyph(iconGlyph)
-		, _leadingIcon()
-		, _trailingIcon()
-		, _labelEntity()
-		, _checkIcon()
+		: SurfaceBase<components::Selectable, components::Elevation,
+					  components::Chip>(registry, config)
 	{
-		makeInteractive(
-			getComponentRegistry(), getIdentifier(),
-			components::AccessibilityRole::Button,
-			[this]() {
-				pressHandler();
-			},
-			[this]() {
-				applyVariant();
-			});
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setLabel(label);
-
+			.getComponent<components::Chip>(getIdentifier())
+			.setVariant(variant)
+			.setLabel(label)
+			.setIconGlyph(iconGlyph);
 		getComponentRegistry()
 			.getComponent<components::Selectable>(getIdentifier())
-			.setSelected(selected)
-			.setOnSelectionChangedHandler([this](bool) {
-				applyVariant();
-			});
-
-		applyVariant();
-	}
-
-	void Chip::pressHandler(void)
-	{
-		if (isDisabled()) {
-			return;
-		}
-		if (_variant == Variant::Filter) {
-			setSelected(!isSelected());
-		}
-		if (_onPress) {
-			_onPress();
-		}
+			.setSelected(selected);
+		systems::Chip::install(getComponentRegistry(), getIdentifier());
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Chip::~Chip(void)
 	{
 	}
 
-	void Chip::applyVariant(void)
-	{
-		auto &borders =
-			getComponentRegistry().getComponent<components::Borders>(
-				getIdentifier());
-
-		const bool selected = isSelected();
-		const bool disabled = isDisabled();
-		const bool outlined = (_mode == Mode::Outlined);
-
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setSelected(selected);
-
-		// Paper v5 Chip/helpers.tsx: flat chips sit on secondaryContainer;
-		// outlined chips are transparent with an outline until selected.
-		utility::graphic::Color32Bit container = transparentColor();
-		if (!outlined || selected) {
-			container = schemeColor(SchemeColorRole::SecondaryContainer);
-		}
-		auto content   = (outlined && !selected)
-			  ? schemeColor(SchemeColorRole::OnSurfaceVariant)
-			  : schemeColor(SchemeColorRole::OnSecondaryContainer);
-		auto iconColor = selected
-			? schemeColor(SchemeColorRole::OnSecondaryContainer)
-			: schemeColor(SchemeColorRole::Primary);
-
-		if (disabled) {
-			container =
-				outlined ? transparentColor() : disabledContainerColor();
-			content	  = disabledContentColor();
-			iconColor = disabledContentColor();
-		} else {
-			if (selected && _showSelectedOverlay) {
-				container =
-					stateLayer(container, content, theme::StateLayer::Pressed);
-			}
-			container = stateLayerColor(getComponentRegistry(), getIdentifier(),
-										container, content);
-		}
-
-		setColor(container);
-
-		if (outlined && !selected) {
-			borders
-				.setColor(disabled ? disabledContainerColor()
-								   : schemeColor(SchemeColorRole::Outline))
-				.setWidth(1.0f);
-		} else {
-			borders.setColor(transparentColor()).setWidth(0.0f);
-		}
-
-		getComponentRegistry()
-			.getComponent<components::Elevation>(getIdentifier())
-			.setElevationLevel((_elevated && !disabled)
-								   ? theme::ElevationLevel::Level1
-								   : theme::ElevationLevel::Level0);
-
-		auto config	   = getSurfaceConfig();
-		config.padding = _compact ? 8.0f : 12.0f;
-		setSurfaceConfig(config);
-
-		if (_leadingIcon != nullptr) {
-			_leadingIcon->setColor(iconColor);
-		}
-		if (_checkIcon != nullptr) {
-			_checkIcon->setColor((selected && _showSelectedCheck)
-									 ? iconColor
-									 : transparentColor());
-		}
-		if (_trailingIcon != nullptr) {
-			_trailingIcon->setColor(content);
-		}
-		if (_labelEntity != nullptr) {
-			_labelEntity->setColor(content);
-		}
-
-		attachChildren();
-	}
-
-	void Chip::attachChildren(void)
-	{
-		if (_labelEntity == nullptr && _leadingIcon == nullptr
-			&& _checkIcon == nullptr && _trailingIcon == nullptr) {
-			return;
-		}
-
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-		// The selected check replaces the leading icon (Paper
-		// showSelectedCheck); it is not laid out while unselected.
-		if (_checkIcon != nullptr && isSelected() && _showSelectedCheck) {
-			children.push_back(_checkIcon);
-		} else if (_leadingIcon != nullptr) {
-			children.push_back(_leadingIcon);
-		}
-		if (_labelEntity != nullptr) {
-			children.push_back(_labelEntity);
-		}
-		if (_trailingIcon != nullptr) {
-			children.push_back(_trailingIcon);
-		}
-		setChildren(children);
-	}
-
 	Chip &Chip::setMode(Mode mode)
 	{
-		_mode = mode;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setMode(mode);
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Chip::Mode Chip::getMode(void) const
 	{
-		return _mode;
+		return getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.getMode();
 	}
 
 	Chip &Chip::setDisabled(bool disabled)
 	{
-		setEnabled(getComponentRegistry(), getIdentifier(), !disabled);
-		applyVariant();
+		systems::Chip::setDisabled(getComponentRegistry(), getIdentifier(),
+								   disabled);
 		return *this;
 	}
 
 	bool Chip::isDisabled(void) const
 	{
-		return !isEnabled(getComponentRegistry(), getIdentifier());
+		return systems::Chip::isDisabled(getComponentRegistry(),
+										 getIdentifier());
 	}
 
 	Chip &Chip::setCompact(bool compact)
 	{
-		_compact = compact;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setCompact(compact);
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Chip &Chip::setElevated(bool elevated)
 	{
-		_elevated = elevated;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setElevated(elevated);
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Chip &Chip::setShowSelectedOverlay(bool show)
 	{
-		_showSelectedOverlay = show;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setShowSelectedOverlay(show);
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Chip &Chip::setShowSelectedCheck(bool show)
 	{
-		_showSelectedCheck = show;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setShowSelectedCheck(show);
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Chip &Chip::setOnPress(std::function<void(void)> onPress)
 	{
-		_onPress = std::move(onPress);
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setOnPress(std::move(onPress));
 		return *this;
 	}
 
 	Chip &Chip::setOnClose(std::function<void(void)> onClose)
 	{
-		_onClose = std::move(onClose);
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setOnClose(std::move(onClose));
 		return *this;
 	}
 
 	ecs::Entity::Identifier Chip::getCloseIconIdentifier(void) const
 	{
-		return _trailingIcon != nullptr ? _trailingIcon->getIdentifier()
-										: ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.getTrailingIcon();
 	}
 
 	Chip &Chip::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setVariant(variant);
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Chip::Variant Chip::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.getVariant();
 	}
 
 	Chip &Chip::setLabel(const std::string &label)
 	{
-		_label = label;
-
-		if (_labelEntity != nullptr) {
-			_labelEntity->setContent(label);
-		}
-
-		applyVariant();
-
+		getComponentRegistry()
+			.getComponent<components::Chip>(getIdentifier())
+			.setLabel(label);
+		systems::Chip::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Chip &Chip::setSelected(bool selected)
 	{
-		getComponentRegistry()
-			.getComponent<components::Selectable>(getIdentifier())
-			.setSelected(selected);
-
-		applyVariant();
-
+		systems::Chip::setSelected(getComponentRegistry(), getIdentifier(),
+								   selected);
 		return *this;
 	}
 
 	bool Chip::isSelected(void) const
 	{
-		return getComponentRegistry()
-			.getComponent<components::Selectable>(getIdentifier())
-			.isSelected();
+		return systems::Chip::isSelected(getComponentRegistry(),
+										 getIdentifier());
 	}
 
 	void Chip::initialize(void)
 	{
-		update();
-
+		auto &registry = getComponentRegistry();
+		auto &chip = registry.getComponent<components::Chip>(getIdentifier());
 		const auto contentColor =
 			schemeColor(SchemeColorRole::OnSecondaryContainer);
+		std::vector<std::shared_ptr<ecs::Entity>> children;
 
-		std::string leadingGlyph = _iconGlyph;
-		if (_variant == Variant::Assist && leadingGlyph.empty()) {
-			leadingGlyph = "event";
+		// Which children exist is decided by systems::Chip; they are only
+		// built here because that needs shared_from_this().
+		const auto leadingIcon =
+			buildIcon(registry, *this, shared_from_this(),
+					  systems::Chip::leadingGlyph(registry, getIdentifier()),
+					  components::Chip::IconSize, contentColor);
+		if (leadingIcon != nullptr) {
+			chip.setLeadingIcon(leadingIcon->getIdentifier());
+			children.push_back(leadingIcon);
 		}
 
-		if (!leadingGlyph.empty()) {
-			_leadingIcon =
-				buildIcon(getComponentRegistry(), *this, shared_from_this(),
-						  leadingGlyph, 18.0f, contentColor);
-		}
-
-		if (_variant == Variant::Filter) {
-			_checkIcon =
-				buildIcon(getComponentRegistry(), *this, shared_from_this(),
-						  "check", 18.0f, contentColor);
-		}
-
-		if (!_label.empty()) {
-			_labelEntity =
-				buildText(getComponentRegistry(), *this, shared_from_this(),
-						  _label, theme::TypeRole::LabelLarge, contentColor);
-		}
-
-		if (_variant == Variant::Input || _onClose) {
-			_trailingIcon =
-				buildIcon(getComponentRegistry(), *this, shared_from_this(),
-						  "close", 18.0f, contentColor);
-			if (_trailingIcon != nullptr) {
-				makeInteractive(
-					getComponentRegistry(), _trailingIcon->getIdentifier(),
-					components::AccessibilityRole::Button, [this]() {
-						if (!isDisabled() && _onClose) {
-							_onClose();
-						}
-					});
-				getComponentRegistry()
-					.getComponent<components::Accessibility>(
-						_trailingIcon->getIdentifier())
-					.setLabel("Close");
+		if (systems::Chip::needsCheckIcon(registry, getIdentifier())) {
+			const auto checkIcon =
+				buildIcon(registry, *this, shared_from_this(),
+						  components::Chip::CheckGlyph,
+						  components::Chip::IconSize, contentColor);
+			if (checkIcon != nullptr) {
+				chip.setCheckIcon(checkIcon->getIdentifier());
+				children.push_back(checkIcon);
 			}
 		}
 
-		applyVariant();
-	}
+		const auto label =
+			buildText(registry, *this, shared_from_this(), chip.getLabel(),
+					  theme::TypeRole::LabelLarge, contentColor);
+		if (label != nullptr) {
+			chip.setLabelEntity(label->getIdentifier());
+			children.push_back(label);
+		}
 
-	void Chip::update(void)
-	{
-		applyGeometry();
-		applyVariant();
+		if (systems::Chip::needsCloseIcon(registry, getIdentifier())) {
+			const auto closeIcon =
+				buildIcon(registry, *this, shared_from_this(),
+						  components::Chip::CloseGlyph,
+						  components::Chip::IconSize, contentColor);
+			if (closeIcon != nullptr) {
+				chip.setTrailingIcon(closeIcon->getIdentifier());
+				children.push_back(closeIcon);
+				systems::Chip::installCloseIcon(registry, getIdentifier());
+			}
+		}
+
+		// Every child is attached; systems::Chip then narrows the layout
+		// children to the ones currently shown.
+		if (!children.empty()) {
+			setChildren(children);
+		}
+		systems::Chip::apply(registry, getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

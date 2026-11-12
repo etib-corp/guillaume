@@ -39,9 +39,11 @@
 #include <guillaume/components/borders.hpp>
 #include <guillaume/components/bound.hpp>
 #include <guillaume/components/color.hpp>
+#include <guillaume/components/layout.hpp>
 #include <guillaume/components/selection.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/chip.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -183,8 +185,14 @@ namespace guillaume::entities::tests
 		chip->initialize();
 		chip->update();
 
+		// The chip owns the check and the label; the check is only laid out
+		// while selected, so the Layout component is what tracks it.
+		const auto &layout =
+			registry.getComponent<components::Layout>(chip->getIdentifier());
+		EXPECT_EQ(chip->getChildren().size(), 2U);
+
 		// Unselected filter chip: label only.
-		EXPECT_EQ(chip->getChildren().size(), 1U);
+		EXPECT_EQ(layout.getChildren().size(), 1U);
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -192,7 +200,7 @@ namespace guillaume::entities::tests
 			.getOnButtonReleaseHandler(
 				utility::event::MouseButtonEvent::Button::Left)();
 		EXPECT_TRUE(chip->isSelected());
-		EXPECT_EQ(chip->getChildren().size(), 2U);
+		EXPECT_EQ(layout.getChildren().size(), 2U);
 		EXPECT_TRUE(
 			registry
 				.getComponent<components::Accessibility>(chip->getIdentifier())
@@ -267,7 +275,7 @@ namespace guillaume::entities::tests
 			.getComponent<components::MouseHoverInteraction>(
 				chip->getIdentifier())
 			.setHovered(true);
-		chip->update();
+		systems::Chip::apply(registry, chip->getIdentifier());
 		EXPECT_NE(
 			registry.getComponent<components::Color>(chip->getIdentifier())
 				.getColor(),

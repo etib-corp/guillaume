@@ -53,13 +53,19 @@ set(TEST_SOURCES
     sources/event/test_event_bus.cpp
     sources/event/test_event_handler.cpp
     sources/event/test_event_subscriber.cpp
+    sources/systems/test_badge.cpp
     sources/systems/test_button.cpp
     sources/systems/test_checkbox.cpp
+    sources/systems/test_chip.cpp
     sources/systems/test_focus.cpp
     sources/systems/test_backdrop.cpp
     sources/systems/test_divider.cpp
+    sources/systems/test_loading_indicator.cpp
+    sources/systems/test_progress_indicator.cpp
     sources/systems/test_radio_button.cpp
+    sources/systems/test_snackbar.cpp
     sources/systems/test_switch.cpp
+    sources/systems/test_tooltip.cpp
     sources/systems/test_typography.cpp
     sources/systems/test_ellipse_render.cpp
     sources/systems/test_animation.cpp

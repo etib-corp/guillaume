@@ -35,6 +35,7 @@
 #include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/overlay.hpp"
+#include "guillaume/components/snackbar.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/surface.hpp"
@@ -53,33 +54,38 @@ namespace guillaume::entities
 	 * - `MultiLine`: a taller message bar, height 68.
 	 * - `WithAction`: a message line followed by a trailing action, height 48.
 	 *
+	 * The class is a facade without fields: its state is
+	 * components::Snackbar and systems::Snackbar styles the bar and runs its
+	 * dismissal. `initialize()` only builds the child entities.
+	 *
 	 * @see SurfaceBase
 	 * @see components::Overlay
 	 */
 	class Snackbar:
 		public SurfaceBase<components::Overlay, components::Elevation,
-						   components::Accessibility>
+						   components::Accessibility, components::Snackbar>
 	{
 		public:
-		/**
-		 * @brief Snackbar variant.
-		 */
-		enum class Variant { SingleLine, MultiLine, WithAction };
+		/// Snackbar variant.
+		using Variant = components::Snackbar::Variant;
 
 		/**
 		 * @brief Paper `Snackbar.DURATION_SHORT`, in seconds.
 		 */
-		static constexpr float DurationShort = 4.0f;
+		static constexpr float DurationShort =
+			components::Snackbar::DurationShort;
 
 		/**
 		 * @brief Paper `Snackbar.DURATION_MEDIUM` (the default), in seconds.
 		 */
-		static constexpr float DurationMedium = 7.0f;
+		static constexpr float DurationMedium =
+			components::Snackbar::DurationMedium;
 
 		/**
 		 * @brief Paper `Snackbar.DURATION_LONG`, in seconds.
 		 */
-		static constexpr float DurationLong = 10.0f;
+		static constexpr float DurationLong =
+			components::Snackbar::DurationLong;
 
 		/**
 		 * @brief Builder used to configure and create `Snackbar` entities.
@@ -186,49 +192,6 @@ namespace guillaume::entities
 							 const std::string &action = "");
 		};
 
-		private:
-		Variant _variant { Variant::SingleLine };	 ///< Snackbar variant.
-		std::string _message {};					 ///< Message text.
-		std::string _action {};						 ///< Action label.
-		std::shared_ptr<Text> _messageEntity;		 ///< Message child entity.
-		std::shared_ptr<Text> _actionEntity;		 ///< Action child entity.
-		bool _visible { true };	   ///< Whether the snackbar is shown.
-		float _duration { DurationMedium };			///< Display time.
-		std::function<void(void)> _onDismiss {};	///< Dismiss handler.
-		std::function<void(void)> _onAction {};		///< Action handler.
-
-		/**
-		 * @brief Mirror visibility on the overlay and the visuals.
-		 */
-		void applyVisibility(void);
-
-		/**
-		 * @brief Handle a dismissal reported by the overlay system.
-		 */
-		void handleDismiss(void);
-
-		private:
-		/**
-		 * @brief Get the fixed height for the current variant.
-		 * @return The snackbar height.
-		 */
-		float getVariantHeight(void) const;
-
-		/**
-		 * @brief Apply the variant-specific geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Configure the overlay component for a snackbar.
-		 */
-		void applyOverlay(void);
-
-		/**
-		 * @brief Build the message and action child entities when needed.
-		 */
-		void buildContent(void);
-
 		public:
 		/**
 		 * @brief Construct a Snackbar entity.
@@ -245,7 +208,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~Snackbar(void) override;
+		~Snackbar(void) override = default;
 
 		/**
 		 * @brief Set the snackbar variant.
@@ -328,14 +291,18 @@ namespace guillaume::entities
 		std::shared_ptr<Text> getActionEntity(void) const;
 
 		/**
-		 * @brief Initialize the snackbar derived state.
+		 * @brief Build the message and action children.
 		 */
 		void initialize(void) override;
 
+		private:
 		/**
-		 * @brief Recompute the snackbar derived state.
+		 * @brief Build the message and action child entities that are
+		 * missing and record their identifiers in components::Snackbar.
+		 *
+		 * Does nothing until the snackbar is owned by a shared pointer.
 		 */
-		void update(void) override;
+		void buildContent(void);
 	};
 
 }	 // namespace guillaume::entities

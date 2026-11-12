@@ -35,24 +35,21 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/transform.hpp"
 
-#include "guillaume/entities/placement_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/style_helpers.hpp"
-#include "guillaume/motion/easing.hpp"
+#include "guillaume/systems/loading_indicator.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
 	namespace
 	{
-		constexpr float LinearHeight = 4.0f;
-		constexpr float LinearWidth	 = 200.0f;
-		const float LinearRadius	 = getShapeRadius(theme::ShapeRole::Full);
-		constexpr float CircularSize = 48.0f;
-		constexpr float StrokeRatio	 = 4.0f / 48.0f;	///< M3 4 dp at 48 dp.
-		constexpr float TwoPi		 = 6.28318530717958647692f;
-		constexpr float HalfPi		 = 1.57079632679489661923f;
-		constexpr float ArcSweep	 = 4.71238898038468985769f;	   // 1.5 * pi
+		constexpr float LinearHeight =
+			components::LoadingIndicator::LinearHeight;
+		constexpr float LinearWidth = components::LoadingIndicator::LinearWidth;
+		const float LinearRadius	= getShapeRadius(theme::ShapeRole::Full);
+		constexpr float CircularSize =
+			components::LoadingIndicator::DefaultSize;
 
 		/**
 		 * @brief Linear sliding bar child of a loading indicator.
@@ -179,70 +176,60 @@ namespace guillaume::entities
 	LoadingIndicator::LoadingIndicator(ecs::ComponentRegistry &registry,
 									   const SurfaceConfig &config,
 									   Variant variant)
-		: SurfaceBase<components::Animation, components::Accessibility>(
-			  registry, config)
-		, _variant(variant)
-		, _diameter(variant == Variant::Circular && config.hasFixedHeight
-						? config.fixedHeight
-						: CircularSize)
-		, _animation()
-		, _built(false)
+		: SurfaceBase<components::Animation, components::Accessibility,
+					  components::LoadingIndicator>(registry, config)
 	{
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setRole(components::AccessibilityRole::ProgressBar);
-		getComponentRegistry()
-			.getComponent<components::Animation>(getIdentifier())
-			.setDuration(getMotionDuration(theme::MotionDuration::Short4))
-			.setEasing(theme::MotionScale::standard())
-			.setOnSampleHandler([this](float progress) {
-				_opacity =
-					_opacityFrom + (_opacityTarget - _opacityFrom) * progress;
-				applyState();
-			});
-	}
-
-	void LoadingIndicator::startFade(void)
-	{
-		const float target = (isRunning() || !_hidesWhenStopped) ? 1.0f : 0.0f;
-		if (target == _opacityTarget && target == _opacity) {
-			return;
-		}
-		_opacityFrom   = _opacity;
-		_opacityTarget = target;
-		getComponentRegistry()
-			.getComponent<components::Animation>(getIdentifier())
-			.play();
+			.getComponent<components::LoadingIndicator>(getIdentifier())
+			.setVariant(variant)
+			.setSize(variant == Variant::Circular && config.hasFixedHeight
+						 ? config.fixedHeight
+						 : CircularSize);
+		systems::LoadingIndicator::install(getComponentRegistry(),
+										   getIdentifier());
+		systems::LoadingIndicator::apply(getComponentRegistry(),
+										 getIdentifier());
 	}
 
 	LoadingIndicator &LoadingIndicator::setHidesWhenStopped(bool hides)
 	{
-		_hidesWhenStopped = hides;
-		startFade();
+		getComponentRegistry()
+			.getComponent<components::LoadingIndicator>(getIdentifier())
+			.setHidesWhenStopped(hides);
+		systems::LoadingIndicator::startFade(getComponentRegistry(),
+											 getIdentifier());
 		return *this;
 	}
 
 	bool LoadingIndicator::hidesWhenStopped(void) const
 	{
-		return _hidesWhenStopped;
+		return getComponentRegistry()
+			.getComponent<components::LoadingIndicator>(getIdentifier())
+			.hidesWhenStopped();
 	}
 
 	float LoadingIndicator::getOpacity(void) const
 	{
-		return _opacity;
+		return getComponentRegistry()
+			.getComponent<components::LoadingIndicator>(getIdentifier())
+			.getOpacity();
 	}
 
 	LoadingIndicator &LoadingIndicator::setIndicatorColor(
 		const utility::graphic::Color32Bit &color)
 	{
-		_indicatorColor = color;
-		applyState();
+		getComponentRegistry()
+			.getComponent<components::LoadingIndicator>(getIdentifier())
+			.setIndicatorColor(color);
+		systems::LoadingIndicator::apply(getComponentRegistry(),
+										 getIdentifier());
 		return *this;
 	}
 
 	utility::graphic::Color32Bit LoadingIndicator::getIndicatorColor(void) const
 	{
-		return _indicatorColor.value_or(schemeColor(SchemeColorRole::Primary));
+		return systems::LoadingIndicator::indicatorColor(getComponentRegistry(),
+														 getIdentifier());
 	}
 
 	LoadingIndicator &LoadingIndicator::setSize(float size)
@@ -251,23 +238,32 @@ namespace guillaume::entities
 			throw std::invalid_argument(
 				"Loading indicator size must be positive");
 		}
-		_diameter = size;
-		if (_variant == Variant::Circular) {
-			_built = false;
+
+		auto &state =
+			getComponentRegistry().getComponent<components::LoadingIndicator>(
+				getIdentifier());
+
+		state.setSize(size);
+		if (state.getVariant() == Variant::Circular) {
+			state.setBuilt(false);
 			buildChild();
-			applyState();
+			systems::LoadingIndicator::apply(getComponentRegistry(),
+											 getIdentifier());
 		}
 		return *this;
 	}
 
 	float LoadingIndicator::getSize(void) const
 	{
-		return _diameter;
+		return getComponentRegistry()
+			.getComponent<components::LoadingIndicator>(getIdentifier())
+			.getSize();
 	}
 
 	float LoadingIndicator::getStrokeWidth(void) const
 	{
-		return _diameter * StrokeRatio;
+		return systems::LoadingIndicator::strokeWidth(getComponentRegistry(),
+													  getIdentifier());
 	}
 
 	LoadingIndicator::~LoadingIndicator(void)
@@ -276,198 +272,92 @@ namespace guillaume::entities
 
 	void LoadingIndicator::buildChild(void)
 	{
-		if (_built) {
+		auto &registry = getComponentRegistry();
+		auto &state	   = registry.getComponent<components::LoadingIndicator>(
+			   getIdentifier());
+
+		if (state.isBuilt()) {
 			return;
 		}
 
-		// Remove any child left over from a previous variant.
+		// Remove any child left over from a previous variant, and silence
+		// its animation so it no longer drives this indicator.
+		if (registry.hasComponent<components::Animation>(
+				state.getIndicator())) {
+			registry.getComponent<components::Animation>(state.getIndicator())
+				.setOnSampleHandler(components::Animation::SampleHandler {})
+				.stop();
+		}
 		this->accessDirectEntities().clear();
 
-		auto config = getSurfaceConfig();
-
-		config.padding = 0.0f;
-		config.spacing = 0.0f;
-
-		if (_variant == Variant::Circular) {
-			config.borderRadius	  = _diameter * 0.5f;
-			config.hasFixedWidth  = true;
-			config.fixedWidth	  = _diameter;
-			config.hasFixedHeight = true;
-			config.fixedHeight	  = _diameter;
+		std::shared_ptr<ecs::Entity> child;
+		if (state.getVariant() == Variant::Circular) {
+			child = std::make_shared<RotatingArc>(registry);
 		} else {
-			config.borderRadius	  = LinearRadius;
-			config.hasFixedWidth  = true;
-			config.fixedWidth	  = LinearWidth;
-			config.hasFixedHeight = true;
-			config.fixedHeight	  = LinearHeight;
+			child = std::make_shared<LinearBar>(registry);
 		}
+		child->setParent(shared_from_this());
+		this->addEntity(child);
+		state.setIndicator(child->getIdentifier()).setBuilt(true);
+		systems::LoadingIndicator::installChildren(registry, getIdentifier());
 
-		setSurfaceConfig(config);
-		setColor(transparentColor());
-
-		if (_variant == Variant::Circular) {
-			auto arc = std::make_shared<RotatingArc>(getComponentRegistry());
-			arc->setParent(shared_from_this());
-			this->addEntity(arc);
-			_animation = arc;
-
-			getComponentRegistry()
-				.getComponent<components::Arc>(_animation->getIdentifier())
-				.setThickness(getStrokeWidth())
-				.setStartAngle(-HalfPi)
-				.setSweepAngle(ArcSweep);
-			getComponentRegistry()
-				.getComponent<components::Color>(_animation->getIdentifier())
-				.setColor(schemeColor(SchemeColorRole::Primary));
-		} else {
-			auto bar = std::make_shared<LinearBar>(getComponentRegistry());
-			bar->setParent(shared_from_this());
-			this->addEntity(bar);
-			_animation = bar;
-
-			getComponentRegistry()
-				.getComponent<components::Bound>(_animation->getIdentifier())
-				.setWidth(LinearWidth * 0.4f)
-				.setHeight(LinearHeight);
-			getComponentRegistry()
-				.getComponent<components::Borders>(_animation->getIdentifier())
-				.setBorderRadius(LinearRadius);
-			getComponentRegistry()
-				.getComponent<components::Color>(_animation->getIdentifier())
-				.setColor(schemeColor(SchemeColorRole::Primary));
-		}
-
-		auto &animation =
-			getComponentRegistry().getComponent<components::Animation>(
-				_animation->getIdentifier());
-		animation.setDuration(theme::MotionScale::IndeterminateCycle)
-			.setEasing(motion::Easing::Standard)
-			.setLooping(true)
-			.setOnSampleHandler([this](float progress) {
-				_progress = progress;
-				applyState();
-			});
-		animation.play();
-
-		// The animated child is positioned manually, so it is not registered
-		// as a layout child of the surface.
+		// The animated child is positioned by systems::LoadingIndicator, so
+		// it is not registered as a layout child of the surface.
 		setChildren({});
-
-		_built = true;
-	}
-
-	void LoadingIndicator::applyState(void)
-	{
-		if (!_built || _animation == nullptr) {
-			return;
-		}
-
-		const float progress = _progress;
-
-		const auto color = getIndicatorColor();
-		getComponentRegistry()
-			.getComponent<components::Color>(_animation->getIdentifier())
-			.setColor(withAlpha(
-				color,
-				static_cast<std::uint8_t>(
-					static_cast<float>(color.getAlpha()) * _opacity + 0.5f)));
-
-		if (_variant == Variant::Circular) {
-			auto &arc = getComponentRegistry().getComponent<components::Arc>(
-				_animation->getIdentifier());
-			arc.setStartAngle(-HalfPi + progress * TwoPi);
-			arc.setSweepAngle(ArcSweep);
-
-			placeChild(getComponentRegistry(), getIdentifier(),
-					   _animation->getIdentifier(),
-					   utility::graphic::PositionF(0.0f, 0.0f, 0.0f),
-					   static_cast<std::uint32_t>(getLayer()));
-			getComponentRegistry()
-				.getComponent<components::Bound>(_animation->getIdentifier())
-				.setWidth(_diameter)
-				.setHeight(_diameter);
-			return;
-		}
-
-		const float segment = LinearWidth * 0.4f;
-
-		placeChild(getComponentRegistry(), getIdentifier(),
-				   _animation->getIdentifier(),
-				   utility::graphic::PositionF(
-					   progress * (LinearWidth - segment), 0.0f, 0.0f),
-				   static_cast<std::uint32_t>(getLayer()));
-
-		getComponentRegistry()
-			.getComponent<components::Bound>(_animation->getIdentifier())
-			.setWidth(segment)
-			.setHeight(LinearHeight);
 	}
 
 	LoadingIndicator &LoadingIndicator::setVariant(Variant variant)
 	{
-		if (_variant == variant) {
+		auto &state =
+			getComponentRegistry().getComponent<components::LoadingIndicator>(
+				getIdentifier());
+
+		if (state.getVariant() == variant) {
 			return *this;
 		}
 
-		_variant = variant;
-		_built	 = false;
-
+		// The child is built from the variant: rebuild it so the new shape
+		// (bar vs. arc) is adopted.
+		state.setVariant(variant).setBuilt(false);
 		buildChild();
-		applyState();
+		systems::LoadingIndicator::apply(getComponentRegistry(),
+										 getIdentifier());
 
 		return *this;
 	}
 
 	LoadingIndicator::Variant LoadingIndicator::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::LoadingIndicator>(getIdentifier())
+			.getVariant();
 	}
 
 	LoadingIndicator &LoadingIndicator::start(void)
 	{
-		if (_animation != nullptr) {
-			getComponentRegistry()
-				.getComponent<components::Animation>(
-					_animation->getIdentifier())
-				.play();
-		}
-		startFade();
+		systems::LoadingIndicator::start(getComponentRegistry(),
+										 getIdentifier());
 		return *this;
 	}
 
 	LoadingIndicator &LoadingIndicator::stop(void)
 	{
-		if (_animation != nullptr) {
-			getComponentRegistry()
-				.getComponent<components::Animation>(
-					_animation->getIdentifier())
-				.stop();
-		}
-		startFade();
+		systems::LoadingIndicator::stop(getComponentRegistry(),
+										getIdentifier());
 		return *this;
 	}
 
 	bool LoadingIndicator::isRunning(void) const
 	{
-		if (_animation == nullptr) {
-			return false;
-		}
-		return getComponentRegistry()
-			.getComponent<components::Animation>(_animation->getIdentifier())
-			.isPlaying();
+		return systems::LoadingIndicator::isRunning(getComponentRegistry(),
+													getIdentifier());
 	}
 
 	void LoadingIndicator::initialize(void)
 	{
-		update();
 		buildChild();
-		applyState();
-	}
-
-	void LoadingIndicator::update(void)
-	{
-		applyGeometry();
-		buildChild();
+		systems::LoadingIndicator::apply(getComponentRegistry(),
+										 getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

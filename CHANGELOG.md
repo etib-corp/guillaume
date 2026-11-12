@@ -32,6 +32,12 @@ Versions follow the calendar scheme described in
   it. Each variant has a configuration component and a Layout-phase system
   that styles and lays it out: `CommonButton` (for `entities::Button`),
   `IconButton`, `FloatingActionButton`, `ExtendedFloatingActionButton`.
+- `Badge`, `Chip`, `Tooltip`, `Snackbar`, `LoadingIndicator` and
+  `ProgressIndicator` follow the strict ECS: each has a configuration
+  component (including its transient state: fades, timers, animation
+  progress) and a Layout-phase system of the same name whose static functions
+  hold the rules and the actions (`show`, `hide`, `advance`, `start`,
+  `stop`, ...).
 - `systems::Layout::layerOf()` returns an entity's tree depth from its
   `components::Hierarchy`.
 
@@ -47,6 +53,20 @@ Versions follow the calendar scheme described in
   virtuals are gone: subclasses outside the library must provide a variant
   system and register it with `components::Button::setRestyle()`. Enums such
   as `Button::Color` are aliases of the component enums.
+- `entities::Badge`, `Chip`, `Tooltip`, `Snackbar`, `LoadingIndicator` and
+  `ProgressIndicator` are facades without fields and no longer override
+  `update()`. Visible differences:
+  - `Chip::getChildren()` returns every child the chip owns; the system
+    decides which are laid out, so an unselected filter chip reports its
+    hidden check icon too.
+  - The chip's accessibility label follows `setLabel()`.
+  - An indicator's shape (fixed size, padding, radius, transparent container)
+    is enforced every frame; a later `setColor()` or size set through
+    `setSurfaceConfig()` on an indicator is overwritten.
+  - An indeterminate `ProgressIndicator` is drawn before its first animation
+    tick, and rebuilding an indicator's children stops the old animation.
+  - `Tooltip` and `Snackbar` build a missing child as soon as a setter needs
+    it, not on the next update.
 - `components::Elevation::setElevationLevel()` only marks the component
   changed when the resolved shadow differs.
 - `entities::SurfaceBase` keeps no copy of its configuration and no longer

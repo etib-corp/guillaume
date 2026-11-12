@@ -11,10 +11,12 @@ set(GUILLAUME_SOURCES
     sources/components/animation.cpp
     sources/components/arc.cpp
     sources/components/backdrop.cpp
+    sources/components/badge.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
     sources/components/button.cpp
     sources/components/checkbox.cpp
+    sources/components/chip.cpp
     sources/components/clip.cpp
     sources/components/color.cpp
     sources/components/common_button.cpp
@@ -38,21 +40,25 @@ set(GUILLAUME_SOURCES
     sources/components/image.cpp
     sources/components/layout.cpp
     sources/components/line.cpp
+    sources/components/loading_indicator.cpp
     sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
+    sources/components/progress_indicator.cpp
     sources/components/radio_button.cpp
     sources/components/range.cpp
     sources/components/ring.cpp
     sources/components/scrim.cpp
     sources/components/scrollable.cpp
     sources/components/selection.cpp
+    sources/components/snackbar.cpp
     sources/components/style_state.cpp
     sources/components/surface_tone.cpp
     sources/components/switch.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
+    sources/components/tooltip.cpp
     sources/components/transform.cpp
     sources/components/typography.cpp
     sources/components/value.cpp
@@ -130,8 +136,10 @@ set(GUILLAUME_SOURCES
     sources/systems/animation.cpp
     sources/systems/arc_render.cpp
     sources/systems/backdrop.cpp
+    sources/systems/badge.cpp
     sources/systems/button.cpp
     sources/systems/checkbox.cpp
+    sources/systems/chip.cpp
     sources/systems/clip.cpp
     sources/systems/common_button.cpp
     sources/systems/core_systems.cpp
@@ -157,6 +165,7 @@ set(GUILLAUME_SOURCES
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp
     sources/systems/line_render.cpp
+    sources/systems/loading_indicator.cpp
     sources/systems/measure_glyph.cpp
     sources/systems/measure_mesh.cpp
     sources/systems/measure_text.cpp
@@ -164,6 +173,7 @@ set(GUILLAUME_SOURCES
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
     sources/systems/overlay.cpp
+    sources/systems/progress_indicator.cpp
     sources/systems/radio_button.cpp
     sources/systems/rectangle_render.cpp
     sources/systems/ring_render.cpp
@@ -171,12 +181,14 @@ set(GUILLAUME_SOURCES
     sources/systems/selection.cpp
     sources/systems/scrim_render.cpp
     sources/systems/shape_mesh.cpp
+    sources/systems/snackbar.cpp
     sources/systems/style_state.cpp
     sources/systems/surface_tone.cpp
     sources/systems/switch.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
+    sources/systems/tooltip.cpp
     sources/systems/typography.cpp
     sources/theme.cpp
     sources/theme/default_theme.cpp
