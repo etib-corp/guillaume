@@ -39,6 +39,7 @@
 #include "guillaume/components/hand_hover_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/radio_button.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -143,192 +144,59 @@ namespace guillaume::entities
 	RadioButton::RadioButton(ecs::ComponentRegistry &registry,
 							 const SurfaceConfig &config, Variant variant,
 							 const std::string &label)
-		: SurfaceBase<components::Selectable, components::Ring>(registry,
-																config)
-		, _variant(variant)
-		, _label(label)
-		, _dot()
-		, _labelEntity()
+		: SurfaceBase<components::Selectable, components::Ring,
+					  components::RadioButton>(registry, config)
 	{
-		makeInteractive(
-			getComponentRegistry(), getIdentifier(),
-			components::AccessibilityRole::Radio,
-			[this]() {
-				if (isDisabled()) {
-					return;
-				}
-				select(true);
-				if (_onPress) {
-					_onPress();
-				}
-			},
-			[this]() {
-				applyVariant();
-			});
-
-		// Grow the 20 dp ring to the 40 dp target without growing it.
-		const auto margin =
-			static_cast<unsigned int>((TouchTarget - config.fixedWidth) / 2.0f);
 		getComponentRegistry()
-			.getComponent<components::MouseHoverInteraction>(getIdentifier())
-			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
-		getComponentRegistry()
-			.getComponent<components::HandHoverInteraction>(getIdentifier())
-			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
-
-		getComponentRegistry()
-			.getComponent<components::Selectable>(getIdentifier())
-			.setOnSelectionChangedHandler([this](bool) {
-				applyState();
-			});
-
-		applyVariant();
-	}
-
-	RadioButton::~RadioButton(void)
-	{
-	}
-
-	void RadioButton::applyVariant(void)
-	{
-		auto &ring = getComponentRegistry().getComponent<components::Ring>(
-			getIdentifier());
-
-		ring.setThickness(2.0f);
-
-		setEnabled(getComponentRegistry(), getIdentifier(),
-				   _variant != Variant::Disabled);
-
-		const bool disabled = isDisabled();
-		const bool errored	= (_variant == Variant::Error);
-		const bool selected =
-			getComponentRegistry()
-				.getComponent<components::Selectable>(getIdentifier())
-				.isSelected();
-
-		if (disabled) {
-			setColor(disabledContentColor());
-		} else if (errored) {
-			setColor(schemeColor(SchemeColorRole::Error));
-		} else if (selected) {
-			setColor(schemeColor(SchemeColorRole::Primary));
-		} else {
-			setColor(schemeColor(SchemeColorRole::OnSurfaceVariant));
-		}
-
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setLabel(_label)
-			.setSelected(selected)
-			.setChecked(selected ? components::CheckedState::Checked
-								 : components::CheckedState::Unchecked);
-
-		applyState();
-	}
-
-	void RadioButton::applyState(void)
-	{
-		const bool selected =
-			getComponentRegistry()
-				.getComponent<components::Selectable>(getIdentifier())
-				.isSelected();
-
-		const bool disabled = isDisabled();
-		const bool errored	= (_variant == Variant::Error);
-
-		const auto dotColor = disabled
-			? disabledContentColor()
-			: (errored ? schemeColor(SchemeColorRole::Error)
-					   : schemeColor(SchemeColorRole::Primary));
-
-		const auto &pose =
-			getComponentRegistry()
-				.getComponent<components::Transform>(getIdentifier())
-				.getPose();
-		const auto &bound =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
-
-		if (_dot != nullptr) {
-			getComponentRegistry()
-				.getComponent<components::Color>(_dot->getIdentifier())
-				.setColor(selected ? dotColor : transparentColor());
-
-			if (selected) {
-				centerChild(getComponentRegistry(), getIdentifier(),
-							_dot->getIdentifier(),
-							static_cast<std::uint32_t>(getLayer()));
-			}
-		}
-
-		if (_labelEntity != nullptr) {
-			if (disabled) {
-				_labelEntity->setColor(disabledContentColor());
-			} else if (errored) {
-				_labelEntity->setColor(schemeColor(SchemeColorRole::Error));
-			} else {
-				_labelEntity->setColor(schemeColor(SchemeColorRole::OnSurface));
-			}
-		}
-
-		placeLabel();
-	}
-
-	void RadioButton::placeLabel(void)
-	{
-		if (_labelEntity == nullptr) {
-			return;
-		}
-
-		const auto &ring =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
-		const auto &label =
-			getComponentRegistry().getComponent<components::Bound>(
-				_labelEntity->getIdentifier());
-
-		const float x = (ring.getWidth() + TouchTarget) / 2.0f + LabelGap;
-		const float y = (ring.getHeight() - label.getHeight()) / 2.0f;
-		placeChild(getComponentRegistry(), getIdentifier(),
-				   _labelEntity->getIdentifier(),
-				   utility::graphic::PositionF(x, y, 0.0f),
-				   static_cast<std::uint32_t>(getLayer()));
+			.getComponent<components::RadioButton>(getIdentifier())
+			.setVariant(variant)
+			.setLabel(label);
+		systems::RadioButton::install(getComponentRegistry(), getIdentifier());
+		systems::RadioButton::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	bool RadioButton::isDisabled(void) const
 	{
-		return _variant == Variant::Disabled
-			|| !isEnabled(getComponentRegistry(), getIdentifier());
+		return systems::RadioButton::isDisabled(getComponentRegistry(),
+												getIdentifier());
 	}
 
 	RadioButton &RadioButton::setOnPress(std::function<void(void)> onPress)
 	{
-		_onPress = std::move(onPress);
+		getComponentRegistry()
+			.getComponent<components::RadioButton>(getIdentifier())
+			.setOnPress(std::move(onPress));
 		return *this;
 	}
 
 	RadioButton &RadioButton::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::RadioButton>(getIdentifier())
+			.setVariant(variant);
+		systems::RadioButton::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	RadioButton::Variant RadioButton::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::RadioButton>(getIdentifier())
+			.getVariant();
 	}
 
 	RadioButton &RadioButton::setLabel(const std::string &label)
 	{
-		_label = label;
+		auto &registry = getComponentRegistry();
+		auto &radio =
+			registry.getComponent<components::RadioButton>(getIdentifier());
 
-		if (_labelEntity != nullptr) {
-			_labelEntity->setContent(label);
+		radio.setLabel(label);
+		if (registry.hasComponent<components::Text>(radio.getLabelEntity())) {
+			registry.getComponent<components::Text>(radio.getLabelEntity())
+				.setContent(label);
 		}
-
-		applyState();
-
+		systems::RadioButton::apply(registry, getIdentifier());
 		return *this;
 	}
 
@@ -341,42 +209,37 @@ namespace guillaume::entities
 
 	RadioButton &RadioButton::select(bool selected)
 	{
-		getComponentRegistry()
-			.getComponent<components::Selectable>(getIdentifier())
-			.setSelected(selected);
-
-		applyVariant();
-
+		systems::RadioButton::select(getComponentRegistry(), getIdentifier(),
+									 selected);
 		return *this;
 	}
 
 	void RadioButton::initialize(void)
 	{
-		update();
+		auto &registry = getComponentRegistry();
+		auto &radio =
+			registry.getComponent<components::RadioButton>(getIdentifier());
 
-		_dot = std::make_shared<RadioDot>(
-			getComponentRegistry(), schemeColor(SchemeColorRole::Primary));
-		_dot->setParent(shared_from_this());
-		this->addEntity(_dot);
+		const auto dot = std::make_shared<RadioDot>(
+			registry, schemeColor(SchemeColorRole::Primary));
+		dot->setParent(shared_from_this());
+		this->addEntity(dot);
+		radio.setDot(dot->getIdentifier());
 
-		if (!_label.empty()) {
-			_labelEntity =
-				buildText(getComponentRegistry(), *this, shared_from_this(),
-						  _label, theme::TypeRole::BodyLarge,
+		if (!radio.getLabel().empty()) {
+			const auto label =
+				buildText(registry, *this, shared_from_this(), radio.getLabel(),
+						  theme::TypeRole::BodyLarge,
 						  schemeColor(SchemeColorRole::OnSurface));
+			if (label != nullptr) {
+				radio.setLabelEntity(label->getIdentifier());
+			}
 		}
 
-		// The dot is centered and the label placed beside the ring manually;
-		// neither is a layout child of the 20 dp surface.
+		// The dot is centered and the label placed beside the ring by
+		// systems::RadioButton; neither is a layout child of the surface.
 		setChildren({});
-
-		applyVariant();
-	}
-
-	void RadioButton::update(void)
-	{
-		applyGeometry();
-		applyVariant();
+		systems::RadioButton::apply(registry, getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

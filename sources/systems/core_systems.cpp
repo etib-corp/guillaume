@@ -25,6 +25,7 @@
 #include "guillaume/systems/animation.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/backdrop.hpp"
+#include "guillaume/systems/checkbox.hpp"
 #include "guillaume/systems/clip.hpp"
 #include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/drag.hpp"
@@ -57,8 +58,10 @@
 #include "guillaume/systems/scrim_render.hpp"
 #include "guillaume/systems/scroll.hpp"
 #include "guillaume/systems/selection.hpp"
+#include "guillaume/systems/radio_button.hpp"
 #include "guillaume/systems/style_state.hpp"
 #include "guillaume/systems/surface_tone.hpp"
+#include "guillaume/systems/switch.hpp"
 #include "guillaume/systems/text_field.hpp"
 #include "guillaume/systems/text_input.hpp"
 #include "guillaume/systems/text_render.hpp"
@@ -134,6 +137,12 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(std::make_unique<systems::Divider>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Backdrop>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
+		// Widget systems place children the Layout system does not arrange,
+		// from the bounds it has just resolved: keep them after it.
+		systemRegistry.registerNewSystem(std::make_unique<systems::Checkbox>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::RadioButton>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Switch>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

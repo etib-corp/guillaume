@@ -32,6 +32,7 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/radio_button.hpp"
 #include "guillaume/components/ring.hpp"
 #include "guillaume/components/selection.hpp"
 
@@ -51,18 +52,22 @@ namespace guillaume::entities
 	 * `components::Ring` (outline when unselected, primary when selected) and
 	 * a small filled inner dot is shown when selected.
 	 *
+	 * The class is a facade without fields: its state is
+	 * components::RadioButton and systems::RadioButton styles the ring and
+	 * places the dot and the label. `initialize()` only builds the child
+	 * entities.
+	 *
 	 * @see SurfaceBase
 	 * @see components::Selectable
 	 * @see components::Ring
 	 */
 	class RadioButton:
-		public SurfaceBase<components::Selectable, components::Ring>
+		public SurfaceBase<components::Selectable, components::Ring,
+						   components::RadioButton>
 	{
 		public:
-		/**
-		 * @brief Radio button visual variant.
-		 */
-		enum class Variant { Enabled, Disabled, Error };
+		/// Variant (see components::RadioButton).
+		using Variant = components::RadioButton::Variant;
 
 		/**
 		 * @brief Builder used to configure and create `RadioButton` entities.
@@ -128,31 +133,6 @@ namespace guillaume::entities
 								Variant variant, const std::string &label);
 		};
 
-		private:
-		Variant _variant { Variant::Enabled };	  ///< Visual variant.
-		std::string _label {};					  ///< Label content.
-		std::shared_ptr<ecs::Entity> _dot;		  ///< Inner filled dot child.
-		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
-		std::function<void(void)>
-			_onPress {};	///< Called when the user selects the radio.
-
-		/**
-		 * @brief Place the label beside the ring, outside its 20 dp surface.
-		 */
-		void placeLabel(void);
-
-		private:
-		/**
-		 * @brief Apply the variant-specific ring and dot colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Refresh the inner dot and label styling from the selection
-		 * state.
-		 */
-		void applyState(void);
-
 		public:
 		/**
 		 * @brief Construct a RadioButton entity.
@@ -168,7 +148,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~RadioButton(void) override;
+		~RadioButton(void) override = default;
 
 		/**
 		 * @brief Set the radio button variant.
@@ -220,27 +200,23 @@ namespace guillaume::entities
 		/**
 		 * @brief Diameter of the selected dot (M3: 10 dp).
 		 */
-		static constexpr float DotSize = 10.0f;
+		static constexpr float DotSize = components::RadioButton::DotSize;
 
 		/**
 		 * @brief Side of the square interactive target (Paper: 36-40 dp).
 		 */
-		static constexpr float TouchTarget = 40.0f;
+		static constexpr float TouchTarget =
+			components::RadioButton::TouchTarget;
 
 		/**
 		 * @brief Gap between the target and the label.
 		 */
-		static constexpr float LabelGap = 4.0f;
+		static constexpr float LabelGap = components::RadioButton::LabelGap;
 
 		/**
 		 * @brief Initialize the radio button derived state and children.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the radio button derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

@@ -32,6 +32,7 @@
 #include "guillaume/components/hand_hover_interaction.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/checkbox.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -108,245 +109,102 @@ namespace guillaume::entities
 	Checkbox::Checkbox(ecs::ComponentRegistry &registry,
 					   const SurfaceConfig &config, State state,
 					   Variant variant, const std::string &label)
-		: SurfaceBase<components::Selectable, components::Line>(registry,
-																config)
-		, _state(state)
-		, _variant(variant)
-		, _label(label)
-		, _checkIcon()
-		, _labelEntity()
+		: SurfaceBase<components::Selectable, components::Line,
+					  components::Checkbox>(registry, config)
 	{
-		makeInteractive(
-			getComponentRegistry(), getIdentifier(),
-			components::AccessibilityRole::Checkbox,
-			[this]() {
-				pressHandler();
-			},
-			[this]() {
-				applyVariant();
-			});
-
-		// Grow the 18 dp box to the 40 dp target without growing it visually.
-		const auto margin =
-			static_cast<unsigned int>((TouchTarget - config.fixedWidth) / 2.0f);
 		getComponentRegistry()
-			.getComponent<components::MouseHoverInteraction>(getIdentifier())
-			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
-		getComponentRegistry()
-			.getComponent<components::HandHoverInteraction>(getIdentifier())
-			.setAccessibilityMargin(utility::graphic::SizeUI(margin, margin));
-
-		getComponentRegistry()
-			.getComponent<components::Selectable>(getIdentifier())
-			.setOnSelectionChangedHandler([this](bool selected) {
-				if (_state != State::Indeterminate) {
-					_state = selected ? State::Checked : State::Unchecked;
-				}
-				applyVariant();
-			});
-
-		applyVariant();
-	}
-
-	Checkbox::~Checkbox(void)
-	{
-	}
-
-	void Checkbox::applyVariant(void)
-	{
-		auto &borders =
-			getComponentRegistry().getComponent<components::Borders>(
-				getIdentifier());
-		auto &line = getComponentRegistry().getComponent<components::Line>(
-			getIdentifier());
-
-		setEnabled(getComponentRegistry(), getIdentifier(),
-				   _variant != Variant::Disabled);
-
-		const bool disabled = isDisabled();
-		const bool errored	= (_variant == Variant::Error);
-
-		auto &accessibility =
-			getComponentRegistry().getComponent<components::Accessibility>(
-				getIdentifier());
-		accessibility.setLabel(_label).setChecked(
-			_state == State::Checked
-				? components::CheckedState::Checked
-				: (_state == State::Indeterminate
-					   ? components::CheckedState::Mixed
-					   : components::CheckedState::Unchecked));
-
-		line.setThickness(_state == State::Indeterminate ? 2.0f : 0.0f);
-
-		const auto onColorRole =
-			errored ? SchemeColorRole::OnError : SchemeColorRole::OnPrimary;
-		// The indeterminate dash shares the box entity, so it must carry its
-		// own color instead of the container fill.
-		line.setColor(schemeColor(onColorRole));
-		const auto containerRole =
-			errored ? SchemeColorRole::Error : SchemeColorRole::Primary;
-
-		switch (_state) {
-			case State::Checked:
-			case State::Indeterminate: {
-				if (disabled) {
-					setColor(disabledContentColor());
-				} else {
-					setColor(stateLayerColor(
-						getComponentRegistry(), getIdentifier(),
-						errored ? schemeColor(containerRole)
-								: _checkedColor.value_or(
-									  schemeColor(containerRole)),
-						schemeColor(onColorRole)));
-				}
-				borders.setColor(transparentColor()).setWidth(0.0f);
-				break;
-			}
-			case State::Unchecked:
-			default: {
-				const auto outline = errored
-					? schemeColor(SchemeColorRole::Error)
-					: _uncheckedColor.value_or(
-						  schemeColor(SchemeColorRole::OnSurfaceVariant));
-				setColor(disabled ? transparentColor()
-								  : stateLayerColor(
-										getComponentRegistry(), getIdentifier(),
-										transparentColor(), outline));
-				borders.setWidth(2.0f);
-				borders.setColor(disabled ? disabledContentColor() : outline);
-				break;
-			}
-		}
-
-		if (_checkIcon != nullptr) {
-			const bool visible = (_state == State::Checked);
-			_checkIcon->setColor(visible ? schemeColor(onColorRole)
-										 : transparentColor());
-		}
-
-		if (_labelEntity != nullptr) {
-			if (disabled) {
-				_labelEntity->setColor(disabledContentColor());
-			} else if (errored) {
-				_labelEntity->setColor(schemeColor(SchemeColorRole::Error));
-			} else {
-				_labelEntity->setColor(schemeColor(SchemeColorRole::OnSurface));
-			}
-		}
-
-		placeLabel();
-	}
-
-	void Checkbox::placeLabel(void)
-	{
-		if (_labelEntity == nullptr) {
-			return;
-		}
-
-		const auto &box =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
-		const auto &label =
-			getComponentRegistry().getComponent<components::Bound>(
-				_labelEntity->getIdentifier());
-
-		// The label starts after the 40 dp target, vertically centered on the
-		// box, so it never overlaps the 18 dp surface.
-		const float x = (box.getWidth() + TouchTarget) / 2.0f + LabelGap;
-		const float y = (box.getHeight() - label.getHeight()) / 2.0f;
-		placeChild(getComponentRegistry(), getIdentifier(),
-				   _labelEntity->getIdentifier(),
-				   utility::graphic::PositionF(x, y, 0.0f),
-				   static_cast<std::uint32_t>(getLayer()));
-	}
-
-	void Checkbox::pressHandler(void)
-	{
-		toggle();
+			.getComponent<components::Checkbox>(getIdentifier())
+			.setState(state)
+			.setVariant(variant)
+			.setLabel(label);
+		systems::Checkbox::install(getComponentRegistry(), getIdentifier());
+		systems::Checkbox::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Checkbox &Checkbox::toggle(void)
 	{
-		if (isDisabled()) {
-			return *this;
-		}
-
-		setState(_state == State::Checked ? State::Unchecked : State::Checked);
-		if (_onValueChange) {
-			_onValueChange(_state);
-		}
+		systems::Checkbox::toggle(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	bool Checkbox::isDisabled(void) const
 	{
-		return _variant == Variant::Disabled
-			|| !isEnabled(getComponentRegistry(), getIdentifier());
+		return systems::Checkbox::isDisabled(getComponentRegistry(),
+											 getIdentifier());
 	}
 
 	Checkbox &
 		Checkbox::setOnValueChange(std::function<void(State)> onValueChange)
 	{
-		_onValueChange = std::move(onValueChange);
+		getComponentRegistry()
+			.getComponent<components::Checkbox>(getIdentifier())
+			.setOnValueChange(std::move(onValueChange));
 		return *this;
 	}
 
 	Checkbox &Checkbox::setCheckedColor(
 		std::optional<utility::graphic::Color32Bit> color)
 	{
-		_checkedColor = color;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Checkbox>(getIdentifier())
+			.setCheckedColor(color);
+		systems::Checkbox::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Checkbox &Checkbox::setUncheckedColor(
 		std::optional<utility::graphic::Color32Bit> color)
 	{
-		_uncheckedColor = color;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Checkbox>(getIdentifier())
+			.setUncheckedColor(color);
+		systems::Checkbox::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Checkbox &Checkbox::setState(State state)
 	{
-		_state = state;
-
-		getComponentRegistry()
-			.getComponent<components::Selectable>(getIdentifier())
-			.setSelected(state != State::Unchecked);
-
-		applyVariant();
-
+		systems::Checkbox::setState(getComponentRegistry(), getIdentifier(),
+									state);
 		return *this;
 	}
 
 	Checkbox::State Checkbox::getState(void) const
 	{
-		return _state;
+		return getComponentRegistry()
+			.getComponent<components::Checkbox>(getIdentifier())
+			.getState();
 	}
 
 	Checkbox &Checkbox::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::Checkbox>(getIdentifier())
+			.setVariant(variant);
+		systems::Checkbox::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Checkbox::Variant Checkbox::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::Checkbox>(getIdentifier())
+			.getVariant();
 	}
 
 	Checkbox &Checkbox::setLabel(const std::string &label)
 	{
-		_label = label;
+		auto &registry = getComponentRegistry();
+		auto &checkbox =
+			registry.getComponent<components::Checkbox>(getIdentifier());
 
-		if (_labelEntity != nullptr) {
-			_labelEntity->setContent(label);
+		checkbox.setLabel(label);
+		if (registry.hasComponent<components::Text>(
+				checkbox.getLabelEntity())) {
+			registry.getComponent<components::Text>(checkbox.getLabelEntity())
+				.setContent(label);
 		}
-
-		applyVariant();
-
+		systems::Checkbox::apply(registry, getIdentifier());
 		return *this;
 	}
 
@@ -359,34 +217,33 @@ namespace guillaume::entities
 
 	void Checkbox::initialize(void)
 	{
-		update();
-
-		_checkIcon =
-			buildIcon(getComponentRegistry(), *this, shared_from_this(),
-					  "check", 14.0f, schemeColor(SchemeColorRole::OnPrimary));
-
-		if (!_label.empty()) {
-			_labelEntity =
-				buildText(getComponentRegistry(), *this, shared_from_this(),
-						  _label, theme::TypeRole::BodyLarge,
-						  schemeColor(SchemeColorRole::OnSurface));
-		}
+		auto &registry = getComponentRegistry();
+		auto &checkbox =
+			registry.getComponent<components::Checkbox>(getIdentifier());
 
 		// Only the check glyph is laid out inside the box; the label is placed
-		// beside it by placeLabel().
+		// beside it by systems::Checkbox.
+		const auto checkIcon =
+			buildIcon(registry, *this, shared_from_this(), "check", 14.0f,
+					  schemeColor(SchemeColorRole::OnPrimary));
 		std::vector<std::shared_ptr<ecs::Entity>> children;
-		if (_checkIcon != nullptr) {
-			children.push_back(_checkIcon);
+		if (checkIcon != nullptr) {
+			checkbox.setCheckIcon(checkIcon->getIdentifier());
+			children.push_back(checkIcon);
 		}
+
+		if (!checkbox.getLabel().empty()) {
+			const auto label =
+				buildText(registry, *this, shared_from_this(),
+						  checkbox.getLabel(), theme::TypeRole::BodyLarge,
+						  schemeColor(SchemeColorRole::OnSurface));
+			if (label != nullptr) {
+				checkbox.setLabelEntity(label->getIdentifier());
+			}
+		}
+
 		setChildren(children);
-
-		applyVariant();
-	}
-
-	void Checkbox::update(void)
-	{
-		applyGeometry();
-		applyVariant();
+		systems::Checkbox::apply(registry, getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

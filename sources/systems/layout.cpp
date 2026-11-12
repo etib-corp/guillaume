@@ -79,21 +79,24 @@ namespace guillaume::systems
 
 		const auto &layout = getComponent<components::Layout>(entityIdentifier);
 
-		// The layer comes from the Hierarchy component, so the system needs
-		// no entity object.
-		std::uint32_t layer = 0;
-		if (getComponentRegistry().hasComponent<components::Hierarchy>(
-				entityIdentifier)) {
-			layer = static_cast<std::uint32_t>(
-				getComponent<components::Hierarchy>(entityIdentifier)
-					.getLayer());
-		}
-
 		// Only the container's registered layout children are arranged; any
 		// child the container positions manually (a switch thumb, a slider
 		// fill, ...) is deliberately absent from the list and keeps its pose.
 		apply(getComponentRegistry(), entityIdentifier, layout.getChildren(),
-			  layer);
+			  layerOf(getComponentRegistry(), entityIdentifier));
+	}
+
+	std::uint32_t Layout::layerOf(const ecs::ComponentRegistry &registry,
+								  const ecs::Entity::Identifier &identifier)
+	{
+		// The layer comes from the Hierarchy component, so systems need no
+		// entity object.
+		if (!registry.hasComponent<components::Hierarchy>(identifier)) {
+			return 0;
+		}
+		return static_cast<std::uint32_t>(
+			registry.getComponent<components::Hierarchy>(identifier)
+				.getLayer());
 	}
 
 	const utility::graphic::PoseF Layout::applyLayerToPosition(

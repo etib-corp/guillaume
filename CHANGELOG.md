@@ -20,8 +20,21 @@ Versions follow the calendar scheme described in
   shadow mode of `entities::Surface` live in the component, and the system
   resolves the tonal color and the shadow from it each frame.
 
+- `Checkbox`, `RadioButton` and `Switch` follow the strict ECS: their state
+  lives in `components::Checkbox` / `RadioButton` / `Switch` (children are
+  referenced by identifier) and `systems::Checkbox` / `RadioButton` / `Switch`
+  style them and place their children each frame. The systems expose the
+  actions as static functions (`toggle`, `press`, `setState`, `setChecked`)
+  that work on an identifier.
+- `systems::Layout::layerOf()` returns an entity's tree depth from its
+  `components::Hierarchy`.
+
 ### Changed
 
+- `entities::Checkbox`, `RadioButton` and `Switch` are facades without fields
+  and no longer override `update()`; `initialize()` only builds their child
+  entities. Their `State` / `Variant` enums are now aliases of the component
+  enums, so existing spellings keep compiling.
 - `entities::SurfaceBase` keeps no copy of its configuration and no longer
   overrides `initialize()` / `update()`: the Transform, Color, Borders and
   Layout components are the state and `systems::Layout` arranges the children.

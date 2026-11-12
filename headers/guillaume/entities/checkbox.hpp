@@ -33,6 +33,7 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/checkbox.hpp"
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/selection.hpp"
 
@@ -55,21 +56,23 @@ namespace guillaume::entities
 	 * - `Indeterminate`: primary fill with a horizontal stroke
 	 *   (`components::Line`).
 	 *
+	 * The class is a facade without fields: its state is
+	 * components::Checkbox and systems::Checkbox styles the box and places
+	 * the label. `initialize()` only builds the child entities.
+	 *
 	 * @see SurfaceBase
 	 * @see components::Selectable
 	 */
-	class Checkbox: public SurfaceBase<components::Selectable, components::Line>
+	class Checkbox:
+		public SurfaceBase<components::Selectable, components::Line,
+						   components::Checkbox>
 	{
 		public:
-		/**
-		 * @brief Checkbox checked state.
-		 */
-		enum class State { Unchecked, Checked, Indeterminate };
+		/// Checked state.
+		using State = components::Checkbox::State;
 
-		/**
-		 * @brief Checkbox visual variant.
-		 */
-		enum class Variant { Enabled, Disabled, Error };
+		/// Visual variant.
+		using Variant = components::Checkbox::Variant;
 
 		/**
 		 * @brief Builder used to configure and create `Checkbox` entities.
@@ -143,36 +146,6 @@ namespace guillaume::entities
 							 Variant variant, const std::string &label);
 		};
 
-		private:
-		State _state { State::Unchecked };		  ///< Checked state.
-		Variant _variant { Variant::Enabled };	  ///< Visual variant.
-		std::string _label {};					  ///< Label content.
-		std::shared_ptr<Icon> _checkIcon;		  ///< Check glyph child.
-		std::shared_ptr<Text> _labelEntity;		  ///< Label child.
-		std::function<void(State)>
-			_onValueChange {};	  ///< Called when the user toggles the box.
-		std::optional<utility::graphic::Color32Bit>
-			_checkedColor {};	 ///< Paper `color` override.
-		std::optional<utility::graphic::Color32Bit>
-			_uncheckedColor {};	   ///< Paper `uncheckedColor` override.
-
-		/**
-		 * @brief Place the label beside the box, outside its 18 dp surface.
-		 */
-		void placeLabel(void);
-
-		/**
-		 * @brief Handle a user activation.
-		 */
-		void pressHandler(void);
-
-		private:
-		/**
-		 * @brief Apply the state and variant specific colors, borders and
-		 * stroke.
-		 */
-		void applyVariant(void);
-
 		public:
 		/**
 		 * @brief Construct a Checkbox entity.
@@ -188,7 +161,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Default destructor.
 		 */
-		~Checkbox(void) override;
+		~Checkbox(void) override = default;
 
 		/**
 		 * @brief Set the checkbox state.
@@ -269,22 +242,17 @@ namespace guillaume::entities
 		/**
 		 * @brief Side of the square interactive target (Paper: 36-40 dp).
 		 */
-		static constexpr float TouchTarget = 40.0f;
+		static constexpr float TouchTarget = components::Checkbox::TouchTarget;
 
 		/**
 		 * @brief Gap between the target and the label.
 		 */
-		static constexpr float LabelGap = 4.0f;
+		static constexpr float LabelGap = components::Checkbox::LabelGap;
 
 		/**
-		 * @brief Initialize the checkbox derived state and children.
+		 * @brief Build the check glyph and label children.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the checkbox derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities
