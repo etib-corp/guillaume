@@ -144,15 +144,16 @@ namespace guillaume::systems
 			utility::math::Vector2F({ bound.getWidth() + 2.0f * margin[0],
 									  bound.getHeight() + 2.0f * margin[1] });
 
-		if (margin[0] == 0.0f && margin[1] == 0.0f) {
-			return ray.intersectRectangle(pose, size);
-		}
-
+		// The pose is the top-left corner and the rectangle extends down
+		// (y points up). Ray::intersectRectangle extends its rectangle up
+		// from the corner it is given, so pass the bottom-left corner of the
+		// grown rectangle.
 		const auto &orientation				 = pose.getOrientation();
 		utility::graphic::PositionF position = pose.getPosition();
 		position.translate(
 			utility::graphic::PositionF(-(orientation.getRight() * margin[0])
-										- (orientation.getUp() * margin[1])));
+										+ (orientation.getUp() * margin[1])
+										- (orientation.getUp() * size[1])));
 
 		return ray.intersectRectangle(
 			utility::graphic::PoseF(position, orientation), size);

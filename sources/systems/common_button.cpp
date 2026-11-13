@@ -265,7 +265,7 @@ namespace guillaume::systems
 			registry.getComponent<components::Transform>(child.getIdentifier())
 				.setPose(Layout::contentLayerPose(
 					utility::graphic::PositionF(buttonPose.getPosition().x + x,
-												buttonPose.getPosition().y + y,
+												buttonPose.getPosition().y - y,
 												buttonPose.getPosition().z),
 					buttonPose.getOrientation(), layer));
 		};

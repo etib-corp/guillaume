@@ -263,7 +263,7 @@ namespace guillaume::systems
 				.setPose(Layout::contentLayerPose(
 					utility::graphic::PositionF(buttonPose.getPosition().x + x,
 												buttonPose.getPosition().y
-													+ (baseHeight - height)
+													- (baseHeight - height)
 														/ 2.0f,
 												buttonPose.getPosition().z),
 					buttonPose.getOrientation(), layer));

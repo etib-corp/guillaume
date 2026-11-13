@@ -88,7 +88,7 @@ namespace guillaume::systems
 			-pose.getOrientation().getForward() * RectangleRender::StrokeLift);
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + bound.getWidth() / 2.0f + lift[0],
-			pose.getPosition().y + bound.getHeight() / 2.0f + lift[1],
+			pose.getPosition().y - bound.getHeight() / 2.0f + lift[1],
 			pose.getPosition().z + lift[2]);
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},

@@ -127,7 +127,7 @@ namespace guillaume::systems::placement
 
 		const utility::graphic::PositionF basePosition(
 			origin.getPosition().getX() + offset.x,
-			origin.getPosition().getY() + offset.y,
+			origin.getPosition().getY() - offset.y,
 			origin.getPosition().getZ());
 
 		const auto pose = systems::Layout::contentLayerPose(

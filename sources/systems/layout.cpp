@@ -234,10 +234,10 @@ namespace guillaume::systems
 
 			if (horizontal) {
 				childX = originX + cursor;
-				childY = originY + crossPosition;
+				childY = originY - crossPosition;
 			} else {
 				childX = originX + crossPosition;
-				childY = originY + cursor;
+				childY = originY - cursor;
 			}
 
 			auto &childTransform =

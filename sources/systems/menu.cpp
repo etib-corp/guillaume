@@ -154,7 +154,8 @@ namespace guillaume::systems
 
 			const utility::graphic::PositionF position(
 				anchorPose.getPosition().getX(),
-				anchorPose.getPosition().getY() + offsetY,
+				// offsetY is measured downward; y points up.
+				anchorPose.getPosition().getY() - offsetY,
 				anchorPose.getPosition().getZ());
 			registry.getComponent<components::Transform>(identifier)
 				.setPose(utility::graphic::PoseF(position,

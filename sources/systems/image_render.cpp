@@ -97,7 +97,7 @@ namespace guillaume::systems
 
 		const utility::graphic::PositionF center(
 			transformComponent.getPose().getPosition().x + halfWidth,
-			transformComponent.getPose().getPosition().y + halfHeight,
+			transformComponent.getPose().getPosition().y - halfHeight,
 			transformComponent.getPose().getPosition().z);
 
 		const utility::graphic::Color32Bit white(255, 255, 255, 255);

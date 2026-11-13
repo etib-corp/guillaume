@@ -210,7 +210,7 @@ namespace guillaume::systems
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + bound.getWidth() / 2.0f,
-			pose.getPosition().y + bound.getHeight() / 2.0f,
+			pose.getPosition().y - bound.getHeight() / 2.0f,
 			pose.getPosition().z);
 
 		const float halfWidth  = bound.getWidth() / 2.0f;

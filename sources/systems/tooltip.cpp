@@ -243,16 +243,22 @@ namespace guillaume::systems
 		const float height = bound.getHeight();
 		float x			   = anchorPose.getPosition().getX()
 			+ (anchorBound.getWidth() - width) / 2.0f;
-		float y = anchorPose.getPosition().getY() + anchorBound.getHeight();
+		// Positions are top-left corners and y points up: below the anchor
+		// is its top minus its height.
+		float y = anchorPose.getPosition().getY() - anchorBound.getHeight();
 
 		if (tooltip.getViewport().has_value()) {
+			// The viewport is measured downward from y = 0.
 			const float viewportWidth  = tooltip.getViewport()->first;
 			const float viewportHeight = tooltip.getViewport()->second;
-			if (y + height > viewportHeight) {
-				y = anchorPose.getPosition().getY() - height;
+			float down				   = -y;
+			if (down + height > viewportHeight) {
+				down = -anchorPose.getPosition().getY() - height;
 			}
 			x = std::clamp(x, 0.0f, std::max(0.0f, viewportWidth - width));
-			y = std::clamp(y, 0.0f, std::max(0.0f, viewportHeight - height));
+			down =
+				std::clamp(down, 0.0f, std::max(0.0f, viewportHeight - height));
+			y = -down;
 		}
 
 		componentRegistry.getComponent<components::Transform>(entityIdentifier)
