@@ -34,7 +34,7 @@ cmake --build build --target guillaume_hello_world
 An Evan-backed sample (macOS / Linux / Windows + GLFW) that uses the
 [Evan](https://github.com/etib-corp/evan) Vulkan engine as the `Engine` behind a
 Guillaume `Application`. It is a widget gallery for manual testing: every
-widget of the library, spread over six pages.
+widget of the library, spread over seven pages.
 
 | Page | Widgets |
 |---|---|
@@ -43,11 +43,17 @@ widget of the library, spread over six pages.
 | 3. Text and input | `Text` (type scale), `Icon`, `Image`, `TextField` (filled, outlined, error), `Search` |
 | 4. Containers | `Surface` (elevation levels, flat), `Card` (each variant, all sections), `Divider`, `Badge`, `List` (subheader, divider, accordion) |
 | 5. Feedback | `ProgressIndicator`, `LoadingIndicator`, and buttons opening a `Snackbar`, a `Dialog`, a `Menu`; a `Tooltip` on hover |
-| 6. Navigation and 3D | `AppBar`, `NavigationBar` (with a badge), `NavigationDrawer` (standard, collapsed), `Mesh` |
+| 6. Navigation | `AppBar`, `NavigationBar` (with a badge), `NavigationDrawer` (standard, collapsed) |
+| 7. 3D | `Mesh` (the teapot model, alone because it is large) |
 
 The Previous and Next buttons at the bottom of each page switch pages. Every
 interaction prints a `[gallery]` line on standard output, so a click that has
-no visible effect can still be checked.
+no visible effect can still be checked. Set `GUILLAUME_GALLERY_PAGE` to a page
+number to open the gallery on that page:
+
+```sh
+cd build/examples/evan && GUILLAUME_GALLERY_PAGE=5 ./guillaume_evan_example
+```
 
 Evan requires the Vulkan SDK. The example is added to the build on macOS, Linux
 and Windows, and the matching Evan platform (`BUILD_FOR_MACOS`,

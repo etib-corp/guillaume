@@ -24,21 +24,25 @@
  * @file
  * @brief Widget gallery for manual testing.
  *
- * Every widget of the library, on six pages:
+ * Every widget of the library, on seven pages:
  * 1. Buttons: common buttons, icon buttons, FABs, FAB menu, segmented button.
  * 2. Selection: checkboxes, radio buttons, radio group, switches, chips.
  * 3. Text and input: type scale, icons, image, text fields, search bar.
  * 4. Containers: surfaces, cards, dividers, badges, list.
  * 5. Feedback: progress and loading indicators, snackbar, tooltip, dialog,
  *    menu.
- * 6. Navigation: app bar, navigation bar, navigation drawer, 3D mesh.
+ * 6. Navigation: app bar, navigation bar, navigation drawer.
+ * 7. A 3D mesh, alone because the model is large.
  *
- * The Previous and Next buttons at the bottom of each page switch pages.
+ * The Previous and Next buttons at the bottom of each page switch pages. Set
+ * GUILLAUME_GALLERY_PAGE to a page number (1 to 7) to open the gallery on
+ * that page.
  * Every interaction logs a line on standard output, so a click that does
  * nothing visible can still be checked.
  */
 
 #include <cstddef>
+#include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -299,7 +303,7 @@ namespace
 		void onEnter(void) override;
 	};
 
-	/// Page 6: navigation and 3D.
+	/// Page 6: navigation.
 	class NavigationPage: public Page
 	{
 		public:
@@ -307,12 +311,61 @@ namespace
 		void onEnter(void) override;
 	};
 
+	/// Page 7: a 3D model, alone because the model is large.
+	class MeshPage: public Page
+	{
+		public:
+		using Page::Page;
+		void onEnter(void) override;
+	};
+
+	/**
+	 * @brief Jump to the page named by GUILLAUME_GALLERY_PAGE (1 to 7).
+	 *
+	 * Only on the first entry of the first page, so Previous / Next work
+	 * normally afterwards.
+	 * @param page The first page.
+	 */
+	void openRequestedPage(Page &page)
+	{
+		static bool done  = false;
+		const char *value = std::getenv("GUILLAUME_GALLERY_PAGE");
+
+		if (done || value == nullptr) {
+			return;
+		}
+		done = true;
+		switch (std::atoi(value)) {
+			case 2:
+				page.goToScene<SelectionPage>();
+				break;
+			case 3:
+				page.goToScene<TextPage>();
+				break;
+			case 4:
+				page.goToScene<ContainersPage>();
+				break;
+			case 5:
+				page.goToScene<FeedbackPage>();
+				break;
+			case 6:
+				page.goToScene<NavigationPage>();
+				break;
+			case 7:
+				page.goToScene<MeshPage>();
+				break;
+			default:
+				break;
+		}
+	}
+
 	void ButtonsPage::onEnter(void)
 	{
 		using Button   = entities::Button;
 		auto &registry = getComponentRegistry();
 
-		beginPage("1 / 6  Buttons");
+		openRequestedPage(*this);
+		beginPage("1 / 7  Buttons");
 
 		// Common buttons: one per color style, plus a toggle and a disabled.
 		{
@@ -434,14 +487,14 @@ namespace
 			endRow(row, "SegmentedButton", widgets);
 		}
 
-		endPage<NavigationPage, SelectionPage>();
+		endPage<MeshPage, SelectionPage>();
 	}
 
 	void SelectionPage::onEnter(void)
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("2 / 6  Selection");
+		beginPage("2 / 7  Selection");
 
 		// Checkboxes: the three states and the three variants.
 		{
@@ -552,7 +605,7 @@ namespace
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("3 / 6  Text and input");
+		beginPage("3 / 7  Text and input");
 
 		// The type scale, one sample per group.
 		{
@@ -632,7 +685,7 @@ namespace
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("4 / 6  Containers");
+		beginPage("4 / 7  Containers");
 
 		// Surfaces at three elevation levels, flat and elevated.
 		{
@@ -744,7 +797,7 @@ namespace
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("5 / 6  Feedback");
+		beginPage("5 / 7  Feedback");
 
 		// Progress and loading indicators.
 		{
@@ -853,7 +906,7 @@ namespace
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("6 / 6  Navigation and 3D");
+		beginPage("6 / 7  Navigation");
 
 		// App bar.
 		{
@@ -887,7 +940,7 @@ namespace
 			endRow(row, "NavigationBar", { bar });
 		}
 
-		// Navigation drawer, standard and collapsed, and a 3D mesh.
+		// Navigation drawer, standard and collapsed.
 		{
 			using Drawer = entities::NavigationDrawer;
 			auto row	 = beginRow();
@@ -906,13 +959,22 @@ namespace
 				row, Drawer::Variant::Collapsed,
 				{ { "inbox", "Inbox" }, { "send", "Sent" } }));
 
-			entities::Mesh::Builder meshBuilder(registry, *row);
-			widgets.push_back(
-				meshBuilder.makeMesh(row, "models/teapot.obj", ""));
-			endRow(row, "Drawer, Mesh", widgets);
+			endRow(row, "NavigationDrawer", widgets);
 		}
 
-		endPage<FeedbackPage, ButtonsPage>();
+		endPage<FeedbackPage, MeshPage>();
+	}
+
+	void MeshPage::onEnter(void)
+	{
+		beginPage("7 / 7  3D mesh");
+
+		auto row = beginRow();
+		entities::Mesh::Builder meshBuilder(getComponentRegistry(), *row);
+		endRow(row, "Mesh",
+			   { meshBuilder.makeMesh(row, "models/teapot.obj", "") });
+
+		endPage<NavigationPage, ButtonsPage>();
 	}
 
 	/**
@@ -948,7 +1010,7 @@ int main(void)
 		std::make_unique<evan::Engine>(resources, std::move(platform));
 
 	guillaume::Application<ButtonsPage, SelectionPage, TextPage, ContainersPage,
-						   FeedbackPage, NavigationPage>
+						   FeedbackPage, NavigationPage, MeshPage>
 		app(resources, std::move(engine));
 
 	return app.run();
