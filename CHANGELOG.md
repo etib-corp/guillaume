@@ -9,6 +9,8 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+## [2026.6.0] - 2026-11-13
+
 ### Added
 
 - `ecs::EntityRegistry::removeEntity()` and `clearEntities()` remove an
