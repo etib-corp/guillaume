@@ -41,9 +41,6 @@ namespace
 		void initialize(void) override
 		{
 		}
-		void update(void) override
-		{
-		}
 	};
 
 	guillaume::ecs::EntityRegistryContainer
