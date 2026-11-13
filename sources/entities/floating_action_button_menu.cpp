@@ -43,7 +43,7 @@ namespace guillaume::entities
 	std::shared_ptr<FloatingActionButtonMenu>
 		FloatingActionButtonMenu::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<FloatingActionButtonMenu>(
+		auto entity = FloatingActionButtonMenu::create(
 			this->getComponentRegistry(), _iconGlyphName, _actions,
 			_accessibilityLabel);
 		return entity;
@@ -185,7 +185,7 @@ namespace guillaume::entities
 									  : ecs::Entity::InvalidIdentifier;
 	}
 
-	void FloatingActionButtonMenu::initialize(void)
+	void FloatingActionButtonMenu::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		// Copies: building children may move the component storage.

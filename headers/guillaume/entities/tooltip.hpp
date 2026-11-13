@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <memory>
 #include <string>
 
@@ -56,7 +57,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is
 	 * components::Tooltip and systems::Tooltip styles the tooltip, runs the
-	 * hover delays and places it. `initialize()` only builds the child
+	 * hover delays and places it. `build()` only builds the child
 	 * entities.
 	 *
 	 * @see SurfaceBase
@@ -165,16 +166,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a Tooltip entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The tooltip variant.
-		 * @param text The tooltip body text.
-		 * @param title The tooltip title (Rich variant only).
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Tooltip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-				Variant variant, const std::string &text,
-				const std::string &title);
+		template<typename... Arguments>
+		static std::shared_ptr<Tooltip> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Tooltip> entity(
+				new Tooltip(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -268,11 +276,6 @@ namespace guillaume::entities
 		 */
 		void place(void);
 
-		/**
-		 * @brief Build the title and body children.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build the title and body child entities that are missing
@@ -281,6 +284,27 @@ namespace guillaume::entities
 		 * Does nothing until the tooltip is owned by a shared pointer.
 		 */
 		void buildContent(void);
+
+		private:
+		/**
+		 * @brief Construct a Tooltip entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The tooltip variant.
+		 * @param text The tooltip body text.
+		 * @param title The tooltip title (Rich variant only).
+		 */
+		Tooltip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+				Variant variant, const std::string &text,
+				const std::string &title);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

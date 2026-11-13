@@ -57,7 +57,7 @@ namespace guillaume::entities::detail
 												 getIdentifier());
 	}
 
-	void BarDestination::initialize(void)
+	void BarDestination::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		// Copy: building children may move the component storage.

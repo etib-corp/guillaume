@@ -46,8 +46,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<Checkbox> Checkbox::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Checkbox>(
-			this->getComponentRegistry(), _config, _state, _variant, _label);
+		auto entity = Checkbox::create(this->getComponentRegistry(), _config,
+									   _state, _variant, _label);
 		return entity;
 	}
 
@@ -215,7 +215,7 @@ namespace guillaume::entities
 			.isSelected();
 	}
 
-	void Checkbox::initialize(void)
+	void Checkbox::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		auto &checkbox =

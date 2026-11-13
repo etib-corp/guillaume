@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -50,7 +51,7 @@ namespace guillaume::entities::detail
 	 * The class is a facade without fields: its state is
 	 * components::NavigationDrawerDestination and
 	 * systems::NavigationDrawerDestination styles and arranges it.
-	 * `initialize()` only builds the child entities.
+	 * `build()` only builds the child entities.
 	 */
 	class DrawerDestination:
 		public std::enable_shared_from_this<DrawerDestination>,
@@ -61,25 +62,29 @@ namespace guillaume::entities::detail
 	{
 		public:
 		/**
-		 * @brief Construct a drawer destination.
-		 * @param registry The component registry.
-		 * @param entry The destination data.
-		 * @param collapsed Whether to render a collapsed item.
-		 * @param width Destination width.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		DrawerDestination(ecs::ComponentRegistry &registry,
-						  const NavigationDrawer::Entry &entry, bool collapsed,
-						  float width);
+		template<typename... Arguments>
+		static std::shared_ptr<DrawerDestination>
+			create(Arguments &&...arguments)
+		{
+			std::shared_ptr<DrawerDestination> entity(
+				new DrawerDestination(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
 		 */
 		~DrawerDestination(void) override = default;
-
-		/**
-		 * @brief Build the icon, label and trailing children.
-		 */
-		void initialize(void) override;
 
 		/**
 		 * @brief Set the press handler.
@@ -117,5 +122,25 @@ namespace guillaume::entities::detail
 		 * @return The identifier, or InvalidIdentifier.
 		 */
 		ecs::Entity::Identifier getRightIdentifier(void) const;
+
+		private:
+		/**
+		 * @brief Construct a drawer destination.
+		 * @param registry The component registry.
+		 * @param entry The destination data.
+		 * @param collapsed Whether to render a collapsed item.
+		 * @param width Destination width.
+		 */
+		DrawerDestination(ecs::ComponentRegistry &registry,
+						  const NavigationDrawer::Entry &entry, bool collapsed,
+						  float width);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 }	 // namespace guillaume::entities::detail

@@ -380,7 +380,7 @@ namespace guillaume::entities
 		systems::Button::release(getComponentRegistry(), getIdentifier());
 	}
 
-	void ButtonBase::initialize(void)
+	void ButtonBase::build(void)
 	{
 		if (usesIcon()) {
 			Icon::Builder iconBuilder(getComponentRegistry(), *this);

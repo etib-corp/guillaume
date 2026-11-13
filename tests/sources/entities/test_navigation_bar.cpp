@@ -83,8 +83,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto bar = makeNavigationBar(registry, makeDestinations(3));
 
-		bar->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(bar->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 360.0f);
@@ -104,8 +102,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto bar = makeNavigationBar(registry, makeDestinations(3));
 
-		bar->initialize();
-
 		EXPECT_EQ(bar->getSelectedIndex(), 0U);
 		bar->select(2);
 		EXPECT_EQ(bar->getSelectedIndex(), 2U);
@@ -116,7 +112,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto bar = makeNavigationBar(registry, makeDestinations(3));
 
-		bar->initialize();
 		bar->select(1);
 
 		const auto first = registry.getComponent<components::Selectable>(
@@ -159,7 +154,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto bar = makeNavigationBar(registry, makeDestinations(3));
-		bar->initialize();
 
 		const auto role = [](SchemeColorRole value) {
 			return getActiveScheme().getColor(value).getColor();
@@ -204,7 +198,6 @@ namespace guillaume::entities::tests
 						   reported = index;
 					   })
 					   .registerEntity(nullptr);
-		bar->initialize();
 
 		std::size_t presses = 0;
 		bar->setOnTabPress([&presses](std::size_t) {
@@ -236,7 +229,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto bar = makeNavigationBar(registry, makeDestinations(2));
-		bar->initialize();
 
 		EXPECT_EQ(
 			registry

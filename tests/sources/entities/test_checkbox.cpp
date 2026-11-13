@@ -92,8 +92,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto checkbox = makeCheckbox(registry);
 
-		checkbox->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(checkbox->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 18.0f);
@@ -109,7 +107,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto checkbox = makeCheckbox(registry);
 
-		checkbox->initialize();
 		checkbox->setState(Checkbox::State::Checked);
 
 		EXPECT_EQ(checkbox->getState(), Checkbox::State::Checked);
@@ -137,7 +134,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto checkbox = makeCheckbox(registry);
 
-		checkbox->initialize();
 		checkbox->setState(Checkbox::State::Indeterminate);
 
 		const auto &line =
@@ -151,8 +147,6 @@ namespace guillaume::entities::tests
 		auto checkbox = makeCheckbox(registry, Checkbox::State::Checked,
 									 Checkbox::Variant::Enabled, "Accept");
 
-		checkbox->initialize();
-
 		// Only the check glyph is laid out inside the 18 dp box.
 		EXPECT_EQ(checkbox->getChildren().size(), 1U);
 		EXPECT_GE(labelOffsetX(registry, checkbox),
@@ -164,7 +158,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto checkbox = makeCheckbox(registry, Checkbox::State::Indeterminate,
 									 Checkbox::Variant::Enabled, "Accept");
-		checkbox->initialize();
 
 		std::optional<Checkbox::State> reported;
 		checkbox->setOnValueChange([&reported](Checkbox::State state) {
@@ -208,7 +201,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto checkbox = makeCheckbox(registry, Checkbox::State::Unchecked,
 									 Checkbox::Variant::Disabled);
-		checkbox->initialize();
 
 		checkbox->toggle();
 		registry
@@ -233,7 +225,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto checkbox = makeCheckbox(registry, Checkbox::State::Checked);
-		checkbox->initialize();
 
 		const auto margin =
 			registry

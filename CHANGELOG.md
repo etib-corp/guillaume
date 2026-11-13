@@ -9,6 +9,14 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** widgets are created with a static `create()` that returns
+  them fully built; their constructors are private and
+  `ecs::Entity::initialize()` is removed (`EntityRegistry::addEntity()` no
+  longer calls it). Replace `std::make_shared<Widget>(...)` followed by
+  `initialize()` with `Widget::create(...)`. Builders are unchanged.
+
 ## [2026.6.0] - 2026-11-13
 
 ### Added

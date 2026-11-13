@@ -289,12 +289,15 @@ namespace guillaume::entities
 		 */
 		ecs::Entity::Identifier getLabelIdentifier(void) const;
 
-		/**
-		 * @brief Initialize the button entity's derived state.
-		 */
-		void initialize(void) override;
-
 		protected:
+		/**
+		 * @brief Create the icon and label children.
+		 *
+		 * Called once by the subclass's create(), when the button is owned
+		 * and can be given as parent to its children.
+		 */
+		void build(void);
+
 		/**
 		 * @brief Construct a ButtonBase entity.
 		 * @param registry Reference to the component registry.

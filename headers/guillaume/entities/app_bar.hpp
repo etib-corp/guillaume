@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -58,7 +59,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is components::AppBar
 	 * and systems::AppBar styles the bar and arranges its children.
-	 * `initialize()` only builds the child entities.
+	 * `build()` only builds the child entities.
 	 *
 	 * @see SurfaceBase
 	 */
@@ -187,33 +188,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct an AppBar entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The app bar variant.
-		 * @param title The title text.
-		 * @param navigationIcon The leading navigation icon glyph name.
-		 * @param actions The trailing action icon glyph names.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		AppBar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			   Variant variant, const std::string &title,
-			   const std::string &navigationIcon,
-			   const std::vector<std::string> &actions);
-
-		/**
-		 * @brief Construct an app bar with pressable navigation and actions.
-		 * @param registry Component registry.
-		 * @param config Surface configuration.
-		 * @param variant App bar variant.
-		 * @param title Title text.
-		 * @param navigation Leading navigation action (empty icon: none).
-		 * @param actions Trailing actions.
-		 * @param elevated Whether the bar uses the elevated surface.
-		 */
-		AppBar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			   Variant variant, const std::string &title,
-			   const Action &navigation, const std::vector<Action> &actions,
-			   bool elevated);
+		template<typename... Arguments>
+		static std::shared_ptr<AppBar> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<AppBar> entity(
+				new AppBar(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -278,11 +269,6 @@ namespace guillaume::entities
 		static constexpr float HorizontalPadding =
 			components::AppBar::HorizontalPadding;
 
-		/**
-		 * @brief Build the navigation, title and action children.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build one pressable icon button.
@@ -298,6 +284,44 @@ namespace guillaume::entities
 		 * Does nothing until the app bar is owned by a shared pointer.
 		 */
 		void buildContent(void);
+
+		private:
+		/**
+		 * @brief Construct an AppBar entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The app bar variant.
+		 * @param title The title text.
+		 * @param navigationIcon The leading navigation icon glyph name.
+		 * @param actions The trailing action icon glyph names.
+		 */
+		AppBar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			   Variant variant, const std::string &title,
+			   const std::string &navigationIcon,
+			   const std::vector<std::string> &actions);
+
+		/**
+		 * @brief Construct an app bar with pressable navigation and actions.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param variant App bar variant.
+		 * @param title Title text.
+		 * @param navigation Leading navigation action (empty icon: none).
+		 * @param actions Trailing actions.
+		 * @param elevated Whether the bar uses the elevated surface.
+		 */
+		AppBar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			   Variant variant, const std::string &title,
+			   const Action &navigation, const std::vector<Action> &actions,
+			   bool elevated);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

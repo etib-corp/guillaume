@@ -69,8 +69,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry);
 
-		chip->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(chip->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getHeight(), 32.0f);
@@ -98,8 +96,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry);
 
-		chip->initialize();
-
 		EXPECT_FALSE(chip->isSelected());
 		chip->setSelected(true);
 		EXPECT_TRUE(chip->isSelected());
@@ -113,7 +109,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry, Chip::Variant::Filter, "Tag");
 
-		chip->initialize();
 		chip->setSelected(true);
 
 		const auto &color =
@@ -125,8 +120,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry, Chip::Variant::Input, "Email");
-
-		chip->initialize();
 
 		EXPECT_EQ(chip->getChildren().size(), 2U);
 	}
@@ -152,7 +145,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry);
-		chip->initialize();
 
 		EXPECT_EQ(chip->getMode(), Chip::Mode::Flat);
 		EXPECT_EQ(
@@ -179,7 +171,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry, Chip::Variant::Filter, "Tag");
-		chip->initialize();
 
 		// The chip owns the check and the label; the check is only laid out
 		// while selected, so the Layout component is what tracks it.
@@ -215,7 +206,6 @@ namespace guillaume::entities::tests
 		chip->setOnClose([&closes]() {
 			++closes;
 		});
-		chip->initialize();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -260,7 +250,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry);
-		chip->initialize();
 
 		const auto rest =
 			registry.getComponent<components::Color>(chip->getIdentifier())

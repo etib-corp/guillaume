@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <cstdint>
 #include <memory>
 
@@ -60,10 +61,17 @@ namespace guillaume::entities
 		static constexpr float Extent = systems::Backdrop::Extent;
 
 		/**
-		 * @brief Construct a hidden backdrop.
-		 * @param registry Component registry.
+		 * @brief Create the entity.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		explicit Backdrop(ecs::ComponentRegistry &registry);
+		template<typename... Arguments>
+		static std::shared_ptr<Backdrop> create(Arguments &&...arguments)
+		{
+			return std::shared_ptr<Backdrop>(
+				new Backdrop(std::forward<Arguments>(arguments)...));
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -90,6 +98,13 @@ namespace guillaume::entities
 		 */
 		void follow(const utility::graphic::PoseF &ownerPose, float ownerWidth,
 					float ownerHeight);
+
+		private:
+		/**
+		 * @brief Construct a hidden backdrop.
+		 * @param registry Component registry.
+		 */
+		explicit Backdrop(ecs::ComponentRegistry &registry);
 	};
 
 }	 // namespace guillaume::entities

@@ -39,8 +39,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Text> Text::Builder::buildEntity(void)
 	{
-		auto entity =
-			std::make_shared<Text>(this->getComponentRegistry(), _content,
+		auto entity = Text::create(this->getComponentRegistry(), _content,
 								   _typeRole, _color, _fontSize);
 		return entity;
 	}

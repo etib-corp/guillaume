@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <utility>
+#include <memory>
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
@@ -115,13 +117,22 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Default constructor for the Image component.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param texturePath The name of the texture to be used for this Image
-		 * entity.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Image(ecs::ComponentRegistry &registry, const std::string &texturePath);
+		template<typename... Arguments>
+		static std::shared_ptr<Image> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Image> entity(
+				new Image(std::forward<Arguments>(arguments)...));
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the Image component.
@@ -179,6 +190,16 @@ namespace guillaume::entities
 		 * @return Reference to this image for chaining.
 		 */
 		Image &setAccessibilityLabel(const std::string &label);
+
+		private:
+		/**
+		 * @brief Default constructor for the Image component.
+		 * @param registry Reference to the component registry for initializing
+		 * components.
+		 * @param texturePath The name of the texture to be used for this Image
+		 * entity.
+		 */
+		Image(ecs::ComponentRegistry &registry, const std::string &texturePath);
 	};
 
 }	 // namespace guillaume::entities

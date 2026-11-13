@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <memory>
 #include <string>
 
@@ -48,7 +49,7 @@ namespace guillaume::entities
 	 * status dot. Visibility changes fade the badge over 150 ms (M3 short3).
 	 *
 	 * The class is a facade without fields: its state is components::Badge
-	 * and systems::Badge sizes, colors and fades the badge. `initialize()`
+	 * and systems::Badge sizes, colors and fades the badge. `build()`
 	 * only builds the label child.
 	 */
 	class Badge: public SurfaceBase<components::Animation, components::Badge>
@@ -110,14 +111,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a badge.
-		 * @param registry Component registry.
-		 * @param config Surface configuration.
-		 * @param variant Variant.
-		 * @param label Label.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Badge(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			  Variant variant, const std::string &label);
+		template<typename... Arguments>
+		static std::shared_ptr<Badge> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Badge> entity(
+				new Badge(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Destructor.
@@ -183,10 +193,24 @@ namespace guillaume::entities
 		 */
 		float getOpacity(void) const;
 
+		private:
 		/**
-		 * @brief Build the label child.
+		 * @brief Construct a badge.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param variant Variant.
+		 * @param label Label.
 		 */
-		void initialize(void) override;
+		Badge(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			  Variant variant, const std::string &label);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

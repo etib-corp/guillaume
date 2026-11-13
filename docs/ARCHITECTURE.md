@@ -117,7 +117,8 @@ To write a widget (this is also how the existing ones were migrated):
 4. Reduce the entity class to a facade: add `components::X` to its
    `EntityFiller` list, make each setter write the component and call
    `systems::X::apply` (so the result is visible immediately while a scene is
-   being built), and delete its `initialize()` / `update()` overrides.
+   being built). Its constructors are private; a static `create()` constructs
+   it and calls its private `build()`, which creates the child entities.
 5. Test the system on bare identifiers, without the entity class.
 
 Widgets with children read the tree from `components::Hierarchy` (parent
@@ -129,7 +130,7 @@ entity object. Systems treat it as read-only.
 `entities::SurfaceBase`, the base of 20 widgets, already follows this: it has
 no configuration of its own (Transform, Color, Borders and Layout are the
 state), `systems::Layout` arranges its children, and it overrides neither
-`initialize()` nor `update()`. `entities::Surface` is a facade over
+`initialize()` nor `update()` (neither exists any more). `entities::Surface` is a facade over
 `components::SurfaceTone` / `systems::SurfaceTone`.
 
 `Checkbox`, `RadioButton` and `Switch` are the reference for widgets with
@@ -139,8 +140,9 @@ children and input. On top of the recipe above:
 - The system has a static `install(registry, identifier)` that adds the
   interaction components and wires handlers capturing the registry and the
   identifier (not `this`), and static actions such as `toggle`.
-- The facade's `initialize()` is kept only to build the child entities, which
-  needs `shared_from_this()`; it holds no rule.
+- The facade's private `build()` only creates the child entities. It needs
+  `shared_from_this()`, so `create()` calls it right after construction; it
+  holds no rule.
 
 The button family shows how a class hierarchy with virtual hooks maps to
 components: `components::Button` + `systems::Button` carry what `ButtonBase`
@@ -152,8 +154,10 @@ virtual `applyStyleState()` / `applyGeometry()` calls.
 
 What remains of the entity classes:
 
-- `initialize()` and private build helpers, only to create child entities
+- A static `create()` and a private `build()`, only to create child entities
   (that needs `shared_from_this()`, and a system cannot create entities).
+  Widgets are never half-built: there is no public constructor and no
+  `initialize()` to remember.
 - `SurfaceBase` keeps a list of handles to its attached children.
 
 A widget that rebuilds its children removes the previous ones with

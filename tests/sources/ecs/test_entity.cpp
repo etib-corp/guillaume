@@ -51,9 +51,6 @@ namespace guillaume::ecs::tests
 	class DummyEntity: public Entity
 	{
 		public:
-		void initialize(void) override
-		{
-		}
 	};
 
 	TEST_F(TestEntity, DefaultLayerIsZero)

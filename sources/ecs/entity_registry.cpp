@@ -44,7 +44,6 @@ namespace guillaume::ecs
 
 	void EntityRegistry::addEntity(std::shared_ptr<Entity> entity)
 	{
-		entity->initialize();
 		accessDirectEntities().push_back(entity);
 		++getTreeVersion();
 	}

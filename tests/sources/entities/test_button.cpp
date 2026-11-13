@@ -56,6 +56,7 @@
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/mesh_renderable.hpp>
+#include <guillaume/systems/common_button.hpp>
 #include <guillaume/systems/glyph_render.hpp>
 #include <guillaume/systems/layout.hpp>
 #include <guillaume/systems/rectangle_render.hpp>
@@ -69,7 +70,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, ChildrenHaveDistinctLayersAndDepthOffsets)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "home", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
@@ -79,8 +80,7 @@ namespace guillaume::entities::tests
 		buttonTransform.setPose(utility::graphic::PoseF(
 			utility::graphic::PositionF(0.0f, 0.0f, -300.0f),
 			utility::graphic::OrientationF()));
-
-		button->initialize();
+		systems::CommonButton::apply(registry, button->getIdentifier());
 
 		const auto iconIdentifier  = button->getIconIdentifier();
 		const auto labelIdentifier = button->getLabelIdentifier();
@@ -122,7 +122,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, EmptyContentStillCreatesBothChildren)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
@@ -132,8 +132,7 @@ namespace guillaume::entities::tests
 		buttonTransform.setPose(utility::graphic::PoseF(
 			utility::graphic::PositionF(0.0f, 0.0f, -300.0f),
 			utility::graphic::OrientationF()));
-
-		button->initialize();
+		systems::CommonButton::apply(registry, button->getIdentifier());
 
 		const auto iconIdentifier  = button->getIconIdentifier();
 		const auto labelIdentifier = button->getLabelIdentifier();
@@ -172,12 +171,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, ToggleFlipsSelectedOnRelease)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", true,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		EXPECT_FALSE(button->isSelected());
 
@@ -197,12 +194,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, SetSelectedUpdatesState)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", true,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		button->setSelected(true);
 		EXPECT_TRUE(button->isSelected());
@@ -214,12 +209,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, SetSelectedIgnoredWhenNotToggle)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		button->setSelected(true);
 		EXPECT_FALSE(button->isSelected());
@@ -228,12 +221,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, SetIsToggleFalseResetsSelected)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", true,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		button->setSelected(true);
 		EXPECT_TRUE(button->isSelected());
@@ -245,12 +236,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, MorphGatesShapeFlip)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", true,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		auto &borders =
 			registry.getComponent<components::Borders>(button->getIdentifier());
@@ -268,12 +257,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, IconOnlyButtonHasNoLabelSpacing)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "home", components::Glyph::Style::Outlined, "", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(button->getIdentifier());
@@ -284,14 +271,12 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		bool clicked = false;
-		auto button	 = std::make_shared<Button>(
+		auto button	 = Button::create(
 			 registry, "", components::Glyph::Style::Outlined, "Save", true,
 			 Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			 false, false, false, "", [&clicked]() {
 				 clicked = true;
 			 });
-
-		button->initialize();
 
 		button->setDisabled(true);
 		EXPECT_TRUE(button->isDisabled());
@@ -310,12 +295,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, DisabledButtonAppliesDisabledColors)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		button->setDisabled(true);
 
@@ -328,12 +311,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, TrailingIconPlacesIconAfterLabel)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "home", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, true, "", std::function<void(void)>());
-
-		button->initialize();
 
 		registry.getComponent<components::Bound>(button->getLabelIdentifier())
 			.setWidth(50.0f);
@@ -359,12 +340,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, AccessibilityLabelRoundTrip)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-
-		button->initialize();
 
 		button->setAccessibilityLabel("Save changes");
 		EXPECT_EQ(button->getAccessibilityLabel(), "Save changes");
@@ -394,11 +373,10 @@ namespace guillaume::entities::tests
 		guillaume::systems::GlyphRender glyphRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "home", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
-		button->initialize();
 
 		rectangleRender.bindComponentRegistry(registry);
 		rectangleRender.update(button->getIdentifier());
@@ -419,7 +397,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, StyleAndSizeSettersRoundTrip)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, false, false, "", std::function<void(void)>());
@@ -453,11 +431,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, DisabledStateAndSemanticsLiveInComponents)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
 			false, true, false, "", std::function<void(void)>());
-		button->initialize();
 
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
@@ -496,11 +473,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, EnforcesMinimumSizeAndLabelTypography)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Ok", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
-		button->initialize();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(button->getIdentifier());
@@ -517,11 +493,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, UppercaseCompactAndOverrides)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Save", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
-		button->initialize();
 
 		button->setUppercase(true);
 		EXPECT_EQ(
@@ -550,22 +525,20 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, ElevatedStyleCastsShadow)
 	{
 		ecs::ComponentRegistry registry;
-		auto elevated = std::make_shared<Button>(
+		auto elevated = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Go", false,
 			Button::Color::Elevated, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
-		elevated->initialize();
 		EXPECT_EQ(
 			registry
 				.getComponent<components::Elevation>(elevated->getIdentifier())
 				.getElevationLevel(),
 			theme::ElevationLevel::Level1);
 
-		auto filled = std::make_shared<Button>(
+		auto filled = Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Go", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
-		filled->initialize();
 		EXPECT_FALSE(
 			registry
 				.getComponent<components::Elevation>(filled->getIdentifier())
@@ -575,11 +548,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestButton, LoadingShowsProgressGlyphAndRoleIsOverridable)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<Button>(
+		auto button = Button::create(
 			registry, "send", components::Glyph::Style::Outlined, "Send", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", std::function<void(void)>());
-		button->initialize();
 
 		button->setLoading(true);
 		EXPECT_TRUE(button->isLoading());
@@ -608,13 +580,12 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		int clicks		= 0;
 		int longPresses = 0;
-		auto button		= std::make_shared<Button>(
+		auto button		= Button::create(
 			registry, "", components::Glyph::Style::Outlined, "Hold", false,
 			Button::Color::Filled, Button::Shape::Round, Button::Size::Small,
 			false, false, false, "", [&clicks]() {
 				++clicks;
 			});
-		button->initialize();
 		button->setOnLongPress([&longPresses]() {
 			++longPresses;
 		});

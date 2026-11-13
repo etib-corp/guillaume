@@ -124,8 +124,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<Surface> Surface::Builder::buildEntity(void)
 	{
-		return std::make_shared<Surface>(this->getComponentRegistry(), _config,
-										 _elevation, _mode);
+		return Surface::create(this->getComponentRegistry(), _config,
+							   _elevation, _mode);
 	}
 
 	void Surface::Builder::reset(void)

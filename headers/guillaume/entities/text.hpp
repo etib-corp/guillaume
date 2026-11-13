@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <utility>
+#include <memory>
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
@@ -156,28 +158,22 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Default constructor for the Text component.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param content The text content to initialize the Text component
-		 * with.
-		 * @param fontSize The font size to initialize the Text component with.
-		 * @param color The color to initialize the Text component with (RGBA).
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Text(ecs::ComponentRegistry &registry, const std::string &content,
-			 const float &fontSize, const utility::graphic::Color32Bit &color);
-
-		/**
-		 * @brief Construct a text styled by a typescale role.
-		 * @param registry Component registry.
-		 * @param content Text content.
-		 * @param role Typescale role.
-		 * @param color Text color.
-		 * @param fontSize Optional size overriding the role size.
-		 */
-		Text(ecs::ComponentRegistry &registry, const std::string &content,
-			 theme::TypeRole role, const utility::graphic::Color32Bit &color,
-			 std::optional<float> fontSize = std::nullopt);
+		template<typename... Arguments>
+		static std::shared_ptr<Text> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Text> entity(
+				new Text(std::forward<Arguments>(arguments)...));
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor for the Text component.
@@ -235,6 +231,31 @@ namespace guillaume::entities
 		 * @brief Run systems::Typography on this entity right now.
 		 */
 		void applyTypography(void);
+
+		private:
+		/**
+		 * @brief Default constructor for the Text component.
+		 * @param registry Reference to the component registry for initializing
+		 * components.
+		 * @param content The text content to initialize the Text component
+		 * with.
+		 * @param fontSize The font size to initialize the Text component with.
+		 * @param color The color to initialize the Text component with (RGBA).
+		 */
+		Text(ecs::ComponentRegistry &registry, const std::string &content,
+			 const float &fontSize, const utility::graphic::Color32Bit &color);
+
+		/**
+		 * @brief Construct a text styled by a typescale role.
+		 * @param registry Component registry.
+		 * @param content Text content.
+		 * @param role Typescale role.
+		 * @param color Text color.
+		 * @param fontSize Optional size overriding the role size.
+		 */
+		Text(ecs::ComponentRegistry &registry, const std::string &content,
+			 theme::TypeRole role, const utility::graphic::Color32Bit &color,
+			 std::optional<float> fontSize = std::nullopt);
 	};
 
 }	 // namespace guillaume::entities

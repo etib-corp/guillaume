@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <memory>
 #include <optional>
 
@@ -133,13 +134,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a LoadingIndicator entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The visual variant.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		LoadingIndicator(ecs::ComponentRegistry &registry,
-						 const SurfaceConfig &config, Variant variant);
+		template<typename... Arguments> static std::shared_ptr<LoadingIndicator>
+			create(Arguments &&...arguments)
+		{
+			std::shared_ptr<LoadingIndicator> entity(
+				new LoadingIndicator(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -231,17 +242,30 @@ namespace guillaume::entities
 		 */
 		float getStrokeWidth(void) const;
 
-		/**
-		 * @brief Build the animated child of the loading indicator.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build (and attach) the animated child of the current
 		 * variant, unless it already exists.
 		 */
 		void buildChild(void);
+
+		private:
+		/**
+		 * @brief Construct a LoadingIndicator entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The visual variant.
+		 */
+		LoadingIndicator(ecs::ComponentRegistry &registry,
+						 const SurfaceConfig &config, Variant variant);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

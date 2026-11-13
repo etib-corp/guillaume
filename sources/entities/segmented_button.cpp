@@ -62,11 +62,11 @@ namespace guillaume::entities
 	std::shared_ptr<SegmentedButton> SegmentedButton::Builder::buildEntity(void)
 	{
 		if (!_segmentConfigs.empty()) {
-			return std::make_shared<SegmentedButton>(
-				this->getComponentRegistry(), _segmentConfigs, _selectionMode,
-				_onChange);
+			return SegmentedButton::create(this->getComponentRegistry(),
+										   _segmentConfigs, _selectionMode,
+										   _onChange);
 		}
-		auto entity = std::make_shared<SegmentedButton>(
+		auto entity = SegmentedButton::create(
 			this->getComponentRegistry(), _labels, _selectionMode, _onChange);
 		return entity;
 	}
@@ -203,7 +203,7 @@ namespace guillaume::entities
 									  : ecs::Entity::InvalidIdentifier;
 	}
 
-	void SegmentedButton::initialize(void)
+	void SegmentedButton::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		// Copy: building children may move the component storage.

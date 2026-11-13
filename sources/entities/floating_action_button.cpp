@@ -47,7 +47,7 @@ namespace guillaume::entities
 	std::shared_ptr<FloatingActionButton>
 		FloatingActionButton::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<FloatingActionButton>(
+		auto entity = FloatingActionButton::create(
 			this->getComponentRegistry(), _iconGlyphName, _iconStyle,
 			_labelContent, _variant, _size, _lowered, _isDisabled,
 			_accessibilityLabel, _onClick);

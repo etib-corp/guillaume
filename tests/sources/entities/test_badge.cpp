@@ -61,8 +61,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto badge = makeBadge(registry, "", Badge::Variant::Dot);
 
-		badge->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(badge->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 6.0f);
@@ -78,8 +76,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto badge = makeBadge(registry, "99+", Badge::Variant::Small);
-
-		badge->initialize();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(badge->getIdentifier());
@@ -101,14 +97,12 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto smallEntity = makeBadge(registry, "9", Badge::Variant::Small);
-		smallEntity->initialize();
 		const float smallHeight =
 			registry
 				.getComponent<components::Bound>(smallEntity->getIdentifier())
 				.getHeight();
 
 		auto largeEntity = makeBadge(registry, "9", Badge::Variant::Large);
-		largeEntity->initialize();
 		const float largeHeight =
 			registry
 				.getComponent<components::Bound>(largeEntity->getIdentifier())
@@ -121,8 +115,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto badge = makeBadge(registry, "1", Badge::Variant::Small);
-
-		badge->initialize();
 
 		const auto &color =
 			registry.getComponent<components::Color>(badge->getIdentifier());
@@ -159,7 +151,6 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
 		Badge::Builder builder(registry, entityRegistry);
 		auto badge = builder.withLabel("3").registerEntity(nullptr);
-		badge->initialize();
 
 		EXPECT_EQ(badge->getVariant(), Badge::Variant::Large);
 		EXPECT_FLOAT_EQ(badge->getSize(), 20.0f);
@@ -176,7 +167,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto badge = makeBadge(registry, "1", Badge::Variant::Small);
-		badge->initialize();
 
 		badge->setSize(28.0f);
 		EXPECT_FLOAT_EQ(
@@ -198,7 +188,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto badge = makeBadge(registry, "1", Badge::Variant::Small);
-		badge->initialize();
 
 		badge->setVisible(false);
 		EXPECT_FALSE(badge->isVisible());

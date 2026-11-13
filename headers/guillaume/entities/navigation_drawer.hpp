@@ -58,7 +58,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is
 	 * components::NavigationDrawer and systems::NavigationDrawer styles the
-	 * sheet, arranges the entries and drives the backdrop. `initialize()`
+	 * sheet, arranges the entries and drives the backdrop. `build()`
 	 * only builds the child entities.
 	 */
 	class NavigationDrawer:
@@ -170,29 +170,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a drawer from (icon, label) pairs.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The drawer variant.
-		 * @param destinations The destination (icon, label) pairs.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		NavigationDrawer(ecs::ComponentRegistry &registry,
-						 const SurfaceConfig &config, Variant variant,
-						 const std::vector<std::pair<std::string, std::string>>
-							 &destinations);
-
-		/**
-		 * @brief Construct a drawer from entries.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The drawer variant.
-		 * @param entries The drawer entries.
-		 * @param onIndexChange Selection change handler.
-		 */
-		NavigationDrawer(ecs::ComponentRegistry &registry,
-						 const SurfaceConfig &config, Variant variant,
-						 const std::vector<Entry> &entries,
-						 std::function<void(std::size_t)> onIndexChange);
+		template<typename... Arguments> static std::shared_ptr<NavigationDrawer>
+			create(Arguments &&...arguments)
+		{
+			std::shared_ptr<NavigationDrawer> entity(
+				new NavigationDrawer(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -325,18 +319,46 @@ namespace guillaume::entities
 		 */
 		ecs::Entity::Identifier getBackdropIdentifier(void) const;
 
-		/**
-		 * @brief Build the entry children and select the first enabled
-		 * destination.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build the backdrop when it is missing, and a child for
 		 * every entry, then wire them to the system.
 		 */
 		void buildDestinations(void);
+
+		private:
+		/**
+		 * @brief Construct a drawer from (icon, label) pairs.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The drawer variant.
+		 * @param destinations The destination (icon, label) pairs.
+		 */
+		NavigationDrawer(ecs::ComponentRegistry &registry,
+						 const SurfaceConfig &config, Variant variant,
+						 const std::vector<std::pair<std::string, std::string>>
+							 &destinations);
+
+		/**
+		 * @brief Construct a drawer from entries.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The drawer variant.
+		 * @param entries The drawer entries.
+		 * @param onIndexChange Selection change handler.
+		 */
+		NavigationDrawer(ecs::ComponentRegistry &registry,
+						 const SurfaceConfig &config, Variant variant,
+						 const std::vector<Entry> &entries,
+						 std::function<void(std::size_t)> onIndexChange);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

@@ -49,13 +49,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestFloatingActionButton, CreatesIconAndLabelChildren)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<FloatingActionButton>(
+		auto fab = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Edit",
 			FloatingActionButton::Variant::Surface,
 			FloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-
-		fab->initialize();
 
 		EXPECT_NE(fab->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
 		EXPECT_NE(fab->getLabelIdentifier(), ecs::Entity::InvalidIdentifier);
@@ -64,13 +62,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestFloatingActionButton, ChildrenArePositionedAndLifted)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<FloatingActionButton>(
+		auto fab = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Edit",
 			FloatingActionButton::Variant::Surface,
 			FloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-
-		fab->initialize();
 
 		const float baseX =
 			registry.getComponent<components::Transform>(fab->getIdentifier())
@@ -109,14 +105,12 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		bool clicked = false;
-		auto fab	 = std::make_shared<FloatingActionButton>(
+		auto fab	 = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Edit",
 			FloatingActionButton::Variant::Surface,
 			FloatingActionButton::Size::Medium, false, false, "", [&clicked]() {
 				clicked = true;
 			});
-
-		fab->initialize();
 
 		fab->setDisabled(true);
 		EXPECT_TRUE(fab->isDisabled());
@@ -134,13 +128,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestFloatingActionButton, AccessibilityLabelRoundTrip)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<FloatingActionButton>(
+		auto fab = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Edit",
 			FloatingActionButton::Variant::Surface,
 			FloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-
-		fab->initialize();
 
 		fab->setAccessibilityLabel("Edit comment");
 		EXPECT_EQ(fab->getAccessibilityLabel(), "Edit comment");
@@ -167,35 +159,32 @@ namespace guillaume::entities::tests
 	TEST_F(TestFloatingActionButton, ElevationFollowsLoweredAndDisabled)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<FloatingActionButton>(
+		auto fab = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "",
 			FloatingActionButton::Variant::Primary,
 			FloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-		fab->initialize();
 
 		auto &elevation =
 			registry.getComponent<components::Elevation>(fab->getIdentifier());
 		EXPECT_EQ(elevation.getElevationLevel(), theme::ElevationLevel::Level3);
 
-		auto lowered = std::make_shared<FloatingActionButton>(
+		auto lowered = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "",
 			FloatingActionButton::Variant::Primary,
 			FloatingActionButton::Size::Medium, true, false, "",
 			std::function<void(void)>());
-		lowered->initialize();
 		EXPECT_EQ(
 			registry
 				.getComponent<components::Elevation>(lowered->getIdentifier())
 				.getElevationLevel(),
 			theme::ElevationLevel::Level1);
 
-		auto disabled = std::make_shared<FloatingActionButton>(
+		auto disabled = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "",
 			FloatingActionButton::Variant::Primary,
 			FloatingActionButton::Size::Medium, false, true, "",
 			std::function<void(void)>());
-		disabled->initialize();
 		EXPECT_FALSE(
 			registry
 				.getComponent<components::Elevation>(disabled->getIdentifier())
@@ -206,14 +195,13 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		int clicks = 0;
-		auto fab   = std::make_shared<FloatingActionButton>(
+		auto fab   = FloatingActionButton::create(
 			  registry, "add", components::Glyph::Style::Outlined, "",
 			  FloatingActionButton::Variant::Surface,
 			  FloatingActionButton::Size::Medium, false, false, "Add",
 			  [&clicks]() {
 				  ++clicks;
 			  });
-		fab->initialize();
 
 		EXPECT_EQ(registry.getComponent<components::Color>(fab->getIdentifier())
 					  .getColor(),
@@ -254,12 +242,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestFloatingActionButton, LabelUsesLabelLarge)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<FloatingActionButton>(
+		auto fab = FloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Edit",
 			FloatingActionButton::Variant::Primary,
 			FloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-		fab->initialize();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Text>(fab->getLabelIdentifier())

@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -164,14 +165,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a menu.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The menu variant.
-		 * @param items The menu items.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Menu(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			 Variant variant, const std::vector<Item> &items);
+		template<typename... Arguments>
+		static std::shared_ptr<Menu> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Menu> entity(
+				new Menu(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -309,11 +319,6 @@ namespace guillaume::entities
 		 */
 		bool isVisible(void) const;
 
-		/**
-		 * @brief Build the rows and style the menu.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build one row per item when the rows are stale, record
@@ -323,6 +328,25 @@ namespace guillaume::entities
 		 * Does nothing until the menu is owned by a shared pointer.
 		 */
 		void buildItems(void);
+
+		private:
+		/**
+		 * @brief Construct a menu.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The menu variant.
+		 * @param items The menu items.
+		 */
+		Menu(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			 Variant variant, const std::vector<Item> &items);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

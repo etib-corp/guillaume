@@ -73,9 +73,9 @@ namespace guillaume::entities
 
 	std::shared_ptr<Dialog> Dialog::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Dialog>(
-			this->getComponentRegistry(), _config, _variant, _title, _message,
-			_actions, _icon, _onDismiss);
+		auto entity =
+			Dialog::create(this->getComponentRegistry(), _config, _variant,
+						   _title, _message, _actions, _icon, _onDismiss);
 		return entity;
 	}
 
@@ -319,7 +319,7 @@ namespace guillaume::entities
 			.getIconEntity();
 	}
 
-	void Dialog::initialize(void)
+	void Dialog::build(void)
 	{
 		buildContent();
 		systems::Dialog::apply(getComponentRegistry(), getIdentifier());
@@ -337,7 +337,7 @@ namespace guillaume::entities
 			registry.getComponent<components::Dialog>(getIdentifier());
 
 		if (dialog.getBackdrop() == ecs::Entity::InvalidIdentifier) {
-			const auto backdrop = std::make_shared<Backdrop>(registry);
+			const auto backdrop = Backdrop::create(registry);
 			backdrop->setParent(shared_from_this());
 			addEntity(backdrop);
 			dialog.setBackdrop(backdrop->getIdentifier());

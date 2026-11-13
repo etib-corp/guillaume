@@ -58,7 +58,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is
 	 * components::NavigationBar and systems::NavigationBar styles the bar
-	 * and arranges the destinations. `initialize()` only builds the
+	 * and arranges the destinations. `build()` only builds the
 	 * destination child entities.
 	 *
 	 * @see SurfaceBase
@@ -167,29 +167,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a NavigationBar entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The navigation bar variant.
-		 * @param destinations The destination (icon, label) pairs.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		NavigationBar(ecs::ComponentRegistry &registry,
-					  const SurfaceConfig &config, Variant variant,
-					  const std::vector<std::pair<std::string, std::string>>
-						  &destinations);
-
-		/**
-		 * @brief Construct a NavigationBar from full destinations.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The navigation bar variant.
-		 * @param destinations The destinations.
-		 * @param onIndexChange Index change handler.
-		 */
-		NavigationBar(ecs::ComponentRegistry &registry,
-					  const SurfaceConfig &config, Variant variant,
-					  const std::vector<Destination> &destinations,
-					  std::function<void(std::size_t)> onIndexChange);
+		template<typename... Arguments>
+		static std::shared_ptr<NavigationBar> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<NavigationBar> entity(
+				new NavigationBar(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -306,10 +300,39 @@ namespace guillaume::entities
 		ecs::Entity::Identifier
 			getDestinationIdentifier(std::size_t index) const;
 
+		private:
 		/**
-		 * @brief Build the destination children and select the first one.
+		 * @brief Construct a NavigationBar entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The navigation bar variant.
+		 * @param destinations The destination (icon, label) pairs.
 		 */
-		void initialize(void) override;
+		NavigationBar(ecs::ComponentRegistry &registry,
+					  const SurfaceConfig &config, Variant variant,
+					  const std::vector<std::pair<std::string, std::string>>
+						  &destinations);
+
+		/**
+		 * @brief Construct a NavigationBar from full destinations.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The navigation bar variant.
+		 * @param destinations The destinations.
+		 * @param onIndexChange Index change handler.
+		 */
+		NavigationBar(ecs::ComponentRegistry &registry,
+					  const SurfaceConfig &config, Variant variant,
+					  const std::vector<Destination> &destinations,
+					  std::function<void(std::size_t)> onIndexChange);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

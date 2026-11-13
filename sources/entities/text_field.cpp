@@ -43,7 +43,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<TextField> TextField::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<TextField>(
+		auto entity = TextField::create(
 			this->getComponentRegistry(), _config, _variant, _placeholder,
 			_leadingIcon, _trailingIcon, _supportingText, _error, _text);
 		return entity;
@@ -384,7 +384,7 @@ namespace guillaume::entities
 		return configuration().getErrorIconEntity();
 	}
 
-	void TextField::initialize(void)
+	void TextField::build(void)
 	{
 		refresh();
 	}

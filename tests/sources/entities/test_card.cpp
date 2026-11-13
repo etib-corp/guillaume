@@ -70,8 +70,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry);
 
-		card->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(card->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 240.0f);
@@ -87,8 +85,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry, Card::Variant::Elevated);
 
-		card->initialize();
-
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(card->getIdentifier());
 		EXPECT_GT(elevation.getLevel(), 0.0f);
@@ -99,8 +95,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry, Card::Variant::Filled);
 
-		card->initialize();
-
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(card->getIdentifier());
 		EXPECT_FLOAT_EQ(elevation.getLevel(), 0.0f);
@@ -110,8 +104,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry, Card::Variant::Outlined);
-
-		card->initialize();
 
 		const auto &color =
 			registry.getComponent<components::Color>(card->getIdentifier());
@@ -185,7 +177,6 @@ namespace guillaume::entities::tests
 		card->setOnPress([&presses]() {
 			++presses;
 		});
-		card->initialize();
 
 		EXPECT_TRUE(card->isInteractive());
 		EXPECT_EQ(
@@ -233,7 +224,6 @@ namespace guillaume::entities::tests
 			++presses;
 		});
 		card->setDisabled(true);
-		card->initialize();
 
 		EXPECT_TRUE(card->isDisabled());
 		registry
@@ -251,7 +241,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry);
-		card->initialize();
 
 		int actionPresses = 0;
 		card->addAction("Ok", [&actionPresses]() {

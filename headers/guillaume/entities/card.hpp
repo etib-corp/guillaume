@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -60,7 +61,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is components::Card
 	 * and systems::Card styles the card, runs its press elevation and
-	 * arranges its sections. `initialize()` only builds the child entities.
+	 * arranges its sections. `build()` only builds the child entities.
 	 */
 	class Card:
 		public SurfaceBase<components::Elevation, components::Animation,
@@ -158,13 +159,23 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Construct a card.
-		 * @param registry Component registry.
-		 * @param config Surface configuration.
-		 * @param variant Variant.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Card(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			 Variant variant);
+		template<typename... Arguments>
+		static std::shared_ptr<Card> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Card> entity(
+				new Card(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Destructor.
@@ -260,11 +271,6 @@ namespace guillaume::entities
 		 */
 		float getPressProgress(void) const;
 
-		/**
-		 * @brief Build the composed sections.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Create the missing composed sections, record their
@@ -273,6 +279,24 @@ namespace guillaume::entities
 		 * Does nothing until the card is owned by a shared pointer.
 		 */
 		void buildComposition(void);
+
+		private:
+		/**
+		 * @brief Construct a card.
+		 * @param registry Component registry.
+		 * @param config Surface configuration.
+		 * @param variant Variant.
+		 */
+		Card(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			 Variant variant);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

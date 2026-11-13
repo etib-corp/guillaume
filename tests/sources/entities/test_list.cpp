@@ -83,8 +83,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry);
 
-		list->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(list->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 360.0f);
@@ -94,8 +92,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(2));
-
-		list->initialize();
 
 		// Heights follow the content: each row is its content column plus
 		// the 16 dp M3 padding on both edges.
@@ -129,8 +125,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(2));
 
-		list->initialize();
-
 		const auto first  = list->getItemIdentifier(0);
 		const auto second = list->getItemIdentifier(1);
 
@@ -147,7 +141,6 @@ namespace guillaume::entities::tests
 		items[0].supporting = "Details";
 		auto list = makeList(registry, List::Variant::SingleLine, items);
 
-		list->initialize();
 		EXPECT_EQ(
 			registry
 				.getComponent<components::Layout>(list->getContentIdentifier(0))
@@ -195,7 +188,6 @@ namespace guillaume::entities::tests
 		};
 		items[1].disabled = true;
 		auto list = makeList(registry, List::Variant::SingleLine, items);
-		list->initialize();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -225,7 +217,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(1));
-		list->initialize();
 
 		const auto row = list->getItemIdentifier(0);
 		EXPECT_EQ(
@@ -249,7 +240,6 @@ namespace guillaume::entities::tests
 		items.insert(items.end(), rows.begin(), rows.end());
 		items.push_back(List::divider());
 		auto list = makeList(registry, List::Variant::SingleLine, items);
-		list->initialize();
 
 		const auto header = list->getItemIdentifier(0);
 		EXPECT_EQ(
@@ -271,7 +261,6 @@ namespace guillaume::entities::tests
 		accordion.children = makeItems(2);
 		auto list =
 			makeList(registry, List::Variant::SingleLine, { accordion });
-		list->initialize();
 
 		const auto row	= list->getItemIdentifier(0);
 		auto childCount = [&]() {
@@ -311,7 +300,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(3));
-		list->initialize();
 		const auto previous =
 			registry.getComponent<components::List>(list->getIdentifier())
 				.getRows();

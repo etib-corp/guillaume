@@ -86,8 +86,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
 
-		menu->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(menu->getIdentifier());
 		EXPECT_GE(bound.getWidth(), Menu::MinWidth);
@@ -111,8 +109,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
 
-		menu->initialize();
-
 		const auto first  = menu->getItemIdentifier(0);
 		const auto second = menu->getItemIdentifier(1);
 
@@ -127,8 +123,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
 
-		menu->initialize();
-
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(menu->getIdentifier());
 		EXPECT_FALSE(overlay.isModal());
@@ -140,8 +134,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
-
-		menu->initialize();
 
 		EXPECT_FALSE(menu->isOpen());
 		menu->open();
@@ -190,7 +182,6 @@ namespace guillaume::entities::tests
 		};
 		items[1].disabled = true;
 		auto menu		  = makeMenu(registry, items);
-		menu->initialize();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -232,7 +223,6 @@ namespace guillaume::entities::tests
 		auto items	   = makeItems(2);
 		items[1].dense = true;
 		auto menu	   = makeMenu(registry, items);
-		menu->initialize();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
@@ -260,7 +250,6 @@ namespace guillaume::entities::tests
 			.setHeight(40.0f);
 
 		auto menu = makeMenu(registry, makeItems(1));
-		menu->initialize();
 		menu->setAnchor(anchor.getIdentifier());
 
 		auto y = [&]() {
@@ -281,7 +270,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(1));
-		menu->initialize();
 
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(menu->getIdentifier());
@@ -296,7 +284,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(1));
-		menu->initialize();
 
 		bool dismissed = false;
 		menu->setOnDismiss([&dismissed]() {
@@ -313,7 +300,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(3));
-		menu->initialize();
 		const auto previous =
 			registry.getComponent<components::Menu>(menu->getIdentifier())
 				.getRows();

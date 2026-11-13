@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -160,14 +161,23 @@ namespace guillaume::entities
 		static Item divider(void);
 
 		/**
-		 * @brief Construct a list.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The list variant.
-		 * @param items The list entries.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		List(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-			 Variant variant, const std::vector<Item> &items);
+		template<typename... Arguments>
+		static std::shared_ptr<List> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<List> entity(
+				new List(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -246,11 +256,6 @@ namespace guillaume::entities
 		 */
 		bool isExpanded(std::size_t index) const;
 
-		/**
-		 * @brief Build the rows and style the list.
-		 */
-		void initialize(void) override;
-
 		private:
 		/**
 		 * @brief Build one row per entry when the rows are stale, record
@@ -260,6 +265,25 @@ namespace guillaume::entities
 		 * Does nothing until the list is owned by a shared pointer.
 		 */
 		void buildItems(void);
+
+		private:
+		/**
+		 * @brief Construct a list.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param variant The list variant.
+		 * @param items The list entries.
+		 */
+		List(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+			 Variant variant, const std::vector<Item> &items);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

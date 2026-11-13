@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -58,7 +59,7 @@ namespace guillaume::entities
 	 *
 	 * The class is a facade without fields: its state is
 	 * components::Checkbox and systems::Checkbox styles the box and places
-	 * the label. `initialize()` only builds the child entities.
+	 * the label. `build()` only builds the child entities.
 	 *
 	 * @see SurfaceBase
 	 * @see components::Selectable
@@ -148,15 +149,23 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Construct a Checkbox entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param state The checkbox state.
-		 * @param variant The visual variant.
-		 * @param label The label content.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		Checkbox(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
-				 State state, Variant variant, const std::string &label);
+		template<typename... Arguments>
+		static std::shared_ptr<Checkbox> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<Checkbox> entity(
+				new Checkbox(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -249,10 +258,25 @@ namespace guillaume::entities
 		 */
 		static constexpr float LabelGap = components::Checkbox::LabelGap;
 
+		private:
 		/**
-		 * @brief Build the check glyph and label children.
+		 * @brief Construct a Checkbox entity.
+		 * @param registry The component registry.
+		 * @param config The surface configuration.
+		 * @param state The checkbox state.
+		 * @param variant The visual variant.
+		 * @param label The label content.
 		 */
-		void initialize(void) override;
+		Checkbox(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
+				 State state, Variant variant, const std::string &label);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 
 }	 // namespace guillaume::entities

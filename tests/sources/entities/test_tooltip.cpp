@@ -64,8 +64,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
 
-		tooltip->initialize();
-
 		const auto &borders = registry.getComponent<components::Borders>(
 			tooltip->getIdentifier());
 		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
@@ -77,8 +75,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Rich);
 
-		tooltip->initialize();
-
 		const auto &borders = registry.getComponent<components::Borders>(
 			tooltip->getIdentifier());
 		EXPECT_FLOAT_EQ(borders.getTopLeftRadius(),
@@ -89,8 +85,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
-
-		tooltip->initialize();
 
 		const auto &color =
 			registry.getComponent<components::Color>(tooltip->getIdentifier());
@@ -106,8 +100,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
-
-		tooltip->initialize();
 
 		const auto &overlay = registry.getComponent<components::Overlay>(
 			tooltip->getIdentifier());
@@ -151,7 +143,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
-		tooltip->initialize();
 		tooltip->show();
 
 		ASSERT_FALSE(tooltip->getChildren().empty());
@@ -175,7 +166,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
-		tooltip->initialize();
 
 		auto anchor = std::make_shared<ecs::Entity>();
 		registry.registerComponentsForEntity<components::Transform,
@@ -214,7 +204,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto tooltip = makeTooltip(registry, Tooltip::Variant::Plain);
-		tooltip->initialize();
 
 		auto anchor = std::make_shared<ecs::Entity>();
 		registry.registerComponentsForEntity<components::Transform,

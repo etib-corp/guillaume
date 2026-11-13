@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -51,7 +52,7 @@ namespace guillaume::entities::detail
 	 * The class is a facade without fields: its state is
 	 * components::NavigationBarDestination and
 	 * systems::NavigationBarDestination styles and arranges it.
-	 * `initialize()` only builds the child entities.
+	 * `build()` only builds the child entities.
 	 */
 	class BarDestination:
 		public std::enable_shared_from_this<BarDestination>,
@@ -62,22 +63,28 @@ namespace guillaume::entities::detail
 	{
 		public:
 		/**
-		 * @brief Construct a navigation destination.
-		 * @param registry The component registry.
-		 * @param spec The destination data.
+		 * @brief Create the entity, fully built.
+		 *
+		 * Constructors are private: an entity must be owned before it can
+		 * parent its children, so construction and child creation happen
+		 * together here.
+		 * @tparam Arguments The constructor argument types.
+		 * @param arguments The constructor arguments.
+		 * @return The new entity.
 		 */
-		BarDestination(ecs::ComponentRegistry &registry,
-					   const NavigationBar::Destination &spec);
+		template<typename... Arguments>
+		static std::shared_ptr<BarDestination> create(Arguments &&...arguments)
+		{
+			std::shared_ptr<BarDestination> entity(
+				new BarDestination(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
 		 */
 		~BarDestination(void) override = default;
-
-		/**
-		 * @brief Build the indicator, icon, label and badge children.
-		 */
-		void initialize(void) override;
 
 		/**
 		 * @brief Set the press handler.
@@ -141,5 +148,22 @@ namespace guillaume::entities::detail
 		 * label and an indicator to carry it.
 		 */
 		void buildBadge(void);
+
+		private:
+		/**
+		 * @brief Construct a navigation destination.
+		 * @param registry The component registry.
+		 * @param spec The destination data.
+		 */
+		BarDestination(ecs::ComponentRegistry &registry,
+					   const NavigationBar::Destination &spec);
+
+		/**
+		 * @brief Create the child entities.
+		 *
+		 * Called once by create(), when the entity is owned and can be given
+		 * as parent to its children.
+		 */
+		void build(void);
 	};
 }	 // namespace guillaume::entities::detail

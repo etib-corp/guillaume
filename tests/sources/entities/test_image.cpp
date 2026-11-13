@@ -59,7 +59,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestImage, ConstructorConfiguresImageComponent)
 	{
 		ecs::ComponentRegistry registry;
-		auto image = std::make_shared<entities::Image>(registry, "texture.png");
+		auto image = entities::Image::create(registry, "texture.png");
 
 		const auto &component =
 			registry.getComponent<components::Image>(image->getIdentifier());
@@ -70,7 +70,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestImage, SetTexturePathUpdatesComponent)
 	{
 		ecs::ComponentRegistry registry;
-		auto image = std::make_shared<entities::Image>(registry, "texture.png");
+		auto image = entities::Image::create(registry, "texture.png");
 
 		image->setTexturePath("other.png");
 
@@ -83,7 +83,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestImage, ComponentIsTheSourceOfTruthForTheTexturePath)
 	{
 		ecs::ComponentRegistry registry;
-		auto image = std::make_shared<entities::Image>(registry, "texture.png");
+		auto image = entities::Image::create(registry, "texture.png");
 
 		// The entity keeps no copy: the path is in the component from
 		// construction, and a direct component change is what it reports.
@@ -132,7 +132,7 @@ namespace guillaume::entities::tests
 		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
-		auto image = std::make_shared<entities::Image>(registry, "texture.png");
+		auto image = entities::Image::create(registry, "texture.png");
 		registry.getComponent<components::Bound>(image->getIdentifier())
 			.setWidth(64)
 			.setHeight(64);
@@ -157,7 +157,7 @@ namespace guillaume::entities::tests
 		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
 
 		ecs::ComponentRegistry registry;
-		auto image = std::make_shared<entities::Image>(registry, "missing.png");
+		auto image = entities::Image::create(registry, "missing.png");
 
 		imageRender.bindComponentRegistry(registry);
 		imageRender.update(image->getIdentifier());
@@ -168,7 +168,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestImage, SizeAspectAndSemantics)
 	{
 		ecs::ComponentRegistry registry;
-		auto image = std::make_shared<Image>(registry, "images/a.png");
+		auto image = Image::create(registry, "images/a.png");
 
 		image->setSize(120.0f, 80.0f);
 		const auto &bound =

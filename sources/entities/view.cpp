@@ -41,11 +41,11 @@ namespace guillaume::entities
 
 	std::shared_ptr<View> View::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<View>(
-			this->getComponentRegistry(), _pose, _color, _borderRadius, _axis,
-			_mainAxisAlignment, _crossAxisAlignment, _spacing, _padding,
-			_hasFixedWidth, _fixedWidth, _hasFixedHeight, _fixedHeight,
-			_entities);
+		auto entity = View::create(this->getComponentRegistry(), _pose, _color,
+								   _borderRadius, _axis, _mainAxisAlignment,
+								   _crossAxisAlignment, _spacing, _padding,
+								   _hasFixedWidth, _fixedWidth, _hasFixedHeight,
+								   _fixedHeight, _entities);
 		return entity;
 	}
 
@@ -189,7 +189,7 @@ namespace guillaume::entities
 			layout.setFixedHeight(fixedHeight);
 		}
 
-		// Parenting needs shared_from_this(), so it waits for initialize().
+		// Parenting needs shared_from_this(), so it waits for build().
 		// Until then the handles are parked among the direct entities, and
 		// the identifiers are already the layout children.
 		std::vector<ecs::Entity::Identifier> childIdentifiers;
@@ -361,7 +361,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void View::initialize(void)
+	void View::build(void)
 	{
 		const auto self = shared_from_this();
 		const auto &children =

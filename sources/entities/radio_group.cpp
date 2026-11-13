@@ -37,9 +37,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<RadioGroup> RadioGroup::Builder::buildEntity(void)
 	{
-		return std::make_shared<RadioGroup>(this->getComponentRegistry(),
-											_config, _options, _value,
-											_onValueChange);
+		return RadioGroup::create(this->getComponentRegistry(), _config,
+								  _options, _value, _onValueChange);
 	}
 
 	void RadioGroup::Builder::reset(void)
@@ -157,7 +156,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void RadioGroup::initialize(void)
+	void RadioGroup::build(void)
 	{
 		auto &registry = getComponentRegistry();
 		// Copy: building children may move the component storage.

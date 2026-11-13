@@ -217,6 +217,34 @@ value.
 **After:** Both have default no-op implementations. Derived entities may still
 override them.
 
+## Widgets are created with `create()`; `Entity::initialize()` is removed
+
+**Before:** A widget was built in two steps: construct it, then call
+`initialize()` (the entity registry did it when the entity was added) so it
+could create its children.
+
+```cpp
+auto checkbox = std::make_shared<Checkbox>(registry, config, state, variant,
+                                           "Label");
+checkbox->initialize();
+```
+
+**After:** Constructors are private. `create()` takes the same arguments and
+returns the widget fully built. `Entity::initialize()` no longer exists and
+`EntityRegistry::addEntity()` no longer calls anything on the entity.
+
+```cpp
+auto checkbox = Checkbox::create(registry, config, state, variant, "Label");
+```
+
+**Update:**
+
+- Replace `std::make_shared<Widget>(...)` with `Widget::create(...)` and
+  delete the `initialize()` calls. Code that uses the builders needs no
+  change.
+- In your own entities, do in the constructor (or in your own factory) what
+  `initialize()` did.
+
 ## `Entity::update()` is removed
 
 **Before:** `ecs::System::routine` called `update()` on an entity whose

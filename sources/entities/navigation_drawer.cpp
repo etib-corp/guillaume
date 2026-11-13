@@ -73,9 +73,9 @@ namespace guillaume::entities
 	std::shared_ptr<NavigationDrawer>
 		NavigationDrawer::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<NavigationDrawer>(
-			this->getComponentRegistry(), _config, _variant, _entries,
-			_onIndexChange);
+		auto entity =
+			NavigationDrawer::create(this->getComponentRegistry(), _config,
+									 _variant, _entries, _onIndexChange);
 		return entity;
 	}
 
@@ -220,7 +220,7 @@ namespace guillaume::entities
 		if (registry.getComponent<components::NavigationDrawer>(getIdentifier())
 				.getBackdrop()
 			== ecs::Entity::InvalidIdentifier) {
-			const auto backdrop = std::make_shared<Backdrop>(registry);
+			const auto backdrop = Backdrop::create(registry);
 			backdrop->setParent(shared_from_this());
 			addEntity(backdrop);
 			registry.getComponent<components::NavigationDrawer>(getIdentifier())
@@ -275,8 +275,8 @@ namespace guillaume::entities
 				default: {
 					// systems::NavigationDrawer::install wires its press
 					// and selection change.
-					child = std::make_shared<DrawerDestination>(
-						registry, entry, collapsed, itemWidth);
+					child = DrawerDestination::create(registry, entry,
+													  collapsed, itemWidth);
 					child->setParent(shared_from_this());
 					addEntity(child);
 					destinationIdentifiers.push_back(child->getIdentifier());
@@ -472,7 +472,7 @@ namespace guillaume::entities
 			.getBackdrop();
 	}
 
-	void NavigationDrawer::initialize(void)
+	void NavigationDrawer::build(void)
 	{
 		auto &registry = getComponentRegistry();
 

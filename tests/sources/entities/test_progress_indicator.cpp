@@ -78,8 +78,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
 
-		progress->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 200.0f);
@@ -91,8 +89,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.25f);
-
-		progress->initialize();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
@@ -146,8 +142,6 @@ namespace guillaume::entities::tests
 		auto progress = makeProgressIndicator(
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.5f);
 
-		progress->initialize();
-
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);
 
@@ -161,8 +155,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(
 			registry, ProgressIndicator::Variant::CircularIndeterminate, 0.0f);
-
-		progress->initialize();
 
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);
@@ -208,7 +200,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-		progress->initialize();
 		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 0.5f);
 
 		progress->setValue(1.0f);
@@ -227,7 +218,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-		progress->initialize();
 
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
@@ -243,7 +233,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-		progress->initialize();
 
 		progress->setVisible(false);
 		registry.getComponent<components::Animation>(progress->getIdentifier())
@@ -261,7 +250,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-		progress->initialize();
 		const auto &state =
 			registry.getComponent<components::ProgressIndicator>(
 				progress->getIdentifier());

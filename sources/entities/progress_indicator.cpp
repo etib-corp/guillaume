@@ -179,8 +179,8 @@ namespace guillaume::entities
 			_config.borderRadius = LinearRadius;
 		}
 
-		auto entity = std::make_shared<ProgressIndicator>(
-			this->getComponentRegistry(), _config, _variant, _value);
+		auto entity = ProgressIndicator::create(this->getComponentRegistry(),
+												_config, _variant, _value);
 		return entity;
 	}
 
@@ -409,7 +409,7 @@ namespace guillaume::entities
 			.getValue();
 	}
 
-	void ProgressIndicator::initialize(void)
+	void ProgressIndicator::build(void)
 	{
 		buildChildren();
 		systems::ProgressIndicator::apply(getComponentRegistry(),

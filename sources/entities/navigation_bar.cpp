@@ -95,9 +95,9 @@ namespace guillaume::entities
 
 	std::shared_ptr<NavigationBar> NavigationBar::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<NavigationBar>(
-			this->getComponentRegistry(), _config, _variant, _specs,
-			_onIndexChange);
+		auto entity =
+			NavigationBar::create(this->getComponentRegistry(), _config,
+								  _variant, _specs, _onIndexChange);
 		return entity;
 	}
 
@@ -214,7 +214,7 @@ namespace guillaume::entities
 		for (std::size_t index = identifiers.size();
 			 index < destinations.size(); ++index) {
 			const auto destination =
-				std::make_shared<BarDestination>(registry, destinations[index]);
+				BarDestination::create(registry, destinations[index]);
 			destination->setParent(shared_from_this());
 			addEntity(destination);
 			identifiers.push_back(destination->getIdentifier());
@@ -378,7 +378,7 @@ namespace guillaume::entities
 			&components::NavigationBarDestination::getBadgeEntity);
 	}
 
-	void NavigationBar::initialize(void)
+	void NavigationBar::build(void)
 	{
 		buildDestinations();
 		systems::NavigationBar::select(getComponentRegistry(), getIdentifier(),

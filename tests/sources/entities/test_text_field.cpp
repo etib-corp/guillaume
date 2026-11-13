@@ -77,8 +77,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
 
-		field->initialize();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(field->getIdentifier());
 		EXPECT_GE(bound.getWidth(), TextField::MinWidth);
@@ -89,8 +87,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry, TextField::Variant::Filled);
-
-		field->initialize();
 
 		const auto &line =
 			registry.getComponent<components::Line>(field->getIdentifier());
@@ -112,8 +108,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry, TextField::Variant::Outlined);
 
-		field->initialize();
-
 		const auto &line =
 			registry.getComponent<components::Line>(field->getIdentifier());
 		EXPECT_FLOAT_EQ(line.getThickness(), 0.0f);
@@ -132,7 +126,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
 
-		field->initialize();
 		field->setSupportingText("Helper");
 		field->setError(true);
 
@@ -147,7 +140,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
 
-		field->initialize();
 		field->setText("hello");
 
 		EXPECT_EQ(field->getText(), "hello");
@@ -216,7 +208,6 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
 		TextField::Builder builder(registry, entityRegistry);
 		auto field = builder.withPlaceholder("Name").registerEntity(nullptr);
-		field->initialize();
 
 		const auto &label = registry.getComponent<components::Text>(
 			field->getLabelIdentifier());
@@ -248,7 +239,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry, TextField::Variant::Outlined);
-		field->initialize();
 		focusField(registry, field, true);
 
 		const auto &borders =
@@ -261,7 +251,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
-		field->initialize();
 		field->setErrorText("Required");
 		field->setError(true);
 
@@ -290,7 +279,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
-		field->initialize();
 
 		const auto fieldPose =
 			registry.getComponent<components::Transform>(field->getIdentifier())
@@ -307,8 +295,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestTextField, InputIsEditableOnlyWhileFocusedAndEnabled)
 	{
 		ecs::ComponentRegistry registry;
-		auto field = makeTextField(registry);
-		field->initialize();
+		auto field		 = makeTextField(registry);
 		const auto input = field->getInputIdentifier();
 
 		EXPECT_FALSE(registry.hasComponent<components::Focus>(input));
@@ -333,7 +320,6 @@ namespace guillaume::entities::tests
 		auto field = makeTextField(registry);
 		field->setPrefix("$");
 		field->setSuffix("kg");
-		field->initialize();
 
 		ASSERT_NE(field->getPrefixIdentifier(), ecs::Entity::InvalidIdentifier);
 		ASSERT_NE(field->getSuffixIdentifier(), ecs::Entity::InvalidIdentifier);
@@ -357,7 +343,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
-		field->initialize();
 
 		std::string reported;
 		field->setOnChange([&reported](const std::string &text) {
@@ -376,7 +361,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
-		field->initialize();
 		field->setDense(true);
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Bound>(field->getIdentifier())
@@ -400,7 +384,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto field = makeTextField(registry);
-		field->initialize();
 
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(

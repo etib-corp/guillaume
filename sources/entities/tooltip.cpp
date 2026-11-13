@@ -43,8 +43,8 @@ namespace guillaume::entities
 
 	std::shared_ptr<Tooltip> Tooltip::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Tooltip>(
-			this->getComponentRegistry(), _config, _variant, _text, _title);
+		auto entity = Tooltip::create(this->getComponentRegistry(), _config,
+									  _variant, _text, _title);
 		return entity;
 	}
 
@@ -226,7 +226,7 @@ namespace guillaume::entities
 		return *this;
 	}
 
-	void Tooltip::initialize(void)
+	void Tooltip::build(void)
 	{
 		buildContent();
 		systems::Tooltip::apply(getComponentRegistry(), getIdentifier());
