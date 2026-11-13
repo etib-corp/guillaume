@@ -9,6 +9,8 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+## [2026.4.0] - 2026-11-13
+
 ### Added
 
 - `components::Hierarchy` holds an entity's parent identifier, child
