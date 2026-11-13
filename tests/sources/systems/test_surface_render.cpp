@@ -36,9 +36,10 @@ namespace guillaume::systems::tests
 
 		EXPECT_EQ(_engineMock->createObjectCallCount, 1u);
 		// Each layer is a triangle fan with one center vertex and 4 * 9 arc
-		// vertices, so 2 layers produce 2 * (1 + 36) vertices.
-		EXPECT_EQ(lastMeshVertexCount(),
-				  static_cast<std::size_t>(2 * (1 + 36)));
+		// vertices. Layer alpha fades to 0 at the outermost layer, which is
+		// fully transparent and adds no geometry, so 2 layers produce one
+		// fan of 1 + 36 vertices.
+		EXPECT_EQ(lastMeshVertexCount(), static_cast<std::size_t>(1 + 36));
 	}
 
 	TEST_F(TestSurfaceRender, ElevationSecondUpdateReusesObject)

@@ -192,7 +192,10 @@ namespace guillaume::systems
 									std::vector<uint32_t> {});
 		shape::buildTriangleFanVertices(mesh, center, roundedVertices, color);
 
-		std::vector<utility::graphic::Mesh> meshes { mesh };
+		std::vector<utility::graphic::Mesh> meshes;
+		if (!mesh.getVertices().empty()) {
+			meshes.push_back(mesh);
+		}
 
 		if (bordersComponent.hasStroke()) {
 			const utility::graphic::PositionF strokeCenter(
@@ -209,7 +212,15 @@ namespace guillaume::systems
 				boundComponent.getHeight() / 2.0f,
 				extractAverageRadius(bordersComponent),
 				bordersComponent.getWidth(), 16, bordersComponent.getColor());
-			meshes.push_back(stroke);
+			if (!stroke.getVertices().empty()) {
+				meshes.push_back(stroke);
+			}
+		}
+
+		// Transparent fill and no visible stroke: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (meshes.empty()) {
+			return;
 		}
 
 		auto renderable =

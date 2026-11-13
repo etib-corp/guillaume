@@ -98,6 +98,12 @@ namespace guillaume::systems
 			outerRadius, theme::FocusRing::Width, 16,
 			getActiveColor(SchemeColorRole::Secondary));
 
+		// A transparent shape adds no geometry: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (mesh.getVertices().empty()) {
+			return;
+		}
+
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");
 

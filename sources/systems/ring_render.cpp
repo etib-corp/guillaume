@@ -78,6 +78,12 @@ namespace guillaume::systems
 							 ring.getThickness(), 0.0f, 2.0f * std::acos(-1.0f),
 							 ring.getSegments(), true, color);
 
+		// A transparent shape adds no geometry: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (mesh.getVertices().empty()) {
+			return;
+		}
+
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");
 
