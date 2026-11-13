@@ -119,6 +119,10 @@ namespace guillaume::systems::tests
 				.setHeight(40.0f);
 
 			guillaume::systems::Menu::install(_registry, _entity);
+			// A closed menu draws nothing and ignores presses; the tests
+			// look at an open one.
+			_registry.getComponent<components::Overlay>(_entity).setVisible(
+				true);
 			_system.bindComponentRegistry(_registry);
 		}
 

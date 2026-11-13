@@ -60,8 +60,8 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(child.getWidth(), 48.0f);
 		EXPECT_FLOAT_EQ(child.getHeight(), 48.0f);
 		EXPECT_FLOAT_EQ(arc.getThickness(), 4.0f);
-		EXPECT_FLOAT_EQ(arc.getStartAngle(), -Pi / 2.0f);
-		EXPECT_FLOAT_EQ(arc.getSweepAngle(), 1.5f * Pi);
+		EXPECT_FLOAT_EQ(arc.getStartAngle(), Pi / 2.0f);
+		EXPECT_FLOAT_EQ(arc.getSweepAngle(), -1.5f * Pi);
 		EXPECT_FLOAT_EQ(offsetX(), 0.0f);
 	}
 
@@ -93,7 +93,7 @@ namespace guillaume::systems::tests
 		EXPECT_GT(progress, 0.0f);
 		EXPECT_FLOAT_EQ(
 			_registry.getComponent<components::Arc>(_child).getStartAngle(),
-			-Pi / 2.0f + progress * 2.0f * Pi);
+			Pi / 2.0f - progress * 2.0f * Pi);
 	}
 
 	TEST_F(TestLoadingIndicatorSystem, LinearIsABarHoldingASlidingSegment)

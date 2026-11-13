@@ -83,6 +83,8 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestMenuSystem, OverlayDismissesOnOutsideClickAndEscape)
 	{
+		// Applying the style must not open a closed menu.
+		overlay().setVisible(false);
 		_system.update(_entity);
 
 		EXPECT_FALSE(overlay().isModal());

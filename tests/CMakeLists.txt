@@ -6,6 +6,7 @@ set(TEST_SOURCES
     sources/components/test_bound.cpp
     sources/components/test_focus.cpp
     sources/components/test_hierarchy.cpp
+    sources/components/test_mesh_fit.cpp
     sources/components/test_text.cpp
     sources/components/test_transform.cpp
     sources/components/test_value.cpp
