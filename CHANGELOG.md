@@ -11,6 +11,32 @@ Versions follow the calendar scheme described in
 
 ### Added
 
+- `List`, `Search`, `TextField`, `NavigationBar` and `NavigationDrawer`
+  (with their destinations) follow the strict ECS. `TextField`'s
+  configuration is `components::TextFieldConfiguration`; the existing
+  `systems::TextField` holds its rules and moved to the Layout phase.
+
+### Changed
+
+- **Breaking:** `ecs::System::routine` no longer calls `Entity::update()` on
+  a changed entity or on its parent. No library entity overrides `update()`
+  any more; it remains as a deprecated no-op. See `docs/MIGRATION_GUIDE.md`.
+- `entities::List`, `Search`, `TextField`, `NavigationBar` and
+  `NavigationDrawer` are facades without fields. Visible differences:
+  - Setters apply immediately instead of on the next update, and build a
+    missing child at once.
+  - A disabled accordion child of a `List` stays disabled when its parent
+    expands; rows nested deeper than one accordion level are hidden.
+  - `List::setVariant()` and `NavigationBar::addDestination()` no longer
+    rebuild existing rows or destinations, so their identifiers are stable.
+  - `Search::setTrailingIcon("")` hides the icon.
+  - A `TextField` rewrites its accessibility label and hint every frame from
+    `components::TextField`.
+
+## [2026.4.0] - 2026-11-13
+
+### Added
+
 - `components::Hierarchy` holds an entity's parent identifier, child
   identifiers and layer. Every entity built on a component registry gets one,
   and `ecs::Entity::setParent()` keeps it up to date, so systems can walk the
@@ -43,10 +69,6 @@ Versions follow the calendar scheme described in
   component and a Layout-phase system of the same name.
 - `components::CommonButton::setCorners()` overrides the radius of each
   corner; `systems::SegmentedButton` uses it to join its segments.
-- `List`, `Search`, `TextField`, `NavigationBar` and `NavigationDrawer`
-  (with their destinations) follow the strict ECS. `TextField`'s
-  configuration is `components::TextFieldConfiguration`; the existing
-  `systems::TextField` holds its rules and moved to the Layout phase.
 - `systems::Layout::layerOf()` returns an entity's tree depth from its
   `components::Hierarchy`.
 
@@ -99,20 +121,6 @@ Versions follow the calendar scheme described in
   - **Breaking:** a view no longer keeps the entities passed to
     `setEntities()` alive; they must be owned by an entity registry (which is
     what the builders do) or by the caller.
-- **Breaking:** `ecs::System::routine` no longer calls `Entity::update()` on
-  a changed entity or on its parent. No library entity overrides `update()`
-  any more; it remains as a deprecated no-op. See `docs/MIGRATION_GUIDE.md`.
-- `entities::List`, `Search`, `TextField`, `NavigationBar` and
-  `NavigationDrawer` are facades without fields. Visible differences:
-  - Setters apply immediately instead of on the next update, and build a
-    missing child at once.
-  - A disabled accordion child of a `List` stays disabled when its parent
-    expands; rows nested deeper than one accordion level are hidden.
-  - `List::setVariant()` and `NavigationBar::addDestination()` no longer
-    rebuild existing rows or destinations, so their identifiers are stable.
-  - `Search::setTrailingIcon("")` hides the icon.
-  - A `TextField` rewrites its accessibility label and hint every frame from
-    `components::TextField`.
 - `components::Elevation::setElevationLevel()` only marks the component
   changed when the resolved shadow differs.
 - `entities::SurfaceBase` keeps no copy of its configuration and no longer
@@ -128,6 +136,13 @@ Versions follow the calendar scheme described in
 - `ecs::Entity::setParent()` now updates the layer of every descendant when a
   subtree is attached, and throws `std::invalid_argument` when the new parent
   is the entity itself or one of its descendants.
+### Fixed
+
+- Releases are cut again. The version bump runs on the push to `main`
+  instead of on the pull request event, which only had a read-only token for
+  pull requests opened from a fork, and it calls the release workflow
+  directly, since a tag pushed by a workflow does not start other workflows.
+
 
 ## [2026.3.3] - 2026-11-11
 
