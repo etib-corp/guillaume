@@ -23,31 +23,13 @@
 #include "guillaume/entities/navigation_bar_destination.hpp"
 #include "guillaume/entities/navigation_bar.hpp"
 
-#include <cstdint>
 #include <memory>
+#include <utility>
 #include <vector>
 
-#include "guillaume/ecs/parent_entity_filler.hpp"
-
-#include "guillaume/components/accessibility.hpp"
-#include "guillaume/components/borders.hpp"
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/color.hpp"
-#include "guillaume/components/layout.hpp"
-#include "guillaume/components/selection.hpp"
-#include "guillaume/components/transform.hpp"
-
-#include "guillaume/entities/badge.hpp"
+#include "guillaume/components/navigation_bar_destination.hpp"
 #include "guillaume/entities/builder_base.hpp"
-#include "guillaume/entities/content_helpers.hpp"
-#include "guillaume/entities/icon.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/placement_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
-#include "guillaume/entities/text.hpp"
-#include "guillaume/entities/view.hpp"
-#include "guillaume/systems/layout.hpp"
-#include "guillaume/systems/selection.hpp"
+#include "guillaume/systems/navigation_bar.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
@@ -57,10 +39,11 @@ namespace guillaume::entities
 		using detail::BarDestination;
 
 		/**
-		 * @brief M3 navigation bar height.
+		 * @brief Turn (icon, label) pairs into destinations without a
+		 * focused icon or a badge.
+		 * @param pairs The (icon, label) pairs.
+		 * @return One destination per pair.
 		 */
-		constexpr float NavigationBarHeight = 80.0f;
-
 		std::vector<NavigationBar::Destination> toDestinations(
 			const std::vector<std::pair<std::string, std::string>> &pairs)
 		{
@@ -71,6 +54,35 @@ namespace guillaume::entities
 					pair.first, pair.second, "", "" });
 			}
 			return destinations;
+		}
+
+		/**
+		 * @brief Get one child of a destination of a navigation bar.
+		 * @param registry The registry holding the components.
+		 * @param identifier The navigation bar entity.
+		 * @param index The destination index.
+		 * @param getter The child getter of the destination component.
+		 * @return The child identifier, or InvalidIdentifier.
+		 */
+		ecs::Entity::Identifier destinationPart(
+			const ecs::ComponentRegistry &registry,
+			ecs::Entity::Identifier identifier, std::size_t index,
+			ecs::Entity::Identifier (
+				components::NavigationBarDestination::*getter)(void)
+				const noexcept)
+		{
+			const auto &destinations =
+				registry.getComponent<components::NavigationBar>(identifier)
+					.getDestinationEntities();
+
+			if (index >= destinations.size()
+				|| !registry.hasComponent<components::NavigationBarDestination>(
+					destinations[index])) {
+				return ecs::Entity::InvalidIdentifier;
+			}
+			return (registry.getComponent<components::NavigationBarDestination>(
+						destinations[index])
+					.*getter)();
 		}
 	}	 // namespace
 
@@ -105,7 +117,7 @@ namespace guillaume::entities
 		_config.padding = theme::SpacingScale::get(2);
 		_config.spacing = 0.0f;
 		_config.setFixedWidth(360.0f);
-		_config.setFixedHeight(NavigationBarHeight);
+		_config.setFixedHeight(components::NavigationBar::Height);
 	}
 
 	NavigationBar::Builder &
@@ -164,29 +176,17 @@ namespace guillaume::entities
 								 const SurfaceConfig &config, Variant variant,
 								 const std::vector<Destination> &destinations,
 								 std::function<void(std::size_t)> onIndexChange)
-		: SurfaceBase<components::SelectionGroup>(registry, config)
-		, _variant(variant)
-		, _destinations(destinations)
-		, _destinationEntities()
-		, _onIndexChange(std::move(onIndexChange))
-		, _onTabPress()
-		, _updatingSelection(false)
+		: SurfaceBase<components::SelectionGroup, components::NavigationBar>(
+			  registry, config)
 	{
 		getComponentRegistry()
-			.getComponent<components::SelectionGroup>(getIdentifier())
-			.setAllowEmpty(false);
-
-		if (!getComponentRegistry().hasComponent<components::Accessibility>(
-				getIdentifier())) {
-			getComponentRegistry().addComponent<components::Accessibility>(
-				getIdentifier());
-		}
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setRole(components::AccessibilityRole::TabList)
-			.setFocusable(false);
-
-		setColor(schemeColor(SchemeColorRole::SurfaceContainer));
+			.getComponent<components::NavigationBar>(getIdentifier())
+			.setVariant(variant)
+			.setDestinations(destinations)
+			.setOnIndexChange(std::move(onIndexChange));
+		systems::NavigationBar::install(getComponentRegistry(),
+										getIdentifier());
+		systems::NavigationBar::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	NavigationBar::~NavigationBar(void)
@@ -195,130 +195,60 @@ namespace guillaume::entities
 
 	void NavigationBar::buildDestinations(void)
 	{
-		_destinationEntities.clear();
-
-		const auto &bound =
-			getComponentRegistry().getComponent<components::Bound>(
-				getIdentifier());
-		const float padding			 = getSurfaceConfig().padding;
-		const float width			 = getSurfaceConfig().hasFixedWidth
-					   ? getSurfaceConfig().fixedWidth
-					   : bound.getWidth();
-		const float destinationWidth = _destinations.empty()
-			? 0.0f
-			: (width - 2.0f * padding)
-				/ static_cast<float>(_destinations.size());
-
-		for (std::size_t i = 0; i < _destinations.size(); ++i) {
-			auto entity = std::make_shared<BarDestination>(
-				getComponentRegistry(), _destinations[i]);
-			entity->setParent(shared_from_this());
-			this->addEntity(entity);
-			getComponentRegistry()
-				.getComponent<components::Layout>(entity->getIdentifier())
-				.setFixedWidth(destinationWidth)
-				.setFixedHeight(NavigationBarHeight - 2.0f * padding);
-			entity->setOnPress([this, i]() {
-				this->pressDestination(i);
-			});
-			_destinationEntities.push_back(entity);
-		}
-
-		for (std::size_t i = 0; i < _destinationEntities.size(); ++i) {
-			auto entity = std::dynamic_pointer_cast<BarDestination>(
-				_destinationEntities[i]);
-			if (entity == nullptr) {
-				continue;
-			}
-
-			entity->setOnSelectionChanged([this, i](bool selected) {
-				if (this->_updatingSelection || !selected) {
-					return;
-				}
-				this->_updatingSelection = true;
-				this->selectEntity(
-					this->_destinationEntities[i]->getIdentifier());
-				this->_updatingSelection = false;
-				this->applyVariant();
-			});
-		}
-
-		setChildren(_destinationEntities);
-	}
-
-	void NavigationBar::selectEntity(ecs::Entity::Identifier identifier)
-	{
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		childIdentifiers.reserve(_destinationEntities.size());
-
-		for (const auto &entity: _destinationEntities) {
-			childIdentifiers.push_back(entity->getIdentifier());
-		}
-
-		systems::Selection::select(getComponentRegistry(), getIdentifier(),
-								   childIdentifiers, identifier);
-	}
-
-	void NavigationBar::applyVariant(void)
-	{
-		setColor(schemeColor(SchemeColorRole::SurfaceContainer));
-
-		const bool showAllLabels = (_variant == Variant::WithLabels);
-
-		for (std::size_t i = 0; i < _destinationEntities.size(); ++i) {
-			auto entity = std::dynamic_pointer_cast<BarDestination>(
-				_destinationEntities[i]);
-			if (entity == nullptr) {
-				continue;
-			}
-
-			const bool selected = entity->isSelected();
-			entity->setShowLabel(showAllLabels || selected);
-			entity->applySelectionColor(selected);
-		}
-	}
-
-	void NavigationBar::applySelection(void)
-	{
-		if (_destinationEntities.empty()) {
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
 			return;
 		}
 
-		_updatingSelection = true;
-		selectEntity(_destinationEntities[0]->getIdentifier());
-		_updatingSelection = false;
+		auto &registry = getComponentRegistry();
+		// Copy: building children may move the component storage.
+		const std::vector<Destination> destinations =
+			registry.getComponent<components::NavigationBar>(getIdentifier())
+				.getDestinations();
+		std::vector<ecs::Entity::Identifier> identifiers =
+			registry.getComponent<components::NavigationBar>(getIdentifier())
+				.getDestinationEntities();
 
-		applyVariant();
-	}
-
-	void NavigationBar::pressDestination(std::size_t index)
-	{
-		if (index >= _destinationEntities.size()) {
-			return;
+		// systems::NavigationBar sizes the destinations and wires their
+		// press and selection change.
+		for (std::size_t index = identifiers.size();
+			 index < destinations.size(); ++index) {
+			const auto destination =
+				std::make_shared<BarDestination>(registry, destinations[index]);
+			destination->setParent(shared_from_this());
+			addEntity(destination);
+			identifiers.push_back(destination->getIdentifier());
 		}
 
-		if (_onTabPress) {
-			_onTabPress(index);
-		}
+		registry.getComponent<components::NavigationBar>(getIdentifier())
+			.setDestinationEntities(identifiers);
 
-		const bool changed = getSelectedIndex() != index;
-		select(index);
-
-		if (changed && _onIndexChange) {
-			_onIndexChange(index);
+		// Hand the layout children to the surface.
+		Children children;
+		for (const auto identifier: identifiers) {
+			if (auto destination = getEntity<BarDestination>(identifier)) {
+				children.push_back(std::move(destination));
+			}
 		}
+		setChildren(children);
+
+		systems::NavigationBar::install(registry, getIdentifier());
 	}
 
 	NavigationBar &NavigationBar::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
+		getComponentRegistry()
+			.getComponent<components::NavigationBar>(getIdentifier())
+			.setVariant(variant);
+		systems::NavigationBar::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	NavigationBar::Variant NavigationBar::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::NavigationBar>(getIdentifier())
+			.getVariant();
 	}
 
 	NavigationBar &NavigationBar::addDestination(const std::string &iconGlyph,
@@ -329,162 +259,131 @@ namespace guillaume::entities
 
 	NavigationBar &NavigationBar::addDestination(const Destination &destination)
 	{
-		_destinations.push_back(destination);
+		getComponentRegistry()
+			.getComponent<components::NavigationBar>(getIdentifier())
+			.addDestination(destination);
+		// A new destination needs its child entity.
 		buildDestinations();
-		applySelection();
+		systems::NavigationBar::select(getComponentRegistry(), getIdentifier(),
+									   0);
+		systems::NavigationBar::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	NavigationBar &NavigationBar::setBadge(std::size_t index,
 										   const std::string &badge)
 	{
-		if (index >= _destinations.size()) {
+		auto &registry = getComponentRegistry();
+		const auto &bar =
+			registry.getComponent<components::NavigationBar>(getIdentifier());
+
+		if (index >= bar.getDestinations().size()) {
 			return *this;
 		}
-		_destinations[index].badge = badge;
-		if (index < _destinationEntities.size()) {
-			auto entity = std::dynamic_pointer_cast<BarDestination>(
-				_destinationEntities[index]);
-			if (entity != nullptr) {
-				entity->setBadge(badge);
-			}
+
+		// A first badge label needs the badge child, which only the
+		// destination entity can build.
+		const auto &destinations = bar.getDestinationEntities();
+		const auto destination	 = index < destinations.size()
+			  ? getEntity<BarDestination>(destinations[index])
+			  : nullptr;
+		if (destination != nullptr) {
+			destination->setBadge(badge);
 		}
+		systems::NavigationBar::setBadge(registry, getIdentifier(), index,
+										 badge);
 		return *this;
 	}
 
 	NavigationBar &NavigationBar::setOnIndexChange(
 		std::function<void(std::size_t)> onIndexChange)
 	{
-		_onIndexChange = std::move(onIndexChange);
+		getComponentRegistry()
+			.getComponent<components::NavigationBar>(getIdentifier())
+			.setOnIndexChange(std::move(onIndexChange));
 		return *this;
 	}
 
 	NavigationBar &NavigationBar::setOnTabPress(
 		std::function<void(std::size_t)> onTabPress)
 	{
-		_onTabPress = std::move(onTabPress);
+		getComponentRegistry()
+			.getComponent<components::NavigationBar>(getIdentifier())
+			.setOnTabPress(std::move(onTabPress));
 		return *this;
 	}
 
 	NavigationBar &NavigationBar::select(std::size_t index)
 	{
-		if (index >= _destinationEntities.size()) {
-			return *this;
-		}
-
-		_updatingSelection = true;
-		selectEntity(_destinationEntities[index]->getIdentifier());
-		_updatingSelection = false;
-
-		applyVariant();
-
+		systems::NavigationBar::select(getComponentRegistry(), getIdentifier(),
+									   index);
 		return *this;
 	}
 
 	std::size_t NavigationBar::getSelectedIndex(void) const
 	{
-		for (std::size_t i = 0; i < _destinationEntities.size(); ++i) {
-			auto entity = std::dynamic_pointer_cast<BarDestination>(
-				_destinationEntities[i]);
-			if (entity != nullptr && entity->isSelected()) {
-				return i;
-			}
-		}
-
-		return 0;
+		return systems::NavigationBar::selectedIndex(getComponentRegistry(),
+													 getIdentifier());
 	}
 
 	std::size_t NavigationBar::getDestinationCount(void) const
 	{
-		return _destinations.size();
+		return getComponentRegistry()
+			.getComponent<components::NavigationBar>(getIdentifier())
+			.getDestinations()
+			.size();
 	}
 
 	ecs::Entity::Identifier
 		NavigationBar::getDestinationIdentifier(std::size_t index) const
 	{
-		if (index >= _destinationEntities.size()) {
-			return ecs::Entity::InvalidIdentifier;
-		}
+		const auto &destinations =
+			getComponentRegistry()
+				.getComponent<components::NavigationBar>(getIdentifier())
+				.getDestinationEntities();
 
-		return _destinationEntities[index]->getIdentifier();
+		return index < destinations.size() ? destinations[index]
+										   : ecs::Entity::InvalidIdentifier;
 	}
-
-	namespace
-	{
-		template<typename Getter> ecs::Entity::Identifier destinationPart(
-			const std::vector<std::shared_ptr<ecs::Entity>> &destinations,
-			std::size_t index, Getter getter)
-		{
-			if (index >= destinations.size()) {
-				return ecs::Entity::InvalidIdentifier;
-			}
-			const auto entity =
-				std::dynamic_pointer_cast<BarDestination>(destinations[index]);
-			return entity != nullptr ? getter(*entity)
-									 : ecs::Entity::InvalidIdentifier;
-		}
-	}	 // namespace
 
 	ecs::Entity::Identifier
 		NavigationBar::getIndicatorIdentifier(std::size_t index) const
 	{
-		return destinationPart(_destinationEntities, index,
-							   [](const BarDestination &destination) {
-								   return destination.getIndicatorIdentifier();
-							   });
+		return destinationPart(
+			getComponentRegistry(), getIdentifier(), index,
+			&components::NavigationBarDestination::getIndicator);
 	}
 
 	ecs::Entity::Identifier
 		NavigationBar::getIconIdentifier(std::size_t index) const
 	{
-		return destinationPart(_destinationEntities, index,
-							   [](const BarDestination &destination) {
-								   return destination.getIconIdentifier();
-							   });
+		return destinationPart(
+			getComponentRegistry(), getIdentifier(), index,
+			&components::NavigationBarDestination::getIconEntity);
 	}
 
 	ecs::Entity::Identifier
 		NavigationBar::getLabelIdentifier(std::size_t index) const
 	{
-		return destinationPart(_destinationEntities, index,
-							   [](const BarDestination &destination) {
-								   return destination.getLabelIdentifier();
-							   });
+		return destinationPart(
+			getComponentRegistry(), getIdentifier(), index,
+			&components::NavigationBarDestination::getLabelEntity);
 	}
 
 	ecs::Entity::Identifier
 		NavigationBar::getBadgeIdentifier(std::size_t index) const
 	{
-		return destinationPart(_destinationEntities, index,
-							   [](const BarDestination &destination) {
-								   return destination.getBadgeIdentifier();
-							   });
+		return destinationPart(
+			getComponentRegistry(), getIdentifier(), index,
+			&components::NavigationBarDestination::getBadgeEntity);
 	}
 
 	void NavigationBar::initialize(void)
 	{
-		update();
-
-		if (_destinationEntities.empty()) {
-			buildDestinations();
-		}
-
-		applySelection();
-	}
-
-	void NavigationBar::update(void)
-	{
-		applyGeometry();
-
-		for (auto &entity: _destinationEntities) {
-			auto destination =
-				std::dynamic_pointer_cast<BarDestination>(entity);
-			if (destination != nullptr) {
-				destination->applyGeometry();
-			}
-		}
-
-		applyVariant();
+		buildDestinations();
+		systems::NavigationBar::select(getComponentRegistry(), getIdentifier(),
+									   0);
+		systems::NavigationBar::apply(getComponentRegistry(), getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

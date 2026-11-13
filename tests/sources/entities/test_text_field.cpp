@@ -53,6 +53,7 @@
 #include <guillaume/components/text_field.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/systems/text_field.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -206,7 +207,9 @@ namespace guillaume::entities::tests
 		{
 			registry.getComponent<components::Focus>(field->getIdentifier())
 				.setFocused(focused);
-			field->update();
+			// The field has no update() of its own: systems::TextField
+			// picks the focus change up on its next pass.
+			systems::TextField::apply(registry, field->getIdentifier());
 		}
 	}	 // namespace
 
@@ -373,7 +376,8 @@ namespace guillaume::entities::tests
 		});
 		registry.getComponent<components::Text>(field->getInputIdentifier())
 			.setContent("edited");
-		field->update();
+		// Edits are noticed by systems::TextField on its next pass.
+		systems::TextField::apply(registry, field->getIdentifier());
 
 		EXPECT_EQ(reported, "edited");
 		EXPECT_EQ(field->getText(), "edited");

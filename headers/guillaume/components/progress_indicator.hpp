@@ -197,9 +197,11 @@ namespace guillaume::components
 		ecs::Entity::Identifier _track {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Track child
+
 		ecs::Entity::Identifier _fill {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Fill child
+
 		bool _built { false };			///< Whether the children are built
 		float _displayed { 0.0f };		///< Value currently drawn
 		float _valueFrom { 0.0f };		///< Drawn value at transition start

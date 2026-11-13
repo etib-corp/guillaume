@@ -99,6 +99,7 @@ namespace guillaume::components
 		ecs::Entity::Identifier _selected {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Currently selected child.
+
 		bool _allowEmpty {
 			true
 		};	  ///< Whether the group may have no selection.

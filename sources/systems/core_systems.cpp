@@ -57,6 +57,7 @@
 #include "guillaume/systems/keyboard_control.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/line_render.hpp"
+#include "guillaume/systems/list.hpp"
 #include "guillaume/systems/loading_indicator.hpp"
 #include "guillaume/systems/measure_glyph.hpp"
 #include "guillaume/systems/measure_mesh.hpp"
@@ -65,12 +66,17 @@
 #include "guillaume/systems/mesh_render.hpp"
 #include "guillaume/systems/mouse_button.hpp"
 #include "guillaume/systems/mouse_motion.hpp"
+#include "guillaume/systems/navigation_bar.hpp"
+#include "guillaume/systems/navigation_bar_destination.hpp"
+#include "guillaume/systems/navigation_drawer.hpp"
+#include "guillaume/systems/navigation_drawer_destination.hpp"
 #include "guillaume/systems/overlay.hpp"
 #include "guillaume/systems/progress_indicator.hpp"
 #include "guillaume/systems/rectangle_render.hpp"
 #include "guillaume/systems/ring_render.hpp"
 #include "guillaume/systems/scrim_render.hpp"
 #include "guillaume/systems/scroll.hpp"
+#include "guillaume/systems/search.hpp"
 #include "guillaume/systems/segmented_button.hpp"
 #include "guillaume/systems/selection.hpp"
 #include "guillaume/systems/radio_button.hpp"
@@ -187,6 +193,19 @@ namespace guillaume::systems
 			std::make_unique<systems::FloatingActionButtonMenu>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Dialog>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Menu>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::List>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Search>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::TextField>());
+		// A destination is styled before the bar or drawer that owns it.
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationBarDestination>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationBar>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationDrawerDestination>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationDrawer>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(
@@ -197,8 +216,6 @@ namespace guillaume::systems
 			std::make_unique<systems::FocusRingRender>(engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Animation>(engine));
-		systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextField>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::MeasureMesh>(ressourceProvider, engine));
 		systemRegistry.registerNewSystem(

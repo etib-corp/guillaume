@@ -32,6 +32,7 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/layout.hpp"
+#include "guillaume/components/navigation_drawer_destination.hpp"
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -45,12 +46,18 @@ namespace guillaume::entities::detail
 	/**
 	 * @brief Internal drawer destination (Paper `Drawer.Item` or
 	 * `Drawer.CollapsedItem`).
+	 *
+	 * The class is a facade without fields: its state is
+	 * components::NavigationDrawerDestination and
+	 * systems::NavigationDrawerDestination styles and arranges it.
+	 * `initialize()` only builds the child entities.
 	 */
 	class DrawerDestination:
 		public std::enable_shared_from_this<DrawerDestination>,
 		public ecs::ParentEntityFiller<
 			components::Layout, components::Transform, components::Bound,
-			components::Color, components::Borders, components::Selectable>
+			components::Color, components::Borders, components::Selectable,
+			components::NavigationDrawerDestination>
 	{
 		public:
 		/**
@@ -103,32 +110,12 @@ namespace guillaume::entities::detail
 		 * @brief Whether the destination is selected.
 		 * @return True when selected.
 		 */
-		bool isSelected(void);
-
-		/**
-		 * @brief Apply the active pill, content colors and semantics.
-		 * @param selected Whether the destination is selected.
-		 */
-		void applySelectionColor(bool selected);
-
-		/**
-		 * @brief Arrange the destination content.
-		 */
-		void applyGeometry(void);
+		bool isSelected(void) const;
 
 		/**
 		 * @brief Get the trailing text identifier.
 		 * @return The identifier, or InvalidIdentifier.
 		 */
 		ecs::Entity::Identifier getRightIdentifier(void) const;
-
-		private:
-		NavigationDrawer::Entry _entry {};	  ///< Destination data.
-		bool _collapsed { false };			  ///< Collapsed (rail) rendering.
-		std::shared_ptr<View> _lead {};		  ///< Icon+label group / pill.
-		std::shared_ptr<Icon> _icon {};		  ///< Icon child.
-		std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
-		std::shared_ptr<Text> _rightEntity {};	  ///< Trailing text.
-		std::function<void(void)> _onPress {};	  ///< Press handler.
 	};
 }	 // namespace guillaume::entities::detail

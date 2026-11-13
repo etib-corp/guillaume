@@ -65,9 +65,11 @@ namespace guillaume::components
 		ecs::Entity::Identifier _messageEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Message child
+
 		ecs::Entity::Identifier _actionEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Action child
+
 		bool _visible { true };				   ///< Whether the bar is shown
 		float _duration { DurationMedium };	   ///< Display time (0: never)
 		Handler _onDismiss {};				   ///< Dismiss callback

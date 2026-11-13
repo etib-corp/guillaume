@@ -49,6 +49,7 @@ namespace guillaume::components
 		utility::graphic::Color32Bit _color {
 			0, 0, 0, 0
 		};	  ///< Shadow color (including opacity).
+
 		theme::ElevationLevel _elevationLevel {
 			theme::ElevationLevel::Level1
 		};	  ///< M3 level the shadow was resolved from.

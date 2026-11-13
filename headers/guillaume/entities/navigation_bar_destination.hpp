@@ -32,6 +32,7 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/layout.hpp"
+#include "guillaume/components/navigation_bar_destination.hpp"
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -46,12 +47,18 @@ namespace guillaume::entities::detail
 	/**
 	 * @brief Internal navigation destination: a pressable vertical layout
 	 * holding the active-indicator pill (wrapping the icon) and a label.
+	 *
+	 * The class is a facade without fields: its state is
+	 * components::NavigationBarDestination and
+	 * systems::NavigationBarDestination styles and arranges it.
+	 * `initialize()` only builds the child entities.
 	 */
 	class BarDestination:
 		public std::enable_shared_from_this<BarDestination>,
 		public ecs::ParentEntityFiller<
 			components::Layout, components::Transform, components::Bound,
-			components::Color, components::Borders, components::Selectable>
+			components::Color, components::Borders, components::Selectable,
+			components::NavigationBarDestination>
 	{
 		public:
 		/**
@@ -102,18 +109,7 @@ namespace guillaume::entities::detail
 		 * @brief Whether the destination is selected.
 		 * @return True when selected.
 		 */
-		bool isSelected(void);
-
-		/**
-		 * @brief Apply the selection colors, glyph and semantics.
-		 * @param selected Whether the destination is selected.
-		 */
-		void applySelectionColor(bool selected);
-
-		/**
-		 * @brief Arrange the destination content.
-		 */
-		void applyGeometry(void);
+		bool isSelected(void) const;
 
 		/**
 		 * @brief Get the indicator identifier.
@@ -140,12 +136,10 @@ namespace guillaume::entities::detail
 		ecs::Entity::Identifier getBadgeIdentifier(void) const;
 
 		private:
-		NavigationBar::Destination _spec {};	///< Destination data.
-		bool _showLabel { true };				///< Whether the label is shown.
-		std::shared_ptr<View> _pill {};			///< Active indicator.
-		std::shared_ptr<Icon> _icon {};			///< Icon child.
-		std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
-		std::shared_ptr<Badge> _badge {};		  ///< Badge child.
-		std::function<void(void)> _onPress {};	  ///< Press handler.
+		/**
+		 * @brief Build the badge child once the destination has a badge
+		 * label and an indicator to carry it.
+		 */
+		void buildBadge(void);
 	};
 }	 // namespace guillaume::entities::detail

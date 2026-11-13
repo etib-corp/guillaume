@@ -89,21 +89,27 @@ namespace guillaume::components
 		ecs::Entity::Identifier _cover {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Cover image child
+
 		ecs::Entity::Identifier _titleSection {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Title section child
+
 		ecs::Entity::Identifier _titleText {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Title text child
+
 		ecs::Entity::Identifier _subtitleText {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Subtitle text child
+
 		ecs::Entity::Identifier _contentEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Content text child
+
 		ecs::Entity::Identifier _actionsSection {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Actions row child
+
 		std::vector<Action> _actions {};	///< Requested actions
 		Identifiers _actionButtons {};		///< Action button children
 		Handler _onPress {};				///< Press handler

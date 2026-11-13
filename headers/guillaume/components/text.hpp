@@ -46,6 +46,7 @@ namespace guillaume::components
 		theme::FontWeight _fontWeight {
 			theme::FontWeight::Regular
 		};	  ///< Font weight, selects the rendered font file
+
 		float _lineHeight { 0.0f };		  ///< Minimum line box height (0: none)
 		float _letterSpacing { 0.0f };	  ///< Letter spacing, in dp
 		std::size_t _cursorPosition {

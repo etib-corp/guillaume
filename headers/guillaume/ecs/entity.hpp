@@ -171,11 +171,12 @@ namespace guillaume::ecs
 		virtual void initialize(void);
 
 		/**
-		 * @brief Recompute the entity's derived state.
+		 * @brief Legacy hook, kept for source compatibility.
 		 *
-		 * The default implementation is a no-op. Derived entities can override
-		 * this method to synchronize cached state or dependent components when
-		 * their component data changes.
+		 * The framework no longer calls it: behavior lives in systems, which
+		 * run every frame on the entity's components. The default
+		 * implementation is a no-op and no library entity overrides it.
+		 * @deprecated Put the logic in a system; this hook will be removed.
 		 */
 		virtual void update(void);
 	};

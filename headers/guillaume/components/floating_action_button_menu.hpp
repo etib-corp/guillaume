@@ -69,6 +69,7 @@ namespace guillaume::components
 		ecs::Entity::Identifier _trigger {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Trigger button child
+
 		std::vector<ecs::Entity::Identifier>
 			_actionButtons {};	  ///< Button child of each action
 

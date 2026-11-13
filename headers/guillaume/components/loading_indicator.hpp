@@ -159,6 +159,7 @@ namespace guillaume::components
 		ecs::Entity::Identifier _indicator {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Animated child
+
 		bool _built { false };				///< Whether the child is built
 		float _progress { 0.0f };			///< Looping animation progress
 		bool _hidesWhenStopped { true };	///< Paper `hidesWhenStopped`

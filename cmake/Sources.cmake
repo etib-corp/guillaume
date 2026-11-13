@@ -44,10 +44,15 @@ set(GUILLAUME_SOURCES
     sources/components/image.cpp
     sources/components/layout.cpp
     sources/components/line.cpp
+    sources/components/list.cpp
     sources/components/loading_indicator.cpp
     sources/components/menu.cpp
     sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
+    sources/components/navigation_bar.cpp
+    sources/components/navigation_bar_destination.cpp
+    sources/components/navigation_drawer.cpp
+    sources/components/navigation_drawer_destination.cpp
     sources/components/overlay.cpp
     sources/components/parent.cpp
     sources/components/progress_indicator.cpp
@@ -57,6 +62,7 @@ set(GUILLAUME_SOURCES
     sources/components/ring.cpp
     sources/components/scrim.cpp
     sources/components/scrollable.cpp
+    sources/components/search.cpp
     sources/components/segmented_button.cpp
     sources/components/selection.cpp
     sources/components/snackbar.cpp
@@ -65,6 +71,7 @@ set(GUILLAUME_SOURCES
     sources/components/switch.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
+    sources/components/text_field_configuration.cpp
     sources/components/tooltip.cpp
     sources/components/transform.cpp
     sources/components/typography.cpp
@@ -176,6 +183,7 @@ set(GUILLAUME_SOURCES
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp
     sources/systems/line_render.cpp
+    sources/systems/list.cpp
     sources/systems/loading_indicator.cpp
     sources/systems/measure_glyph.cpp
     sources/systems/measure_mesh.cpp
@@ -184,6 +192,10 @@ set(GUILLAUME_SOURCES
     sources/systems/mesh_render.cpp
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
+    sources/systems/navigation_bar.cpp
+    sources/systems/navigation_bar_destination.cpp
+    sources/systems/navigation_drawer.cpp
+    sources/systems/navigation_drawer_destination.cpp
     sources/systems/overlay.cpp
     sources/systems/progress_indicator.cpp
     sources/systems/radio_button.cpp
@@ -191,6 +203,7 @@ set(GUILLAUME_SOURCES
     sources/systems/rectangle_render.cpp
     sources/systems/ring_render.cpp
     sources/systems/scroll.cpp
+    sources/systems/search.cpp
     sources/systems/segmented_button.cpp
     sources/systems/selection.cpp
     sources/systems/scrim_render.cpp

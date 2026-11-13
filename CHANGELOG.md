@@ -9,6 +9,30 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+### Added
+
+- `List`, `Search`, `TextField`, `NavigationBar` and `NavigationDrawer`
+  (with their destinations) follow the strict ECS. `TextField`'s
+  configuration is `components::TextFieldConfiguration`; the existing
+  `systems::TextField` holds its rules and moved to the Layout phase.
+
+### Changed
+
+- **Breaking:** `ecs::System::routine` no longer calls `Entity::update()` on
+  a changed entity or on its parent. No library entity overrides `update()`
+  any more; it remains as a deprecated no-op. See `docs/MIGRATION_GUIDE.md`.
+- `entities::List`, `Search`, `TextField`, `NavigationBar` and
+  `NavigationDrawer` are facades without fields. Visible differences:
+  - Setters apply immediately instead of on the next update, and build a
+    missing child at once.
+  - A disabled accordion child of a `List` stays disabled when its parent
+    expands; rows nested deeper than one accordion level are hidden.
+  - `List::setVariant()` and `NavigationBar::addDestination()` no longer
+    rebuild existing rows or destinations, so their identifiers are stable.
+  - `Search::setTrailingIcon("")` hides the icon.
+  - A `TextField` rewrites its accessibility label and hint every frame from
+    `components::TextField`.
+
 ## [2026.4.0] - 2026-11-13
 
 ### Added

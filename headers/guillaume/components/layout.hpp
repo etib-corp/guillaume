@@ -76,9 +76,11 @@ namespace guillaume::components
 		MainAxisAlignment _mainAxisAlignment {
 			MainAxisAlignment::Start
 		};	  ///< Alignment along the main axis.
+
 		CrossAxisAlignment _crossAxisAlignment {
 			CrossAxisAlignment::Center
 		};	  ///< Alignment along the cross axis.
+
 		float _spacing { 0.0f };		   ///< Space between children.
 		float _padding { 0.0f };		   ///< Space around the children.
 		bool _hasFixedWidth { false };	   ///< Whether the width is forced.

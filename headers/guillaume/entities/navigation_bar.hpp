@@ -35,6 +35,7 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/navigation_bar.hpp"
 #include "guillaume/components/selection.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -55,26 +56,24 @@ namespace guillaume::entities
 	 * - `WithLabels`: every destination shows its label.
 	 * - `WithoutLabels`: only the selected destination shows its label.
 	 *
+	 * The class is a facade without fields: its state is
+	 * components::NavigationBar and systems::NavigationBar styles the bar
+	 * and arranges the destinations. `initialize()` only builds the
+	 * destination child entities.
+	 *
 	 * @see SurfaceBase
 	 * @see components::SelectionGroup
 	 */
-	class NavigationBar: public SurfaceBase<components::SelectionGroup>
+	class NavigationBar:
+		public SurfaceBase<components::SelectionGroup,
+						   components::NavigationBar>
 	{
 		public:
-		/**
-		 * @brief Navigation bar variant.
-		 */
-		enum class Variant { WithLabels, WithoutLabels };
+		/// Navigation bar variant.
+		using Variant = components::NavigationBar::Variant;
 
-		/**
-		 * @brief One navigation destination.
-		 */
-		struct Destination {
-			std::string icon;			///< Unfocused (outlined) icon glyph.
-			std::string label;			///< Label text.
-			std::string focusedIcon;	///< Icon glyph while selected.
-			std::string badge;			///< Badge label ("" hides it).
-		};
+		/// One navigation destination.
+		using Destination = components::NavigationBar::Destination;
 
 		/**
 		 * @brief Builder used to configure and create `NavigationBar`
@@ -160,43 +159,11 @@ namespace guillaume::entities
 		};
 
 		private:
-		Variant _variant { Variant::WithLabels };	  ///< Bar variant.
-		std::vector<Destination> _destinations {};	  ///< Destinations.
-		std::vector<std::shared_ptr<ecs::Entity>>
-			_destinationEntities {};	///< Destination children.
-		std::function<void(std::size_t)>
-			_onIndexChange {};	  ///< Index change handler.
-		std::function<void(std::size_t)>
-			_onTabPress {};					  ///< Destination press handler.
-		bool _updatingSelection { false };	  ///< Reentrancy guard.
-
-		private:
 		/**
-		 * @brief Build the destination child entities.
+		 * @brief Build the child entity of every destination that has none
+		 * yet, and wire the destinations to the system.
 		 */
 		void buildDestinations(void);
-
-		/**
-		 * @brief Select a destination identifier through the selection system.
-		 * @param identifier The destination entity identifier to select.
-		 */
-		void selectEntity(ecs::Entity::Identifier identifier);
-
-		/**
-		 * @brief Apply the variant-specific geometry and colors.
-		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Apply the selection to the children and the group.
-		 */
-		void applySelection(void);
-
-		/**
-		 * @brief Handle a user press on a destination.
-		 * @param index Pressed destination index.
-		 */
-		void pressDestination(std::size_t index);
 
 		public:
 		/**
@@ -340,14 +307,9 @@ namespace guillaume::entities
 			getDestinationIdentifier(std::size_t index) const;
 
 		/**
-		 * @brief Initialize the navigation bar derived state and children.
+		 * @brief Build the destination children and select the first one.
 		 */
 		void initialize(void) override;
-
-		/**
-		 * @brief Recompute the navigation bar derived state.
-		 */
-		void update(void) override;
 	};
 
 }	 // namespace guillaume::entities

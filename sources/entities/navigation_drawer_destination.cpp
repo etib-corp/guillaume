@@ -22,33 +22,17 @@
 
 #include "guillaume/entities/navigation_drawer_destination.hpp"
 
-#include "guillaume/entities/navigation_drawer.hpp"
-
-#include <cstdint>
 #include <memory>
+#include <utility>
 #include <vector>
-
-#include "guillaume/ecs/parent_entity_filler.hpp"
-
-#include "guillaume/components/accessibility.hpp"
-#include "guillaume/components/borders.hpp"
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/color.hpp"
-#include "guillaume/components/layout.hpp"
-#include "guillaume/components/selection.hpp"
-#include "guillaume/components/transform.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/content_helpers.hpp"
-#include "guillaume/entities/divider.hpp"
 #include "guillaume/entities/icon.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/overlay_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
 #include "guillaume/entities/text.hpp"
 #include "guillaume/entities/view.hpp"
-#include "guillaume/systems/layout.hpp"
-#include "guillaume/systems/selection.hpp"
+#include "guillaume/systems/navigation_drawer_destination.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities::detail
@@ -56,22 +40,12 @@ namespace guillaume::entities::detail
 	namespace
 	{
 		/**
-		 * @brief M3 drawer destination height.
-		 */
-		constexpr float DrawerDestinationHeight = 56.0f;
-
-		/**
-		 * @brief Collapsed item indicator width.
-		 */
-		constexpr float CollapsedIndicatorWidth = 56.0f;
-
-		/**
-		 * @brief Collapsed item indicator height.
-		 */
-		constexpr float CollapsedIndicatorHeight = 32.0f;
-
-		/**
 		 * @brief Make a transparent nested layout view.
+		 * @param registry The component registry.
+		 * @param entityRegistry The entity registry receiving the view.
+		 * @param parent The parent entity.
+		 * @param axis The arrangement axis.
+		 * @return The view.
 		 */
 		std::shared_ptr<View> makeGroup(ecs::ComponentRegistry &registry,
 										ecs::EntityRegistry &entityRegistry,
@@ -92,6 +66,17 @@ namespace guillaume::entities::detail
 			return view;
 		}
 
+		/**
+		 * @brief Get the identifier of an optional child.
+		 * @param child The child (may be null).
+		 * @return Its identifier, or InvalidIdentifier.
+		 */
+		ecs::Entity::Identifier
+			identifierOf(const std::shared_ptr<ecs::Entity> &child)
+		{
+			return child != nullptr ? child->getIdentifier()
+									: ecs::Entity::InvalidIdentifier;
+		}
 	}	 // namespace
 
 	DrawerDestination::DrawerDestination(ecs::ComponentRegistry &registry,
@@ -99,131 +84,111 @@ namespace guillaume::entities::detail
 										 bool collapsed, float width)
 		: ecs::ParentEntityFiller<components::Layout, components::Transform,
 								  components::Bound, components::Color,
-								  components::Borders, components::Selectable>(
+								  components::Borders, components::Selectable,
+								  components::NavigationDrawerDestination>(
 			  registry)
-		, _entry(entry)
-		, _collapsed(collapsed)
 	{
-		auto &layout = getComponentRegistry().getComponent<components::Layout>(
-			getIdentifier());
-		if (_collapsed) {
-			layout.setAxis(components::Layout::Axis::Vertical)
-				.setMainAxisAlignment(
-					components::Layout::MainAxisAlignment::Center)
-				.setCrossAxisAlignment(
-					components::Layout::CrossAxisAlignment::Center)
-				.setSpacing(theme::SpacingScale::get(1))
-				.setPadding(0.0f)
-				.setFixedWidth(width)
-				.setFixedHeight(DrawerDestinationHeight
-								+ theme::SpacingScale::get(2));
-		} else {
-			layout.setAxis(components::Layout::Axis::Horizontal)
-				.setMainAxisAlignment(
-					entry.right.empty()
-						? components::Layout::MainAxisAlignment::Start
-						: components::Layout::MainAxisAlignment::SpaceBetween)
-				.setCrossAxisAlignment(
-					components::Layout::CrossAxisAlignment::Center)
-				.setSpacing(theme::SpacingScale::get(3))
-				.setPadding(theme::SpacingScale::get(4))
-				.setFixedWidth(width)
-				.setFixedHeight(DrawerDestinationHeight);
-		}
-
 		getComponentRegistry()
-			.getComponent<components::Color>(getIdentifier())
-			.setColor(transparentColor());
-
+			.getComponent<components::NavigationDrawerDestination>(
+				getIdentifier())
+			.setIcon(entry.icon)
+			.setLabel(entry.label)
+			.setRight(entry.right)
+			.setDisabled(entry.disabled)
+			.setCollapsed(collapsed);
 		getComponentRegistry()
-			.getComponent<components::Borders>(getIdentifier())
-			.setBorderRadius(getShapeRadius(theme::ShapeRole::Full))
-			.setColor(transparentColor());
-
-		makeInteractive(
-			getComponentRegistry(), getIdentifier(),
-			components::AccessibilityRole::Button,
-			[this]() {
-				if (_onPress) {
-					_onPress();
-				}
-			},
-			[this]() {
-				applySelectionColor(isSelected());
-			});
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setLabel(_entry.label);
-		setEnabled(getComponentRegistry(), getIdentifier(), !_entry.disabled);
+			.getComponent<components::Layout>(getIdentifier())
+			.setFixedWidth(width);
+		systems::NavigationDrawerDestination::install(getComponentRegistry(),
+													  getIdentifier());
+		systems::NavigationDrawerDestination::apply(getComponentRegistry(),
+													getIdentifier());
 	}
 
 	void DrawerDestination::initialize(void)
 	{
-		if (_collapsed) {
-			_lead = makeGroup(getComponentRegistry(), *this, shared_from_this(),
-							  components::Layout::Axis::Horizontal);
-			_lead->setBorderRadius(getShapeRadius(theme::ShapeRole::Full));
-			_lead->setFixedWidth(CollapsedIndicatorWidth);
-			_lead->setFixedHeight(CollapsedIndicatorHeight);
-			_icon = buildIcon(getComponentRegistry(), *_lead, _lead,
-							  _entry.icon, 24.0f,
-							  schemeColor(SchemeColorRole::OnSurfaceVariant));
-			if (_icon != nullptr) {
-				_lead->setEntities({ _icon });
-			}
-			if (!_entry.label.empty()) {
-				_labelEntity =
-					buildText(getComponentRegistry(), *this, shared_from_this(),
-							  _entry.label, theme::TypeRole::LabelMedium,
-							  schemeColor(SchemeColorRole::OnSurfaceVariant));
-			}
-		} else {
-			_lead = makeGroup(getComponentRegistry(), *this, shared_from_this(),
-							  components::Layout::Axis::Horizontal);
-			std::vector<std::shared_ptr<ecs::Entity>> lead;
-			_icon = buildIcon(getComponentRegistry(), *_lead, _lead,
-							  _entry.icon, 24.0f,
-							  schemeColor(SchemeColorRole::OnSurfaceVariant));
-			if (_icon != nullptr) {
-				lead.push_back(_icon);
-			}
-			if (!_entry.label.empty()) {
-				_labelEntity =
-					buildText(getComponentRegistry(), *_lead, _lead,
-							  _entry.label, theme::TypeRole::LabelLarge,
-							  schemeColor(SchemeColorRole::OnSurfaceVariant));
-				if (_labelEntity != nullptr) {
-					lead.push_back(_labelEntity);
-				}
-			}
-			_lead->setEntities(lead);
+		auto &registry = getComponentRegistry();
+		// Copy: building children may move the component storage.
+		const auto entry =
+			registry.getComponent<components::NavigationDrawerDestination>(
+				getIdentifier());
 
-			if (!_entry.right.empty()) {
-				_rightEntity =
-					buildText(getComponentRegistry(), *this, shared_from_this(),
-							  _entry.right, theme::TypeRole::LabelLarge,
+		if (entry.getLead() == ecs::Entity::InvalidIdentifier) {
+			const auto lead = makeGroup(registry, *this, shared_from_this(),
+										components::Layout::Axis::Horizontal);
+			const auto icon =
+				buildIcon(registry, *lead, lead, entry.getIcon(),
+						  components::NavigationDrawerDestination::IconSize,
+						  schemeColor(SchemeColorRole::OnSurfaceVariant));
+			std::shared_ptr<Text> label;
+			std::shared_ptr<Text> right;
+			std::vector<std::shared_ptr<ecs::Entity>> content;
+
+			if (icon != nullptr) {
+				content.push_back(icon);
+			}
+
+			if (entry.isCollapsed()) {
+				// The lead group is the indicator around the icon; the
+				// label sits under it.
+				lead->setBorderRadius(getShapeRadius(theme::ShapeRole::Full));
+				lead->setFixedWidth(components::NavigationDrawerDestination::
+										CollapsedIndicatorWidth);
+				lead->setFixedHeight(components::NavigationDrawerDestination::
+										 CollapsedIndicatorHeight);
+				label =
+					buildText(registry, *this, shared_from_this(),
+							  entry.getLabel(), theme::TypeRole::LabelMedium,
+							  schemeColor(SchemeColorRole::OnSurfaceVariant));
+			} else {
+				// The lead group holds the icon and the label; the trailing
+				// text sits at the far edge of the row.
+				label =
+					buildText(registry, *lead, lead, entry.getLabel(),
+							  theme::TypeRole::LabelLarge,
+							  schemeColor(SchemeColorRole::OnSurfaceVariant));
+				if (label != nullptr) {
+					content.push_back(label);
+				}
+				right =
+					buildText(registry, *this, shared_from_this(),
+							  entry.getRight(), theme::TypeRole::LabelLarge,
 							  schemeColor(SchemeColorRole::OnSurfaceVariant));
 			}
+			if (!content.empty() || !entry.isCollapsed()) {
+				lead->setEntities(content);
+			}
+
+			registry
+				.getComponent<components::NavigationDrawerDestination>(
+					getIdentifier())
+				.setLead(lead->getIdentifier())
+				.setIconEntity(identifierOf(icon))
+				.setLabelEntity(identifierOf(label))
+				.setRightEntity(identifierOf(right));
 		}
 
-		applyGeometry();
+		systems::NavigationDrawerDestination::apply(registry, getIdentifier());
 	}
 
 	void DrawerDestination::setOnPress(std::function<void(void)> onPress)
 	{
-		_onPress = std::move(onPress);
+		getComponentRegistry()
+			.getComponent<components::NavigationDrawerDestination>(
+				getIdentifier())
+			.setOnPress(std::move(onPress));
 	}
 
 	void DrawerDestination::setDisabled(bool disabled)
 	{
-		_entry.disabled = disabled;
-		setEnabled(getComponentRegistry(), getIdentifier(), !disabled);
-		applySelectionColor(isSelected());
+		systems::NavigationDrawerDestination::setDisabled(
+			getComponentRegistry(), getIdentifier(), disabled);
 	}
 
 	bool DrawerDestination::isDisabled(void) const
 	{
-		return !isEnabled(getComponentRegistry(), getIdentifier());
+		return systems::NavigationDrawerDestination::isDisabled(
+			getComponentRegistry(), getIdentifier());
 	}
 
 	void DrawerDestination::setOnSelectionChanged(
@@ -234,77 +199,17 @@ namespace guillaume::entities::detail
 			.setOnSelectionChangedHandler(handler);
 	}
 
-	bool DrawerDestination::isSelected(void)
+	bool DrawerDestination::isSelected(void) const
 	{
-		return getComponentRegistry()
-			.getComponent<components::Selectable>(getIdentifier())
-			.isSelected();
-	}
-
-	void DrawerDestination::applySelectionColor(bool selected)
-	{
-		const bool disabled = isDisabled();
-		const auto pill		= selected && !disabled
-				? schemeColor(SchemeColorRole::SecondaryContainer)
-				: transparentColor();
-		auto content		= selected
-				   ? schemeColor(SchemeColorRole::OnSecondaryContainer)
-				   : schemeColor(SchemeColorRole::OnSurfaceVariant);
-		if (disabled) {
-			content = disabledContentColor();
-		}
-
-		const auto pillColor = stateLayerColor(getComponentRegistry(),
-											   getIdentifier(), pill, content);
-		if (_collapsed) {
-			if (_lead != nullptr) {
-				_lead->setColor(pillColor);
-			}
-		} else {
-			getComponentRegistry()
-				.getComponent<components::Color>(getIdentifier())
-				.setColor(pillColor);
-		}
-
-		if (_icon != nullptr) {
-			_icon->setColor(content);
-		}
-		if (_labelEntity != nullptr) {
-			_labelEntity->setColor(content);
-		}
-		if (_rightEntity != nullptr) {
-			_rightEntity->setColor(content);
-		}
-
-		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setSelected(selected);
-	}
-
-	void DrawerDestination::applyGeometry(void)
-	{
-		std::vector<ecs::Entity::Identifier> children;
-
-		if (_lead != nullptr) {
-			children.push_back(_lead->getIdentifier());
-		}
-
-		if (_collapsed && _labelEntity != nullptr) {
-			children.push_back(_labelEntity->getIdentifier());
-		}
-
-		if (_rightEntity != nullptr) {
-			children.push_back(_rightEntity->getIdentifier());
-		}
-
-		systems::Layout::apply(getComponentRegistry(), getIdentifier(),
-							   children,
-							   static_cast<std::uint32_t>(getLayer()));
+		return systems::NavigationDrawerDestination::isSelected(
+			getComponentRegistry(), getIdentifier());
 	}
 
 	ecs::Entity::Identifier DrawerDestination::getRightIdentifier(void) const
 	{
-		return _rightEntity != nullptr ? _rightEntity->getIdentifier()
-									   : ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::NavigationDrawerDestination>(
+				getIdentifier())
+			.getRightEntity();
 	}
 }	 // namespace guillaume::entities::detail

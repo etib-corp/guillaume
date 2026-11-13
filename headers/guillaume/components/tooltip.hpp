@@ -65,12 +65,15 @@ namespace guillaume::components
 		ecs::Entity::Identifier _titleEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Title child
+
 		ecs::Entity::Identifier _textEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Body child
+
 		ecs::Entity::Identifier _anchor {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Trigger entity
+
 		float _enterDelay { DefaultEnterDelay };	///< Hover-in delay
 		float _leaveDelay { DefaultLeaveDelay };	///< Hover-out delay
 		float _hoverTime { 0.0f };		 ///< Time the anchor has been hovered

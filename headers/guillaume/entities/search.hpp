@@ -32,9 +32,12 @@
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
 
+#include "guillaume/components/accessibility.hpp"
 #include "guillaume/components/elevation.hpp"
+#include "guillaume/components/focus.hpp"
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/overlay.hpp"
+#include "guillaume/components/search.hpp"
 #include "guillaume/components/text_field.hpp"
 
 #include "guillaume/entities/builder_base.hpp"
@@ -58,23 +61,24 @@ namespace guillaume::entities
 	 * - `FullScreen` (alias `View`): a 72 dp unrounded inline field with a
 	 *   bottom divider (Paper `view`).
 	 *
+	 * The search field is a facade without state: its configuration lives in
+	 * components::Search and systems::Search styles and arranges it. The
+	 * class only builds the child entities.
+	 *
 	 * @see SurfaceBase
+	 * @see components::Search
+	 * @see systems::Search
 	 * @see components::Overlay
 	 * @see components::TextField
 	 */
 	class Search:
 		public SurfaceBase<components::Overlay, components::TextField,
-						   components::Elevation, components::Line>
+						   components::Elevation, components::Line,
+						   components::Focus, components::Accessibility,
+						   components::Search>
 	{
 		public:
-		/**
-		 * @brief Search variant.
-		 */
-		enum class Variant {
-			SearchBar,			 ///< Pill-shaped 56 dp bar.
-			FullScreen,			 ///< 72 dp inline view with a divider.
-			View = FullScreen	 ///< Paper `view` mode name.
-		};
+		using Variant = components::Search::Variant;	///< Search variant.
 
 		/**
 		 * @brief Builder used to configure and create search fields.
@@ -230,7 +234,7 @@ namespace guillaume::entities
 		/**
 		 * @brief Set an optional trailing icon (Paper
 		 * `right`/`traileringIcon`).
-		 * @param iconGlyph Trailing glyph ("" removes it on rebuild).
+		 * @param iconGlyph Trailing glyph ("" hides the icon).
 		 * @param onPress Trailing press handler.
 		 * @return Reference to this search for chaining.
 		 */
@@ -318,77 +322,20 @@ namespace guillaume::entities
 		bool isOpen(void) const;
 
 		/**
-		 * @brief Build the content.
+		 * @brief Build the content and style the search field.
 		 */
 		void initialize(void) override;
 
-		/**
-		 * @brief Restyle and re-arrange the search field.
-		 */
-		void update(void) override;
-
 		private:
-		Variant _variant { Variant::SearchBar };	  ///< Search variant.
-		std::string _placeholder {};				  ///< Placeholder text.
-		std::string _text {};						  ///< Query text.
-		std::string _iconGlyph { "search" };		  ///< Leading glyph.
-		std::string _trailingGlyph {};				  ///< Trailing glyph.
-		bool _loading { false };					  ///< Loading state.
-		std::function<void(void)> _onIconPress {};	  ///< Leading handler.
-		std::function<void(void)> _onClearIconPress {};	   ///< Clear handler.
-		std::function<void(void)>
-			_onTrailingIconPress {};		  ///< Trailing handler.
-		std::shared_ptr<Icon> _searchIcon;	  ///< Pressable leading icon.
-		std::shared_ptr<Text> _textEntity;	  ///< Query child.
-		std::shared_ptr<Text> _placeholderEntity;	 ///< Placeholder child.
-		std::shared_ptr<Icon> _clearIcon;			 ///< Pressable clear icon.
-		std::shared_ptr<Icon> _loadingIcon;			 ///< Loading glyph.
-		std::shared_ptr<Icon> _trailingIcon;	///< Pressable trailing icon.
-
 		/**
-		 * @brief Apply the variant geometry and colors.
+		 * @brief Create the icons, the editable text and the placeholder
+		 * that the configuration calls for and that do not exist yet, record
+		 * their identifiers in components::Search, make the icons pressable
+		 * and hand the children to the surface.
+		 *
+		 * Does nothing until the search field is owned by a shared pointer.
 		 */
-		void applyVariant(void);
-
-		/**
-		 * @brief Apply the overlay flags.
-		 */
-		void applyOverlay(void);
-
-		/**
-		 * @brief Mirror the placeholder and query on the TextField component.
-		 */
-		void applyTextField(void);
-
-		/**
-		 * @brief Build or refresh the children.
-		 */
-		void buildContent(void);
-
-		/**
-		 * @brief Create the icons, the editable text and the placeholder that
-		 * do not exist yet.
-		 */
-		void createChildren(void);
-
-		/**
-		 * @brief Show or hide the placeholder, clear, loading and trailing
-		 * children through their colors, depending on the query and the
-		 * loading state.
-		 */
-		void applyContentColors(void);
-
-		/**
-		 * @brief Build a pressable icon child.
-		 * @param glyph Icon glyph.
-		 * @param label Accessibility label.
-		 * @param onPress Press handler.
-		 * @return The icon.
-		 */
-		std::shared_ptr<Icon>
-			buildPressableIcon(const std::string &glyph,
-							   const std::string &label,
-							   std::function<void(void)> onPress);
+		void buildChildren(void);
 	};
 
 }	 // namespace guillaume::entities

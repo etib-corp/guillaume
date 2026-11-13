@@ -78,6 +78,7 @@ namespace guillaume::components
 		SelectionMode _selectionMode {
 			SelectionMode::Single
 		};	  ///< Selection mode
+
 		std::vector<ecs::Entity::Identifier>
 			_buttons {};			   ///< Toggle button child of each segment
 		ChangeHandler _onChange {};	   ///< User press callback

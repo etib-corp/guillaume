@@ -116,6 +116,7 @@ namespace guillaume::components
 		ecs::Entity::Identifier _anchor {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Anchor entity
+
 		AnchorPosition _anchorPosition {
 			AnchorPosition::Bottom
 		};	  ///< Anchor position

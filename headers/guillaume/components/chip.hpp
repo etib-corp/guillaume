@@ -82,15 +82,19 @@ namespace guillaume::components
 		ecs::Entity::Identifier _leadingIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Leading icon child
+
 		ecs::Entity::Identifier _trailingIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Trailing close icon child
+
 		ecs::Entity::Identifier _labelEntity {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Label child
+
 		ecs::Entity::Identifier _checkIcon {
 			ecs::Entity::InvalidIdentifier
 		};	  ///< Selected check child
+
 		bool _compact { false };				///< Compact padding
 		bool _elevated { false };				///< Level-1 shadow
 		bool _showSelectedOverlay { false };	///< Selected state layer

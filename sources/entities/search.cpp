@@ -21,50 +21,19 @@
  */
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "guillaume/entities/search.hpp"
 
-#include "guillaume/components/accessibility.hpp"
-#include "guillaume/components/focus.hpp"
-
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/content_helpers.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/overlay_helpers.hpp"
 #include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/search.hpp"
 #include "guillaume/theme.hpp"
 
 namespace guillaume::entities
 {
-	namespace
-	{
-		/**
-		 * @brief Default search width.
-		 */
-		constexpr float SearchWidth = 360.0f;
-
-		/**
-		 * @brief Paper `bar` height.
-		 */
-		constexpr float BarHeight = 56.0f;
-
-		/**
-		 * @brief Paper `view` height.
-		 */
-		constexpr float ViewHeight = 72.0f;
-
-		/**
-		 * @brief Search icon size.
-		 */
-		constexpr float SearchIconSize = 24.0f;
-
-		/**
-		 * @brief Material Symbols glyph used while loading.
-		 */
-		constexpr const char *LoadingGlyph = "progress_activity";
-	}	 // namespace
-
 	Search::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
 							 ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<Search>(componentRegistry, entityRegistry)
@@ -95,8 +64,8 @@ namespace guillaume::entities
 		_config.spacing		 = theme::SpacingScale::get(4);
 		_config.padding		 = theme::SpacingScale::get(4);
 		_config.borderRadius = getShapeRadius(theme::ShapeRole::ExtraLarge);
-		_config.setFixedWidth(SearchWidth);
-		_config.setFixedHeight(BarHeight);
+		_config.setFixedWidth(components::Search::DefaultWidth);
+		_config.setFixedHeight(components::Search::BarHeight);
 	}
 
 	Search::Builder &
@@ -139,340 +108,119 @@ namespace guillaume::entities
 				   const SurfaceConfig &config, Variant variant,
 				   const std::string &placeholder, const std::string &text)
 		: SurfaceBase<components::Overlay, components::TextField,
-					  components::Elevation, components::Line>(registry, config)
-		, _variant(variant)
-		, _placeholder(placeholder)
-		, _text(text)
-		, _searchIcon()
-		, _textEntity()
-		, _placeholderEntity()
-		, _clearIcon()
-		, _loadingIcon()
-		, _trailingIcon()
+					  components::Elevation, components::Line,
+					  components::Focus, components::Accessibility,
+					  components::Search>(registry, config)
 	{
-		if (!getComponentRegistry().hasComponent<components::Focus>(
-				getIdentifier())) {
-			getComponentRegistry().addComponent<components::Focus>(
-				getIdentifier());
-		}
-		if (!getComponentRegistry().hasComponent<components::Accessibility>(
-				getIdentifier())) {
-			getComponentRegistry().addComponent<components::Accessibility>(
-				getIdentifier());
-		}
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setRole(components::AccessibilityRole::Search)
-			.setLabel(placeholder);
-
-		// Paper's Searchbar defaults to elevation 0.
-		getComponentRegistry()
-			.getComponent<components::Elevation>(getIdentifier())
-			.setElevationLevel(theme::ElevationLevel::Level0);
-
-		applyVariant();
-		applyOverlay();
-		applyTextField();
+			.getComponent<components::Search>(getIdentifier())
+			.setVariant(variant)
+			.setPlaceholder(placeholder)
+			.setText(text);
+		systems::Search::install(getComponentRegistry(), getIdentifier());
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 	}
 
 	Search::~Search(void)
 	{
 	}
 
-	void Search::applyVariant(void)
-	{
-		auto config = getSurfaceConfig();
-
-		config.axis				 = components::Layout::Axis::Horizontal;
-		config.mainAxisAlignment = components::Layout::MainAxisAlignment::Start;
-		config.crossAxisAlignment =
-			components::Layout::CrossAxisAlignment::Center;
-		config.spacing		 = theme::SpacingScale::get(4);
-		config.padding		 = theme::SpacingScale::get(4);
-		config.hasFixedWidth = true;
-		if (config.fixedWidth <= 0.0f) {
-			config.fixedWidth = SearchWidth;
-		}
-		config.hasFixedHeight = true;
-
-		auto &line = getComponentRegistry().getComponent<components::Line>(
-			getIdentifier());
-
-		if (_variant == Variant::FullScreen) {
-			config.borderRadius = getShapeRadius(theme::ShapeRole::None);
-			config.fixedHeight	= ViewHeight;
-			line.setThickness(1.0f)
-				.setPlacement(components::Line::Placement::Bottom)
-				.setColor(schemeColor(SchemeColorRole::OutlineVariant));
-		} else {
-			config.borderRadius = getShapeRadius(theme::ShapeRole::ExtraLarge);
-			config.fixedHeight	= BarHeight;
-			line.setThickness(0.0f).clearColor();
-		}
-
-		setSurfaceConfig(config);
-
-		const auto level =
-			getComponentRegistry()
-				.getComponent<components::Elevation>(getIdentifier())
-				.getElevationLevel();
-		setColor(level == theme::ElevationLevel::Level0
-					 ? schemeColor(SchemeColorRole::SurfaceContainerHigh)
-					 : getElevatedSurfaceColor(level));
-	}
-
-	void Search::applyOverlay(void)
-	{
-		auto &overlay =
-			this->getComponentRegistry().getComponent<components::Overlay>(
-				this->getIdentifier());
-
-		// Both Paper modes are inline fields; neither is modal.
-		overlay.setModal(false);
-		overlay.setDismissOnOutsideClick(false);
-		overlay.setDismissOnEscape(true);
-	}
-
-	void Search::applyTextField(void)
-	{
-		auto &textField =
-			this->getComponentRegistry().getComponent<components::TextField>(
-				this->getIdentifier());
-
-		textField.setPlaceholder(_placeholder);
-		textField.setLabel(_placeholder);
-		textField.setLabelFloating(!getText().empty());
-	}
-
-	std::shared_ptr<Icon>
-		Search::buildPressableIcon(const std::string &glyph,
-								   const std::string &label,
-								   std::function<void(void)> onPress)
-	{
-		auto icon = buildIcon(this->getComponentRegistry(), *this,
-							  this->shared_from_this(), glyph, SearchIconSize,
-							  schemeColor(SchemeColorRole::OnSurfaceVariant));
-		if (icon == nullptr) {
-			return nullptr;
-		}
-		makeInteractive(this->getComponentRegistry(), icon->getIdentifier(),
-						components::AccessibilityRole::Button,
-						std::move(onPress));
-		this->getComponentRegistry()
-			.getComponent<components::Accessibility>(icon->getIdentifier())
-			.setLabel(label);
-		return icon;
-	}
-
-	void Search::buildContent(void)
-	{
-		createChildren();
-		applyContentColors();
-
-		const bool hasQuery = !getText().empty();
-
-		std::vector<std::shared_ptr<ecs::Entity>> children;
-
-		if (_searchIcon != nullptr) {
-			children.push_back(_searchIcon);
-		}
-
-		if (hasQuery || _placeholderEntity == nullptr) {
-			children.push_back(_textEntity);
-		} else {
-			children.push_back(_placeholderEntity);
-		}
-
-		children.push_back(_loading ? std::shared_ptr<ecs::Entity>(_loadingIcon)
-									: std::shared_ptr<ecs::Entity>(_clearIcon));
-
-		if (_trailingIcon != nullptr) {
-			children.push_back(_trailingIcon);
-		}
-
-		setChildren(children);
-	}
-
-	void Search::createChildren(void)
-	{
-		if (_searchIcon == nullptr) {
-			_searchIcon = buildPressableIcon(_iconGlyph, "search", [this]() {
-				if (_onIconPress) {
-					_onIconPress();
-				}
-			});
-		}
-
-		if (_textEntity == nullptr) {
-			// Built even when empty so the text-input systems can edit it.
-			Text::Builder builder(this->getComponentRegistry(), *this);
-			_textEntity = builder.makeText(
-				this->shared_from_this(), _text, theme::TypeRole::BodyLarge,
-				schemeColor(SchemeColorRole::OnSurface));
-			_textEntity->setContent(_text);
-			this->getComponentRegistry().addComponent<components::Focus>(
-				_textEntity->getIdentifier());
-		}
-
-		if (_placeholderEntity == nullptr && !_placeholder.empty()) {
-			_placeholderEntity = buildText(
-				this->getComponentRegistry(), *this, this->shared_from_this(),
-				_placeholder, theme::TypeRole::BodyLarge,
-				schemeColor(SchemeColorRole::OnSurfaceVariant));
-		}
-
-		if (_clearIcon == nullptr) {
-			_clearIcon = buildPressableIcon("close", "clear search", [this]() {
-				clear();
-			});
-		}
-
-		if (_loadingIcon == nullptr) {
-			_loadingIcon = buildIcon(this->getComponentRegistry(), *this,
-									 this->shared_from_this(), LoadingGlyph,
-									 SearchIconSize,
-									 schemeColor(SchemeColorRole::Primary));
-		}
-
-		if (_trailingIcon == nullptr && !_trailingGlyph.empty()) {
-			_trailingIcon =
-				buildPressableIcon(_trailingGlyph, _trailingGlyph, [this]() {
-					if (_onTrailingIconPress) {
-						_onTrailingIconPress();
-					}
-				});
-		}
-	}
-
-	void Search::applyContentColors(void)
-	{
-		const bool hasQuery	 = !getText().empty();
-		const auto iconColor = schemeColor(SchemeColorRole::OnSurfaceVariant);
-
-		if (_searchIcon != nullptr) {
-			_searchIcon->setGlyphName(_iconGlyph);
-			_searchIcon->setColor(iconColor);
-		}
-		if (_placeholderEntity != nullptr) {
-			_placeholderEntity->setColor(hasQuery ? transparentColor()
-												  : iconColor);
-		}
-		if (_clearIcon != nullptr) {
-			const bool showClear = hasQuery && !_loading;
-			_clearIcon->setColor(showClear ? iconColor : transparentColor());
-			setEnabled(this->getComponentRegistry(),
-					   _clearIcon->getIdentifier(), showClear);
-		}
-		if (_loadingIcon != nullptr) {
-			_loadingIcon->setColor(_loading
-									   ? schemeColor(SchemeColorRole::Primary)
-									   : transparentColor());
-		}
-		if (_trailingIcon != nullptr) {
-			_trailingIcon->setColor(iconColor);
-		}
-	}
-
 	Search &Search::setVariant(Variant variant)
 	{
-		_variant = variant;
-		applyVariant();
-		applyOverlay();
+		getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.setVariant(variant);
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Search::Variant Search::getVariant(void) const
 	{
-		return _variant;
+		return getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.getVariant();
 	}
 
 	Search &Search::setPlaceholder(const std::string &placeholder)
 	{
-		_placeholder = placeholder;
-		if (_placeholderEntity != nullptr) {
-			_placeholderEntity->setContent(placeholder);
-		}
 		getComponentRegistry()
-			.getComponent<components::Accessibility>(getIdentifier())
-			.setLabel(placeholder);
-		applyTextField();
+			.getComponent<components::Search>(getIdentifier())
+			.setPlaceholder(placeholder);
+		buildChildren();
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Search &Search::setText(const std::string &text)
 	{
-		_text = text;
-
-		if (_textEntity != nullptr) {
-			_textEntity->setContent(text);
-		}
-
-		applyTextField();
+		systems::Search::setText(getComponentRegistry(), getIdentifier(), text);
 		return *this;
 	}
 
 	std::string Search::getText(void) const
 	{
-		if (_textEntity == nullptr) {
-			return _text;
-		}
-
-		return this->getComponentRegistry()
-			.getComponent<components::Text>(_textEntity->getIdentifier())
-			.getContent();
+		return systems::Search::text(getComponentRegistry(), getIdentifier());
 	}
 
 	Search &Search::clear(void)
 	{
-		setText("");
-		if (_onClearIconPress) {
-			_onClearIconPress();
-		}
+		systems::Search::clear(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Search &Search::setIcon(const std::string &iconGlyph)
 	{
-		_iconGlyph = iconGlyph;
-		if (_searchIcon != nullptr) {
-			_searchIcon->setGlyphName(iconGlyph);
-		}
+		getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.setIconGlyph(iconGlyph);
+		buildChildren();
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Search &Search::setOnIconPress(std::function<void(void)> onIconPress)
 	{
-		_onIconPress = std::move(onIconPress);
+		getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.setOnIconPress(std::move(onIconPress));
 		return *this;
 	}
 
 	Search &
 		Search::setOnClearIconPress(std::function<void(void)> onClearIconPress)
 	{
-		_onClearIconPress = std::move(onClearIconPress);
+		getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.setOnClearIconPress(std::move(onClearIconPress));
 		return *this;
 	}
 
 	Search &Search::setTrailingIcon(const std::string &iconGlyph,
 									std::function<void(void)> onPress)
 	{
-		_trailingGlyph		 = iconGlyph;
-		_onTrailingIconPress = std::move(onPress);
-		if (_trailingIcon != nullptr) {
-			_trailingIcon->setGlyphName(iconGlyph);
-		}
+		getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.setTrailingGlyph(iconGlyph)
+			.setOnTrailingIconPress(std::move(onPress));
+		buildChildren();
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Search &Search::setLoading(bool loading)
 	{
-		_loading = loading;
+		getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.setLoading(loading);
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	bool Search::isLoading(void) const
 	{
-		return _loading;
+		return getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.isLoading();
 	}
 
 	Search &Search::setElevation(theme::ElevationLevel level)
@@ -480,53 +228,54 @@ namespace guillaume::entities
 		getComponentRegistry()
 			.getComponent<components::Elevation>(getIdentifier())
 			.setElevationLevel(level);
-		applyVariant();
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	ecs::Entity::Identifier Search::getIconIdentifier(void) const
 	{
-		return _searchIcon != nullptr ? _searchIcon->getIdentifier()
-									  : ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.getSearchIcon();
 	}
 
 	ecs::Entity::Identifier Search::getClearIdentifier(void) const
 	{
-		return _clearIcon != nullptr ? _clearIcon->getIdentifier()
-									 : ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.getClearIcon();
 	}
 
 	ecs::Entity::Identifier Search::getPlaceholderIdentifier(void) const
 	{
-		return _placeholderEntity != nullptr
-			? _placeholderEntity->getIdentifier()
-			: ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.getPlaceholderEntity();
 	}
 
 	ecs::Entity::Identifier Search::getTextIdentifier(void) const
 	{
-		return _textEntity != nullptr ? _textEntity->getIdentifier()
-									  : ecs::Entity::InvalidIdentifier;
+		return getComponentRegistry()
+			.getComponent<components::Search>(getIdentifier())
+			.getTextEntity();
 	}
 
 	Search &Search::show(void)
 	{
-		setOverlayVisible(this->getComponentRegistry(), this->getIdentifier(),
-						  true);
+		systems::Search::show(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	Search &Search::hide(void)
 	{
-		setOverlayVisible(this->getComponentRegistry(), this->getIdentifier(),
-						  false);
+		systems::Search::hide(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
 
 	bool Search::isVisible(void) const
 	{
-		return isOverlayVisible(this->getComponentRegistry(),
-								this->getIdentifier());
+		return systems::Search::isVisible(getComponentRegistry(),
+										  getIdentifier());
 	}
 
 	Search &Search::open(void)
@@ -546,20 +295,108 @@ namespace guillaume::entities
 
 	void Search::initialize(void)
 	{
-		update();
-		applyVariant();
-		applyOverlay();
-		buildContent();
-		applyTextField();
+		buildChildren();
+		systems::Search::apply(getComponentRegistry(), getIdentifier());
 	}
 
-	void Search::update(void)
+	void Search::buildChildren(void)
 	{
-		applyGeometry();
-		applyVariant();
-		applyOverlay();
-		buildContent();
-		applyTextField();
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
+		auto &registry		  = getComponentRegistry();
+		const auto identifier = getIdentifier();
+		const auto self		  = shared_from_this();
+		const auto iconColor  = schemeColor(SchemeColorRole::OnSurfaceVariant);
+		// Copy: the configuration is read while the children are created.
+		const components::Search config =
+			registry.getComponent<components::Search>(identifier);
+		const auto search = [&registry, identifier]() -> components::Search & {
+			return registry.getComponent<components::Search>(identifier);
+		};
+		bool built = false;
+
+		if (config.getSearchIcon() == ecs::Entity::InvalidIdentifier) {
+			if (const auto icon =
+					buildIcon(registry, *this, self, config.getIconGlyph(),
+							  components::Search::IconSize, iconColor)) {
+				search().setSearchIcon(icon->getIdentifier());
+				systems::Search::installIcon(registry, identifier);
+				built = true;
+			}
+		}
+
+		if (config.getTextEntity() == ecs::Entity::InvalidIdentifier) {
+			// Built even when empty so the text-input systems can edit it.
+			Text::Builder builder(registry, *this);
+			const auto text = builder.makeText(
+				self, config.getText(), theme::TypeRole::BodyLarge,
+				schemeColor(SchemeColorRole::OnSurface));
+			text->setContent(config.getText());
+			registry.addComponent<components::Focus>(text->getIdentifier());
+			search().setTextEntity(text->getIdentifier());
+			built = true;
+		}
+
+		if (config.getPlaceholderEntity() == ecs::Entity::InvalidIdentifier) {
+			if (const auto placeholder =
+					buildText(registry, *this, self, config.getPlaceholder(),
+							  theme::TypeRole::BodyLarge, iconColor)) {
+				search().setPlaceholderEntity(placeholder->getIdentifier());
+				built = true;
+			}
+		}
+
+		if (config.getClearIcon() == ecs::Entity::InvalidIdentifier) {
+			if (const auto icon = buildIcon(
+					registry, *this, self, components::Search::ClearGlyph,
+					components::Search::IconSize, iconColor)) {
+				search().setClearIcon(icon->getIdentifier());
+				systems::Search::installClearIcon(registry, identifier);
+				built = true;
+			}
+		}
+
+		if (config.getLoadingIcon() == ecs::Entity::InvalidIdentifier) {
+			if (const auto icon = buildIcon(
+					registry, *this, self, components::Search::LoadingGlyph,
+					components::Search::IconSize,
+					schemeColor(SchemeColorRole::Primary))) {
+				search().setLoadingIcon(icon->getIdentifier());
+				built = true;
+			}
+		}
+
+		if (config.getTrailingIcon() == ecs::Entity::InvalidIdentifier) {
+			if (const auto icon =
+					buildIcon(registry, *this, self, config.getTrailingGlyph(),
+							  components::Search::IconSize, iconColor)) {
+				search().setTrailingIcon(icon->getIdentifier());
+				systems::Search::installTrailingIcon(registry, identifier);
+				built = true;
+			}
+		}
+
+		if (!built) {
+			return;
+		}
+
+		// Hand every child to the surface; systems::Search then narrows the
+		// layout children to the ones currently shown.
+		const auto &current = search();
+		Children children;
+
+		for (const auto child:
+			 { current.getSearchIcon(), current.getTextEntity(),
+			   current.getPlaceholderEntity(), current.getClearIcon(),
+			   current.getLoadingIcon(), current.getTrailingIcon() }) {
+			if (const auto entity = getEntity<ecs::Entity>(child)) {
+				children.push_back(entity);
+			}
+		}
+		setChildren(children);
 	}
 
 }	 // namespace guillaume::entities

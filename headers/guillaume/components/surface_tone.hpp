@@ -41,6 +41,7 @@ namespace guillaume::components
 		theme::ElevationLevel _elevation {
 			theme::ElevationLevel::Level1
 		};	  ///< Elevation level
+
 		bool _shadow { true };	  ///< Whether the surface casts a shadow
 
 		public:
