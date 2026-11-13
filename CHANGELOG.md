@@ -9,6 +9,8 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+## [2026.5.0] - 2026-11-13
+
 ### Added
 
 - `List`, `Search`, `TextField`, `NavigationBar` and `NavigationDrawer`
