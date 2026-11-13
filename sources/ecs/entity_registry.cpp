@@ -22,6 +22,8 @@
 
 #include "guillaume/ecs/entity_registry.hpp"
 
+#include <algorithm>
+
 #include "guillaume/ecs/level_order_traveler.hpp"
 
 namespace guillaume::ecs
@@ -45,6 +47,81 @@ namespace guillaume::ecs
 		entity->initialize();
 		accessDirectEntities().push_back(entity);
 		++getTreeVersion();
+	}
+
+	bool EntityRegistry::removeOne(Entity::Identifier identifier,
+								   std::vector<Entity::Identifier> &orphans)
+	{
+		if (identifier == Entity::InvalidIdentifier) {
+			return false;
+		}
+
+		auto &entities = accessDirectEntities();
+		const auto iterator =
+			std::find_if(entities.begin(), entities.end(),
+						 [identifier](const std::shared_ptr<Entity> &entity) {
+							 return entity->getIdentifier() == identifier;
+						 });
+		if (iterator == entities.end()) {
+			for (auto &entity: entities) {
+				auto *nested = dynamic_cast<EntityRegistry *>(entity.get());
+				if (nested != nullptr
+					&& nested->removeOne(identifier, orphans)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// Keep the entity alive until it is fully released.
+		const std::shared_ptr<Entity> entity = *iterator;
+		if (auto *nested = dynamic_cast<EntityRegistry *>(entity.get())) {
+			nested->clearOwned(orphans);
+		}
+		const auto children = entity->releaseComponents();
+		orphans.insert(orphans.end(), children.begin(), children.end());
+		entities.erase(iterator);
+		++getTreeVersion();
+		return true;
+	}
+
+	void EntityRegistry::clearOwned(std::vector<Entity::Identifier> &orphans)
+	{
+		auto &entities = accessDirectEntities();
+
+		for (auto &entity: entities) {
+			if (auto *nested = dynamic_cast<EntityRegistry *>(entity.get())) {
+				nested->clearOwned(orphans);
+			}
+			const auto children = entity->releaseComponents();
+			orphans.insert(orphans.end(), children.begin(), children.end());
+		}
+		entities.clear();
+		++getTreeVersion();
+	}
+
+	bool EntityRegistry::removeEntity(Entity::Identifier identifier)
+	{
+		std::vector<Entity::Identifier> orphans;
+
+		if (!removeOne(identifier, orphans)) {
+			return false;
+		}
+		// Entities parented to a removed one go with it, wherever below this
+		// registry they are registered. Most were owned and are already gone.
+		while (!orphans.empty()) {
+			const Entity::Identifier orphan = orphans.back();
+			orphans.pop_back();
+			removeOne(orphan, orphans);
+		}
+		return true;
+	}
+
+	void EntityRegistry::clearEntities(void)
+	{
+		std::vector<Entity::Identifier> orphans;
+
+		clearOwned(orphans);
 	}
 
 	std::vector<std::shared_ptr<Entity>>

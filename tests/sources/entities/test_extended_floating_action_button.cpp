@@ -51,7 +51,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		fab->initialize();
-		fab->update();
 
 		EXPECT_NE(fab->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
 		EXPECT_NE(fab->getLabelIdentifier(), ecs::Entity::InvalidIdentifier);
@@ -67,7 +66,6 @@ namespace guillaume::entities::tests
 			std::function<void(void)>());
 
 		fab->initialize();
-		fab->update();
 
 		fab->setLabelContent("Compose");
 
@@ -103,7 +101,6 @@ namespace guillaume::entities::tests
 			ExtendedFloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
 		fab->initialize();
-		fab->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Borders>(fab->getIdentifier())

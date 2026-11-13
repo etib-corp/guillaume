@@ -47,6 +47,8 @@
 #include <guillaume/components/overlay.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/components/hierarchy.hpp>
+#include <guillaume/components/menu.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -85,7 +87,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(2));
 
 		menu->initialize();
-		menu->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(menu->getIdentifier());
@@ -111,7 +112,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(2));
 
 		menu->initialize();
-		menu->update();
 
 		const auto first  = menu->getItemIdentifier(0);
 		const auto second = menu->getItemIdentifier(1);
@@ -128,7 +128,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(2));
 
 		menu->initialize();
-		menu->update();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(menu->getIdentifier());
@@ -192,7 +191,6 @@ namespace guillaume::entities::tests
 		items[1].disabled = true;
 		auto menu		  = makeMenu(registry, items);
 		menu->initialize();
-		menu->update();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -235,7 +233,6 @@ namespace guillaume::entities::tests
 		items[1].dense = true;
 		auto menu	   = makeMenu(registry, items);
 		menu->initialize();
-		menu->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
@@ -265,7 +262,6 @@ namespace guillaume::entities::tests
 		auto menu = makeMenu(registry, makeItems(1));
 		menu->initialize();
 		menu->setAnchor(anchor.getIdentifier());
-		menu->update();
 
 		auto y = [&]() {
 			return registry
@@ -311,6 +307,37 @@ namespace guillaume::entities::tests
 
 		EXPECT_TRUE(dismissed);
 		EXPECT_FALSE(menu->isVisible());
+	}
+
+	TEST_F(TestMenu, ReplacingItemsRemovesThePreviousRows)
+	{
+		ecs::ComponentRegistry registry;
+		auto menu = makeMenu(registry, makeItems(3));
+		menu->initialize();
+		const auto previous =
+			registry.getComponent<components::Menu>(menu->getIdentifier())
+				.getRows();
+		ASSERT_EQ(previous.size(), 3U);
+
+		menu->setItems(makeItems(2));
+
+		for (const auto &row: previous) {
+			EXPECT_FALSE(
+				registry.hasComponent<components::Transform>(row.view));
+			EXPECT_FALSE(
+				registry.hasComponent<components::Hierarchy>(row.view));
+			for (const auto content: row.content) {
+				EXPECT_FALSE(
+					registry.hasComponent<components::Transform>(content));
+			}
+		}
+		// Each row owns a container, an icon and a label.
+		EXPECT_EQ(menu->getEntities().size(), 6U);
+		EXPECT_EQ(
+			registry.getComponent<components::Hierarchy>(menu->getIdentifier())
+				.getChildIdentifiers()
+				.size(),
+			2U);
 	}
 
 }	 // namespace guillaume::entities::tests

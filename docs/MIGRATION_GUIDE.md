@@ -217,7 +217,7 @@ value.
 **After:** Both have default no-op implementations. Derived entities may still
 override them.
 
-## The framework no longer calls `Entity::update()`
+## `Entity::update()` is removed
 
 **Before:** `ecs::System::routine` called `update()` on an entity whose
 components had changed, then on its parent. Library widgets restyled and
@@ -227,12 +227,13 @@ re-arranged themselves there.
 a facade without fields; its rules are static functions of a system named
 after it (`systems::Checkbox::apply`, `systems::Button::release`, ...), run
 every frame in the Layout phase and callable on an identifier.
-`Entity::update()` remains as a deprecated no-op.
+`Entity::update()` no longer exists, and neither does the unused
+`components::Parent` (use `components::Hierarchy`).
 
 **Update:**
 
-- Do not call `widget->update()` to refresh a widget after writing its
-  components by hand; call the widget's system, for example
+- Delete calls to `widget->update()`. To refresh a widget after writing its
+  components by hand, call the widget's system, for example
   `systems::Chip::apply(registry, chip->getIdentifier())`, or let the next
   frame do it.
 - Move logic from your own `update()` overrides into a system

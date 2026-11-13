@@ -9,6 +9,31 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+### Added
+
+- `ecs::EntityRegistry::removeEntity()` and `clearEntities()` remove an
+  entity with everything it owns, delete its components
+  (`ecs::ComponentRegistry::removeEntity()`) and unlink it from its parent's
+  `components::Hierarchy`. Entities parented to it go with it, wherever they
+  are registered below the registry the removal started in. `List`, `Menu`, `NavigationDrawer` and the
+  indicators use it when they rebuild their children, so replaced children no
+  longer stay registered.
+
+### Changed
+
+- **Breaking:** `ecs::Entity::update()` is removed. `ecs::System::routine` no
+  longer calls back into entities, and no library entity had an `update()`
+  left. See `docs/MIGRATION_GUIDE.md`.
+- **Breaking:** removed the unused `components::Parent`; use
+  `components::Hierarchy`.
+
+### Fixed
+
+- `LocalStorage` waits for a concurrent writer instead of failing when
+  several processes open the same storage file for the first time.
+- An extended FAB with a hidden label no longer has its label color
+  rewritten twice per frame.
+
 ## [2026.5.0] - 2026-11-13
 
 ### Added

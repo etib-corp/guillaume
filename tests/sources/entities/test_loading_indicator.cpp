@@ -60,7 +60,6 @@ namespace guillaume::entities::tests
 		auto loading = makeLoadingIndicator(registry);
 
 		loading->initialize();
-		loading->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(loading->getIdentifier());
@@ -75,7 +74,6 @@ namespace guillaume::entities::tests
 			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
 
 		loading->initialize();
-		loading->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(loading->getIdentifier());
@@ -87,8 +85,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto loading = makeLoadingIndicator(registry);
-
-		loading->update();
 
 		const float baseZ =
 			registry
@@ -139,7 +135,6 @@ namespace guillaume::entities::tests
 			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
 
 		loading->initialize();
-		loading->update();
 
 		ASSERT_FALSE(loading->getEntities().empty());
 		const auto &child = loading->getEntities().front();

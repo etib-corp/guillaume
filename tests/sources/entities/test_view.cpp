@@ -108,7 +108,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { firstChild, secondChild });
 
 		layout->initialize();
-		layout->update();
 
 		EXPECT_EQ(firstChild->getLayer(), 1);
 		EXPECT_EQ(secondChild->getLayer(), 1);
@@ -134,8 +133,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { child });
 
 		layout->initialize();
-		layout->update();
-		layout->update();
 
 		const float baseZ =
 			registry
@@ -164,7 +161,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { firstChild, secondChild });
 
 		layout->initialize();
-		layout->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(layout->getIdentifier());
@@ -193,7 +189,6 @@ namespace guillaume::entities::tests
 							   8.0f, View::Axis::Vertical);
 
 		layout->initialize();
-		layout->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(layout->getIdentifier());
@@ -221,7 +216,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { firstChild, secondChild });
 
 		layout->initialize();
-		layout->update();
 
 		// First child at padding(16), second at 16 + 10 + spacing(8) = 34.
 		EXPECT_FLOAT_EQ(childX(registry, firstChild), 16.0f);
@@ -239,7 +233,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, {});
 
 		layout->initialize();
-		layout->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(layout->getIdentifier());
@@ -258,7 +251,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { child });
 
 		layout->initialize();
-		layout->update();
 
 		layout->setPose(utility::graphic::PoseF(
 			utility::graphic::PositionF(0.0f, 0.0f, -200.0f),
@@ -280,7 +272,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { child }, 16.0f, 0.0f);
 
 		layout->initialize();
-		layout->update();
 
 		layout->setPadding(8.0f);
 
@@ -309,7 +300,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { firstChild, secondChild });
 
 		layout->initialize();
-		layout->update();
 
 		layout->setSpacing(4.0f);
 
@@ -337,7 +327,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { firstChild, secondChild });
 
 		layout->initialize();
-		layout->update();
 
 		layout->setAxis(View::Axis::Vertical);
 
@@ -357,7 +346,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, {});
 
 		layout->initialize();
-		layout->update();
 
 		auto child = std::make_shared<TestChild>(registry);
 
@@ -391,7 +379,6 @@ namespace guillaume::entities::tests
 		auto layout = makeView(registry, { child });
 
 		layout->initialize();
-		layout->update();
 
 		layout->setFixedWidth(200.0f);
 		layout->setFixedHeight(100.0f);
@@ -430,7 +417,6 @@ namespace guillaume::entities::tests
 		layout->setFixedWidth(200.0f);
 
 		layout->initialize();
-		layout->update();
 
 		// Content region = 200 - 2 * padding(16) = 168.
 		// Content = 10 + 10 + spacing(8) = 28.
@@ -459,7 +445,6 @@ namespace guillaume::entities::tests
 		layout->setFixedWidth(200.0f);
 
 		layout->initialize();
-		layout->update();
 
 		// Offset = 16 + (168 - 28) = 156.
 		EXPECT_FLOAT_EQ(childX(registry, firstChild), 156.0f);
@@ -486,7 +471,6 @@ namespace guillaume::entities::tests
 		layout->setFixedWidth(200.0f);
 
 		layout->initialize();
-		layout->update();
 
 		// Region = 168, raw = 20, gap = (168 - 20) / 1 = 148.
 		EXPECT_FLOAT_EQ(childX(registry, firstChild), 16.0f);
@@ -508,7 +492,6 @@ namespace guillaume::entities::tests
 			View::MainAxisAlignment::Start, View::CrossAxisAlignment::Start);
 
 		layout->initialize();
-		layout->update();
 
 		EXPECT_FLOAT_EQ(childY(registry, child), 16.0f);
 	}
@@ -529,7 +512,6 @@ namespace guillaume::entities::tests
 		layout->setFixedHeight(100.0f);
 
 		layout->initialize();
-		layout->update();
 
 		// Cross region = 100 - 32 = 68. Offset = 16 + 68 - 10 = 74.
 		EXPECT_FLOAT_EQ(childY(registry, child), 74.0f);
@@ -541,7 +523,6 @@ namespace guillaume::entities::tests
 
 		auto layout = makeView(registry, {});
 		layout->initialize();
-		layout->update();
 
 		auto &component =
 			registry.getComponent<components::Layout>(layout->getIdentifier());
@@ -571,7 +552,6 @@ namespace guillaume::entities::tests
 		registry.getComponent<components::Layout>(layout->getIdentifier())
 			.setFixedWidth(300.0f);
 
-		layout->update();
 		layout->initialize();
 
 		EXPECT_EQ(

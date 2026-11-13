@@ -66,7 +66,6 @@ namespace guillaume::entities::tests
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::SingleLine);
 
 		snackbar->initialize();
-		snackbar->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(snackbar->getIdentifier());
@@ -79,7 +78,6 @@ namespace guillaume::entities::tests
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::MultiLine);
 
 		snackbar->initialize();
-		snackbar->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(snackbar->getIdentifier());
@@ -92,7 +90,6 @@ namespace guillaume::entities::tests
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::SingleLine);
 
 		snackbar->initialize();
-		snackbar->update();
 
 		const auto &color =
 			registry.getComponent<components::Color>(snackbar->getIdentifier());
@@ -106,7 +103,6 @@ namespace guillaume::entities::tests
 		auto snackbar = makeSnackbar(registry, Snackbar::Variant::SingleLine);
 
 		snackbar->initialize();
-		snackbar->update();
 
 		const auto &overlay = registry.getComponent<components::Overlay>(
 			snackbar->getIdentifier());
@@ -122,7 +118,6 @@ namespace guillaume::entities::tests
 									 "Message", "Undo");
 
 		snackbar->initialize();
-		snackbar->update();
 
 		EXPECT_EQ(snackbar->getChildren().size(), 2U);
 	}

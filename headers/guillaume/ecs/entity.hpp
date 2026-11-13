@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 #include <utility/logging/loggable.hpp>
 #include <utility/logging/default_logger.hpp>
@@ -156,6 +157,17 @@ namespace guillaume::ecs
 		Entity &setParent(std::shared_ptr<Entity> parent);
 
 		/**
+		 * @brief Drop the entity's place in the tree and all its components.
+		 *
+		 * Removes the entity from its parent's components::Hierarchy, unlinks
+		 * the entities parented to it and deletes every component stored for
+		 * it. Called by EntityRegistry::removeEntity; the entity must not be
+		 * used afterwards.
+		 * @return The identifiers of the entities that were parented to it.
+		 */
+		std::vector<Identifier> releaseComponents(void);
+
+		/**
 		 * @brief Get the parent entity.
 		 * @return The parent entity, or nullptr if there is no parent.
 		 */
@@ -169,16 +181,6 @@ namespace guillaume::ecs
 		 * perform any necessary initialization based on their components.
 		 */
 		virtual void initialize(void);
-
-		/**
-		 * @brief Legacy hook, kept for source compatibility.
-		 *
-		 * The framework no longer calls it: behavior lives in systems, which
-		 * run every frame on the entity's components. The default
-		 * implementation is a no-op and no library entity overrides it.
-		 * @deprecated Put the logic in a system; this hook will be removed.
-		 */
-		virtual void update(void);
 	};
 
 	/**

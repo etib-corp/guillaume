@@ -416,6 +416,10 @@ namespace guillaume::entities
 		// Copy: the entries are read while the row entities are created.
 		const auto items =
 			registry.getComponent<components::List>(getIdentifier()).getItems();
+		// The rows are rebuilt from scratch: remove the previous generation
+		// with its components. Everything the list owns is a row.
+		clearEntities();
+
 		std::vector<Row> rows;
 		Children roots;
 

@@ -94,7 +94,6 @@ namespace guillaume::entities::tests
 		auto radio = makeRadio(registry);
 
 		radio->initialize();
-		radio->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(radio->getIdentifier());
@@ -113,7 +112,6 @@ namespace guillaume::entities::tests
 			makeRadio(registry, RadioButton::Variant::Enabled, "Label");
 
 		radio->select(true);
-		radio->update();
 
 		const float baseZ =
 			registry.getComponent<components::Transform>(radio->getIdentifier())
@@ -178,7 +176,6 @@ namespace guillaume::entities::tests
 			makeRadio(registry, RadioButton::Variant::Enabled, "Choice");
 
 		radio->initialize();
-		radio->update();
 
 		EXPECT_TRUE(radio->getChildren().empty());
 		EXPECT_GE(labelOffsetX(registry, radio),

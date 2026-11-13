@@ -155,11 +155,17 @@ What remains of the entity classes:
 - `initialize()` and private build helpers, only to create child entities
   (that needs `shared_from_this()`, and a system cannot create entities).
 - `SurfaceBase` keeps a list of handles to its attached children.
-- `ecs::Entity::update()` still exists as a deprecated no-op for source
-  compatibility; nothing calls it.
+
+A widget that rebuilds its children removes the previous ones with
+`ecs::EntityRegistry::removeEntity()` / `clearEntities()`, which also deletes
+their components and unlinks them from `components::Hierarchy`.
+
+`tests/sources/test_frame_loop.cpp` runs every widget through the real
+phases on a mock engine and checks that each one settles: after a few frames,
+a frame marks no component as changed.
 
 The next step, when wanted, is to turn the entity classes into plain builder
-functions and remove `ecs::Entity::update()`.
+functions.
 
 ## Patterns Used
 

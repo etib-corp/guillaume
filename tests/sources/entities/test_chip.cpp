@@ -70,7 +70,6 @@ namespace guillaume::entities::tests
 		auto chip = makeChip(registry);
 
 		chip->initialize();
-		chip->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(chip->getIdentifier());
@@ -128,7 +127,6 @@ namespace guillaume::entities::tests
 		auto chip = makeChip(registry, Chip::Variant::Input, "Email");
 
 		chip->initialize();
-		chip->update();
 
 		EXPECT_EQ(chip->getChildren().size(), 2U);
 	}
@@ -155,7 +153,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry);
 		chip->initialize();
-		chip->update();
 
 		EXPECT_EQ(chip->getMode(), Chip::Mode::Flat);
 		EXPECT_EQ(
@@ -183,7 +180,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry, Chip::Variant::Filter, "Tag");
 		chip->initialize();
-		chip->update();
 
 		// The chip owns the check and the label; the check is only laid out
 		// while selected, so the Layout component is what tracks it.
@@ -220,7 +216,6 @@ namespace guillaume::entities::tests
 			++closes;
 		});
 		chip->initialize();
-		chip->update();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -266,7 +261,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto chip = makeChip(registry);
 		chip->initialize();
-		chip->update();
 
 		const auto rest =
 			registry.getComponent<components::Color>(chip->getIdentifier())

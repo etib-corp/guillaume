@@ -67,7 +67,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
-		model->update();
 
 		const auto &component =
 			registry.getComponent<components::Mesh>(model->getIdentifier());
@@ -147,7 +146,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		ecs::EntityRegistryContainer entityRegistry;
 		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
-		model->update();
 		entityRegistry.addEntity(model);
 
 		ecs::LevelOrderTraveler traveler;
@@ -176,7 +174,6 @@ namespace guillaume::entities::tests
 
 		ecs::ComponentRegistry registry;
 		auto model = std::make_shared<entities::Mesh>(registry, "teapot.obj");
-		model->update();
 
 		modelRender.bindComponentRegistry(registry);
 		modelRender.update(model->getIdentifier());

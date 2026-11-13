@@ -131,6 +131,13 @@ namespace guillaume::systems
 				identifier);
 		const Button::Child icon(registry, button.getIcon());
 		const Button::Child label(registry, button.getLabel());
+		// A collapsed FAB, or one whose label measures nothing, keeps its
+		// label child but hides it. geometry() uses the same rule; deciding
+		// it here too keeps the two from rewriting the color every frame.
+		const bool labelShown = config.isExtended() && label
+			&& registry.getComponent<components::Bound>(label.getIdentifier())
+					.getWidth()
+				> 0.0f;
 		const bool disabled = Button::isDisabled(registry, identifier);
 		const bool hovered	= Button::isHovered(registry, identifier);
 		const bool pressed	= Button::isPressed(registry, identifier);
@@ -160,7 +167,8 @@ namespace guillaume::systems
 			}
 
 			if (label) {
-				label.setColor(entities::disabledContentColor());
+				label.setColor(labelShown ? entities::disabledContentColor()
+										  : entities::transparentColor());
 			}
 
 			return;
@@ -189,7 +197,8 @@ namespace guillaume::systems
 		}
 
 		if (label) {
-			label.setColor(contentColor);
+			label.setColor(labelShown ? contentColor
+									  : entities::transparentColor());
 		}
 	}
 

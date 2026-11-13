@@ -52,6 +52,8 @@
 #include <guillaume/components/selection.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/components/navigation_drawer.hpp>
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -91,7 +93,6 @@ namespace guillaume::entities::tests
 		auto drawer = makeNavigationDrawer(registry, makeDestinations(3));
 
 		drawer->initialize();
-		drawer->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(drawer->getIdentifier());
@@ -105,7 +106,6 @@ namespace guillaume::entities::tests
 		auto drawer = makeNavigationDrawer(registry, makeDestinations(2));
 
 		drawer->initialize();
-		drawer->update();
 
 		const auto &borders =
 			registry.getComponent<components::Borders>(drawer->getIdentifier());
@@ -141,7 +141,6 @@ namespace guillaume::entities::tests
 										   NavigationDrawer::Variant::Modal);
 
 		drawer->initialize();
-		drawer->update();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(drawer->getIdentifier());
@@ -184,7 +183,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto drawer = makeNavigationDrawer(registry, makeDestinations(2));
 		drawer->initialize();
-		drawer->update();
 
 		EXPECT_EQ(registry
 					  .getComponent<components::Color>(
@@ -217,7 +215,6 @@ namespace guillaume::entities::tests
 						  })
 						  .registerEntity(nullptr);
 		drawer->initialize();
-		drawer->update();
 
 		EXPECT_EQ(drawer->getDestinationCount(), 3U);
 		EXPECT_EQ(drawer->getSectionCount(), 1U);
@@ -281,7 +278,6 @@ namespace guillaume::entities::tests
 			makeNavigationDrawer(registry, makeDestinations(2),
 								 NavigationDrawer::Variant::Collapsed);
 		drawer->initialize();
-		drawer->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Bound>(drawer->getIdentifier())
@@ -292,6 +288,32 @@ namespace guillaume::entities::tests
 						  drawer->getDestinationIdentifier(0))
 					  .getAxis(),
 				  components::Layout::Axis::Vertical);
+	}
+
+	TEST_F(TestNavigationDrawer, SwitchingToARailRemovesTheSheetEntries)
+	{
+		ecs::ComponentRegistry registry;
+		auto drawer = makeNavigationDrawer(registry, makeDestinations(3));
+		drawer->initialize();
+		const auto previous = registry
+								  .getComponent<components::NavigationDrawer>(
+									  drawer->getIdentifier())
+								  .getEntryEntities();
+		ASSERT_EQ(previous.size(), 3U);
+
+		drawer->setVariant(NavigationDrawer::Variant::Collapsed);
+
+		// A stale destination must not stay selectable next to the new ones.
+		for (const auto entry: previous) {
+			EXPECT_FALSE(registry.hasComponent<components::Selectable>(entry));
+			EXPECT_FALSE(registry.hasComponent<components::Transform>(entry));
+		}
+		EXPECT_EQ(registry
+					  .getComponent<components::NavigationDrawer>(
+						  drawer->getIdentifier())
+					  .getEntryEntities()
+					  .size(),
+				  3U);
 	}
 
 }	 // namespace guillaume::entities::tests

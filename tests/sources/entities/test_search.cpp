@@ -77,7 +77,6 @@ namespace guillaume::entities::tests
 		auto search = makeSearch(registry, Search::Variant::SearchBar);
 
 		search->initialize();
-		search->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(search->getIdentifier());
@@ -95,7 +94,6 @@ namespace guillaume::entities::tests
 		auto search = makeSearch(registry, Search::Variant::FullScreen);
 
 		search->initialize();
-		search->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(search->getIdentifier());
@@ -146,7 +144,6 @@ namespace guillaume::entities::tests
 		auto search = makeSearch(registry, Search::Variant::FullScreen);
 
 		search->initialize();
-		search->update();
 
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(search->getIdentifier());
@@ -190,7 +187,6 @@ namespace guillaume::entities::tests
 		auto search = makeSearch(registry);
 		search->initialize();
 		search->setText("query");
-		search->update();
 
 		bool cleared = false;
 		search->setOnClearIconPress([&cleared]() {
@@ -211,7 +207,6 @@ namespace guillaume::entities::tests
 
 		EXPECT_TRUE(cleared);
 		EXPECT_EQ(search->getText(), "");
-		search->update();
 		EXPECT_EQ(registry.getComponent<components::Color>(clearIdentifier)
 					  .getColor()
 					  .getAlpha(),
@@ -226,7 +221,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto search = makeSearch(registry);
 		search->initialize();
-		search->update();
 
 		int presses = 0;
 		search->setOnIconPress([&presses]() {
@@ -252,7 +246,6 @@ namespace guillaume::entities::tests
 		auto search = makeSearch(registry);
 		search->initialize();
 		search->setText("");
-		search->update();
 
 		const auto &children =
 			registry.getComponent<components::Layout>(search->getIdentifier())
@@ -276,7 +269,6 @@ namespace guillaume::entities::tests
 		search->initialize();
 		search->setLoading(true);
 		search->setElevation(theme::ElevationLevel::Level3);
-		search->update();
 
 		EXPECT_TRUE(search->isLoading());
 		EXPECT_EQ(

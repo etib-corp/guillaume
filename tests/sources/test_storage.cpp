@@ -25,6 +25,13 @@
 #include <chrono>
 #include <filesystem>
 #include <memory>
+#include <string>
+#include <vector>
+
+#if !defined(_WIN32)
+	#include <sys/wait.h>
+	#include <unistd.h>
+#endif
 
 namespace guillaume::tests
 {
@@ -234,5 +241,45 @@ namespace guillaume::tests
 
 		EXPECT_FALSE(localStorage->isPersistent());
 	}
+
+#if !defined(_WIN32)
+	TEST_F(TestStorage, LocalStorageSurvivesConcurrentFirstOpenByProcesses)
+	{
+		// Several processes opening the same file for the first time used
+		// to fail with SQLITE_BUSY while the schema was created. Processes,
+		// not threads: that is the real case (an app started twice, tests
+		// run in parallel).
+		constexpr int processCount = 8;
+		std::vector<pid_t> children;
+
+		for (int index = 0; index < processCount; ++index) {
+			const pid_t child = fork();
+			ASSERT_GE(child, 0);
+			if (child == 0) {
+				int status = 0;
+				try {
+					LocalStorage localStorage(_localStoragePath);
+					localStorage.setItem("key" + std::to_string(index),
+										 "value");
+				} catch (...) {
+					status = 1;
+				}
+				_exit(status);
+			}
+			children.push_back(child);
+		}
+
+		int failures = 0;
+		for (const pid_t child: children) {
+			int status = 0;
+			waitpid(child, &status, 0);
+			if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+				++failures;
+			}
+		}
+
+		EXPECT_EQ(failures, 0);
+	}
+#endif
 
 }	 // namespace guillaume::tests

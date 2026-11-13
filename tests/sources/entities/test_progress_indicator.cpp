@@ -38,6 +38,8 @@
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/systems/layout.hpp>
+#include <guillaume/components/progress_indicator.hpp>
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -77,7 +79,6 @@ namespace guillaume::entities::tests
 		auto progress = makeProgressIndicator(registry);
 
 		progress->initialize();
-		progress->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
@@ -92,7 +93,6 @@ namespace guillaume::entities::tests
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.25f);
 
 		progress->initialize();
-		progress->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
@@ -104,8 +104,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-
-		progress->update();
 
 		const float baseZ =
 			registry
@@ -149,7 +147,6 @@ namespace guillaume::entities::tests
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.5f);
 
 		progress->initialize();
-		progress->update();
 
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);
@@ -166,7 +163,6 @@ namespace guillaume::entities::tests
 			registry, ProgressIndicator::Variant::CircularIndeterminate, 0.0f);
 
 		progress->initialize();
-		progress->update();
 
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);
@@ -259,6 +255,26 @@ namespace guillaume::entities::tests
 		progress->setIndicatorColor(tertiary);
 		EXPECT_EQ(progress->getIndicatorColor(), tertiary);
 		EXPECT_FLOAT_EQ(ProgressIndicator::IndeterminateSegment, 0.6f);
+	}
+
+	TEST_F(TestProgressIndicator, ChangingVariantRemovesThePreviousChildren)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		progress->initialize();
+		const auto &state =
+			registry.getComponent<components::ProgressIndicator>(
+				progress->getIdentifier());
+		const auto track = state.getTrack();
+		const auto fill	 = state.getFill();
+		ASSERT_TRUE(registry.hasComponent<components::Transform>(track));
+
+		progress->setVariant(ProgressIndicator::Variant::CircularDeterminate);
+
+		EXPECT_FALSE(registry.hasComponent<components::Transform>(track));
+		EXPECT_FALSE(registry.hasComponent<components::Transform>(fill));
+		EXPECT_TRUE(
+			registry.hasComponent<components::Transform>(state.getFill()));
 	}
 
 }	 // namespace guillaume::entities::tests

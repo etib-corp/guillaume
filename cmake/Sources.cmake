@@ -54,7 +54,6 @@ set(GUILLAUME_SOURCES
     sources/components/navigation_drawer.cpp
     sources/components/navigation_drawer_destination.cpp
     sources/components/overlay.cpp
-    sources/components/parent.cpp
     sources/components/progress_indicator.cpp
     sources/components/radio_button.cpp
     sources/components/radio_group.cpp

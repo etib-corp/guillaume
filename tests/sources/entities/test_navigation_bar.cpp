@@ -84,7 +84,6 @@ namespace guillaume::entities::tests
 		auto bar = makeNavigationBar(registry, makeDestinations(3));
 
 		bar->initialize();
-		bar->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(bar->getIdentifier());
@@ -161,7 +160,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto bar = makeNavigationBar(registry, makeDestinations(3));
 		bar->initialize();
-		bar->update();
 
 		const auto role = [](SchemeColorRole value) {
 			return getActiveScheme().getColor(value).getColor();
@@ -207,7 +205,6 @@ namespace guillaume::entities::tests
 					   })
 					   .registerEntity(nullptr);
 		bar->initialize();
-		bar->update();
 
 		std::size_t presses = 0;
 		bar->setOnTabPress([&presses](std::size_t) {
@@ -240,7 +237,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto bar = makeNavigationBar(registry, makeDestinations(2));
 		bar->initialize();
-		bar->update();
 
 		EXPECT_EQ(
 			registry
