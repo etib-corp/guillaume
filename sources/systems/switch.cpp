@@ -168,6 +168,12 @@ namespace guillaume::systems
 					track.getWidth() + components::Switch::LabelGap,
 					(track.getHeight() - labelBound.getHeight()) / 2.0f, 0.0f),
 				layer);
+			placement::reserveTrailingWidth(componentRegistry, entityIdentifier,
+											components::Switch::LabelGap
+												+ labelBound.getWidth());
+		} else {
+			placement::reserveTrailingWidth(componentRegistry, entityIdentifier,
+											0.0f);
 		}
 
 		// Style.
