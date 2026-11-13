@@ -9,16 +9,6 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
-### Added
-
-- `ecs::EntityRegistry::removeEntity()` and `clearEntities()` remove an
-  entity with everything it owns, delete its components
-  (`ecs::ComponentRegistry::removeEntity()`) and unlink it from its parent's
-  `components::Hierarchy`. Entities parented to it go with it, wherever they
-  are registered below the registry the removal started in. `List`, `Menu`, `NavigationDrawer` and the
-  indicators use it when they rebuild their children, so replaced children no
-  longer stay registered.
-
 ### Changed
 
 - `entities::Badge`, `Chip`, `Tooltip`, `Snackbar`, `LoadingIndicator` and
@@ -42,11 +32,21 @@ Versions follow the calendar scheme described in
   `systems::button_style`, `systems::fab_style`). The old headers remain and
   forward the names into `guillaume::entities`.
 - `systems::Selection` reads a group's members from `components::Hierarchy`.
-- **Breaking:** widgets are created with a static `create()` that returns
-  them fully built; their constructors are private and
-  `ecs::Entity::initialize()` is removed (`EntityRegistry::addEntity()` no
-  longer calls it). Replace `std::make_shared<Widget>(...)` followed by
-  `initialize()` with `Widget::create(...)`. Builders are unchanged.
+
+## [2026.6.0] - 2026-11-13
+
+### Added
+
+- `ecs::EntityRegistry::removeEntity()` and `clearEntities()` remove an
+  entity with everything it owns, delete its components
+  (`ecs::ComponentRegistry::removeEntity()`) and unlink it from its parent's
+  `components::Hierarchy`. Entities parented to it go with it, wherever they
+  are registered below the registry the removal started in. `List`, `Menu`, `NavigationDrawer` and the
+  indicators use it when they rebuild their children, so replaced children no
+  longer stay registered.
+
+### Changed
+
 - **Breaking:** `ecs::Entity::update()` is removed. `ecs::System::routine` no
   longer calls back into entities, and no library entity had an `update()`
   left. See `docs/MIGRATION_GUIDE.md`.
