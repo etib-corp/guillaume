@@ -173,10 +173,11 @@ namespace guillaume::entities::tests
 		auto chip = makeChip(registry, Chip::Variant::Filter, "Tag");
 
 		// The chip owns the check and the label; the check is only laid out
-		// while selected, so the Layout component is what tracks it.
+		// while selected. getChildren() reads the Layout component, so it
+		// reports the same list.
 		const auto &layout =
 			registry.getComponent<components::Layout>(chip->getIdentifier());
-		EXPECT_EQ(chip->getChildren().size(), 2U);
+		EXPECT_EQ(chip->getChildren(), layout.getChildren());
 
 		// Unselected filter chip: label only.
 		EXPECT_EQ(layout.getChildren().size(), 1U);

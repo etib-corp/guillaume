@@ -35,9 +35,9 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/button_style.hpp"
-#include "guillaume/entities/fab_style.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/button_style.hpp"
+#include "guillaume/systems/fab_style.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
@@ -74,7 +74,7 @@ namespace guillaume::systems
 	{
 		const auto &config =
 			registry.getComponent<components::FloatingActionButton>(identifier);
-		return entities::fab_style::getIconFontSize(config.getSize());
+		return fab_style::getIconFontSize(config.getSize());
 	}
 
 	utility::graphic::Color32Bit FloatingActionButton::contentColor(
@@ -86,7 +86,7 @@ namespace guillaume::systems
 		const auto &config =
 			registry.getComponent<components::FloatingActionButton>(identifier);
 		return Button::resolveContentColor(
-			button, entities::fab_style::getContentColor(config.getVariant()));
+			button, fab_style::getContentColor(config.getVariant()));
 	}
 
 	void FloatingActionButton::elevation(
@@ -137,44 +137,44 @@ namespace guillaume::systems
 
 		if (!visible) {
 			registry.getComponent<components::Color>(identifier)
-				.setColor(entities::transparentColor());
+				.setColor(style::transparentColor());
 			if (icon) {
-				icon.setColor(entities::transparentColor());
+				icon.setColor(style::transparentColor());
 			}
 			if (label) {
-				label.setColor(entities::transparentColor());
+				label.setColor(style::transparentColor());
 			}
 			return;
 		}
 
 		if (disabled) {
 			registry.getComponent<components::Color>(identifier)
-				.setColor(entities::disabledContainerColor());
+				.setColor(style::disabledContainerColor());
 
 			if (icon) {
-				icon.setColor(entities::disabledContentColor());
+				icon.setColor(style::disabledContentColor());
 			}
 
 			if (label) {
-				label.setColor(entities::disabledContentColor());
+				label.setColor(style::disabledContentColor());
 			}
 
 			return;
 		}
 
 		const auto baseContainerColor = Button::resolveContainerColor(
-			button, entities::fab_style::getContainerColor(variant, lowered));
+			button, fab_style::getContainerColor(variant, lowered));
 		const auto contentColor = Button::resolveContentColor(
-			button, entities::fab_style::getContentColor(variant));
+			button, fab_style::getContentColor(variant));
 
 		utility::graphic::Color32Bit containerColor = baseContainerColor;
 
 		if (pressed) {
-			containerColor = entities::stateLayer(
-				baseContainerColor, contentColor, theme::StateLayer::Pressed);
+			containerColor = style::stateLayer(baseContainerColor, contentColor,
+											   theme::StateLayer::Pressed);
 		} else if (hovered) {
-			containerColor = entities::stateLayer(
-				baseContainerColor, contentColor, theme::StateLayer::Hovered);
+			containerColor = style::stateLayer(baseContainerColor, contentColor,
+											   theme::StateLayer::Hovered);
 		}
 
 		registry.getComponent<components::Color>(identifier)
@@ -204,7 +204,7 @@ namespace guillaume::systems
 		const auto &customSize = config.getCustomSize();
 		const float iconSize   = iconFontSize(registry, identifier);
 		const float containerSize =
-			customSize.value_or(entities::fab_style::getContainerSize(size));
+			customSize.value_or(fab_style::getContainerSize(size));
 		const float fontHeight = iconSize;
 
 		registry.getComponent<components::Bound>(identifier)
@@ -217,7 +217,7 @@ namespace guillaume::systems
 			.setBorderRadius(customSize.has_value()
 								 // Paper: customSize / 3.5 (16 dp at 56 dp).
 								 ? *customSize / 3.5f
-								 : entities::fab_style::getBorderRadius(size));
+								 : fab_style::getBorderRadius(size));
 
 		if (icon) {
 			icon.setFontSize(fontHeight);

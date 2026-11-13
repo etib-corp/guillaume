@@ -232,16 +232,24 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Attach the child entities arranged by this surface.
+		 *
+		 * The children are parented to the surface and their identifiers are
+		 * recorded in its Layout component. The surface does not keep them
+		 * alive.
 		 * @param children The children to attach.
 		 * @return Reference to this surface for chaining.
 		 */
 		SurfaceBase &setChildren(const Children &children);
 
 		/**
-		 * @brief Get the attached child entities.
-		 * @return The attached children.
+		 * @brief Get the children this surface arranges.
+		 *
+		 * The surface keeps no handle on them: the identifiers are read from
+		 * its Layout component, in layout order. A child must be owned by an
+		 * entity registry (builders register what they build).
+		 * @return The identifiers of the layout children.
 		 */
-		const Children &getChildren(void) const;
+		std::vector<ecs::Entity::Identifier> getChildren(void) const;
 
 		protected:
 		/**
@@ -259,9 +267,6 @@ namespace guillaume::entities
 		 * visible immediately while a scene is being built.
 		 */
 		void applyGeometry(void);
-
-		private:
-		Children _children {};	  ///< Handles keeping attached children alive.
 	};
 
 }	 // namespace guillaume::entities

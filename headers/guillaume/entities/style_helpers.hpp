@@ -19,100 +19,23 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-
 #pragma once
 
-#include <cstdint>
+#include "guillaume/systems/style_helpers.hpp"
 
-#include <utility/graphic/color.hpp>
-
-#include "guillaume/theme.hpp"
-
+/**
+ * @file
+ * @brief Source-compatibility aliases for the style helpers.
+ *
+ * The helpers live in guillaume::systems since the widget rules moved to
+ * systems; this header keeps the names available in guillaume::entities.
+ */
 namespace guillaume::entities
 {
-
-	/**
-	 * @brief Replace the alpha channel of a color.
-	 * @param color The base color.
-	 * @param alpha The new alpha value.
-	 * @return The recolored value.
-	 */
-	inline utility::graphic::Color32Bit
-		withAlpha(const utility::graphic::Color32Bit &color, std::uint8_t alpha)
-	{
-		return utility::graphic::Color32Bit(color.getRed(), color.getGreen(),
-											color.getBlue(), alpha);
-	}
-
-	/**
-	 * @brief Composite a translucent state layer over a base color.
-	 * @param base The base color.
-	 * @param overlay The state layer color.
-	 * @param alpha The state layer opacity.
-	 * @return The composited color.
-	 */
-	inline utility::graphic::Color32Bit
-		stateLayer(const utility::graphic::Color32Bit &base,
-				   const utility::graphic::Color32Bit &overlay,
-				   std::uint8_t alpha)
-	{
-		return overlay.withAlpha(alpha).blendOver(base);
-	}
-
-	/**
-	 * @brief Get a color role from the active scheme.
-	 * @param role The scheme color role.
-	 * @return The role color.
-	 */
-	inline utility::graphic::Color32Bit schemeColor(SchemeColorRole role)
-	{
-		return guillaume::getActiveColor(role);
-	}
-
-	/**
-	 * @brief Blend a theme state layer of a content color over a base color.
-	 * @param base Container color.
-	 * @param overlay Content color tinting the state layer.
-	 * @param layer State layer whose opacity is used.
-	 * @return The blended color.
-	 */
-	inline utility::graphic::Color32Bit
-		stateLayer(const utility::graphic::Color32Bit &base,
-				   const utility::graphic::Color32Bit &overlay,
-				   theme::StateLayer layer)
-	{
-		return stateLayer(base, overlay, getStateLayerAlpha(layer));
-	}
-
-	/**
-	 * @brief Get the disabled content color (onSurface at 38%).
-	 * @return The disabled content color.
-	 */
-	inline utility::graphic::Color32Bit disabledContentColor(void)
-	{
-		return withAlpha(
-			schemeColor(SchemeColorRole::OnSurface),
-			getStateLayerAlpha(theme::StateLayer::DisabledContent));
-	}
-
-	/**
-	 * @brief Get the disabled container color (onSurface at 12%).
-	 * @return The disabled container color.
-	 */
-	inline utility::graphic::Color32Bit disabledContainerColor(void)
-	{
-		return withAlpha(
-			schemeColor(SchemeColorRole::OnSurface),
-			getStateLayerAlpha(theme::StateLayer::DisabledContainer));
-	}
-
-	/**
-	 * @brief Transparent color constant.
-	 * @return A fully transparent color.
-	 */
-	inline utility::graphic::Color32Bit transparentColor(void)
-	{
-		return utility::graphic::Color32Bit(0, 0, 0, 0);
-	}
-
+	using systems::style::disabledContainerColor;
+	using systems::style::disabledContentColor;
+	using systems::style::schemeColor;
+	using systems::style::stateLayer;
+	using systems::style::transparentColor;
+	using systems::style::withAlpha;
 }	 // namespace guillaume::entities

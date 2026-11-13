@@ -31,8 +31,8 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/text.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -42,10 +42,10 @@ namespace guillaume::systems
 	{
 		using Mode	  = components::Chip::Mode;
 		using Variant = components::Chip::Variant;
-		using entities::disabledContainerColor;
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContainerColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/**
 		 * @brief Set the color of a child, when the child exists.
@@ -115,7 +115,7 @@ namespace guillaume::systems
 		ecs::ComponentRegistry *registry		 = &componentRegistry;
 		const ecs::Entity::Identifier identifier = entityIdentifier;
 
-		entities::makeInteractive(
+		interaction::makeInteractive(
 			componentRegistry, identifier,
 			components::AccessibilityRole::Button,
 			[registry, identifier]() {
@@ -144,11 +144,11 @@ namespace guillaume::systems
 			return;
 		}
 
-		entities::makeInteractive(componentRegistry, closeIcon,
-								  components::AccessibilityRole::Button,
-								  [registry, identifier]() {
-									  close(*registry, identifier);
-								  });
+		interaction::makeInteractive(componentRegistry, closeIcon,
+									 components::AccessibilityRole::Button,
+									 [registry, identifier]() {
+										 close(*registry, identifier);
+									 });
 		componentRegistry.getComponent<components::Accessibility>(closeIcon)
 			.setLabel("Close");
 	}
@@ -164,7 +164,7 @@ namespace guillaume::systems
 	bool Chip::isDisabled(const ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier)
 	{
-		return !entities::isEnabled(componentRegistry, entityIdentifier);
+		return !interaction::isEnabled(componentRegistry, entityIdentifier);
 	}
 
 	std::string
@@ -213,7 +213,7 @@ namespace guillaume::systems
 						   const ecs::Entity::Identifier &entityIdentifier,
 						   bool disabled)
 	{
-		entities::setEnabled(componentRegistry, entityIdentifier, !disabled);
+		interaction::setEnabled(componentRegistry, entityIdentifier, !disabled);
 		apply(componentRegistry, entityIdentifier);
 	}
 
@@ -293,10 +293,10 @@ namespace guillaume::systems
 			iconColor = disabledContentColor();
 		} else {
 			if (selected && chip.isShowSelectedOverlay()) {
-				container = entities::stateLayer(container, content,
-												 theme::StateLayer::Pressed);
+				container = style::stateLayer(container, content,
+											  theme::StateLayer::Pressed);
 			}
-			container = entities::stateLayerColor(
+			container = interaction::stateLayerColor(
 				componentRegistry, entityIdentifier, container, content);
 		}
 

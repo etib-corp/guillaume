@@ -30,9 +30,9 @@
 #include "guillaume/components/line.hpp"
 #include "guillaume/components/mouse_hover_interaction.hpp"
 #include "guillaume/components/selection.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/placement_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/placement_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -42,9 +42,9 @@ namespace guillaume::systems
 	{
 		using State	  = components::Checkbox::State;
 		using Variant = components::Checkbox::Variant;
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/**
 		 * @brief Set the color of a child, when the child exists.
@@ -86,9 +86,9 @@ namespace guillaume::systems
 				(box.getWidth() + components::Checkbox::TouchTarget) / 2.0f
 				+ components::Checkbox::LabelGap;
 			const float y = (box.getHeight() - labelBound.getHeight()) / 2.0f;
-			entities::placeChild(registry, identifier, label,
-								 utility::graphic::PositionF(x, y, 0.0f),
-								 Layout::layerOf(registry, identifier));
+			placement::placeChild(registry, identifier, label,
+								  utility::graphic::PositionF(x, y, 0.0f),
+								  Layout::layerOf(registry, identifier));
 		}
 	}	 // namespace
 
@@ -103,7 +103,7 @@ namespace guillaume::systems
 		ecs::ComponentRegistry *registry		 = &componentRegistry;
 		const ecs::Entity::Identifier identifier = entityIdentifier;
 
-		entities::makeInteractive(
+		interaction::makeInteractive(
 			componentRegistry, identifier,
 			components::AccessibilityRole::Checkbox,
 			[registry, identifier]() {
@@ -146,7 +146,7 @@ namespace guillaume::systems
 				   .getComponent<components::Checkbox>(entityIdentifier)
 				   .getVariant()
 			== Variant::Disabled
-			|| !entities::isEnabled(componentRegistry, entityIdentifier);
+			|| !interaction::isEnabled(componentRegistry, entityIdentifier);
 	}
 
 	void Checkbox::setState(ecs::ComponentRegistry &componentRegistry,
@@ -195,8 +195,8 @@ namespace guillaume::systems
 		auto &line =
 			componentRegistry.getComponent<components::Line>(entityIdentifier);
 
-		entities::setEnabled(componentRegistry, entityIdentifier,
-							 variant != Variant::Disabled);
+		interaction::setEnabled(componentRegistry, entityIdentifier,
+								variant != Variant::Disabled);
 
 		const bool disabled = isDisabled(componentRegistry, entityIdentifier);
 		const bool errored	= (variant == Variant::Error);
@@ -226,7 +226,7 @@ namespace guillaume::systems
 				if (disabled) {
 					color.setColor(disabledContentColor());
 				} else {
-					color.setColor(entities::stateLayerColor(
+					color.setColor(interaction::stateLayerColor(
 						componentRegistry, entityIdentifier,
 						errored ? schemeColor(containerRole)
 								: checkbox.getCheckedColor().value_or(
@@ -244,7 +244,7 @@ namespace guillaume::systems
 						  schemeColor(SchemeColorRole::OnSurfaceVariant));
 				color.setColor(disabled
 								   ? transparentColor()
-								   : entities::stateLayerColor(
+								   : interaction::stateLayerColor(
 										 componentRegistry, entityIdentifier,
 										 transparentColor(), outline));
 				borders.setWidth(2.0f);

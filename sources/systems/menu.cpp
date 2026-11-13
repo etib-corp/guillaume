@@ -33,8 +33,8 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -45,9 +45,9 @@ namespace guillaume::systems
 		using Mode			 = components::Menu::Mode;
 		using AnchorPosition = components::Menu::AnchorPosition;
 		using Row			 = components::Menu::Row;
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/// M3 menu item height, in dp.
 		constexpr float ItemHeight = 48.0f;
@@ -198,7 +198,7 @@ namespace guillaume::systems
 		}
 
 		const auto row = menu.getRows()[index].view;
-		entities::makeInteractive(
+		interaction::makeInteractive(
 			componentRegistry, row, components::AccessibilityRole::MenuItem,
 			[registry, identifier, index]() {
 				pressItem(*registry, identifier, index);
@@ -210,7 +210,7 @@ namespace guillaume::systems
 			const auto &item = menu.getItems()[index];
 			componentRegistry.getComponent<components::Accessibility>(row)
 				.setLabel(item.label);
-			entities::setEnabled(componentRegistry, row, !item.disabled);
+			interaction::setEnabled(componentRegistry, row, !item.disabled);
 		}
 	}
 
@@ -226,11 +226,12 @@ namespace guillaume::systems
 			return;
 		}
 
-		const auto &row	   = rows[index];
-		const bool enabled = entities::isEnabled(componentRegistry, row.view);
+		const auto &row = rows[index];
+		const bool enabled =
+			interaction::isEnabled(componentRegistry, row.view);
 
 		colorChild(componentRegistry, row.view,
-				   entities::stateLayerColor(
+				   interaction::stateLayerColor(
 					   componentRegistry, row.view, transparentColor(),
 					   schemeColor(SchemeColorRole::OnSurface)));
 		colorChild(componentRegistry, row.label,
@@ -373,8 +374,8 @@ namespace guillaume::systems
 					.setBorderRadius(RowRadius);
 			}
 			if (index < items.size()) {
-				entities::setEnabled(componentRegistry, row.view,
-									 !items[index].disabled);
+				interaction::setEnabled(componentRegistry, row.view,
+										!items[index].disabled);
 			}
 			styleRow(componentRegistry, entityIdentifier, index);
 		}

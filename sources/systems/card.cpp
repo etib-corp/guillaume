@@ -36,8 +36,8 @@
 #include "guillaume/components/image.hpp"
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/text.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -46,8 +46,8 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::Card::Variant;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/**
 		 * @brief Interpolate between two colors, channel by channel.
@@ -144,8 +144,8 @@ namespace guillaume::systems
 		 * @param registry The registry holding the components.
 		 * @param identifier The card entity.
 		 */
-		void style(ecs::ComponentRegistry &registry,
-				   ecs::Entity::Identifier identifier)
+		void applyStyle(ecs::ComponentRegistry &registry,
+						ecs::Entity::Identifier identifier)
 		{
 			const auto &card =
 				registry.getComponent<components::Card>(identifier);
@@ -214,7 +214,7 @@ namespace guillaume::systems
 			}
 
 			if (card.isInteractive()) {
-				container = entities::stateLayerColor(
+				container = interaction::stateLayerColor(
 					registry, identifier, container,
 					schemeColor(SchemeColorRole::OnSurface));
 			}
@@ -260,7 +260,7 @@ namespace guillaume::systems
 		card.setOnPress(std::move(handler));
 		if (!card.isInteractive()) {
 			card.setInteractive(true);
-			entities::makeInteractive(
+			interaction::makeInteractive(
 				componentRegistry, identifier,
 				components::AccessibilityRole::Button,
 				[registry, identifier]() {
@@ -296,7 +296,7 @@ namespace guillaume::systems
 		auto &card =
 			componentRegistry.getComponent<components::Card>(entityIdentifier);
 		const bool pressed = card.getVariant() == Variant::Elevated
-			&& entities::isPressed(componentRegistry, entityIdentifier);
+			&& interaction::isPressed(componentRegistry, entityIdentifier);
 
 		if (pressed != card.isPressed()) {
 			card.setPressed(pressed).setPressFrom(card.getPressProgress());
@@ -314,7 +314,7 @@ namespace guillaume::systems
 		auto &card =
 			componentRegistry.getComponent<components::Card>(entityIdentifier);
 
-		entities::setEnabled(componentRegistry, entityIdentifier, !disabled);
+		interaction::setEnabled(componentRegistry, entityIdentifier, !disabled);
 		if (disabled && card.isPressed()) {
 			card.setPressed(false).setPressProgress(0.0f);
 		}
@@ -324,7 +324,7 @@ namespace guillaume::systems
 	bool Card::isDisabled(const ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier)
 	{
-		return !entities::isEnabled(componentRegistry, entityIdentifier);
+		return !interaction::isEnabled(componentRegistry, entityIdentifier);
 	}
 
 	float Card::contentWidth(const ecs::ComponentRegistry &componentRegistry,
@@ -351,7 +351,7 @@ namespace guillaume::systems
 		const auto content		  = card.getContentEntity();
 		const auto actionsSection = card.getActionsSection();
 
-		style(componentRegistry, entityIdentifier);
+		applyStyle(componentRegistry, entityIdentifier);
 
 		if (componentRegistry.hasComponent<components::Image>(cover)) {
 			componentRegistry.getComponent<components::Image>(cover)

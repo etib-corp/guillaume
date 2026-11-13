@@ -34,7 +34,7 @@
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/backdrop.hpp"
 #include "guillaume/systems/layout.hpp"
 
@@ -43,7 +43,7 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::Dialog::Variant;
-		using entities::schemeColor;
+		using style::schemeColor;
 
 		/**
 		 * @brief Set the color of a child, when the child exists.

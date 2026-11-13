@@ -36,8 +36,8 @@
 #include "guillaume/components/overlay.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/text_field.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/text_field.hpp"
 #include "guillaume/theme.hpp"
@@ -47,8 +47,8 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::Search::Variant;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/**
 		 * @brief Check whether an identifier names an entity.
@@ -106,9 +106,9 @@ namespace guillaume::systems
 			if (!isValid(icon)) {
 				return;
 			}
-			entities::makeInteractive(registry, icon,
-									  components::AccessibilityRole::Button,
-									  std::move(onPress));
+			interaction::makeInteractive(registry, icon,
+										 components::AccessibilityRole::Button,
+										 std::move(onPress));
 			registry.getComponent<components::Accessibility>(icon).setLabel(
 				label);
 		}
@@ -382,7 +382,7 @@ namespace guillaume::systems
 		colorChild(componentRegistry, clearIcon,
 				   showClear ? iconColor : transparentColor());
 		if (isValid(clearIcon)) {
-			entities::setEnabled(componentRegistry, clearIcon, showClear);
+			interaction::setEnabled(componentRegistry, clearIcon, showClear);
 		}
 
 		colorChild(componentRegistry, loadingIcon,
@@ -395,7 +395,7 @@ namespace guillaume::systems
 		colorChild(componentRegistry, trailing,
 				   showTrailing ? iconColor : transparentColor());
 		if (isValid(trailing)) {
-			entities::setEnabled(componentRegistry, trailing, showTrailing);
+			interaction::setEnabled(componentRegistry, trailing, showTrailing);
 		}
 
 		// The query replaces the placeholder, the loading glyph replaces

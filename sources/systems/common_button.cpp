@@ -35,9 +35,9 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/button_style.hpp"
-#include "guillaume/entities/fab_style.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/button_style.hpp"
+#include "guillaume/systems/fab_style.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
@@ -73,7 +73,7 @@ namespace guillaume::systems
 	{
 		const auto &config =
 			registry.getComponent<components::CommonButton>(identifier);
-		return entities::button_style::getIconFontSize(config.getSize());
+		return button_style::getIconFontSize(config.getSize());
 	}
 
 	utility::graphic::Color32Bit
@@ -84,7 +84,7 @@ namespace guillaume::systems
 			registry.getComponent<components::Button>(identifier);
 		const auto &config =
 			registry.getComponent<components::CommonButton>(identifier);
-		return entities::button_style::getContentColor(
+		return button_style::getContentColor(
 			config.getColorStyle(), button.isToggle(), button.isSelected());
 	}
 
@@ -115,18 +115,18 @@ namespace guillaume::systems
 
 		if (disabled) {
 			registry.getComponent<components::Color>(identifier)
-				.setColor(entities::disabledContainerColor());
+				.setColor(style::disabledContainerColor());
 
 			registry.getComponent<components::Borders>(identifier)
-				.setColor(entities::disabledContainerColor())
+				.setColor(style::disabledContainerColor())
 				.setWidth(1.0f);
 
 			if (icon) {
-				icon.setColor(entities::disabledContentColor());
+				icon.setColor(style::disabledContentColor());
 			}
 
 			if (label) {
-				label.setColor(entities::disabledContentColor());
+				label.setColor(style::disabledContentColor());
 			}
 
 			return;
@@ -135,26 +135,24 @@ namespace guillaume::systems
 		registry.getComponent<components::Color>(identifier)
 			.setColor(Button::resolveContainerColor(
 				button,
-				entities::button_style::getContainerColor(
-					colorStyle, toggle, selected, hovered, pressed)));
+				button_style::getContainerColor(colorStyle, toggle, selected,
+												hovered, pressed)));
 
 		registry.getComponent<components::Borders>(identifier)
-			.setColor(entities::button_style::getBorderColor(colorStyle, toggle,
-															 selected))
+			.setColor(
+				button_style::getBorderColor(colorStyle, toggle, selected))
 			.setWidth(1.0f);
 
 		if (icon) {
 			icon.setColor(Button::resolveContentColor(
 				button,
-				entities::button_style::getContentColor(colorStyle, toggle,
-														selected)));
+				button_style::getContentColor(colorStyle, toggle, selected)));
 		}
 
 		if (label) {
 			label.setColor(Button::resolveContentColor(
 				button,
-				entities::button_style::getContentColor(colorStyle, toggle,
-														selected)));
+				button_style::getContentColor(colorStyle, toggle, selected)));
 		}
 	}
 
@@ -179,10 +177,8 @@ namespace guillaume::systems
 		const float minWidth	= config.getMinWidth();
 		const bool uppercase	= config.isUppercase();
 		const float iconSize	= iconFontSize(registry, identifier);
-		const float radius		= entities::button_style::getBorderRadius(
-			 size,
-			 entities::button_style::getRestingShape(shape, toggle, selected,
-														 morph),
+		const float radius		= button_style::getBorderRadius(
+			 size, button_style::getRestingShape(shape, toggle, selected, morph),
 			 pressed);
 
 		// A button joined to its neighbours keeps the corners its group gave
@@ -245,7 +241,7 @@ namespace guillaume::systems
 
 		const float gap			  = (!button.getIconGlyphName().empty()
 							 && !button.getLabelContent().empty())
-					  ? entities::button_style::getSpaceBetweenIconAndLabel(size)
+					  ? button_style::getSpaceBetweenIconAndLabel(size)
 					  : 0.0f;
 		const float contentWidth  = iconWidth + gap + labelWidth;
 		const float contentHeight = std::max(iconHeight, labelHeight);
@@ -257,12 +253,10 @@ namespace guillaume::systems
 			  : components::CommonButton::MinHeight;
 		const float buttonWidth = std::max(
 			{ contentWidth
-				  + entities::button_style::getWidthPadding(size, compact)
-					  * 2.0f,
+				  + button_style::getWidthPadding(size, compact) * 2.0f,
 			  components::CommonButton::MinWidth, minWidth });
 		const float buttonHeight = std::max(
-			contentHeight
-				+ entities::button_style::getHeightPadding(size) * 2.0f,
+			contentHeight + button_style::getHeightPadding(size) * 2.0f,
 			minHeight);
 
 		const auto place = [&](const Button::Child &child, float x,

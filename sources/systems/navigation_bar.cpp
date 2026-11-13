@@ -30,7 +30,7 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/navigation_bar_destination.hpp"
 #include "guillaume/components/selection.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/navigation_bar_destination.hpp"
 #include "guillaume/systems/selection.hpp"
@@ -224,7 +224,7 @@ namespace guillaume::systems
 		const bool showAllLabels = bar.getVariant() == Variant::WithLabels;
 
 		componentRegistry.getComponent<components::Color>(entityIdentifier)
-			.setColor(entities::schemeColor(SchemeColorRole::SurfaceContainer));
+			.setColor(style::schemeColor(SchemeColorRole::SurfaceContainer));
 
 		// The destinations share the width of the bar.
 		auto &layout = componentRegistry.getComponent<components::Layout>(

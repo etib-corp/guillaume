@@ -19,156 +19,21 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-
 #pragma once
 
-#include <cstdint>
+#include "guillaume/systems/placement_helpers.hpp"
 
-#include <utility/graphic/pose.hpp>
-#include <utility/graphic/position.hpp>
-
-#include "guillaume/ecs/component_registry.hpp"
-#include "guillaume/ecs/entity.hpp"
-
-#include "guillaume/components/bound.hpp"
-#include "guillaume/components/transform.hpp"
-
-#include "guillaume/systems/layout.hpp"
-
+/**
+ * @file
+ * @brief Source-compatibility aliases for the placement helpers.
+ *
+ * The helpers live in guillaume::systems since the widget rules moved to
+ * systems; this header keeps the names available in guillaume::entities.
+ */
 namespace guillaume::entities
 {
-
-	/**
-	 * @brief Extract the origin pose of an entity.
-	 *
-	 * Component families that position children absolutely (sliders, switches,
-	 * indicators, clock faces) need the parent pose without going through
-	 * `systems::Layout`. This helper centralizes that lookup and returns a
-	 * default pose when the transform is missing.
-	 *
-	 * @param registry The component registry.
-	 * @param identifier The entity identifier.
-	 * @return The entity pose, or a default pose when absent.
-	 */
-	inline utility::graphic::PoseF
-		poseOf(ecs::ComponentRegistry &registry,
-			   const ecs::Entity::Identifier &identifier)
-	{
-		if (!registry.hasComponent<components::Transform>(identifier)) {
-			return utility::graphic::PoseF();
-		}
-
-		return registry.getComponent<components::Transform>(identifier)
-			.getPose();
-	}
-
-	/**
-	 * @brief Place a child entity at an absolute position offset from a parent.
-	 *
-	 * The child is lifted by the container content layer so it never z-fights
-	 * with the parent surface.
-	 *
-	 * @param registry The component registry.
-	 * @param parentIdentifier The parent entity identifier.
-	 * @param childIdentifier The child entity identifier.
-	 * @param offset The offset applied to the parent position.
-	 * @param parentLayer The layer of the parent container.
-	 */
-	inline void placeChild(ecs::ComponentRegistry &registry,
-						   const ecs::Entity::Identifier &parentIdentifier,
-						   const ecs::Entity::Identifier &childIdentifier,
-						   const utility::graphic::PositionF &offset,
-						   std::uint32_t parentLayer)
-	{
-		if (!registry.hasComponent<components::Transform>(childIdentifier)) {
-			return;
-		}
-
-		const auto origin = poseOf(registry, parentIdentifier);
-
-		const utility::graphic::PositionF basePosition(
-			origin.getPosition().getX() + offset.x,
-			origin.getPosition().getY() + offset.y,
-			origin.getPosition().getZ());
-
-		const auto pose = systems::Layout::contentLayerPose(
-			basePosition, origin.getOrientation(), parentLayer);
-
-		registry.getComponent<components::Transform>(childIdentifier)
-			.setPose(pose);
-	}
-
-	/**
-	 * @brief Center a child entity inside its parent bound.
-	 *
-	 * @param registry The component registry.
-	 * @param parentIdentifier The parent entity identifier.
-	 * @param childIdentifier The child entity identifier.
-	 * @param parentLayer The layer of the parent container.
-	 */
-	inline void centerChild(ecs::ComponentRegistry &registry,
-							const ecs::Entity::Identifier &parentIdentifier,
-							const ecs::Entity::Identifier &childIdentifier,
-							std::uint32_t parentLayer)
-	{
-		if (!registry.hasComponent<components::Bound>(parentIdentifier)
-			|| !registry.hasComponent<components::Bound>(childIdentifier)) {
-			return;
-		}
-
-		const auto &parentBound =
-			registry.getComponent<components::Bound>(parentIdentifier);
-		const auto &childBound =
-			registry.getComponent<components::Bound>(childIdentifier);
-
-		placeChild(
-			registry, parentIdentifier, childIdentifier,
-			utility::graphic::PositionF(
-				(parentBound.getWidth() - childBound.getWidth()) / 2.0f,
-				(parentBound.getHeight() - childBound.getHeight()) / 2.0f,
-				0.0f),
-			parentLayer);
-	}
-
-	/**
-	 * @brief Place a child at a normalized position along the parent width.
-	 *
-	 * Used by sliders and switches to place a thumb or fill between the
-	 * left/right edges of the parent based on a `[0, 1]` value.
-	 *
-	 * @param registry The component registry.
-	 * @param parentIdentifier The parent entity identifier.
-	 * @param childIdentifier The child entity identifier.
-	 * @param normalized The normalized `[0, 1]` position along the width.
-	 * @param inset The horizontal inset reserved on both edges.
-	 * @param parentLayer The layer of the parent container.
-	 */
-	inline void placeNormalized(ecs::ComponentRegistry &registry,
-								const ecs::Entity::Identifier &parentIdentifier,
-								const ecs::Entity::Identifier &childIdentifier,
-								float normalized, float inset,
-								std::uint32_t parentLayer)
-	{
-		if (!registry.hasComponent<components::Bound>(parentIdentifier)
-			|| !registry.hasComponent<components::Bound>(childIdentifier)) {
-			return;
-		}
-
-		const auto &parentBound =
-			registry.getComponent<components::Bound>(parentIdentifier);
-		const auto &childBound =
-			registry.getComponent<components::Bound>(childIdentifier);
-
-		const float travel =
-			parentBound.getWidth() - childBound.getWidth() - 2.0f * inset;
-
-		placeChild(
-			registry, parentIdentifier, childIdentifier,
-			utility::graphic::PositionF(
-				inset + normalized * (travel > 0.0f ? travel : 0.0f),
-				(parentBound.getHeight() - childBound.getHeight()) / 2.0f,
-				0.0f),
-			parentLayer);
-	}
-
+	using systems::placement::centerChild;
+	using systems::placement::placeChild;
+	using systems::placement::placeNormalized;
+	using systems::placement::poseOf;
 }	 // namespace guillaume::entities

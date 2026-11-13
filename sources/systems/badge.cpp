@@ -32,7 +32,7 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/text.hpp"
 #include "guillaume/components/typography.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/typography.hpp"
 #include "guillaume/theme.hpp"
@@ -42,7 +42,7 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::Badge::Variant;
-		using entities::schemeColor;
+		using style::schemeColor;
 
 		/**
 		 * @brief Scale the alpha of a color by the fade opacity.
@@ -53,7 +53,7 @@ namespace guillaume::systems
 		utility::graphic::Color32Bit
 			faded(const utility::graphic::Color32Bit &color, float opacity)
 		{
-			return entities::withAlpha(
+			return style::withAlpha(
 				color,
 				static_cast<std::uint8_t>(
 					static_cast<float>(color.getAlpha()) * opacity + 0.5f));

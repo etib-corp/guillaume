@@ -26,9 +26,9 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/value.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/placement_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/placement_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -37,10 +37,10 @@ namespace guillaume::systems
 	namespace
 	{
 		using Variant = components::Switch::Variant;
-		using entities::disabledContainerColor;
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContainerColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/**
 		 * @brief Set the color of a child, when the child exists.
@@ -69,7 +69,7 @@ namespace guillaume::systems
 		ecs::ComponentRegistry *registry		 = &componentRegistry;
 		const ecs::Entity::Identifier identifier = entityIdentifier;
 
-		entities::makeInteractive(
+		interaction::makeInteractive(
 			componentRegistry, identifier,
 			components::AccessibilityRole::Switch,
 			[registry, identifier]() {
@@ -94,7 +94,7 @@ namespace guillaume::systems
 				   .getComponent<components::Switch>(entityIdentifier)
 				   .getVariant()
 			== Variant::Disabled
-			|| !entities::isEnabled(componentRegistry, entityIdentifier);
+			|| !interaction::isEnabled(componentRegistry, entityIdentifier);
 	}
 
 	bool Switch::isChecked(const ecs::ComponentRegistry &componentRegistry,
@@ -145,16 +145,16 @@ namespace guillaume::systems
 		// Placement: the thumb slides along the track, the icon stays
 		// centered on the thumb, the label sits beside the track.
 		if (componentRegistry.hasComponent<components::Color>(thumb)) {
-			entities::placeNormalized(componentRegistry, entityIdentifier,
-									  thumb, on ? 1.0f : 0.0f,
-									  components::Switch::ThumbInset, layer);
+			placement::placeNormalized(componentRegistry, entityIdentifier,
+									   thumb, on ? 1.0f : 0.0f,
+									   components::Switch::ThumbInset, layer);
 			colorChild(componentRegistry, thumb,
 					   config.getVariant() == Variant::Disabled
 						   ? disabledContentColor()
 						   : schemeColor(on ? SchemeColorRole::OnPrimary
 											: SchemeColorRole::Outline));
-			entities::centerChild(componentRegistry, thumb, config.getIcon(),
-								  Layout::layerOf(componentRegistry, thumb));
+			placement::centerChild(componentRegistry, thumb, config.getIcon(),
+								   Layout::layerOf(componentRegistry, thumb));
 		}
 		if (componentRegistry.hasComponent<components::Bound>(label)) {
 			const auto &track =
@@ -162,7 +162,7 @@ namespace guillaume::systems
 					entityIdentifier);
 			const auto &labelBound =
 				componentRegistry.getComponent<components::Bound>(label);
-			entities::placeChild(
+			placement::placeChild(
 				componentRegistry, entityIdentifier, label,
 				utility::graphic::PositionF(
 					track.getWidth() + components::Switch::LabelGap,
@@ -171,8 +171,8 @@ namespace guillaume::systems
 		}
 
 		// Style.
-		entities::setEnabled(componentRegistry, entityIdentifier,
-							 config.getVariant() != Variant::Disabled);
+		interaction::setEnabled(componentRegistry, entityIdentifier,
+								config.getVariant() != Variant::Disabled);
 		componentRegistry
 			.getComponent<components::Accessibility>(entityIdentifier)
 			.setChecked(on ? components::CheckedState::Checked

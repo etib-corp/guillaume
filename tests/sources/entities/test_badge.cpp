@@ -85,9 +85,7 @@ namespace guillaume::entities::tests
 		// A measured label wider than the badge grows it by Paper's 3 dp
 		// horizontal padding on each side.
 		ASSERT_EQ(badge->getChildren().size(), 1u);
-		registry
-			.getComponent<components::Bound>(
-				badge->getChildren().front()->getIdentifier())
+		registry.getComponent<components::Bound>(badge->getChildren().front())
 			.setWidth(30.0f);
 		systems::Badge::apply(registry, badge->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 36.0f);
@@ -159,7 +157,7 @@ namespace guillaume::entities::tests
 				.getHeight(),
 			20.0f);
 		const auto &label = registry.getComponent<components::Text>(
-			badge->getChildren().front()->getIdentifier());
+			badge->getChildren().front());
 		EXPECT_FLOAT_EQ(label.getFontSize(), 10.0f);
 	}
 

@@ -32,8 +32,8 @@
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/style_state.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/interaction_helpers.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -41,9 +41,9 @@ namespace guillaume::systems
 {
 	namespace
 	{
-		using entities::disabledContentColor;
-		using entities::schemeColor;
-		using entities::transparentColor;
+		using style::disabledContentColor;
+		using style::schemeColor;
+		using style::transparentColor;
 
 		/**
 		 * @brief Set the color of a child, when the child exists.
@@ -95,7 +95,7 @@ namespace guillaume::systems
 		ecs::ComponentRegistry *registry		 = &componentRegistry;
 		const ecs::Entity::Identifier identifier = entityIdentifier;
 
-		entities::makeInteractive(
+		interaction::makeInteractive(
 			componentRegistry, identifier,
 			components::AccessibilityRole::Button,
 			[registry, identifier]() {
@@ -125,7 +125,7 @@ namespace guillaume::systems
 				   .getComponent<components::NavigationDrawerDestination>(
 					   entityIdentifier)
 				   .isDisabled()
-			|| !entities::isEnabled(componentRegistry, entityIdentifier);
+			|| !interaction::isEnabled(componentRegistry, entityIdentifier);
 	}
 
 	void NavigationDrawerDestination::setDisabled(
@@ -217,7 +217,7 @@ namespace guillaume::systems
 			  ? disabledContentColor()
 			  : (selected ? schemeColor(SchemeColorRole::OnSecondaryContainer)
 						  : schemeColor(SchemeColorRole::OnSurfaceVariant));
-		const auto pillColor = entities::stateLayerColor(
+		const auto pillColor = interaction::stateLayerColor(
 			componentRegistry, entityIdentifier, pill, content);
 
 		// The active pill is the indicator of a collapsed item, and the

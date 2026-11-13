@@ -35,7 +35,6 @@ namespace guillaume::entities
 								  components::Bound, components::Color,
 								  components::Borders, ExtraComponents...>(
 			  registry)
-		, _children()
 	{
 		setSurfaceConfig(config);
 	}
@@ -148,12 +147,10 @@ namespace guillaume::entities
 	SurfaceBase<ExtraComponents...> &
 		SurfaceBase<ExtraComponents...>::setChildren(const Children &children)
 	{
-		_children = children;
-
 		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		childIdentifiers.reserve(_children.size());
+		childIdentifiers.reserve(children.size());
 
-		for (const auto &child: _children) {
+		for (const auto &child: children) {
 			if (child != nullptr
 				&& child->getIdentifier() != ecs::Entity::InvalidIdentifier) {
 				child->setParent(this->shared_from_this());
@@ -173,10 +170,12 @@ namespace guillaume::entities
 	}
 
 	template<ecs::InheritFromComponent... ExtraComponents>
-	const typename SurfaceBase<ExtraComponents...>::Children &
+	std::vector<ecs::Entity::Identifier>
 		SurfaceBase<ExtraComponents...>::getChildren(void) const
 	{
-		return _children;
+		return this->getComponentRegistry()
+			.template getComponent<components::Layout>(this->getIdentifier())
+			.getChildren();
 	}
 
 	template<ecs::InheritFromComponent... ExtraComponents>

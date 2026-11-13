@@ -158,7 +158,6 @@ What remains of the entity classes:
   (that needs `shared_from_this()`, and a system cannot create entities).
   Widgets are never half-built: there is no public constructor and no
   `initialize()` to remember.
-- `SurfaceBase` keeps a list of handles to its attached children.
 
 A widget that rebuilds its children removes the previous ones with
 `ecs::EntityRegistry::removeEntity()` / `clearEntities()`, which also deletes

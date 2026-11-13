@@ -35,9 +35,9 @@
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/transform.hpp"
-#include "guillaume/entities/button_style.hpp"
-#include "guillaume/entities/fab_style.hpp"
-#include "guillaume/entities/style_helpers.hpp"
+#include "guillaume/systems/button_style.hpp"
+#include "guillaume/systems/fab_style.hpp"
+#include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
@@ -164,9 +164,9 @@ namespace guillaume::systems
 						   theme::StateLayer layer)
 		{
 			if (base.getAlpha() == 0) {
-				return entities::withAlpha(content, getStateLayerAlpha(layer));
+				return style::withAlpha(content, getStateLayerAlpha(layer));
 			}
-			return entities::stateLayer(base, content, layer);
+			return style::stateLayer(base, content, layer);
 		}
 
 		static utility::graphic::Color32Bit
@@ -246,17 +246,17 @@ namespace guillaume::systems
 			registry.getComponent<components::Color>(identifier)
 				.setColor(
 					(variant == Variant::Filled || variant == Variant::Tonal)
-						? entities::disabledContainerColor()
-						: entities::transparentColor());
+						? style::disabledContainerColor()
+						: style::transparentColor());
 
 			registry.getComponent<components::Borders>(identifier)
 				.setColor(variant == Variant::Outlined
-							  ? entities::disabledContainerColor()
-							  : entities::transparentColor())
+							  ? style::disabledContainerColor()
+							  : style::transparentColor())
 				.setWidth(1.0f);
 
 			if (icon) {
-				icon.setColor(entities::disabledContentColor());
+				icon.setColor(style::disabledContentColor());
 			}
 
 			return;

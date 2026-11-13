@@ -250,12 +250,12 @@ namespace guillaume::entities::tests
 		card->setTitle("Title", "Subtitle");
 		card->setCover("images/cover.png");
 
-		const auto &children = card->getChildren();
+		const auto children = card->getChildren();
 		ASSERT_EQ(children.size(), 4u);
-		EXPECT_EQ(children[0], card->getCover());
-		EXPECT_EQ(children[1], card->getTitleSection());
-		EXPECT_EQ(children[2], card->getContent());
-		EXPECT_EQ(children[3], card->getActionsSection());
+		EXPECT_EQ(children[0], card->getCover()->getIdentifier());
+		EXPECT_EQ(children[1], card->getTitleSection()->getIdentifier());
+		EXPECT_EQ(children[2], card->getContent()->getIdentifier());
+		EXPECT_EQ(children[3], card->getActionsSection()->getIdentifier());
 
 		EXPECT_FLOAT_EQ(registry
 							.getComponent<components::Bound>(

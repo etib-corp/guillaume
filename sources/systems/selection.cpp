@@ -22,6 +22,7 @@
 
 #include "guillaume/systems/selection.hpp"
 
+#include "guillaume/components/hierarchy.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::systems
@@ -38,16 +39,15 @@ namespace guillaume::systems
 			return;
 		}
 
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-
-		for (const auto &entity:
-			 getEntityRegistry().getEntitiesBreadthFirst()) {
-			const auto parent = entity->getParent();
-			if (parent != nullptr
-				&& parent->getIdentifier() == entityIdentifier) {
-				childIdentifiers.push_back(entity->getIdentifier());
-			}
+		// The group's members are its tree children, read from the Hierarchy
+		// component: no entity object is needed.
+		if (!getComponentRegistry().hasComponent<components::Hierarchy>(
+				entityIdentifier)) {
+			return;
 		}
+		const auto childIdentifiers =
+			getComponent<components::Hierarchy>(entityIdentifier)
+				.getChildIdentifiers();
 
 		reconcile(getComponentRegistry(), entityIdentifier, childIdentifiers);
 	}
