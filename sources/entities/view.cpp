@@ -20,7 +20,9 @@
  SOFTWARE.
  */
 
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "guillaume/entities/view.hpp"
 #include "guillaume/entities/builder_base.hpp"
@@ -165,23 +167,43 @@ namespace guillaume::entities
 		: ecs::ParentEntityFiller<components::Layout, components::Transform,
 								  components::Bound, components::Color,
 								  components::Borders>(registry)
-		, _pose(pose)
-		, _color(color)
-		, _borderRadius(borderRadius)
-		, _axis(axis)
-		, _mainAxisAlignment(mainAxisAlignment)
-		, _crossAxisAlignment(crossAxisAlignment)
-		, _spacing(spacing)
-		, _padding(padding)
-		, _hasFixedWidth(hasFixedWidth)
-		, _hasFixedHeight(hasFixedHeight)
-		, _fixedWidth(fixedWidth)
-		, _fixedHeight(fixedHeight)
-		, _entities(entities)
 	{
-		getComponentRegistry()
-			.getComponent<components::Transform>(getIdentifier())
-			.setPose(_pose);
+		const auto &identifier = getIdentifier();
+
+		registry.getComponent<components::Transform>(identifier).setPose(pose);
+		registry.getComponent<components::Color>(identifier).setColor(color);
+		registry.getComponent<components::Borders>(identifier)
+			.setBorderRadius(borderRadius);
+
+		auto &layout = registry.getComponent<components::Layout>(identifier);
+		layout.setAxis(axis)
+			.setMainAxisAlignment(mainAxisAlignment)
+			.setCrossAxisAlignment(crossAxisAlignment)
+			.setSpacing(spacing)
+			.setPadding(padding);
+
+		if (hasFixedWidth) {
+			layout.setFixedWidth(fixedWidth);
+		}
+		if (hasFixedHeight) {
+			layout.setFixedHeight(fixedHeight);
+		}
+
+		// Parenting needs shared_from_this(), so it waits for initialize().
+		// Until then the handles are parked among the direct entities, and
+		// the identifiers are already the layout children.
+		std::vector<ecs::Entity::Identifier> childIdentifiers;
+		childIdentifiers.reserve(entities.size());
+
+		for (const auto &entity: entities) {
+			if (entity != nullptr
+				&& entity->getIdentifier() != ecs::Entity::InvalidIdentifier) {
+				accessDirectEntities().push_back(entity);
+				childIdentifiers.push_back(entity->getIdentifier());
+			}
+		}
+
+		layout.setChildren(childIdentifiers);
 	}
 
 	View::~View()
@@ -190,7 +212,6 @@ namespace guillaume::entities
 
 	View &View::setPose(const utility::graphic::PoseF &pose)
 	{
-		_pose = pose;
 		getComponentRegistry()
 			.getComponent<components::Transform>(getIdentifier())
 			.setPose(pose);
@@ -202,7 +223,6 @@ namespace guillaume::entities
 
 	View &View::setColor(const utility::graphic::Color32Bit &color)
 	{
-		_color = color;
 		getComponentRegistry()
 			.getComponent<components::Color>(getIdentifier())
 			.setColor(color);
@@ -211,7 +231,6 @@ namespace guillaume::entities
 
 	View &View::setBorderRadius(float borderRadius)
 	{
-		_borderRadius = borderRadius;
 		getComponentRegistry()
 			.getComponent<components::Borders>(getIdentifier())
 			.setBorderRadius(borderRadius);
@@ -220,7 +239,6 @@ namespace guillaume::entities
 
 	View &View::setAxis(Axis axis)
 	{
-		_axis = axis;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setAxis(axis);
@@ -232,7 +250,6 @@ namespace guillaume::entities
 
 	View &View::setMainAxisAlignment(MainAxisAlignment alignment)
 	{
-		_mainAxisAlignment = alignment;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setMainAxisAlignment(alignment);
@@ -244,7 +261,6 @@ namespace guillaume::entities
 
 	View &View::setCrossAxisAlignment(CrossAxisAlignment alignment)
 	{
-		_crossAxisAlignment = alignment;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setCrossAxisAlignment(alignment);
@@ -256,7 +272,6 @@ namespace guillaume::entities
 
 	View &View::setSpacing(float spacing)
 	{
-		_spacing = spacing;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setSpacing(spacing);
@@ -268,7 +283,6 @@ namespace guillaume::entities
 
 	View &View::setPadding(float padding)
 	{
-		_padding = padding;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setPadding(padding);
@@ -280,8 +294,6 @@ namespace guillaume::entities
 
 	View &View::setFixedWidth(float width)
 	{
-		_hasFixedWidth = true;
-		_fixedWidth	   = width;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setFixedWidth(width);
@@ -293,8 +305,6 @@ namespace guillaume::entities
 
 	View &View::clearFixedWidth(void)
 	{
-		_hasFixedWidth = false;
-		_fixedWidth	   = 0.0f;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.clearFixedWidth();
@@ -306,8 +316,6 @@ namespace guillaume::entities
 
 	View &View::setFixedHeight(float height)
 	{
-		_hasFixedHeight = true;
-		_fixedHeight	= height;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setFixedHeight(height);
@@ -319,8 +327,6 @@ namespace guillaume::entities
 
 	View &View::clearFixedHeight(void)
 	{
-		_hasFixedHeight = false;
-		_fixedHeight	= 0.0f;
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.clearFixedHeight();
@@ -333,12 +339,10 @@ namespace guillaume::entities
 	View &View::setEntities(
 		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
 	{
-		_entities = entities;
-
 		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		childIdentifiers.reserve(_entities.size());
+		childIdentifiers.reserve(entities.size());
 
-		for (const auto &entity: _entities) {
+		for (const auto &entity: entities) {
 			if (entity != nullptr
 				&& entity->getIdentifier() != ecs::Entity::InvalidIdentifier) {
 				entity->setParent(shared_from_this());
@@ -346,6 +350,8 @@ namespace guillaume::entities
 			}
 		}
 
+		// Record the layout children on the component so `systems::Layout`
+		// arranges exactly these.
 		getComponentRegistry()
 			.getComponent<components::Layout>(getIdentifier())
 			.setChildren(childIdentifiers);
@@ -357,57 +363,49 @@ namespace guillaume::entities
 
 	void View::initialize(void)
 	{
-		update();
-	}
+		const auto self = shared_from_this();
+		const auto &children =
+			getComponentRegistry()
+				.getComponent<components::Layout>(getIdentifier())
+				.getChildren();
+		auto &direct = accessDirectEntities();
 
-	void View::update(void)
-	{
-		// The framework may move the container through the Transform component
-		// directly (Scene::placeEntitiesInFrontOfView), so the registry pose is
-		// adopted instead of restoring the stale private copy.
-		_pose = getComponentRegistry()
-					.getComponent<components::Transform>(getIdentifier())
-					.getPose();
+		// The entities given to the constructor are layout children that
+		// are not parented yet. They leave the direct entities once
+		// attached: the view does not own what is attached to it, exactly
+		// as with setEntities().
+		std::vector<std::shared_ptr<ecs::Entity>> pending;
 
-		setColor(_color);
-		setBorderRadius(_borderRadius);
-		setAxis(_axis);
-		setMainAxisAlignment(_mainAxisAlignment);
-		setCrossAxisAlignment(_crossAxisAlignment);
-		setSpacing(_spacing);
-		setPadding(_padding);
+		for (auto iterator = direct.begin(); iterator != direct.end();) {
+			const bool isLayoutChild =
+				std::find(children.begin(), children.end(),
+						  (*iterator)->getIdentifier())
+				!= children.end();
 
-		if (_hasFixedWidth) {
-			setFixedWidth(_fixedWidth);
-		} else {
-			clearFixedWidth();
+			if (isLayoutChild && (*iterator)->getParent() != self) {
+				pending.push_back(std::move(*iterator));
+				iterator = direct.erase(iterator);
+			} else {
+				++iterator;
+			}
 		}
 
-		if (_hasFixedHeight) {
-			setFixedHeight(_fixedHeight);
-		} else {
-			clearFixedHeight();
+		for (const auto &entity: pending) {
+			entity->setParent(self);
 		}
 
-		setEntities(_entities);
+		applyGeometry();
 	}
 
 	void View::applyGeometry(void)
 	{
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		childIdentifiers.reserve(_entities.size());
+		auto &registry		   = getComponentRegistry();
+		const auto &identifier = getIdentifier();
 
-		for (const auto &entity: _entities) {
-			if (entity == nullptr
-				|| entity->getIdentifier() == ecs::Entity::InvalidIdentifier) {
-				continue;
-			}
-			childIdentifiers.push_back(entity->getIdentifier());
-		}
-
-		systems::Layout::apply(getComponentRegistry(), getIdentifier(),
-							   childIdentifiers,
-							   static_cast<std::uint32_t>(getLayer()));
+		systems::Layout::apply(
+			registry, identifier,
+			registry.getComponent<components::Layout>(identifier).getChildren(),
+			systems::Layout::layerOf(registry, identifier));
 	}
 
 }	 // namespace guillaume::entities
