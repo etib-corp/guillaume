@@ -259,10 +259,12 @@ namespace guillaume::entities::tests
 				.getPosition()
 				.getY();
 		};
-		EXPECT_GT(y(), 140.0f);
+		// Below the anchor: under its bottom edge (100 - 40), y points up.
+		EXPECT_LT(y(), 60.0f);
 
+		// Above the anchor: the menu's top is above the anchor's top.
 		menu->setAnchorPosition(Menu::AnchorPosition::Top);
-		EXPECT_LT(y(), 100.0f);
+		EXPECT_GT(y(), 100.0f);
 		EXPECT_EQ(menu->getAnchor(), anchor.getIdentifier());
 	}
 

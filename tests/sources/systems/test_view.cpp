@@ -53,9 +53,10 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(offsetX(_first), 16.0f);
 		EXPECT_FLOAT_EQ(offsetX(_second), 74.0f);
 
-		// Cross axis centered in a 60 high region: 16 + (60 - 30) / 2 = 31.
-		EXPECT_FLOAT_EQ(offsetY(_first), 31.0f);
-		EXPECT_FLOAT_EQ(offsetY(_second), 16.0f);
+		// Cross axis centered in a 60 high region: 16 + (60 - 30) / 2 = 31,
+		// measured down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(offsetY(_first), -31.0f);
+		EXPECT_FLOAT_EQ(offsetY(_second), -16.0f);
 	}
 
 	TEST_F(TestViewSystem, ColumnSizesAndPlacesChildren)
@@ -69,8 +70,9 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(bound().getWidth(), 82.0f);
 		EXPECT_FLOAT_EQ(bound().getHeight(), 130.0f);
 
-		EXPECT_FLOAT_EQ(offsetY(_first), 16.0f);
-		EXPECT_FLOAT_EQ(offsetY(_second), 54.0f);
+		// Stacked down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(offsetY(_first), -16.0f);
+		EXPECT_FLOAT_EQ(offsetY(_second), -54.0f);
 
 		// Cross axis centered in a 50 wide region: 16 + (50 - 20) / 2 = 31.
 		EXPECT_FLOAT_EQ(offsetX(_first), 16.0f);
@@ -79,14 +81,15 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestViewSystem, CrossAxisAlignmentMovesChildren)
 	{
+		// Offsets are measured down from the top edge (y points up).
 		layout().setCrossAxisAlignment(CrossAxisAlignment::Start);
 		_system.update(_view);
-		EXPECT_FLOAT_EQ(offsetY(_first), 16.0f);
+		EXPECT_FLOAT_EQ(offsetY(_first), -16.0f);
 
 		layout().setCrossAxisAlignment(CrossAxisAlignment::End);
 		_system.update(_view);
 		// Padding(16) + region(60) - height(30) = 46.
-		EXPECT_FLOAT_EQ(offsetY(_first), 46.0f);
+		EXPECT_FLOAT_EQ(offsetY(_first), -46.0f);
 	}
 
 	TEST_F(TestViewSystem, FixedSizeOverridesAutoSizing)
@@ -195,8 +198,9 @@ namespace guillaume::systems::tests
 
 		_system.update(_view);
 
+		// 16 right of x = 10 and 31 down from y = 20 (y points up).
 		EXPECT_FLOAT_EQ(position(_first).getX(), 26.0f);
-		EXPECT_FLOAT_EQ(position(_first).getY(), 51.0f);
+		EXPECT_FLOAT_EQ(position(_first).getY(), -11.0f);
 		EXPECT_FLOAT_EQ(position(_first).getZ(), -199.0f);
 	}
 

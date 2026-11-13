@@ -124,10 +124,11 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(
 			_registry.getComponent<components::Layout>(_entity).getChildren(),
 			entries);
+		// Entries stack downward from the top edge (y points up).
 		EXPECT_FLOAT_EQ(yOf(_section),
-						guillaume::systems::NavigationDrawer::Padding);
+						-guillaume::systems::NavigationDrawer::Padding);
 		for (std::size_t index = 1; index < entries.size(); ++index) {
-			EXPECT_LT(yOf(entries[index - 1]), yOf(entries[index])) << index;
+			EXPECT_GT(yOf(entries[index - 1]), yOf(entries[index])) << index;
 		}
 		for (const auto destination: _destinations) {
 			EXPECT_FLOAT_EQ(
@@ -135,8 +136,8 @@ namespace guillaume::systems::tests
 					.getWidth(),
 				components::NavigationDrawer::Width
 					- 2.0f * guillaume::systems::NavigationDrawer::Padding);
-			// The content of a destination follows it.
-			EXPECT_GT(yOf(destination + 1), yOf(destination));
+			// The content of a destination follows it, below its top edge.
+			EXPECT_LT(yOf(destination + 1), yOf(destination));
 		}
 	}
 

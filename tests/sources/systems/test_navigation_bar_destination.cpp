@@ -123,10 +123,11 @@ namespace guillaume::systems::tests
 			(std::vector<ecs::Entity::Identifier> { _indicator, _label }));
 		EXPECT_FLOAT_EQ(positionOf(_indicator).getX(),
 						(100.0f - Destination::IndicatorWidth) / 2.0f);
-		EXPECT_FLOAT_EQ(positionOf(_indicator).getY(), top);
+		// Offsets are measured down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(positionOf(_indicator).getY(), -top);
 		EXPECT_FLOAT_EQ(positionOf(_label).getX(), (100.0f - 30.0f) / 2.0f);
 		EXPECT_FLOAT_EQ(positionOf(_label).getY(),
-						top + Destination::IndicatorHeight + spacing);
+						-(top + Destination::IndicatorHeight + spacing));
 		// The icon follows the indicator it is centered in.
 		EXPECT_FLOAT_EQ(positionOf(_icon).getX(),
 						positionOf(_indicator).getX()
@@ -140,9 +141,10 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(positionOf(_badge).getX(),
 						positionOf(_indicator).getX()
 							+ Destination::BadgeOffsetX);
+		// BadgeOffsetY is measured down from the indicator (y points up).
 		EXPECT_FLOAT_EQ(positionOf(_badge).getY(),
 						positionOf(_indicator).getY()
-							+ Destination::BadgeOffsetY);
+							- Destination::BadgeOffsetY);
 	}
 
 	TEST_F(TestNavigationBarDestinationSystem, BadgeShowsTheLabelOrADot)

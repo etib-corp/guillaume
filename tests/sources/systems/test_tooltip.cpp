@@ -127,8 +127,8 @@ namespace guillaume::systems::tests
 		_system.update(_entity);
 		EXPECT_EQ(layout.getChildren(),
 				  (std::vector<ecs::Entity::Identifier> { _title, _text }));
-		// Stacked vertically: the body sits under the title.
-		EXPECT_GT(positionOf(_text).getY(), positionOf(_title).getY());
+		// Stacked vertically: the body sits under the title (y points up).
+		EXPECT_LT(positionOf(_text).getY(), positionOf(_title).getY());
 	}
 
 	TEST_F(TestTooltipSystem, TextIsMirroredOnTheLabelAndTheBody)
@@ -249,7 +249,8 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(width, 66.0f);
 		EXPECT_FLOAT_EQ(positionOf(_entity).getX(),
 						100.0f + (40.0f - width) / 2.0f);
-		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 70.0f);
+		// Under the anchor: its top (50) minus its height (20), y points up.
+		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 30.0f);
 		// The body child follows the tooltip.
 		EXPECT_FLOAT_EQ(positionOf(_text).getX(),
 						positionOf(_entity).getX() + 8.0f);
@@ -259,7 +260,7 @@ namespace guillaume::systems::tests
 	{
 		_registry.getComponent<components::Transform>(_anchor).setPose(
 			utility::graphic::PoseF(
-				utility::graphic::PositionF(-30.0f, 280.0f, 0.0f),
+				utility::graphic::PositionF(-30.0f, -280.0f, 0.0f),
 				utility::graphic::OrientationF()));
 		TooltipSystem::setAnchor(_registry, _entity, _anchor);
 		_system.update(_entity);
@@ -267,21 +268,29 @@ namespace guillaume::systems::tests
 
 		TooltipSystem::show(_registry, _entity);
 
+		// The viewport is measured downward from y = 0: the anchor sits
+		// 280 dp down, so the 32 dp tooltip flips above it.
 		EXPECT_FLOAT_EQ(positionOf(_entity).getX(), 0.0f);
-		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 280.0f - 32.0f);
+		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), -280.0f + 32.0f);
 	}
 
 	TEST_F(TestTooltipSystem, ChangingTheViewportPlacesAShownTooltipAgain)
 	{
+		// The viewport is measured downward from y = 0: put the anchor
+		// 50 dp down so it lies inside it.
+		_registry.getComponent<components::Transform>(_anchor).setPose(
+			utility::graphic::PoseF(
+				utility::graphic::PositionF(100.0f, -50.0f, 0.0f),
+				utility::graphic::OrientationF()));
 		TooltipSystem::setAnchor(_registry, _entity, _anchor);
 		_system.update(_entity);
 		TooltipSystem::show(_registry, _entity);
-		ASSERT_FLOAT_EQ(positionOf(_entity).getY(), 70.0f);
+		ASSERT_FLOAT_EQ(positionOf(_entity).getY(), -70.0f);
 
 		TooltipSystem::setViewport(_registry, _entity, 400.0f, 80.0f);
 
 		// No room under the anchor: flipped above it.
-		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 50.0f - 32.0f);
+		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), -50.0f + 32.0f);
 	}
 
 	TEST_F(TestTooltipSystem, OverlayDismissalHidesTheTooltip)

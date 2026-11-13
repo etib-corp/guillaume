@@ -89,7 +89,8 @@ namespace guillaume::entities::tests
 				+ static_cast<float>(systems::Layout::ContentLayerOffset));
 		EXPECT_GT(iconPose.getPosition().getX(),
 				  buttonPose.getPosition().getX());
-		EXPECT_GT(iconPose.getPosition().getY(),
+		// Inset from the top-left corner: right and down (y points up).
+		EXPECT_LT(iconPose.getPosition().getY(),
 				  buttonPose.getPosition().getY());
 	}
 

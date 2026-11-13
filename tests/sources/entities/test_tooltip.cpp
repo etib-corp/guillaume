@@ -186,12 +186,12 @@ namespace guillaume::entities::tests
 		tooltip->advance(Tooltip::DefaultEnterDelay);
 		EXPECT_TRUE(tooltip->isVisible());
 
-		// Placed under the anchor.
+		// Placed under the anchor: its top minus its height (y points up).
 		const auto pose =
 			registry
 				.getComponent<components::Transform>(tooltip->getIdentifier())
 				.getPose();
-		EXPECT_FLOAT_EQ(pose.getPosition().getY(), 40.0f);
+		EXPECT_FLOAT_EQ(pose.getPosition().getY(), -40.0f);
 
 		hover.setHovered(false);
 		tooltip->advance(Tooltip::DefaultLeaveDelay * 0.5f);
@@ -212,7 +212,7 @@ namespace guillaume::entities::tests
 			anchor->getIdentifier());
 		registry.getComponent<components::Transform>(anchor->getIdentifier())
 			.setPose(utility::graphic::PoseF(
-				utility::graphic::PositionF(-30.0f, 280.0f, 0.0f),
+				utility::graphic::PositionF(-30.0f, -280.0f, 0.0f),
 				utility::graphic::OrientationF()));
 		registry.getComponent<components::Bound>(anchor->getIdentifier())
 			.setWidth(20.0f)
@@ -227,8 +227,11 @@ namespace guillaume::entities::tests
 			registry
 				.getComponent<components::Transform>(tooltip->getIdentifier())
 				.getPose();
+		// The viewport is measured downward from y = 0: the anchor sits
+		// 280 dp down, so the tooltip does not fit below it and flips above
+		// (its bottom edge on the anchor's top edge).
 		EXPECT_FLOAT_EQ(pose.getPosition().getX(), 0.0f);
-		EXPECT_FLOAT_EQ(pose.getPosition().getY(), 280.0f - bound.getHeight());
+		EXPECT_FLOAT_EQ(pose.getPosition().getY(), -280.0f + bound.getHeight());
 	}
 
 	TEST_F(TestTooltip, ExposesTextSemantics)

@@ -132,9 +132,10 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(
 			_registry.getComponent<components::Layout>(_entity).getChildren(),
 			_radios);
-		EXPECT_FLOAT_EQ(positionY(1) - positionY(0),
+		// Each row sits below the previous one (y points up).
+		EXPECT_FLOAT_EQ(positionY(0) - positionY(1),
 						20.0f + components::RadioGroup::RowSpacing);
-		EXPECT_FLOAT_EQ(positionY(2) - positionY(1),
+		EXPECT_FLOAT_EQ(positionY(1) - positionY(2),
 						20.0f + components::RadioGroup::RowSpacing);
 	}
 

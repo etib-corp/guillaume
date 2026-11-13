@@ -212,9 +212,10 @@ namespace guillaume::entities::tests
 		EXPECT_FLOAT_EQ(childX(registry, firstChild), 16.0f);
 		EXPECT_FLOAT_EQ(childX(registry, secondChild), 34.0f);
 
-		// Cross axis centered: padding(16) + (10 - 10) / 2 = 16.
-		EXPECT_FLOAT_EQ(childY(registry, firstChild), 16.0f);
-		EXPECT_FLOAT_EQ(childY(registry, secondChild), 16.0f);
+		// Cross axis centered: padding(16) + (10 - 10) / 2 = 16, measured
+		// down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(childY(registry, firstChild), -16.0f);
+		EXPECT_FLOAT_EQ(childY(registry, secondChild), -16.0f);
 	}
 
 	TEST_F(TestView, EmptyChildrenKeepPaddingSize)
@@ -462,7 +463,8 @@ namespace guillaume::entities::tests
 			registry, { child }, 16.0f, 8.0f, View::Axis::Horizontal,
 			View::MainAxisAlignment::Start, View::CrossAxisAlignment::Start);
 
-		EXPECT_FLOAT_EQ(childY(registry, child), 16.0f);
+		// 16 dp down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(childY(registry, child), -16.0f);
 	}
 
 	TEST_F(TestView, CrossAxisAlignmentEnd)
@@ -480,8 +482,9 @@ namespace guillaume::entities::tests
 			View::MainAxisAlignment::Start, View::CrossAxisAlignment::End);
 		layout->setFixedHeight(100.0f);
 
-		// Cross region = 100 - 32 = 68. Offset = 16 + 68 - 10 = 74.
-		EXPECT_FLOAT_EQ(childY(registry, child), 74.0f);
+		// Cross region = 100 - 32 = 68. Offset = 16 + 68 - 10 = 74, measured
+		// down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(childY(registry, child), -74.0f);
 	}
 
 	TEST_F(TestView, LayoutComponentSettersMarkChanged)
