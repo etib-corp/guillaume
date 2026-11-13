@@ -144,6 +144,16 @@ namespace guillaume::systems
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
+		 * @brief Whether a menu is open.
+		 * @param componentRegistry The registry holding the components.
+		 * @param entityIdentifier The menu entity.
+		 * @return True when its Overlay is visible. A closed menu draws
+		 * nothing and ignores presses on its rows.
+		 */
+		static bool isOpen(const ecs::ComponentRegistry &componentRegistry,
+						   const ecs::Entity::Identifier &entityIdentifier);
+
+		/**
 		 * @brief Recolor one row without sizing the menu again.
 		 *
 		 * Writes the Color of the row (its hover or press state layer), of
