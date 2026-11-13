@@ -24,6 +24,7 @@
 
 #include <utility>
 #include <memory>
+#include <optional>
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/ecs/entity_builder.hpp"
@@ -173,6 +174,15 @@ namespace guillaume::entities
 		 * @return Reference to this mesh for chaining.
 		 */
 		Mesh &setTexturePath(const std::string &texturePath);
+
+		/**
+		 * @brief Scale the model so its longest side has this length.
+		 * @param size The length, in dp, or nothing to draw the model in its
+		 * file's own units.
+		 * @return Reference to this mesh for chaining.
+		 * @see components::Mesh::setFitSize
+		 */
+		Mesh &setFitSize(std::optional<float> size);
 
 		private:
 		/**

@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include "guillaume/ecs/component.hpp"
@@ -55,8 +56,9 @@ namespace guillaume::components
 	class Mesh: public ecs::Component
 	{
 		private:
-		std::string _meshPath {};		///< Model file, resource path
-		std::string _texturePath {};	///< Texture file; empty for none
+		std::string _meshPath {};			 ///< Model file, resource path
+		std::string _texturePath {};		 ///< Texture file; empty for none
+		std::optional<float> _fitSize {};	 ///< Longest side, dp; none: as is
 
 		public:
 		/**
@@ -103,5 +105,32 @@ namespace guillaume::components
 		 * has no texture.
 		 */
 		std::string getTexturePath(void) const;
+
+		/**
+		 * @brief Get the size the model is scaled to.
+		 * @return The length of the model's longest side, in dp, or nothing
+		 * when the model is drawn in its file's own units.
+		 */
+		const std::optional<float> &getFitSize(void) const noexcept;
+
+		/**
+		 * @brief Scale the model so its longest side has this length.
+		 *
+		 * Model files use arbitrary units; a fit size makes the model take a
+		 * known room in a layout. Marks the component changed only when the
+		 * value differs.
+		 * @param size The length, in dp, or nothing for the file's units.
+		 * @return Reference to this component for chaining.
+		 */
+		Mesh &setFitSize(std::optional<float> size);
+
+		/**
+		 * @brief Get the factor that turns model units into dp.
+		 * @param modelWidth The model's width, in model units.
+		 * @param modelHeight The model's height, in model units.
+		 * @return The fit size divided by the longest side, or 1 without a
+		 * fit size or for an empty model.
+		 */
+		float scaleFor(float modelWidth, float modelHeight) const noexcept;
 	};
 }	 // namespace guillaume::components
