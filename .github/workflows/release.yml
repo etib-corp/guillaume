@@ -1,9 +1,25 @@
 name: Release
 
 on:
+  # A tag pushed by a person.
   push:
     tags:
       - "v*"
+  # Called by the version bump, whose tag push does not start workflows.
+  workflow_call:
+    inputs:
+      tag:
+        description: Tag to build and publish, for example v2026.4.0.
+        required: true
+        type: string
+  # Publish an existing tag by hand, for example one the bump created before
+  # it called this workflow.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to build and publish, for example v2026.4.0.
+        required: true
+        type: string
 
 jobs:
   release:
@@ -26,6 +42,8 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Configure CMake
         run: >
@@ -66,5 +84,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2.2.1
         with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
           files: ${{ github.workspace }}/guillaume-${{ matrix.name }}.${{ matrix.archive }}
           generate_release_notes: true
