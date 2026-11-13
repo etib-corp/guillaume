@@ -34,30 +34,53 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Configuration of a segmented button.
+	 * @brief State of a segmented button: a row of joined toggle buttons of
+	 * which one (or several) can be selected.
 	 *
-	 * This component is the whole state of a segmented button: the options of
-	 * each segment, the selection mode and the toggle button child of each
-	 * segment. Whether a segment is selected is the selection of its button
-	 * child. systems::SegmentedButton turns it into the icons, widths, row
-	 * placement and connected corners of those children.
+	 * It holds the options of each segment, the selection mode, the press
+	 * callback and the identifier of the toggle button child of each
+	 * segment. The selection itself is not stored here: a segment is
+	 * selected when its button child is (components::Button::isSelected).
+	 *
+	 * Role in the frame:
+	 * - entities::SegmentedButton writes the configuration, creates one
+	 *   button child per segment and records their identifiers here.
+	 * - systems::SegmentedButton (Layout phase) reads it: it gives a
+	 *   selected segment a check glyph, makes all segments as wide as the
+	 *   widest, places them in a row and rounds only the outer corners of
+	 *   the row.
+	 *
+	 * To select a segment from code, call
+	 * systems::SegmentedButton::select() or `deselect()`; to read the
+	 * selection, `isSelected()` or `selectedIndices()`.
+	 *
+	 * @see systems::SegmentedButton, components::Button,
+	 * components::CommonButton
 	 */
 	class SegmentedButton: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Selection mode of the segmented button.
+		 * @brief How many segments can be selected at once.
+		 *
+		 * Single: selecting a segment deselects the others, and pressing
+		 * the selected segment keeps it selected. Multi: each segment
+		 * toggles on its own.
 		 */
 		enum class SelectionMode { Single, Multi };
 
 		/**
-		 * @brief Per-segment configuration (Paper `buttons[]` entry).
+		 * @brief What one segment shows and whether it can be pressed.
 		 */
 		struct Segment {
-			std::string label {};				  ///< Visible label.
-			std::string icon {};				  ///< Optional leading icon.
-			bool disabled { false };			  ///< Whether disabled.
-			std::string accessibilityLabel {};	  ///< Accessible name.
+			std::string label {};	 ///< Visible label.
+			/// Glyph name of the leading icon shown while not selected;
+			/// empty for none.
+			std::string icon {};
+			bool disabled { false };	///< Whether the segment is disabled.
+			/// Name announced by assistive technology; empty to keep the
+			/// one of the button.
+			std::string accessibilityLabel {};
 
 			/**
 			 * @brief Compare two segment configurations.
@@ -67,14 +90,14 @@ namespace guillaume::components
 			bool operator==(const Segment &other) const = default;
 		};
 
-		/// Called with the segment index when the user presses a segment.
+		/// Called with the index of the segment the user just pressed.
 		using ChangeHandler = std::function<void(std::size_t)>;
 
-		/// Minimum segment width (Paper SegmentedButtons: 76 dp).
+		/// Minimum width of a segment, in dp.
 		static constexpr float MinSegmentWidth = 76.0f;
 
 		private:
-		std::vector<Segment> _segments {};	  ///< Segment options
+		std::vector<Segment> _segments {};	  ///< Segment options, in order
 		SelectionMode _selectionMode {
 			SelectionMode::Single
 		};	  ///< Selection mode
@@ -85,7 +108,8 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the state of a single-selection segmented button
+		 * with no segment.
 		 */
 		SegmentedButton(void) = default;
 
@@ -94,41 +118,84 @@ namespace guillaume::components
 		 */
 		~SegmentedButton(void) = default;
 
-		/** @brief Get the segment options. @return The options. */
+		/**
+		 * @brief Get the options of every segment.
+		 * @return The options, in the order the segments are laid out.
+		 */
 		const std::vector<Segment> &getSegments(void) const noexcept;
 
-		/** @brief Set the segment options. @param segments They. @return It.
+		/**
+		 * @brief Replace the options of every segment.
+		 *
+		 * Marks the component changed when the list differs. The widget
+		 * class creates one button child per entry.
+		 * @param segments The new options, in layout order.
+		 * @return This component, for chaining.
 		 */
 		SegmentedButton &setSegments(const std::vector<Segment> &segments);
 
 		/**
 		 * @brief Record whether one segment is disabled.
+		 *
+		 * It only updates the stored option, and marks the component
+		 * changed when it differs. Use
+		 * systems::SegmentedButton::setSegmentDisabled() to also disable
+		 * and restyle the segment's button.
 		 * @param index The segment index (ignored when out of range).
-		 * @param disabled True when disabled.
-		 * @return It.
+		 * @param disabled True when the segment cannot be pressed.
+		 * @return This component, for chaining.
 		 */
 		SegmentedButton &setSegmentDisabled(std::size_t index, bool disabled);
 
-		/** @brief Get the selection mode. @return The mode. */
+		/**
+		 * @brief Get the selection mode.
+		 * @return Single (the default) or Multi.
+		 */
 		SelectionMode getSelectionMode(void) const noexcept;
 
-		/** @brief Set the selection mode. @param mode It. @return It. */
+		/**
+		 * @brief Choose how many segments can be selected at once.
+		 *
+		 * Marks the component changed when the mode differs. It does not
+		 * touch the current selection.
+		 * @param mode Single or Multi.
+		 * @return This component, for chaining.
+		 */
 		SegmentedButton &setSelectionMode(SelectionMode mode);
 
-		/** @brief Get the button children. @return Their identifiers, in
-		 * segment order. */
+		/**
+		 * @brief Get the toggle button child of each segment.
+		 * @return Their identifiers, in segment order; entry `i` is the
+		 * button of `getSegments()[i]`.
+		 */
 		const std::vector<ecs::Entity::Identifier> &
 			getButtons(void) const noexcept;
 
-		/** @brief Set the button children. @param buttons Their identifiers,
-		 * in segment order. @return It. */
+		/**
+		 * @brief Record the toggle button child of each segment.
+		 *
+		 * Marks the component changed when the list differs.
+		 * @param buttons Their identifiers, in segment order.
+		 * @return This component, for chaining.
+		 */
 		SegmentedButton &
 			setButtons(const std::vector<ecs::Entity::Identifier> &buttons);
 
-		/** @brief Get the press callback. @return The callback. */
+		/**
+		 * @brief Get the callback run when the user presses a segment.
+		 * @return The callback, empty when none is set.
+		 */
 		const ChangeHandler &getOnChange(void) const noexcept;
 
-		/** @brief Set the press callback. @param handler It. @return It. */
+		/**
+		 * @brief Set the callback run when the user presses a segment.
+		 *
+		 * It runs after the selection was updated, and not for a selection
+		 * made from code. Does not mark the component changed.
+		 * @param handler The callback; it receives the index of the pressed
+		 * segment.
+		 * @return This component, for chaining.
+		 */
 		SegmentedButton &setOnChange(ChangeHandler handler);
 	};
 

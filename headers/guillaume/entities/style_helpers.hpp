@@ -25,10 +25,15 @@
 
 /**
  * @file
- * @brief Source-compatibility aliases for the style helpers.
+ * @brief Makes the color helpers callable from guillaume::entities
+ * without qualification.
  *
- * The helpers live in guillaume::systems since the widget rules moved to
- * systems; this header keeps the names available in guillaume::entities.
+ * This header declares nothing of its own: the functions are defined in
+ * guillaume::systems::style. They read a color of the active scheme,
+ * replace an alpha channel, blend a state layer over a container color and
+ * return the disabled and transparent colors.
+ *
+ * @see guillaume::systems::style
  */
 namespace guillaume::entities
 {

@@ -31,8 +31,8 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Semantic role of an entity, mirroring react-native-paper's
-	 * `accessibilityRole` values.
+	 * @brief What an entity is for a screen reader or another assistive
+	 * technology. The values mirror react-native-paper's `accessibilityRole`.
 	 */
 	enum class AccessibilityRole {
 		None,			///< No semantic role (decorative or container).
@@ -58,45 +58,60 @@ namespace guillaume::components
 	};
 
 	/**
-	 * @brief Checked state of a checkbox-like control.
+	 * @brief Checked state of a control that can be ticked (checkbox, radio
+	 * button, switch).
 	 */
 	enum class CheckedState {
 		Unchecked,	  ///< Not checked.
 		Checked,	  ///< Checked.
-		Mixed		  ///< Indeterminate.
+		Mixed		  ///< Indeterminate: neither checked nor unchecked.
 	};
 
 	/**
-	 * @brief Live-region politeness of announcements.
+	 * @brief How urgently a change of the entity is announced to the user.
 	 */
 	enum class LiveRegion {
-		None,		 ///< No announcement.
-		Polite,		 ///< Announce when idle.
-		Assertive	 ///< Announce immediately.
+		None,		 ///< Changes are not announced.
+		Polite,		 ///< Announced once the current speech is over.
+		Assertive	 ///< Announced at once, interrupting the current speech.
 	};
 
 	/**
-	 * @brief Range value exposed to assistive technologies.
+	 * @brief Position of a control within a range, such as a slider or a
+	 * progress bar. Accessibility::setValue requires `min <= now <= max`.
 	 */
 	struct AccessibilityValue {
-		float min { 0.0f };	   ///< Lower bound.
-		float max { 1.0f };	   ///< Upper bound.
-		float now { 0.0f };	   ///< Current value.
+		float min { 0.0f };	   ///< Lowest value the control can take.
+		float max { 1.0f };	   ///< Highest value the control can take.
+		float now { 0.0f };	   ///< Current value, between min and max.
 	};
 
 	/**
-	 * @brief Semantic accessibility description of an entity.
+	 * @brief What an entity means to a user who does not see it: its name,
+	 * its role, its state and its place in the keyboard traversal.
 	 *
-	 * This component is the single semantic source of truth of an entity:
-	 * label, hint, role, selection/checked/expanded state, range value, live
-	 * region and focus order. The disabled state is not duplicated here; it is
-	 * owned by `components::StyleState`.
+	 * Widget systems write it when they install a widget (role) and each time
+	 * the widget changes (label, checked, selected, expanded); user code may
+	 * set a label, a hint or a focus order. systems::Focus reads the focus
+	 * order and the focusable flag to build the Tab traversal. The other
+	 * fields describe the entity to an assistive technology.
+	 *
+	 * @code
+	 * registry.getComponent<components::Accessibility>(identifier)
+	 * 	.setLabel("Delete the selected file")
+	 * 	.setFocusOrder(1);
+	 * @endcode
+	 *
+	 * The disabled state is not stored here: read it from StyleState.
+	 *
+	 * @see systems::Focus, systems::interaction::makeInteractive, StyleState
 	 */
 	class Accessibility: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Construct an empty, roleless description.
+		 * @brief Construct a description with no label, no role, no state, a
+		 * focus order of 0 and the focusable flag set.
 		 */
 		Accessibility(void) = default;
 
@@ -105,112 +120,182 @@ namespace guillaume::components
 		 */
 		~Accessibility(void) = default;
 
-		/** @brief Get the label. @return The label. */
+		/**
+		 * @brief Get the name announced for the entity.
+		 * @return The label; empty when none was set.
+		 */
 		const std::string &getLabel(void) const;
 
-		/** @brief Set the label. @param label New label. @return *this. */
+		/**
+		 * @brief Set the name announced for the entity, such as "Close".
+		 *
+		 * Marks the component changed only when the label differs.
+		 *
+		 * @param label The name to announce; empty for none.
+		 * @return This component, to chain calls.
+		 */
 		Accessibility &setLabel(const std::string &label);
 
-		/** @brief Get the hint. @return The hint. */
+		/**
+		 * @brief Get the sentence describing what activating the entity does.
+		 * @return The hint; empty when none was set.
+		 */
 		const std::string &getHint(void) const;
 
-		/** @brief Set the hint. @param hint New hint. @return *this. */
+		/**
+		 * @brief Set the sentence describing what activating the entity does,
+		 * such as "Closes the dialog".
+		 *
+		 * Marks the component changed only when the hint differs.
+		 *
+		 * @param hint The sentence to announce after the label; empty for
+		 * none.
+		 * @return This component, to chain calls.
+		 */
 		Accessibility &setHint(const std::string &hint);
 
-		/** @brief Get the role. @return The role. */
+		/**
+		 * @brief Get what kind of control the entity is.
+		 * @return The role; AccessibilityRole::None by default.
+		 */
 		AccessibilityRole getRole(void) const;
 
-		/** @brief Set the role. @param role New role. @return *this. */
+		/**
+		 * @brief Set what kind of control the entity is.
+		 *
+		 * Marks the component changed only when the role differs.
+		 *
+		 * @param role The role to announce.
+		 * @return This component, to chain calls.
+		 */
 		Accessibility &setRole(AccessibilityRole role);
 
-		/** @brief Check the selected state. @return True when selected. */
+		/**
+		 * @brief Check whether the entity is the selected one of its group
+		 * (the active navigation destination, a selected chip).
+		 * @return True when selected.
+		 */
 		bool isSelected(void) const;
 
 		/**
-		 * @brief Set the selected state.
-		 * @param selected New state.
-		 * @return *this.
+		 * @brief Set whether the entity is the selected one of its group.
+		 *
+		 * Marks the component changed only when the state differs.
+		 *
+		 * @param selected True when the entity is selected.
+		 * @return This component, to chain calls.
 		 */
 		Accessibility &setSelected(bool selected);
 
 		/**
-		 * @brief Get the checked state.
-		 * @return The checked state, or none for non-checkable roles.
+		 * @brief Get whether the entity is ticked.
+		 * @return The checked state, or `std::nullopt` when the entity is not
+		 * a control that can be ticked.
 		 */
 		std::optional<CheckedState> getChecked(void) const;
 
 		/**
-		 * @brief Set the checked state.
-		 * @param checked New state (none for non-checkable roles).
-		 * @return *this.
+		 * @brief Set whether the entity is ticked.
+		 *
+		 * Marks the component changed only when the state differs.
+		 *
+		 * @param checked The checked state, or `std::nullopt` for an entity
+		 * that cannot be ticked.
+		 * @return This component, to chain calls.
 		 */
 		Accessibility &setChecked(std::optional<CheckedState> checked);
 
 		/**
-		 * @brief Get the expanded state.
-		 * @return The expanded state, or none for non-expandable roles.
+		 * @brief Get whether the entity shows the content it controls (an
+		 * open menu, an unfolded section).
+		 * @return True when expanded, false when collapsed, or `std::nullopt`
+		 * when the entity does not expand.
 		 */
 		std::optional<bool> getExpanded(void) const;
 
 		/**
-		 * @brief Set the expanded state.
-		 * @param expanded New state (none for non-expandable roles).
-		 * @return *this.
+		 * @brief Set whether the entity shows the content it controls.
+		 *
+		 * Marks the component changed only when the state differs.
+		 *
+		 * @param expanded True when expanded, false when collapsed, or
+		 * `std::nullopt` for an entity that does not expand.
+		 * @return This component, to chain calls.
 		 */
 		Accessibility &setExpanded(std::optional<bool> expanded);
 
 		/**
-		 * @brief Get the range value.
-		 * @return The value, or none when the entity has no range.
+		 * @brief Get the position of the entity within its range.
+		 * @return The range value, or `std::nullopt` when the entity has no
+		 * range.
 		 */
 		const std::optional<AccessibilityValue> &getValue(void) const;
 
 		/**
-		 * @brief Set the range value.
-		 * @param value New value (none to clear).
-		 * @return *this.
-		 * @throws std::invalid_argument If min > max or now is out of range.
+		 * @brief Set the position of the entity within its range.
+		 *
+		 * Always marks the component changed.
+		 *
+		 * @param value The range value, or `std::nullopt` to remove it.
+		 * @return This component, to chain calls.
+		 * @throws std::invalid_argument If `min > max` or `now` is outside
+		 * `[min, max]`. The stored value is then left as it was.
 		 */
 		Accessibility &setValue(std::optional<AccessibilityValue> value);
 
-		/** @brief Get the live region. @return The live region. */
+		/**
+		 * @brief Get how urgently a change of the entity is announced.
+		 * @return The live region; LiveRegion::None by default.
+		 */
 		LiveRegion getLiveRegion(void) const;
 
 		/**
-		 * @brief Set the live region.
-		 * @param liveRegion New live region.
-		 * @return *this.
+		 * @brief Set how urgently a change of the entity is announced.
+		 *
+		 * Marks the component changed only when the value differs.
+		 *
+		 * @param liveRegion The politeness of the announcements.
+		 * @return This component, to chain calls.
 		 */
 		Accessibility &setLiveRegion(LiveRegion liveRegion);
 
 		/**
-		 * @brief Get the focus order.
+		 * @brief Get the rank of the entity in the Tab traversal.
 		 *
-		 * Entities with a positive order are traversed first, ascending;
-		 * entities with order 0 follow in tree order.
+		 * systems::Focus visits the entities with a positive order first, by
+		 * ascending order, then the entities with order 0, in the order the
+		 * system updates them.
 		 *
-		 * @return The focus order.
+		 * @return The focus order; 0, the default, means no explicit rank.
 		 */
 		int getFocusOrder(void) const;
 
 		/**
-		 * @brief Set the focus order.
-		 * @param focusOrder New order, must be non-negative.
-		 * @return *this.
+		 * @brief Set the rank of the entity in the Tab traversal.
+		 *
+		 * Marks the component changed only when the order differs.
+		 *
+		 * @param focusOrder The rank: 1 is reached first; 0 removes the
+		 * explicit rank.
+		 * @return This component, to chain calls.
 		 * @throws std::invalid_argument If @p focusOrder is negative.
 		 */
 		Accessibility &setFocusOrder(int focusOrder);
 
 		/**
-		 * @brief Check whether keyboard traversal may focus the entity.
-		 * @return True when focusable.
+		 * @brief Check whether the Tab traversal stops on the entity.
+		 * @return True, the default, when Tab can focus the entity.
 		 */
 		bool isFocusable(void) const;
 
 		/**
-		 * @brief Allow or forbid keyboard traversal to focus the entity.
-		 * @param focusable New flag.
-		 * @return *this.
+		 * @brief Include the entity in the Tab traversal or leave it out.
+		 *
+		 * An entity left out can still take the focus when it is clicked.
+		 * Marks the component changed only when the flag differs.
+		 *
+		 * @param focusable False to make Tab skip the entity.
+		 * @return This component, to chain calls.
 		 */
 		Accessibility &setFocusable(bool focusable);
 
@@ -223,7 +308,7 @@ namespace guillaume::components
 		std::optional<bool> _expanded {};				///< Expanded state.
 		std::optional<AccessibilityValue> _value {};	///< Range value.
 		LiveRegion _liveRegion { LiveRegion::None };	///< Live region.
-		int _focusOrder { 0 };		 ///< Explicit focus order (0: tree order).
+		int _focusOrder { 0 };		 ///< Rank in the Tab traversal (0: none).
 		bool _focusable { true };	 ///< Reachable by keyboard traversal.
 	};
 

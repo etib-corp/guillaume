@@ -42,12 +42,38 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Modal backdrop painted behind a dialog or a modal drawer.
+	 * @brief The translucent veil painted behind a dialog or a modal drawer
+	 * to dim the rest of the scene.
 	 *
-	 * The backdrop is a `components::Scrim` quad, `Backdrop::Extent` wide and
-	 * high, centred on its owner and pushed half a layer behind it, so it
-	 * covers any viewport. It fades in over the M3 medium2 duration with the
-	 * emphasized-decelerate easing when shown and is transparent when hidden.
+	 * Backdrop is a leaf widget: it has no children. Its state lives in
+	 * components::Backdrop (visibility and fade-in progress);
+	 * systems::Backdrop turns it into the color of components::Scrim each
+	 * frame, in the Layout phase, and systems::ScrimRender draws the quad.
+	 * components::Animation drives the fade-in: it lasts the Medium2 motion
+	 * duration of the theme, with the enter easing. The class itself holds
+	 * no field.
+	 *
+	 * Applications rarely create one: Dialog and NavigationDrawer each build
+	 * their own backdrop, and their systems show, hide and place it every
+	 * frame. Backdrop has no Builder; `Backdrop::create(registry)` is the
+	 * only way to build one.
+	 *
+	 * @code
+	 * auto backdrop = Backdrop::create(registry);
+	 * backdrop->setParent(owner);
+	 * backdrop->follow(ownerPose, ownerWidth, ownerHeight);
+	 * backdrop->setVisible(true);
+	 * @endcode
+	 *
+	 * Watch out:
+	 * - The quad is `Extent` dp wide and high, so that it covers any
+	 *   viewport. follow() must be called again when the owner moves or
+	 *   changes size.
+	 * - Hiding is immediate: only showing is animated.
+	 * - create() does not register the backdrop: add it to an entity
+	 *   registry, or keep the returned pointer alive.
+	 *
+	 * @see components::Backdrop, systems::Backdrop, Dialog
 	 */
 	class Backdrop:
 		public ecs::EntityFiller<components::Transform, components::Bound,
@@ -61,10 +87,14 @@ namespace guillaume::entities
 		static constexpr float Extent = systems::Backdrop::Extent;
 
 		/**
-		 * @brief Create the entity.
+		 * @brief Build a hidden backdrop without registering it in an
+		 * entity registry.
+		 *
+		 * The arguments are forwarded to the private constructor:
+		 * `(registry)`. A backdrop has no children to build.
 		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * @param arguments The constructor arguments, as listed above.
+		 * @return The new backdrop. The caller owns it.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<Backdrop> create(Arguments &&...arguments)
@@ -74,35 +104,48 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destructor.
 		 */
 		~Backdrop(void) override = default;
 
 		/**
-		 * @brief Show or hide the backdrop; showing starts the fade-in.
-		 * @param visible New visibility.
+		 * @brief Show or hide the backdrop.
+		 *
+		 * Showing restarts the fade-in from transparent. Hiding stops the
+		 * animation and makes the backdrop transparent at once. The Scrim
+		 * color is updated before the call returns. Passing the current
+		 * visibility does nothing.
+		 * @param visible True to show the backdrop, false to hide it.
 		 */
 		void setVisible(bool visible);
 
 		/**
 		 * @brief Check whether the backdrop is shown.
-		 * @return True when visible.
+		 * @return True from the moment setVisible(true) is called, even
+		 * while the fade-in is still running.
 		 */
 		bool isVisible(void) const;
 
 		/**
 		 * @brief Centre the backdrop on its owner, half a layer behind it.
-		 * @param ownerPose Owner pose (top-left corner).
-		 * @param ownerWidth Owner width.
-		 * @param ownerHeight Owner height.
+		 *
+		 * Writes the pose of components::Transform once; the backdrop does
+		 * not track the owner afterwards.
+		 * @param ownerPose The pose of the owner (its top-left corner). The
+		 * backdrop takes its orientation.
+		 * @param ownerWidth The width of the owner, in dp.
+		 * @param ownerHeight The height of the owner, in dp.
 		 */
 		void follow(const utility::graphic::PoseF &ownerPose, float ownerWidth,
 					float ownerHeight);
 
 		private:
 		/**
-		 * @brief Construct a hidden backdrop.
-		 * @param registry Component registry.
+		 * @brief Construct a hidden backdrop: an `Extent`-sided quad with a
+		 * transparent Scrim and the fade-in animation configured.
+		 * @param registry The registry the components are stored in. It
+		 * must outlive the backdrop: the animation handler keeps a
+		 * reference to it.
 		 */
 		explicit Backdrop(ecs::ComponentRegistry &registry);
 	};

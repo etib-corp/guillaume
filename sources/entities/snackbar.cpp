@@ -219,7 +219,7 @@ namespace guillaume::entities
 	std::shared_ptr<Text> Snackbar::getActionEntity(void) const
 	{
 		// The lookup is const because this getter is; the child itself is
-		// shared and mutable, as it always was.
+		// shared and mutable, so callers get a non-const handle.
 		return std::const_pointer_cast<Text>(getEntity<Text>(
 			getComponentRegistry()
 				.getComponent<components::Snackbar>(getIdentifier())

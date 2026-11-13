@@ -30,11 +30,27 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Resolves a tonal surface's color and shadow from its elevation.
+	 * @brief Gives a surface the color and the shadow that match its
+	 * elevation level in the active theme.
 	 *
-	 * Reads components::SurfaceTone and the active theme, and writes the
-	 * entity's Color and Elevation. Runs in the Measure phase so the render
-	 * systems of the same frame see the result.
+	 * Runs in the Measure phase on entities with SurfaceTone, Color and
+	 * Elevation.
+	 * - Reads: components::SurfaceTone (the elevation level and whether the
+	 *   surface casts a shadow) and the active theme.
+	 * - Writes: components::Color, with the surface color the theme defines
+	 *   for that level, and components::Elevation, with the shadow of that
+	 *   level, or of level 0 (no shadow) when the surface casts none.
+	 *
+	 * Running in the Measure phase, ahead of the Render phase, means
+	 * systems::RectangleRender and systems::ElevationRender draw the result
+	 * in the same frame, and a change of theme reaches every surface on the
+	 * next frame. Call apply() when the result is needed at once.
+	 *
+	 * The Color and the Elevation of an entity that has a SurfaceTone are
+	 * overwritten every frame: change the SurfaceTone, not them.
+	 *
+	 * @see components::SurfaceTone, entities::Surface
+	 * @see systems::ElevationRender
 	 */
 	class SurfaceTone:
 		public ecs::SystemFiller<components::SurfaceTone, components::Color,
@@ -42,26 +58,32 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the system in the Measure phase.
 		 */
 		SurfaceTone(void);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. It owns no resource.
 		 */
 		~SurfaceTone(void) override = default;
 
 		/**
-		 * @brief Resolve one surface's color and shadow.
+		 * @brief Write the color and the shadow of one surface from its
+		 * components::SurfaceTone.
 		 * @param componentRegistry The registry holding the components.
-		 * @param entityIdentifier The surface to resolve.
+		 * @param entityIdentifier The surface entity. It must have
+		 * SurfaceTone, Color and Elevation.
+		 * @throws ecs::EntityComponentNotFoundException When one of the
+		 * three components is missing.
 		 */
 		static void apply(ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Resolve the surface with the given identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
+		 * @brief Write the color and the shadow of one surface for this
+		 * frame.
+		 * @param entityIdentifier The surface entity. It is skipped, with a
+		 * log message, when one of the three components is missing.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

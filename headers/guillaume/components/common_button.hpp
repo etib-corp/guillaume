@@ -31,34 +31,59 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Configuration of a Material 3 common button (elevated, filled,
-	 * tonal, outlined, text).
+	 * @brief Look of a Material 3 common button: color style, corner shape,
+	 * size and padding options.
 	 *
-	 * systems::CommonButton turns it, with components::Button, into the
-	 * button's colors, shape, size and the placement of its icon and label.
+	 * It sits on the same entity as components::Button, which holds the
+	 * content and the interaction state. entities::Button writes it;
+	 * systems::CommonButton reads both, each frame in the Layout phase and
+	 * at once after every input change, and writes the button's Color,
+	 * Borders, Elevation and Bound and the pose of its icon and label.
+	 *
+	 * @code
+	 * registry.getComponent<components::CommonButton>(identifier)
+	 * 	.setColorStyle(components::CommonButton::Color::Filled)
+	 * 	.setSize(components::CommonButton::Size::Medium);
+	 * @endcode
+	 *
+	 * Every setter compares before writing and marks the component changed
+	 * only when the value differs.
+	 *
+	 * @see components::Button, systems::CommonButton,
+	 * components::SegmentedButton
 	 */
 	class CommonButton: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Color style.
+		 * @brief Which theme colors fill the container, the content and the
+		 * outline.
+		 *
+		 * Elevated, Filled and Tonal have a filled container; Outlined has a
+		 * transparent container and an outline; Text has neither. Segmented
+		 * is the style of one segment of a segmented button: outlined, and
+		 * filled while selected without losing its outline.
 		 */
 		enum class Color { Elevated, Filled, Tonal, Outlined, Text, Segmented };
 
 		/**
-		 * @brief Corner shape.
+		 * @brief Corner shape at rest: fully rounded (Round) or the rounded
+		 * rectangle of the size (Square).
 		 */
 		enum class Shape { Round, Square };
 
 		/**
-		 * @brief Size.
+		 * @brief Size step. It sets the padding, the icon size, the gap
+		 * between icon and label and the corner radius; the label always
+		 * uses the label-large type role.
 		 */
 		enum class Size { ExtraSmall, Small, Medium, Large, ExtraLarge };
 
 		/// Minimum width of the container, in dp.
 		static constexpr float MinWidth = 64.0f;
 
-		/// Minimum height of the container, in dp.
+		/// Minimum height of the container, in dp. ExtraSmall buttons are
+		/// exempt.
 		static constexpr float MinHeight = 40.0f;
 
 		/**
@@ -81,19 +106,19 @@ namespace guillaume::components
 
 		private:
 		Color _colorStyle { Color::Text };	  ///< Color style
-		Shape _shape { Shape::Round };		  ///< Corner shape
-		Size _size { Size::Small };			  ///< Size
+		Shape _shape { Shape::Round };		  ///< Corner shape at rest
+		Size _size { Size::Small };			  ///< Size step
 		bool _compact {
 			false
-		};	  ///< Whether the horizontal padding is compact
+		};	  ///< Whether the horizontal padding is halved
 
-		float _minWidth { 0.0f };	  ///< Extra minimum width
+		float _minWidth { 0.0f };	  ///< Requested minimum width, in dp
 		bool _uppercase { false };	  ///< Whether the label is upper-cased
 		std::optional<Corners> _corners {};	   ///< Per-corner radius override
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the configuration of a small, round text button.
 		 */
 		CommonButton(void) = default;
 
@@ -102,56 +127,109 @@ namespace guillaume::components
 		 */
 		~CommonButton(void) = default;
 
-		/** @brief Get: color style. @return The value. */
+		/**
+		 * @brief Get the color style.
+		 * @return The style (Text by default).
+		 */
 		Color getColorStyle(void) const noexcept;
 
-		/** @brief Set: color style. @param style The value. @return It. */
+		/**
+		 * @brief Choose which theme colors the button uses.
+		 * @param style The color style.
+		 * @return This component, for chaining.
+		 */
 		CommonButton &setColorStyle(Color style);
 
-		/** @brief Get: corner shape. @return The value. */
+		/**
+		 * @brief Get the corner shape at rest.
+		 * @return The shape (Round by default).
+		 */
 		Shape getShape(void) const noexcept;
 
-		/** @brief Set: corner shape. @param shape The value. @return It. */
+		/**
+		 * @brief Choose the corner shape at rest.
+		 *
+		 * While pressed the button takes the pressed radius of its size
+		 * whatever the shape, and a selected toggle with
+		 * Button::setMorph(true) draws the opposite shape.
+		 * @param shape Round or Square.
+		 * @return This component, for chaining.
+		 */
 		CommonButton &setShape(Shape shape);
 
-		/** @brief Get: size. @return The value. */
+		/**
+		 * @brief Get the size step.
+		 * @return The size (Small by default).
+		 */
 		Size getSize(void) const noexcept;
 
-		/** @brief Set: size. @param size The value. @return It. */
+		/**
+		 * @brief Choose the size step.
+		 * @param size The size; it drives padding, icon size and radius.
+		 * @return This component, for chaining.
+		 */
 		CommonButton &setSize(Size size);
 
-		/** @brief Get: whether the horizontal padding is compact. @return The
-		 * value. */
+		/**
+		 * @brief Check whether the horizontal padding is halved.
+		 * @return True when compact.
+		 */
 		bool isCompact(void) const noexcept;
 
-		/** @brief Set: whether the horizontal padding is compact. @param
-		 * compact The value. @return It. */
+		/**
+		 * @brief Halve the horizontal padding, or restore it.
+		 * @param compact True for half the horizontal padding of the size.
+		 * @return This component, for chaining.
+		 */
 		CommonButton &setCompact(bool compact);
 
-		/** @brief Get: extra minimum width. @return The value. */
+		/**
+		 * @brief Get the requested minimum width.
+		 * @return The width, in dp; 0 when only MinWidth applies.
+		 */
 		float getMinWidth(void) const noexcept;
 
-		/** @brief Set: extra minimum width. @param width The value. @return It.
+		/**
+		 * @brief Request a minimum container width.
+		 *
+		 * The container is as wide as the largest of its padded content,
+		 * MinWidth and this value.
+		 * @param width The minimum width, in dp.
+		 * @return This component, for chaining.
 		 */
 		CommonButton &setMinWidth(float width);
 
-		/** @brief Get: whether the label is upper-cased. @return The value. */
+		/**
+		 * @brief Check whether the label is drawn in upper case.
+		 * @return True when the label is upper-cased.
+		 */
 		bool isUppercase(void) const noexcept;
 
-		/** @brief Set: whether the label is upper-cased. @param uppercase The
-		 * value. @return It. */
+		/**
+		 * @brief Draw the label in upper case, or as written.
+		 *
+		 * The text stored in components::Button is left as written; only
+		 * the label child receives the upper-cased copy.
+		 * @param uppercase True to upper-case the label.
+		 * @return This component, for chaining.
+		 */
 		CommonButton &setUppercase(bool uppercase);
 
 		/**
 		 * @brief Get the per-corner radius override.
-		 * @return The corners, or nothing when the shape decides the radius.
+		 * @return The corners, or std::nullopt when the shape decides the
+		 * radius.
 		 */
 		const std::optional<Corners> &getCorners(void) const noexcept;
 
 		/**
 		 * @brief Override the radius of each corner.
-		 * @param corners The corners, or nothing to let the shape decide.
-		 * @return Reference to this component for chaining.
+		 *
+		 * systems::SegmentedButton sets it on each segment so that only the
+		 * outer corners of the group are rounded.
+		 * @param corners The corners, or std::nullopt to let the shape
+		 * decide.
+		 * @return This component, for chaining.
 		 */
 		CommonButton &setCorners(const std::optional<Corners> &corners);
 	};

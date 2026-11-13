@@ -32,90 +32,127 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component handling hand hover interactions.
-	 * @see systems::HandMotion
+	 * @brief Whether an XR hand (controller) aims at an entity, what to call
+	 * when the aim enters or leaves, and how far the hit area extends past the
+	 * bound.
+	 *
+	 * systems::HandMotion writes the hovered flag in the Event phase: on each
+	 * hand motion event it tests the aim ray of the hand against the entity's
+	 * Transform and Bound, grown by the hit margin. It calls the hover handler
+	 * once when the ray enters and the unhover handler once when it leaves. An
+	 * entity disabled through StyleState is never hovered.
+	 * systems::StyleState copies the flag into StyleState::isHovered.
+	 *
+	 * @code
+	 * registry.addComponent<components::HandHoverInteraction>(identifier)
+	 * 	.setOnHoverHandler([] { showHint(); })
+	 * 	.setOnUnhoverHandler([] { hideHint(); });
+	 * @endcode
+	 *
+	 * The accessibility margin stored here is only used when the entity has no
+	 * MouseHoverInteraction: the margin of that component comes first. The
+	 * flag only changes in a frame that received a hand motion event.
+	 *
+	 * @see systems::HandMotion, MouseHoverInteraction, StyleState
 	 */
 	class HandHoverInteraction: public ecs::Component
 	{
 		public:
 		using HoverHandler =
-			std::function<void(void)>;	  ///< Type for hover handlers
+			std::function<void(void)>;	  ///< Called on hover start
 		using UnhoverHandler =
-			std::function<void(void)>;	  ///< Type for unhover handlers
+			std::function<void(void)>;	  ///< Called on hover end
 
 		private:
-		HoverHandler
-			_onHover;	 ///< Handler function to call when a hover event occurs
-		UnhoverHandler _onUnhover;	  ///< Handler function to call when an
-									  ///< unhover event occurs
-		bool _isHovered { false };	  ///< Current hover state of the hand
+		HoverHandler _onHover;		  ///< Called when the ray enters
+		UnhoverHandler _onUnhover;	  ///< Called when the ray leaves
+		bool _isHovered { false };	  ///< Whether a hand aims at the entity
 		utility::graphic::SizeUI _accessibilityMargin {
 			0, 0
-		};	  ///< Margin around the hand's bounds to increase hover
-			  ///< accessibility
+		};	  ///< Hit area added on each side of the bound, in dp (width:
+			  ///< left and right, height: top and bottom)
 
 		public:
 		/**
-		 * @brief Construct a HandHoverInteraction component with default
-		 * handlers and states.
+		 * @brief Construct a component that is not hovered, has no handler and
+		 * no margin.
 		 */
 		HandHoverInteraction(void);
 
 		/**
-		 * @brief Default destructor for HandHoverInteraction.
+		 * @brief Default destructor.
 		 */
 		~HandHoverInteraction(void) = default;
 
 		/**
-		 * @brief Set the handler for a hover event.
-		 * @param handler The function to call when a hover event occurs.
-		 * @return Reference to this HandHoverInteraction for method chaining.
+		 * @brief Store the callback run when the hand ray enters the entity.
+		 *
+		 * Always marks the component changed.
+		 *
+		 * @param handler The callback, or `nullptr` to remove the current one.
+		 * @return This component, to chain calls.
 		 */
 		HandHoverInteraction &setOnHoverHandler(const HoverHandler &handler);
 
 		/**
-		 * @brief Set the handler for an unhover event.
-		 * @param handler The function to call when an unhover event occurs.
-		 * @return Reference to this HandHoverInteraction for method chaining.
+		 * @brief Store the callback run when the hand ray leaves the entity.
+		 *
+		 * Always marks the component changed.
+		 *
+		 * @param handler The callback, or `nullptr` to remove the current one.
+		 * @return This component, to chain calls.
 		 */
 		HandHoverInteraction &
 			setOnUnhoverHandler(const UnhoverHandler &handler);
 
 		/**
-		 * @brief Get the handler for hover events.
-		 * @return The function set as the hover event handler.
+		 * @brief Get the callback run when the hand ray enters the entity.
+		 * @return A copy of the handler; empty (`nullptr`) when none was set.
 		 */
 		HoverHandler getOnHoverHandler(void) const;
 
 		/**
-		 * @brief Get the handler for unhover events.
-		 * @return The function set as the unhover event handler.
+		 * @brief Get the callback run when the hand ray leaves the entity.
+		 * @return A copy of the handler; empty (`nullptr`) when none was set.
 		 */
 		UnhoverHandler getOnUnhoverHandler(void) const;
 
 		/**
-		 * @brief Check if the hand is currently hovered.
-		 * @return True if the hand is hovered, false otherwise.
+		 * @brief Check whether a hand aims at the entity.
+		 * @return True from the motion event whose ray entered the hit area
+		 * until the one that left it.
 		 */
 		bool isHovered(void) const;
 
 		/**
-		 * @brief Set the hovered state of the hand.
-		 * @param isHovered The new hovered state to set.
-		 * @return Reference to this HandHoverInteraction for method chaining.
+		 * @brief Record whether a hand aims at the entity.
+		 *
+		 * Called by systems::HandMotion; it calls no handler. Marks the
+		 * component changed only when the flag differs.
+		 *
+		 * @param isHovered True when a hand ray hits the entity.
+		 * @return This component, to chain calls.
 		 */
 		HandHoverInteraction &setHovered(bool isHovered);
 
 		/**
-		 * @brief Get the accessibility margin around the hand's bounds.
-		 * @return The current accessibility margin as a SizeUI object.
+		 * @brief Get the hit area added around the entity's bound.
+		 * @return The margin, in dp: the width is added on the left and on the
+		 * right, the height above and below.
 		 */
 		utility::graphic::SizeUI getAccessibilityMargin(void) const;
 
 		/**
-		 * @brief Set the accessibility margin around the hand's bounds.
-		 * @param margin The new accessibility margin to set as a SizeUI object.
-		 * @return Reference to this HandHoverInteraction for method chaining.
+		 * @brief Grow the hit area past the entity's bound without growing the
+		 * entity on screen.
+		 *
+		 * Ignored by the hit tests when the entity also has a
+		 * MouseHoverInteraction; widget systems set the same margin on both.
+		 * Marks the component changed only when the margin differs.
+		 *
+		 * @param margin The margin, in dp: the width is added on the left and
+		 * on the right, the height above and below.
+		 * @return This component, to chain calls.
 		 */
 		HandHoverInteraction &
 			setAccessibilityMargin(const utility::graphic::SizeUI &margin);

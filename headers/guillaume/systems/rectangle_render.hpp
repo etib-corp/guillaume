@@ -38,11 +38,29 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling rectangle rendering from ECS components.
-	 * @see components::Transform
-	 * @see components::Bound
-	 * @see components::Color
-	 * @see components::Borders
+	 * @brief Draws the background of an entity: a filled rectangle with
+	 * rounded corners and an optional border.
+	 *
+	 * Runs in the Render phase on every entity that has Transform, Bound,
+	 * Color and Borders. It reads the four and writes no component: its
+	 * output is one engine object per entity, rebuilt and uploaded every
+	 * frame.
+	 * - components::Transform gives the top-left corner and the orientation.
+	 * - components::Bound gives the width and height, in dp.
+	 * - components::Color gives the fill color.
+	 * - components::Borders gives the corner radius and, when
+	 *   components::Borders::hasStroke is true, the width and color of a
+	 *   border drawn inside the rectangle.
+	 *
+	 * Things to know:
+	 * - The four corners share one radius, the average of the four radii of
+	 *   components::Borders. The radius is clamped to half the smaller side.
+	 * - The border is a second mesh lifted by StrokeLift towards the viewer
+	 *   so it is not hidden by the fill.
+	 * - An entity is drawn even when its color is fully transparent.
+	 *
+	 * @see RenderHandleMap, shape::buildRoundedStrokeMesh
+	 * @see components::Borders, systems::ElevationRender
 	 */
 	class RectangleRender:
 		public RenderHandleMap,
@@ -50,34 +68,42 @@ namespace guillaume::systems
 								 components::Color, components::Borders>
 	{
 		private:
-		utility::Engine &_engine;	 ///< utility::Engine instance
+		utility::Engine &_engine;	 ///< Engine the rectangles are uploaded to
 
 		private:
 		/**
-		 * @brief Compute one corner radius value from Borders component values.
-		 * @param borders Borders component.
-		 * @return Average radius across the four corners.
+		 * @brief Reduce the four corner radii of a Borders component to the
+		 * single radius this system draws with.
+		 * @param borders The component to read.
+		 * @return The mean of the four corner radii, in dp.
 		 */
 		float extractAverageRadius(const components::Borders &borders) const;
 
 		/**
-		 * @brief Build local vertices for a non-rounded axis-aligned rectangle.
-		 * @param halfWidth Half rectangle width.
-		 * @param halfHeight Half rectangle height.
-		 * @return Rectangle local vertices in clockwise order.
+		 * @brief Build the four corners of a rectangle with square corners,
+		 * centered on the origin.
+		 * @param halfWidth Half the width, in dp.
+		 * @param halfHeight Half the height, in dp.
+		 * @return The corners, starting at (-halfWidth, -halfHeight) and
+		 * going through (+halfWidth, -halfHeight).
 		 */
 		std::vector<utility::math::Vector2F>
 			buildAxisAlignedRectVertices(float halfWidth,
 										 float halfHeight) const;
 
 		/**
-		 * @brief Append one rounded corner arc to a local vertex list.
-		 * @param localVertices Target local vertex list.
-		 * @param arcCenter Arc center in local space.
-		 * @param startAngle Start angle in radians.
-		 * @param endAngle End angle in radians.
-		 * @param radius Arc radius.
-		 * @param arcSegments Number of interpolation segments.
+		 * @brief Append the points of one corner arc to an outline.
+		 *
+		 * Adds `arcSegments + 1` points, the first at @p startAngle and the
+		 * last at @p endAngle.
+		 * @param localVertices The outline to append to.
+		 * @param arcCenter Center of the arc, relative to the center of the
+		 * rectangle.
+		 * @param startAngle Angle of the first point, in radians.
+		 * @param endAngle Angle of the last point, in radians.
+		 * @param radius Radius of the arc, in dp.
+		 * @param arcSegments Number of segments of the arc. Must be at least
+		 * 1.
 		 */
 		void appendRoundedCornerArc(
 			std::vector<utility::math::Vector2F> &localVertices,
@@ -85,13 +111,17 @@ namespace guillaume::systems
 			float endAngle, float radius, int arcSegments) const;
 
 		/**
-		 * @brief Build local rounded rectangle vertices before world transform.
-		 * @param halfWidth Half rectangle width.
-		 * @param halfHeight Half rectangle height.
-		 * @param radius Corner radius before clamping.
-		 * @param arcSegments Number of segments per rounded corner.
-		 * @param epsilon Threshold used to consider radius as zero.
-		 * @return Local-space outline vertices.
+		 * @brief Build the outline of a rounded rectangle centered on the
+		 * origin.
+		 * @param halfWidth Half the width, in dp.
+		 * @param halfHeight Half the height, in dp.
+		 * @param radius Corner radius, in dp. It is clamped between zero and
+		 * the smaller half extent.
+		 * @param arcSegments Number of segments per corner. A value of zero
+		 * or less is treated as 1.
+		 * @param epsilon Radius, in dp, at or below which the corners are
+		 * drawn square (four points only).
+		 * @return The outline points in drawing order.
 		 */
 		std::vector<utility::math::Vector2F>
 			buildLocalRoundedRectVertices(float halfWidth, float halfHeight,
@@ -99,16 +129,18 @@ namespace guillaume::systems
 										  float epsilon) const;
 
 		/**
-		 * @brief Build the outline vertices of a rounded rectangle in world
-		 * space.
-		 * @param center Rectangle center.
-		 * @param orientation Rectangle orientation.
-		 * @param scale Rectangle scale.
-		 * @param size Rectangle size before scaling.
-		 * @param radius Corner radius before clamping.
-		 * @param arcSegments Number of segments per rounded corner.
-		 * @param epsilon Threshold used to consider radius as zero.
-		 * @return World-space outline vertices.
+		 * @brief Build the outline of a rounded rectangle in world space.
+		 * @param center World position of the center of the rectangle.
+		 * @param orientation World orientation of the rectangle.
+		 * @param scale Factors applied to the width and to the height. Their
+		 * sign is ignored.
+		 * @param size Width and height before scaling, in dp.
+		 * @param radius Corner radius, in dp. It is clamped between zero and
+		 * the smaller scaled half extent.
+		 * @param arcSegments Number of segments per corner.
+		 * @param epsilon Radius, in dp, at or below which the corners are
+		 * drawn square.
+		 * @return The outline points in drawing order.
 		 */
 		std::vector<utility::graphic::PositionF> buildRoundedRectVertices(
 			const utility::graphic::PositionF &center,
@@ -119,40 +151,42 @@ namespace guillaume::systems
 
 		public:
 		/**
-		 * @brief Depth lift, in layer steps, of the stroke above the fill.
+		 * @brief Distance the border is moved towards the viewer, along the
+		 * forward axis of the entity, so it draws over the fill. Half the
+		 * depth of one layer.
 		 */
 		static constexpr float StrokeLift = 0.5f;
 
 		/**
-		 * @brief Construct a rectangle rendering system.
-		 * @param engine The engine used to draw rectangles.
+		 * @brief Create the system in the Render phase.
+		 * @param engine The engine the rectangles are uploaded to. It must
+		 * outlive the system.
 		 */
 		RectangleRender(utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Forget the engine objects without removing them from the
+		 * engine.
 		 */
 		~RectangleRender(void);
 
 		/**
-		 * @brief Prepare the RectangleRender system before rendering.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Mark every engine object as not drawn yet. Called once per
+		 * frame before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the RectangleRender system after rendering.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Remove the engine objects of the entities that were not
+		 * drawn this frame. Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the RectangleRender system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Rebuild the fill and border meshes of one entity and upload
+		 * them, creating the engine object on the first frame.
+		 * @param entityIdentifier The entity to draw. It is skipped, with a
+		 * log message, when one of the four components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

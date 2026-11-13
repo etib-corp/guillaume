@@ -285,7 +285,7 @@ namespace guillaume::entities
 	std::shared_ptr<IconButton> AppBar::getNavigationButton(void) const
 	{
 		// The lookup is const because this getter is; the child itself is
-		// shared and mutable, as it always was.
+		// shared and mutable, hence the cast.
 		return std::const_pointer_cast<IconButton>(getEntity<IconButton>(
 			getComponentRegistry()
 				.getComponent<components::AppBar>(getIdentifier())

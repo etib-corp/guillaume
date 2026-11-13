@@ -44,139 +44,196 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Shared configuration describing a component surface.
+	 * @brief Everything needed to set up a surface in one value: where it
+	 * is, how it looks and how it arranges its children.
 	 *
-	 * The configuration is consumed by `SurfaceBase` (and its concrete
-	 * component families) to configure the common `components::Layout`,
-	 * `components::Transform`, `components::Bound`, `components::Color` and
-	 * `components::Borders` components. Arrangement is delegated to
-	 * `systems::Layout`, so families never hand-roll child positioning.
+	 * A surface is a rectangle that contains other widgets. This struct is a
+	 * plain value used to pass its settings around: SurfaceBase copies each
+	 * field into the matching component (Transform, Color, Borders, Layout)
+	 * and keeps no copy. Every widget constructor that derives from
+	 * SurfaceBase takes one.
 	 *
-	 * @see SurfaceBase
-	 * @see systems::Layout
+	 * The setters return the configuration, so a value can be written in one
+	 * expression:
+	 * @code
+	 * auto config = SurfaceConfig()
+	 * 	.setAxis(components::Layout::Axis::Vertical)
+	 * 	.setSpacing(8.0f)
+	 * 	.setPadding(16.0f)
+	 * 	.setFixedWidth(320.0f);
+	 * @endcode
+	 *
+	 * Without a fixed width or height, the surface takes the size of its
+	 * children plus the padding on both sides.
+	 *
+	 * @see SurfaceBase, components::Layout, systems::Layout
 	 */
 	struct SurfaceConfig {
-		utility::graphic::PoseF pose {};	///< Surface pose.
-		utility::graphic::Color32Bit color { 0, 0, 0,
-											 0 };	 ///< Surface fill color.
-		float borderRadius { 0.0f };				 ///< Uniform corner radius.
+		utility::graphic::PoseF
+			pose {};	///< Position and orientation of the surface.
+		utility::graphic::Color32Bit color {
+			0, 0, 0, 0
+		};	  ///< Fill color (transparent by default).
+		float borderRadius { 0.0f };	///< Radius of the four corners, in dp.
 		components::Layout::Axis axis {
 			components::Layout::Axis::Horizontal
-		};	  ///< Arrangement axis.
+		};	  ///< Direction the children are arranged in.
 		components::Layout::MainAxisAlignment mainAxisAlignment {
 			components::Layout::MainAxisAlignment::Start
-		};	  ///< Main axis alignment.
+		};	  ///< Where the children go along the axis.
 		components::Layout::CrossAxisAlignment crossAxisAlignment {
 			components::Layout::CrossAxisAlignment::Center
-		};	  ///< Cross axis alignment.
-		float spacing { 0.0f };			  ///< Space between children.
-		float padding { 0.0f };			  ///< Space around children.
-		bool hasFixedWidth { false };	  ///< Whether the width is forced.
-		float fixedWidth { 0.0f };		  ///< Forced width.
-		bool hasFixedHeight { false };	  ///< Whether the height is forced.
-		float fixedHeight { 0.0f };		  ///< Forced height.
+		};	  ///< Where the children go across the axis.
+		float spacing { 0.0f };	   ///< Gap between two children, in dp.
+		float padding {
+			0.0f
+		};	  ///< Gap between the edges and the children, in dp.
+		bool hasFixedWidth {
+			false
+		};	  ///< True when `fixedWidth` replaces the content width.
+		float fixedWidth {
+			0.0f
+		};	  ///< Width in dp, used only when `hasFixedWidth`.
+		bool hasFixedHeight {
+			false
+		};	  ///< True when `fixedHeight` replaces the content height.
+		float fixedHeight {
+			0.0f
+		};	  ///< Height in dp, used only when `hasFixedHeight`.
 
 		/**
-		 * @brief Set the surface pose.
-		 * @param value The new pose.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Set where the surface is.
+		 * @param value The position and orientation of the surface.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setPose(const utility::graphic::PoseF &value);
 
 		/**
-		 * @brief Set the surface fill color.
-		 * @param value The new fill color.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Set the fill color.
+		 * @param value The color painted behind the children.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setColor(const utility::graphic::Color32Bit &value);
 
 		/**
-		 * @brief Set the uniform corner radius.
-		 * @param value The new corner radius.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Set the radius of the four corners.
+		 * @param value The radius, in dp. 0 gives square corners.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setBorderRadius(float value);
 
 		/**
-		 * @brief Set the arrangement axis.
-		 * @param value The new axis.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Choose between a row and a column.
+		 * @param value Horizontal to arrange the children left to right,
+		 * Vertical to arrange them top to bottom.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setAxis(components::Layout::Axis value);
 
 		/**
-		 * @brief Set the main axis alignment.
-		 * @param value The new alignment.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Set where the children go along the axis.
+		 * @param value Start, Center, End or SpaceBetween.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &
 			setMainAxisAlignment(components::Layout::MainAxisAlignment value);
 
 		/**
-		 * @brief Set the cross axis alignment.
-		 * @param value The new alignment.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Set where the children go across the axis.
+		 * @param value Start, Center or End.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &
 			setCrossAxisAlignment(components::Layout::CrossAxisAlignment value);
 
 		/**
-		 * @brief Set the spacing between children.
-		 * @param value The new spacing.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Set the gap between two consecutive children.
+		 * @param value The gap, in dp.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setSpacing(float value);
 
 		/**
-		 * @brief Set the padding around children.
-		 * @param value The new padding.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Set the gap between the edges of the surface and its
+		 * children.
+		 * @param value The gap, in dp, applied on the four sides.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setPadding(float value);
 
 		/**
-		 * @brief Force the surface width.
-		 * @param value The new fixed width.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Give the surface a width that does not depend on its
+		 * children.
+		 *
+		 * Sets both `fixedWidth` and `hasFixedWidth`.
+		 * @param value The width, in dp.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setFixedWidth(float value);
 
 		/**
-		 * @brief Force the surface height.
-		 * @param value The new fixed height.
-		 * @return Reference to this configuration for chaining.
+		 * @brief Give the surface a height that does not depend on its
+		 * children.
+		 *
+		 * Sets both `fixedHeight` and `hasFixedHeight`.
+		 * @param value The height, in dp.
+		 * @return This configuration, for chaining.
 		 */
 		SurfaceConfig &setFixedHeight(float value);
 
 		/**
-		 * @brief Create the common M3 dialog/picker panel configuration.
+		 * @brief Get the configuration shared by dialog and picker panels.
 		 *
-		 * Returns a centered surface using the surface-container-high color,
-		 * a 28px corner radius, 24px padding and a fixed width. Variants that
-		 * differ only in their dimensions/axis can start from this preset and
-		 * override the relevant fields.
+		 * The result has a fixed width, 24 dp of padding, the extra-large
+		 * corner radius of the active theme (28 dp by default) and children
+		 * centered on both axes. The color is left transparent and the
+		 * height follows the content: the caller sets what differs.
 		 *
-		 * @param width The panel width.
-		 * @param axis The arrangement axis.
-		 * @param spacing The spacing between children.
-		 * @return A preconfigured surface configuration.
+		 * @param width The panel width, in dp.
+		 * @param axis The direction the children are arranged in.
+		 * @param spacing The gap between two children, in dp.
+		 * @return The panel configuration.
 		 */
 		static SurfaceConfig panel(float width, components::Layout::Axis axis,
 								   float spacing);
 	};
 
 	/**
-	 * @brief Reusable entity base for component families.
+	 * @brief Base of the widgets that are a rectangle containing other
+	 * widgets (Card, Dialog, Checkbox, ...).
 	 *
-	 * `SurfaceBase` owns the common component signature (layout, transform,
-	 * bound, color, borders) plus any extra components injected by the
-	 * concrete family through the template pack. It arranges its children with
-	 * `systems::Layout`, so derived families only configure the surface and
-	 * attach content.
+	 * It has no component of its own. Its state is the five components it
+	 * always carries: Transform (pose), Bound (size), Color (fill), Borders
+	 * (corner radius) and Layout (axis, alignment, spacing, padding, fixed
+	 * size and the list of children to arrange). systems::Layout holds the
+	 * rules: in the Layout phase of every frame it positions the children
+	 * listed in the Layout component and writes the size of the surface in
+	 * its Bound. The setters of this class write the components and run the
+	 * same arrangement at once, so the result is visible while a scene is
+	 * being built.
 	 *
-	 * @tparam ExtraComponents Additional component types owned by the family.
+	 * A widget derives from it and lists its own components in the template
+	 * pack:
+	 * @code
+	 * class Checkbox:
+	 * 	public SurfaceBase<components::Selectable, components::Line,
+	 * 					   components::Checkbox>
+	 * @endcode
 	 *
-	 * @see SurfaceConfig
+	 * Watch out for:
+	 * - Only the children given to setChildren() are arranged. A child
+	 *   attached with `ecs::Entity::setParent()` alone keeps the position
+	 *   its own code gives it.
+	 * - The size of the surface (Bound) is overwritten every frame from its
+	 *   children, its padding and its fixed size.
+	 * - setChildren() needs the surface to be owned by a `std::shared_ptr`,
+	 *   which is the case for every widget built with `create()` or a
+	 *   Builder.
+	 *
+	 * @tparam ExtraComponents The components the derived widget adds to the
+	 * five common ones.
+	 *
+	 * @see SurfaceConfig, components::Layout, systems::Layout
 	 */
 	template<ecs::InheritFromComponent... ExtraComponents> class SurfaceBase:
 		public std::enable_shared_from_this<SurfaceBase<ExtraComponents...>>,
@@ -186,7 +243,8 @@ namespace guillaume::entities
 	{
 		public:
 		using Children =
-			std::vector<std::shared_ptr<ecs::Entity>>;	  ///< Child entities.
+			std::vector<std::shared_ptr<ecs::Entity>>;	  ///< List of child
+														  ///< entities.
 
 		/**
 		 * @brief Default destructor.
@@ -194,77 +252,96 @@ namespace guillaume::entities
 		~SurfaceBase(void) override = default;
 
 		/**
-		 * @brief Set the surface pose.
-		 * @param pose The new pose.
-		 * @return Reference to this surface for chaining.
+		 * @brief Move the surface.
+		 *
+		 * Writes the Transform component, then arranges the layout children
+		 * again so they follow.
+		 * @param pose The new position and orientation.
+		 * @return This surface, for chaining.
 		 */
 		SurfaceBase &setPose(const utility::graphic::PoseF &pose);
 
 		/**
-		 * @brief Set the surface fill color.
+		 * @brief Set the fill color (Color component).
+		 *
+		 * Widgets whose system computes the color from the theme (Surface,
+		 * Checkbox, ...) overwrite it on their next restyle.
 		 * @param color The new fill color.
-		 * @return Reference to this surface for chaining.
+		 * @return This surface, for chaining.
 		 */
 		SurfaceBase &setColor(const utility::graphic::Color32Bit &color);
 
 		/**
-		 * @brief Set the uniform corner radius.
-		 * @param radius The new corner radius.
-		 * @return Reference to this surface for chaining.
+		 * @brief Set the radius of the four corners (Borders component).
+		 * @param radius The radius, in dp.
+		 * @return This surface, for chaining.
 		 */
 		SurfaceBase &setBorderRadius(float radius);
 
 		/**
-		 * @brief Apply a full surface configuration.
-		 * @param config The configuration to apply.
-		 * @return Reference to this surface for chaining.
+		 * @brief Apply every field of a configuration at once.
+		 *
+		 * Writes the Transform, Color, Borders and Layout components. A
+		 * fixed width or height that the configuration does not have is
+		 * cleared. The list of layout children is kept, and the children are
+		 * arranged again at once.
+		 * @param config The configuration to copy into the components.
+		 * @return This surface, for chaining.
 		 */
 		SurfaceBase &setSurfaceConfig(const SurfaceConfig &config);
 
 		/**
-		 * @brief Get the current surface configuration.
+		 * @brief Read the current configuration back from the components.
 		 *
-		 * The surface keeps no copy of it: the value is read back from the
-		 * Transform, Color, Borders and Layout components.
-		 * @return The surface configuration.
+		 * The surface keeps no copy of the configuration it was given: the
+		 * value is rebuilt from the Transform, Color, Borders and Layout
+		 * components, so it reflects changes made through them. The corner
+		 * radius reported is the top-left one.
+		 * @return The configuration matching the current components.
 		 */
 		SurfaceConfig getSurfaceConfig(void) const;
 
 		/**
-		 * @brief Attach the child entities arranged by this surface.
+		 * @brief Choose the children this surface arranges, in order.
 		 *
-		 * The children are parented to the surface and their identifiers are
-		 * recorded in its Layout component. The surface does not keep them
-		 * alive.
-		 * @param children The children to attach.
-		 * @return Reference to this surface for chaining.
+		 * Each child becomes a child entity of the surface and its
+		 * identifier is recorded in the Layout component, replacing the
+		 * previous list. The children are arranged at once. Null pointers
+		 * and entities without a valid identifier are skipped. The surface
+		 * does not keep the children alive: each one must be owned by an
+		 * entity registry, which is the case when it was created by a
+		 * Builder.
+		 * @param children The children, in layout order (left to right or
+		 * top to bottom).
+		 * @return This surface, for chaining.
 		 */
 		SurfaceBase &setChildren(const Children &children);
 
 		/**
 		 * @brief Get the children this surface arranges.
-		 *
-		 * The surface keeps no handle on them: the identifiers are read from
-		 * its Layout component, in layout order. A child must be owned by an
-		 * entity registry (builders register what they build).
-		 * @return The identifiers of the layout children.
+		 * @return The identifiers recorded in the Layout component, in
+		 * layout order. Empty when setChildren() was never called. Children
+		 * attached without setChildren() are not listed.
 		 */
 		std::vector<ecs::Entity::Identifier> getChildren(void) const;
 
 		protected:
 		/**
-		 * @brief Construct a surface base.
-		 * @param registry The component registry.
-		 * @param config The initial surface configuration.
+		 * @brief Create the entity with its components and apply a
+		 * configuration.
+		 * @param registry The registry that stores the components.
+		 * @param config The initial configuration, applied with
+		 * setSurfaceConfig().
 		 */
 		SurfaceBase(ecs::ComponentRegistry &registry,
 					const SurfaceConfig &config);
 
 		/**
-		 * @brief Arrange the layout children now with `systems::Layout`.
+		 * @brief Arrange the layout children now with systems::Layout::apply.
 		 *
-		 * The Layout system does the same every frame; this makes the result
-		 * visible immediately while a scene is being built.
+		 * The Layout system does the same every frame. Calling it from a
+		 * setter makes the new positions and the new size of the surface
+		 * available immediately, before the first frame.
 		 */
 		void applyGeometry(void);
 	};
@@ -282,95 +359,140 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Public Material 3 surface (react-native-paper `Surface`).
+	 * @brief A plain container whose background gets lighter or darker with
+	 * its elevation, and which can cast a shadow.
 	 *
-	 * A container whose background is the active scheme's Surface tinted for
-	 * its elevation level (Paper `elevation.level0-5`). In `Mode::Elevated`
-	 * (the default) it also casts the level's shadow; `Mode::Flat` keeps the
-	 * tonal background without a shadow.
+	 * Use it to group widgets on a visible panel. Its state lives in
+	 * components::SurfaceTone (elevation level and whether a shadow is
+	 * cast). systems::SurfaceTone holds the rule: in the Measure phase of
+	 * every frame it writes the fill color (the Surface color of the active
+	 * theme tinted for the level) and the shadow level. Children are
+	 * arranged by systems::Layout, as for every SurfaceBase.
 	 *
-	 * The class is a facade without fields: its state is
-	 * components::SurfaceTone and systems::SurfaceTone resolves the color and
-	 * the shadow from it.
+	 * @code
+	 * Surface::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto panel = builder.withShape(theme::ShapeRole::Medium)
+	 * 	.makeSurface(nullptr, theme::ElevationLevel::Level2);
+	 * panel->setChildren({ title, body });
+	 * @endcode
+	 *
+	 * `Surface::create(registry, config, elevation, mode)` builds the same
+	 * widget without registering it in an entity registry.
+	 *
+	 * A color set with setColor() does not last: the system recomputes the
+	 * fill color from the elevation every frame.
+	 *
+	 * @see components::SurfaceTone, systems::SurfaceTone, SurfaceBase
 	 */
 	class Surface:
 		public SurfaceBase<components::Elevation, components::SurfaceTone>
 	{
 		public:
 		/**
-		 * @brief Shadow mode (Paper `mode`).
+		 * @brief Whether the surface casts a shadow.
 		 */
 		enum class Mode {
-			Flat,		///< Tonal background only.
-			Elevated	///< Tonal background plus shadow.
+			Flat,		///< Tinted background, no shadow.
+			Elevated	///< Tinted background and the shadow of the level.
 		};
 
 		/**
-		 * @brief Builder for Surface entities.
+		 * @brief Configures and registers Surface widgets.
 		 */
 		class Builder: public EntityBuilderBase<Surface>
 		{
 			private:
-			SurfaceConfig _config;	  ///< Surface configuration.
+			SurfaceConfig _config;	  ///< Pose, corner radius and layout.
 			theme::ElevationLevel _elevation {
 				theme::ElevationLevel::Level1
-			};	  ///< Elevation level.
-			Mode _mode { Mode::Elevated };	  ///< Shadow mode.
+			};	  ///< Elevation level of the next surface.
+			Mode _mode {
+				Mode::Elevated
+			};	  ///< Whether the next surface casts a shadow.
 
 			public:
 			/**
-			 * @brief Construct a surface builder.
-			 * @param componentRegistry Component registry.
-			 * @param entityRegistry Entity registry.
+			 * @brief Construct a builder set to the defaults of reset().
+			 * @param componentRegistry The registry that stores the
+			 * components of the surfaces built.
+			 * @param entityRegistry The registry that owns the surfaces
+			 * built.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the surface.
-			 * @return The surface.
+			 * @brief Create a surface from the current configuration,
+			 * without attaching nor registering it.
+			 * @return The new surface.
 			 */
 			std::shared_ptr<Surface> buildEntity(void) override;
 
 			/**
-			 * @brief Reset to Paper defaults (level 1, elevated).
+			 * @brief Restore the defaults: elevation level 1, a shadow
+			 * (Mode::Elevated), square corners, children in a column
+			 * aligned at the start and centered across, no spacing, no
+			 * padding, no fixed size, default pose.
 			 */
 			void reset(void) override;
 
-			/** @brief Set the pose. @param pose Pose. @return *this. */
+			/**
+			 * @brief Set where the surface is.
+			 * @param pose The position and orientation (default: the
+			 * default pose).
+			 * @return This builder, for chaining.
+			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
-			 * @brief Set the elevation level.
-			 * @param elevation Level 0-5.
-			 * @return *this.
+			 * @brief Set the elevation level, which tints the background
+			 * and sizes the shadow.
+			 * @param elevation The level, from Level0 to Level5 (default:
+			 * Level1).
+			 * @return This builder, for chaining.
 			 */
 			Builder &withElevation(theme::ElevationLevel elevation);
 
-			/** @brief Set the shadow mode. @param mode Mode. @return *this. */
+			/**
+			 * @brief Choose whether the surface casts a shadow.
+			 * @param mode Elevated for a shadow, Flat for none (default:
+			 * Elevated).
+			 * @return This builder, for chaining.
+			 */
 			Builder &withMode(Mode mode);
 
 			/**
-			 * @brief Set the corner shape.
-			 * @param role Shape role.
-			 * @return *this.
+			 * @brief Set the corner radius from a shape role of the theme.
+			 * @param role The shape role, such as theme::ShapeRole::Medium
+			 * (default: None, square corners).
+			 * @return This builder, for chaining.
 			 */
 			Builder &withShape(theme::ShapeRole role);
 
 			/**
-			 * @brief Set the layout configuration of the children.
-			 * @param config Surface configuration (pose and color are
-			 * overridden by the builder).
-			 * @return *this.
+			 * @brief Replace the layout configuration: axis, alignment,
+			 * spacing, padding, fixed size and corner radius.
+			 *
+			 * The pose already given to the builder is kept, so call
+			 * withShape() after this method, not before. The color of the
+			 * configuration has no lasting effect: the fill color comes
+			 * from the elevation.
+			 * @param config The configuration to copy, except its pose.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withConfig(const SurfaceConfig &config);
 
 			/**
-			 * @brief Build a surface.
-			 * @param parent Parent entity.
-			 * @param elevation Elevation level.
-			 * @param mode Shadow mode.
-			 * @return The surface.
+			 * @brief Build a surface with the given elevation and register
+			 * it under a parent.
+			 *
+			 * The other settings are those given with the `with...()`
+			 * methods. The builder is back to its defaults afterwards.
+			 * @param parent The entity the surface becomes a child of, or
+			 * nullptr.
+			 * @param elevation The elevation level, from Level0 to Level5.
+			 * @param mode Elevated for a shadow, Flat for none.
+			 * @return The registered surface.
 			 */
 			std::shared_ptr<Surface>
 				makeSurface(std::shared_ptr<ecs::Entity> parent,
@@ -379,14 +501,16 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a surface without registering it.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
-		 * @tparam Arguments The constructor argument types.
+		 * The constructor is private so that a surface is always owned by a
+		 * `std::shared_ptr`, which setChildren() requires. The arguments are
+		 * those of the constructor: `(registry, config, elevation, mode)`.
+		 * The caller keeps the surface alive, or hands it to an entity
+		 * registry; Builder does both steps.
+		 * @tparam Arguments The types of the constructor arguments.
 		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * @return The new surface, already styled for its elevation.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<Surface> create(Arguments &&...arguments)
@@ -402,28 +526,43 @@ namespace guillaume::entities
 		~Surface(void) override = default;
 
 		/**
-		 * @brief Set the elevation level.
-		 * @param elevation Level 0-5.
-		 * @return *this.
+		 * @brief Change the elevation level.
+		 *
+		 * Writes components::SurfaceTone and restyles at once: the fill
+		 * color and, in Mode::Elevated, the shadow follow.
+		 * @param elevation The level, from Level0 to Level5.
+		 * @return This surface, for chaining.
 		 */
 		Surface &setElevation(theme::ElevationLevel elevation);
 
-		/** @brief Get the elevation level. @return The level. */
+		/**
+		 * @brief Get the elevation level.
+		 * @return The level stored in components::SurfaceTone. It tints the
+		 * background even in Mode::Flat.
+		 */
 		theme::ElevationLevel getElevation(void) const;
 
-		/** @brief Set the shadow mode. @param mode Mode. @return *this. */
+		/**
+		 * @brief Turn the shadow on or off, and restyle at once.
+		 * @param mode Elevated for a shadow, Flat for none.
+		 * @return This surface, for chaining.
+		 */
 		Surface &setMode(Mode mode);
 
-		/** @brief Get the shadow mode. @return The mode. */
+		/**
+		 * @brief Tell whether the surface casts a shadow.
+		 * @return Mode::Elevated when it does, Mode::Flat otherwise.
+		 */
 		Mode getMode(void) const;
 
 		private:
 		/**
-		 * @brief Construct a surface.
-		 * @param registry Component registry.
-		 * @param config Surface configuration.
-		 * @param elevation Elevation level.
-		 * @param mode Shadow mode.
+		 * @brief Construct a surface and style it for its elevation.
+		 * @param registry The registry that stores the components.
+		 * @param config The pose, corner radius and layout. Its color is
+		 * replaced by the color of the elevation.
+		 * @param elevation The elevation level, from Level0 to Level5.
+		 * @param mode Elevated for a shadow, Flat for none.
 		 */
 		Surface(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 				theme::ElevationLevel elevation, Mode mode);

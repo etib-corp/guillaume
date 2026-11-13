@@ -32,25 +32,40 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Concrete entity registry backed by an internal vector.
+	 * @brief An EntityRegistry that is not itself an entity: the top of an
+	 * ownership tree.
+	 *
+	 * Scene derives from it to own its root entities. Use it directly to
+	 * hold entities outside a scene, in a test for instance. An entity that
+	 * owns children derives from ParentEntity instead.
+	 *
+	 * @code
+	 * ecs::EntityRegistryContainer entities;
+	 * entities.addEntity(button);
+	 * @endcode
+	 *
+	 * @see EntityRegistry
+	 * @see ParentEntity
 	 */
 	class EntityRegistryContainer: public EntityRegistry
 	{
 		private:
 		std::vector<std::shared_ptr<Entity>>
-			_entities;	  ///< Direct entities owned by this registry.
+			_entities;	  ///< Entities owned directly, in insertion order
 
 		protected:
 		/**
-		 * @brief Access mutable direct child entities owned by this registry.
-		 * @return Mutable reference to the direct child entities storage.
+		 * @brief Give access to the list of entities this registry owns
+		 * directly.
+		 * @return Mutable reference to the list, in insertion order.
 		 */
 		std::vector<std::shared_ptr<Entity>> &
 			accessDirectEntities(void) override;
 
 		/**
-		 * @brief Access direct child entities owned by this registry.
-		 * @return Const reference to the direct child entities storage.
+		 * @brief Give read access to the list of entities this registry owns
+		 * directly.
+		 * @return Const reference to the list, in insertion order.
 		 */
 		const std::vector<std::shared_ptr<Entity>> &
 			accessDirectEntities(void) const override;

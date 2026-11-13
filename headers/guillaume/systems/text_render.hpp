@@ -37,9 +37,25 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling text rendering from ECS components.
-	 * @see components::Text
-	 * @see components::Transform
+	 * @brief Draws the string of every entity that has a components::Text.
+	 *
+	 * Runs in the Render phase on entities with Transform, Text and Color.
+	 * It reads the three and writes no component: its output is one engine
+	 * object per entity (a TextRenderable), rebuilt and uploaded every
+	 * frame.
+	 * - components::Transform gives the pose the text is drawn at.
+	 * - components::Text gives the string, the font size and the font
+	 *   weight. The font file is chosen from the weight by
+	 *   theme::fontPath.
+	 * - components::Color gives the text color.
+	 *
+	 * The size of the text is not computed here: systems::MeasureText writes
+	 * it into components::Bound during the Measure phase, with the same
+	 * font, and the layout uses it. systems::Typography fills the font size
+	 * and weight from a type-scale role before that.
+	 *
+	 * @see components::Text, systems::MeasureText, systems::Typography
+	 * @see RenderHandleMap
 	 */
 	class TextRender:
 		public RenderHandleMap,
@@ -48,46 +64,48 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;		 ///< Shared resource provider for loading
-									 ///< fonts and glyphs
-		utility::Engine &_engine;	 ///< utility::Engine instance
-		std::string _defaultFontPath;	 ///< Default font for text rendering
+			_ressourceProvider;		 ///< Provider the renderables load their
+									 ///< font from
+		utility::Engine &_engine;	 ///< Engine the texts are uploaded to
+		std::string
+			_defaultFontPath;	 ///< Path of the regular text font. The font
+								 ///< actually drawn comes from theme::fontPath
 
 		public:
 		/**
-		 * @brief Construct a text rendering system.
-		 * @param ressourceProvider Shared resource provider for loading fonts
-		 * and glyphs.
-		 * @param engine The engine used to draw text.
+		 * @brief Create the system in the Render phase.
+		 * @param ressourceProvider Provider used to load the fonts.
+		 * @param engine The engine the texts are uploaded to. It must
+		 * outlive the system.
 		 */
 		TextRender(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
 			utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Forget the engine objects without removing them from the
+		 * engine.
 		 */
 		~TextRender(void);
 
 		/**
-		 * @brief Prepare the TextRender system before rendering.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Mark every text as not drawn yet. Called once per frame
+		 * before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the TextRender system after rendering.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Remove the engine objects of the entities that were not
+		 * drawn this frame. Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the TextRender system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Build the renderable of one text from its current
+		 * components and upload it, creating the engine object on the first
+		 * frame.
+		 * @param entityIdentifier The entity to draw. It is skipped, with a
+		 * log message, when one of the three components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

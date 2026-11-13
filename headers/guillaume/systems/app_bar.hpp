@@ -30,19 +30,36 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Styles an app bar and arranges its children.
+	 * @brief Styles an app bar and lays out its navigation button, title and
+	 * action buttons in a row.
 	 *
-	 * Reads components::AppBar and the active theme, and writes the bar's
-	 * Layout, Color, Elevation and Bound, plus the content, typescale role
-	 * and accessible name of its title child and the content color of its
-	 * navigation button. Runs in the Layout phase, after the children have
-	 * been measured.
+	 * Runs in the Layout phase on every entity that has a
+	 * components::AppBar. It is registered after systems::Layout, so the
+	 * children are already measured when it arranges them.
+	 * - **Reads**: components::AppBar (variant, title, elevated flag, child
+	 *   identifiers) and the active theme.
+	 * - **Writes** on the bar: components::Layout (horizontal axis, padding,
+	 *   fixed height, child list), components::Color and
+	 *   components::Elevation, then the Transform and Bound of the children
+	 *   through systems::Layout::apply.
+	 * - **Writes** on the children: the Text, Typography and Accessibility
+	 *   label of the title, and the content color of the navigation button.
+	 *
+	 * A system cannot create entities: entities::AppBar builds the children
+	 * and records their identifiers in components::AppBar. The `needs...`
+	 * functions tell it which children are still missing.
+	 *
+	 * The bar needs components::Layout, Color and Elevation next to its
+	 * components::AppBar: apply() throws
+	 * ecs::EntityComponentNotFoundException when one is missing.
+	 *
+	 * @see components::AppBar, entities::AppBar, systems::Layout
 	 */
 	class AppBar: public ecs::SystemFiller<components::AppBar>
 	{
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the system in the Layout phase.
 		 */
 		AppBar(void);
 
@@ -52,10 +69,13 @@ namespace guillaume::systems
 		~AppBar(void) override = default;
 
 		/**
-		 * @brief Make the title child of an app bar a header.
+		 * @brief Expose the title child to assistive technology as a header.
 		 *
-		 * Adds a components::Accessibility with the Header role to the title
-		 * recorded in components::AppBar. Does nothing without a title child.
+		 * Adds a components::Accessibility to the title entity recorded in
+		 * components::AppBar when it has none, sets its role to Header and
+		 * its label to the title text, and makes it non-focusable. Call it
+		 * once, right after the title child has been created and recorded.
+		 * Does nothing when no title child is recorded.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The app bar entity.
 		 */
@@ -65,8 +85,20 @@ namespace guillaume::systems
 
 		/**
 		 * @brief Style one app bar and arrange its children.
+		 *
+		 * This is what update() runs each frame. Call it directly after
+		 * changing components::AppBar to see the result before the next
+		 * frame, which is what the setters of entities::AppBar do, or to
+		 * drive an app bar in a test without a frame loop.
+		 *
+		 * The children are laid out in the order navigation button, title,
+		 * action buttons, skipping the ones that do not exist. A
+		 * center-aligned bar centers a lone title and otherwise spreads its
+		 * children across the bar.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The app bar entity.
+		 * @throws ecs::EntityComponentNotFoundException When the entity lacks
+		 * components::AppBar, Layout, Color or Elevation.
 		 */
 		static void apply(ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier);
@@ -80,45 +112,55 @@ namespace guillaume::systems
 		static float height(components::AppBar::Variant variant);
 
 		/**
-		 * @brief Get the title typescale role of a variant.
+		 * @brief Get the typescale role the title of a variant is drawn
+		 * with.
 		 * @param variant The app bar variant.
-		 * @return titleLarge (small/center/bottom), headlineSmall (medium) or
-		 * headlineMedium (large).
+		 * @return TitleLarge (small, center-aligned, bottom), HeadlineSmall
+		 * (medium) or HeadlineMedium (large).
 		 */
 		static theme::TypeRole titleRole(components::AppBar::Variant variant);
 
 		/**
-		 * @brief Whether the app bar lacks its navigation button child.
+		 * @brief Whether the navigation button child still has to be
+		 * created.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The app bar entity.
-		 * @return True when a navigation icon is set and no child is recorded.
+		 * @return True when the navigation action has an icon and no
+		 * navigation button is recorded in components::AppBar.
 		 */
 		static bool needsNavigationButton(
 			const ecs::ComponentRegistry &componentRegistry,
 			const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Whether the app bar lacks its title child.
+		 * @brief Whether the title child still has to be created.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The app bar entity.
-		 * @return True when a title is set and no child is recorded.
+		 * @return True when the title text is not empty and no title entity
+		 * is recorded in components::AppBar.
 		 */
 		static bool needsTitle(const ecs::ComponentRegistry &componentRegistry,
 							   const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Whether the app bar lacks its action button children.
+		 * @brief Whether the action button children have to be created
+		 * again.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The app bar entity.
-		 * @return True when the recorded children do not match the actions.
+		 * @return True when the number of recorded action buttons differs
+		 * from the number of actions. Only the counts are compared, not the
+		 * content of the actions.
 		 */
 		static bool
 			needsActionButtons(const ecs::ComponentRegistry &componentRegistry,
 							   const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Style the app bar with the given identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
+		 * @brief Run apply() on one app bar; called by the frame loop.
+		 *
+		 * Logs a warning and does nothing when the entity has no
+		 * components::AppBar.
+		 * @param entityIdentifier The app bar entity.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

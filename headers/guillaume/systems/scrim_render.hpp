@@ -37,8 +37,20 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System rendering a translucent scrim over an entity bound.
-	 * @see components::Scrim
+	 * @brief Draws a scrim: a flat, usually translucent rectangle covering
+	 * the whole bound of an entity. A modal backdrop is drawn this way.
+	 *
+	 * Runs in the Render phase on entities with Transform, Bound and Scrim.
+	 * It reads the three and writes no component: its output is one engine
+	 * object per entity, rebuilt and uploaded every frame.
+	 * - components::Transform gives the top-left corner and the orientation.
+	 * - components::Bound gives the width and height, in dp.
+	 * - components::Scrim gives the color, opacity included.
+	 *
+	 * The rectangle has square corners and is drawn at the depth of the
+	 * entity. The color is usually written each frame by systems::Backdrop.
+	 *
+	 * @see RenderHandleMap, components::Scrim, systems::Backdrop
 	 */
 	class ScrimRender:
 		public RenderHandleMap,
@@ -46,33 +58,39 @@ namespace guillaume::systems
 								 components::Scrim>
 	{
 		private:
-		utility::Engine &_engine;	 ///< utility::Engine.
+		utility::Engine &_engine;	 ///< Engine the scrims are uploaded to
 
 		public:
 		/**
-		 * @brief Construct a scrim rendering system.
-		 * @param engine The engine used to draw scrims.
+		 * @brief Create the system in the Render phase.
+		 * @param engine The engine the scrims are uploaded to. It must
+		 * outlive the system.
 		 */
 		ScrimRender(utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. The engine objects it created are left
+		 * in the engine.
 		 */
 		~ScrimRender(void) override = default;
 
 		/**
-		 * @brief Prepare the system before rendering.
+		 * @brief Mark every scrim as not drawn yet. Called once per frame
+		 * before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the system after rendering.
+		 * @brief Remove the scrims of the entities that were not drawn this
+		 * frame. Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Rebuild the quad of one scrim and upload it, creating the
+		 * engine object on the first frame.
+		 * @param entityIdentifier The entity to draw. It is skipped, with a
+		 * log message, when one of the three components is missing.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

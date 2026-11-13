@@ -34,53 +34,81 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Configuration of a list.
+	 * @brief State of a list: a column of rows, each with a headline and
+	 * optional supporting text, icons or image, plus subheaders, dividers
+	 * and accordions.
 	 *
-	 * This component is the whole state of a list: its variant, its entries
-	 * and the entities built for them. systems::List turns it into the list's
-	 * Layout, Color and Borders, and into the Layout, Color, enabled state
-	 * and accessibility state of every row and of its content.
+	 * The entities::List widget writes it: the entries, and one Row of
+	 * entity identifiers per entry it builds. systems::List reads it every
+	 * frame in the Layout phase and turns it into the list's Layout, Color
+	 * and Borders, and into the Layout, Color, enabled state and
+	 * accessibility state of every row and of its content.
+	 *
+	 * Entries and rows are two trees that must stay in step: the Row at a
+	 * given Path holds the entities built for the Item at the same Path.
+	 * Replacing the entries does not rebuild the rows; the widget raises
+	 * the rows-dirty flag and rebuilds them.
+	 *
+	 * An entry with children is an accordion: pressing it shows or hides
+	 * its children. Only top-level entries can be accordions.
+	 *
+	 * @see systems::List, entities::List
 	 */
 	class List: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief List variant.
+		 * @brief Number of text lines a row is meant for.
+		 *
+		 * SingleLine hides the supporting text; TwoLine and ThreeLine both
+		 * show it.
 		 */
 		enum class Variant { SingleLine, TwoLine, ThreeLine };
 
 		/**
-		 * @brief Kind of a list entry.
+		 * @brief What a list entry is.
 		 */
 		enum class ItemKind {
 			Item,		  ///< Pressable row (or accordion when it has
 						  ///< children).
-			Subheader,	  ///< Section header (`titleSmall`).
-			Divider		  ///< Horizontal divider.
+			Subheader,	  ///< Section header (`titleSmall` text).
+			Divider		  ///< Horizontal divider line.
 		};
 
 		/**
-		 * @brief List entry.
+		 * @brief Description of one list entry, as given by the user.
+		 *
+		 * A subheader only uses `headline`; a divider uses no field but
+		 * `kind`.
 		 */
 		struct Item {
-			std::string headline;		 ///< Primary headline text.
-			std::string supporting;		 ///< Optional supporting text.
-			std::string leadingIcon;	 ///< Optional leading icon glyph name.
-			std::string trailingIcon;	 ///< Optional trailing icon glyph name.
-			std::string leadingImage {};	///< Optional leading image path.
-			std::function<void(void)> onPress {};	 ///< Press handler.
-			bool disabled { false };	///< Whether the row is disabled.
-			ItemKind kind { ItemKind::Item };	 ///< Entry kind.
-			std::vector<Item> children {};		 ///< Accordion children.
-			bool expanded { false };			 ///< Accordion expanded state.
+			std::string headline;		 ///< Main text of the row.
+			std::string supporting;		 ///< Second text, under the headline;
+										 ///< empty for none.
+			std::string leadingIcon;	 ///< Glyph name of the icon before the
+										 ///< texts; empty for none.
+			std::string trailingIcon;	 ///< Glyph name of the icon at the
+										 ///< far edge; empty for none.
+			std::string leadingImage {};	///< Path of the image before the
+											///< texts; empty for none.
+			std::function<void(void)> onPress {};	 ///< Called on press.
+			bool disabled { false };			 ///< True when the row ignores
+												 ///< presses.
+			ItemKind kind { ItemKind::Item };	 ///< What the entry is.
+			std::vector<Item> children {};		 ///< Rows shown under this one
+												 ///< while it is expanded.
+			bool expanded { false };	///< True while an accordion shows
+										///< its children.
 		};
 
 		/**
-		 * @brief Entities built for one entry.
+		 * @brief Identifiers of the entities built for one entry.
 		 *
-		 * A subheader or a divider only has its root entity. A pressable row
-		 * is a container holding a leading group (nesting spacer, leading
-		 * image or icon, content column) and an optional trailing icon.
+		 * A subheader or a divider only has `entity`. A pressable row is a
+		 * container (`view`) holding a leading group (`lead`: nesting
+		 * spacer, leading image or icon, text column) and an optional
+		 * trailing icon. A field is ecs::Entity::InvalidIdentifier when the
+		 * entry has no such part.
 		 */
 		struct Row {
 			ecs::Entity::Identifier entity {
@@ -103,50 +131,54 @@ namespace guillaume::components
 			};	  ///< Leading icon child.
 			ecs::Entity::Identifier content {
 				ecs::Entity::InvalidIdentifier
-			};	  ///< Title/description column.
+			};	  ///< Column holding the headline and supporting text.
 			ecs::Entity::Identifier headline {
 				ecs::Entity::InvalidIdentifier
-			};	  ///< Title child.
+			};	  ///< Headline text child.
 			ecs::Entity::Identifier supporting {
 				ecs::Entity::InvalidIdentifier
-			};	  ///< Description child.
+			};	  ///< Supporting text child.
 			ecs::Entity::Identifier trailingIcon {
 				ecs::Entity::InvalidIdentifier
 			};	  ///< Trailing icon child (the chevron of an accordion).
-			std::vector<Row> children {};	 ///< Accordion child rows.
+			std::vector<Row> children {};	 ///< Rows of the accordion
+											 ///< children.
 
 			/**
 			 * @brief Compare two rows.
 			 * @param other The row to compare with.
-			 * @return True when both name the same entities.
+			 * @return True when both name the same entities, children
+			 * included.
 			 */
 			bool operator==(const Row &other) const noexcept;
 		};
 
-		/// Index path of an entry: top-level index, then child indices.
+		/// Position of an entry in the tree: the top-level index, then one
+		/// child index per nesting level. `{2}` is the third entry; `{2, 0}`
+		/// is its first child.
 		using Path = std::vector<std::size_t>;
 
-		/// Default list width, in dp.
+		/// Default width of a list, in dp.
 		static constexpr float DefaultWidth = 360.0f;
 
-		/// M3 list icon size, in dp.
+		/// Size of the leading and trailing icons, in dp.
 		static constexpr float IconSize = 24.0f;
 
-		/// Trailing glyph of a collapsed accordion.
+		/// Glyph name of the trailing icon of a collapsed accordion.
 		static constexpr const char *CollapsedGlyph = "expand_more";
 
-		/// Trailing glyph of an expanded accordion.
+		/// Glyph name of the trailing icon of an expanded accordion.
 		static constexpr const char *ExpandedGlyph = "expand_less";
 
 		private:
-		Variant _variant { Variant::SingleLine };	 ///< List variant
+		Variant _variant { Variant::SingleLine };	 ///< Lines per row
 		std::vector<Item> _items {};				 ///< List entries
 		std::vector<Row> _rows {};					 ///< Entry rows
 		bool _rowsDirty { true };					 ///< Rows must be rebuilt
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the configuration of an empty single-line list.
 		 */
 		List(void) = default;
 
@@ -155,67 +187,115 @@ namespace guillaume::components
 		 */
 		~List(void) = default;
 
-		/** @brief Get the variant. @return The variant. */
+		/**
+		 * @brief Get the number of text lines a row is meant for.
+		 * @return The variant, Variant::SingleLine by default.
+		 */
 		Variant getVariant(void) const noexcept;
 
-		/** @brief Set the variant. @param variant It. @return It. */
+		/**
+		 * @brief Set the number of text lines a row is meant for.
+		 *
+		 * Marks the component changed only when the variant differs.
+		 * @param variant The new variant.
+		 * @return This component, for chaining.
+		 */
 		List &setVariant(Variant variant);
 
-		/** @brief Get the entries. @return The entries. */
+		/**
+		 * @brief Get the description of every top-level entry.
+		 * @return The entries, from top to bottom; accordion children are
+		 * in Item::children.
+		 */
 		const std::vector<Item> &getItems(void) const noexcept;
 
 		/**
 		 * @brief Replace the entries.
 		 *
-		 * The component is marked changed only when the texts, icons, kinds
-		 * or flags differ; the press handlers are always replaced. The rows
-		 * are not touched: whoever owns the row entities rebuilds them.
-		 * @param items The new entries.
-		 * @return Reference to this component for chaining.
+		 * The press handlers are always replaced. The component is marked
+		 * changed only when the texts, icons, kinds or flags differ
+		 * (children included), because handlers cannot be compared. The
+		 * rows are left as they are: whoever owns the row entities rebuilds
+		 * them.
+		 * @param items The new entries, from top to bottom.
+		 * @return This component, for chaining.
 		 */
 		List &setItems(std::vector<Item> items);
 
 		/**
-		 * @brief Find an entry by index path.
-		 * @param path Index path.
-		 * @return The entry, or nullptr when the path names none.
+		 * @brief Find an entry from its position in the tree.
+		 * @param path The index path of the entry.
+		 * @return The entry, or nullptr when the path is empty or names no
+		 * entry. The pointer is valid until the entries are replaced.
 		 */
 		const Item *findItem(const Path &path) const noexcept;
 
 		/**
-		 * @brief Find a row by index path.
-		 * @param path Index path.
-		 * @return The row, or nullptr when the path names none.
+		 * @brief Find the entities built for an entry from its position in
+		 * the tree.
+		 * @param path The index path of the entry.
+		 * @return The row, or nullptr when the path is empty or names no
+		 * built row. The pointer is valid until the rows are replaced.
 		 */
 		const Row *findRow(const Path &path) const noexcept;
 
 		/**
-		 * @brief Enable or disable one top-level entry.
-		 * @param index Entry index (ignored when out of range).
-		 * @param disabled Whether the entry is disabled.
-		 * @return Reference to this component for chaining.
+		 * @brief Change the disabled flag recorded for one top-level entry.
+		 *
+		 * To update the row on screen too, call
+		 * systems::List::setItemDisabled. Marks the component changed only
+		 * when the flag differs.
+		 * @param index The top-level entry index, starting at 0. An index
+		 * out of range is ignored.
+		 * @param disabled True to disable the entry.
+		 * @return This component, for chaining.
 		 */
 		List &setItemDisabled(std::size_t index, bool disabled);
 
 		/**
-		 * @brief Expand or collapse one top-level accordion entry.
-		 * @param index Entry index (ignored when out of range or when the
-		 * entry has no children).
-		 * @param expanded Whether the accordion is expanded.
-		 * @return Reference to this component for chaining.
+		 * @brief Record whether one top-level accordion shows its children.
+		 *
+		 * To update the rows on screen too, call
+		 * systems::List::setExpanded. Marks the component changed only when
+		 * the flag differs.
+		 * @param index The top-level entry index, starting at 0. An index
+		 * out of range, or an entry without children, is ignored.
+		 * @param expanded True to show the children.
+		 * @return This component, for chaining.
 		 */
 		List &setItemExpanded(std::size_t index, bool expanded);
 
-		/** @brief Get the rows. @return One row per built entry. */
+		/**
+		 * @brief Get the entities built for the entries.
+		 * @return One row per built top-level entry, in entry order. Empty
+		 * until the widget has built them.
+		 */
 		const std::vector<Row> &getRows(void) const noexcept;
 
-		/** @brief Set the rows. @param rows They. @return It. */
+		/**
+		 * @brief Record the entities built for the entries.
+		 *
+		 * Marks the component changed only when the rows differ.
+		 * @param rows One row per top-level entry, in entry order.
+		 * @return This component, for chaining.
+		 */
 		List &setRows(const std::vector<Row> &rows);
 
-		/** @brief Check whether the rows are stale. @return True if so. */
+		/**
+		 * @brief Tell whether the rows must be rebuilt from the entries.
+		 * @return True when the entries changed since the rows were built.
+		 * True for a new component.
+		 */
 		bool isRowsDirty(void) const noexcept;
 
-		/** @brief Flag the rows as stale or not. @param dirty It. @return It.
+		/**
+		 * @brief Mark the rows as out of date or as up to date.
+		 *
+		 * The widget raises the flag when it replaces the entries and
+		 * lowers it once it has rebuilt the row entities. Marks the
+		 * component changed only when the flag differs.
+		 * @param dirty True when the rows must be rebuilt.
+		 * @return This component, for chaining.
 		 */
 		List &setRowsDirty(bool dirty);
 	};

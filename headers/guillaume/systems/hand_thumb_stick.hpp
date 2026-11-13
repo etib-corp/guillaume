@@ -31,7 +31,18 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand thumb-stick interactions.
+	 * @brief Receives XR thumb-stick events (the joystick of a
+	 * controller).
+	 *
+	 * Runs in the Event phase on entities that have a
+	 * components::HandThumbStickInteraction, a Transform and a Bound, and
+	 * takes one thumb-stick event per frame. It does not override
+	 * HandEventSystem::update, so it writes no component and calls no
+	 * handler: the thumb-stick interaction component is not driven by this
+	 * system.
+	 *
+	 * @see components::HandThumbStickInteraction
+	 * @see systems::HandEventSystem
 	 */
 	class HandThumbStick:
 		public HandEventSystem<components::HandThumbStickInteraction,
@@ -39,14 +50,14 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandThumbStick system and subscribe to hand
-		 * thumb-stick events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand thumb-stick events.
+		 * @param eventBus The event bus delivering the thumb-stick events.
 		 */
 		explicit HandThumbStick(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandThumbStick system.
+		 * @brief Destructor.
 		 */
 		~HandThumbStick(void) override;
 	};

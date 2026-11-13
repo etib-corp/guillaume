@@ -32,42 +32,59 @@ namespace guillaume::event
 {
 
 	/**
-	 * @brief Base class for subscribing to events from the event bus.
-	 * @tparam EventType The type of event to subscribe to.
+	 * @brief A queue of the events of one type published on an EventBus,
+	 * waiting to be read.
 	 *
-	 * This class provides a base for subscribing to specific event types from
-	 * the event bus. It maintains a queue of received events for processing.
+	 * The bus delivers events the moment the engine polls them. A subscriber
+	 * stores them, in arrival order, until its owner is ready: Application
+	 * reads its quit-event subscriber before each frame, and each input
+	 * system reads its own (through EventManager) during the Event phase.
+	 *
+	 * @code
+	 * event::EventSubscriber<utility::event::QuitEvent> quit(bus);
+	 * ...
+	 * while (quit.hasPendingEvents()) {
+	 * 	auto event = quit.getNextEvent();
+	 * }
+	 * @endcode
+	 *
+	 * @note The bus keeps a pointer to the subscriber and has no way to
+	 * drop it: a subscriber must not be copied or moved, and must live at
+	 * least as long as events are published on the bus.
+	 * @tparam EventType The exact event type to queue.
 	 * @see EventBus
+	 * @see EventManager
 	 */
 	template<utility::event::InheritFromEvent EventType> class EventSubscriber
 	{
 		private:
 		std::queue<std::shared_ptr<EventType>>
-			_eventQueue;	///< Queue of received events
+			_eventQueue;	///< Events received and not read yet, oldest
+							///< first
 
 		public:
 		/**
-		 * @brief Construct an event subscriber and register it to the event
-		 * bus.
-		 * @param eventBus The event bus to subscribe to.
+		 * @brief Create an empty queue and subscribe it to a bus.
+		 * @param eventBus The bus whose events of type `EventType` are
+		 * queued, starting with the next one published.
 		 */
 		EventSubscriber(EventBus &eventBus);
 
 		/**
-		 * @brief Destructor for the EventSubscriber base class.
+		 * @brief Destroy the queue. The bus is not told: see the note of
+		 * the class.
 		 */
 		~EventSubscriber(void) = default;
 
 		/**
-		 * @brief Check if there are pending events.
-		 * @return True if there are pending events, false otherwise.
+		 * @brief Tell whether at least one event is waiting.
+		 * @return True when getNextEvent() would return an event.
 		 */
 		bool hasPendingEvents(void) const;
 
 		/**
-		 * @brief Get the next event from the queue.
-		 * @return The next event.
-		 * @retval nullptr If the queue is empty.
+		 * @brief Take the oldest waiting event out of the queue.
+		 * @return The event, or nullptr when the queue is empty.
 		 */
 		std::shared_ptr<EventType> getNextEvent(void);
 	};

@@ -31,35 +31,52 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component describing a soft shadow below an elevated surface.
+	 * @brief Soft shadow drawn around an elevated surface.
 	 *
-	 * The `systems::ElevationRender` system draws `layers` concentric rounded
-	 * rectangles behind the entity `components::Bound`, expanding by
-	 * `spread * level` and fading out toward the outside to approximate a
-	 * blurred shadow.
+	 * systems::ElevationRender (Render phase) reads it with the entity's
+	 * Transform and Bound. It draws getLayers() rounded shapes centered on
+	 * the bound: layer `i` (from 1 to the layer count) is larger than the
+	 * bound by `spread * level * i / layers` on every side and its alpha is
+	 * the shadow alpha times `1 - i / layers`, which approximates a blurred
+	 * shadow.
 	 *
-	 * @see systems::ElevationRender
+	 * The usual way to set it is setElevationLevel(), which resolves the
+	 * spread and the opacity from the elevation scale of the active theme.
+	 * Widget systems do so for their surfaces (systems::SurfaceTone,
+	 * systems::Card, the button systems, ...); setLevel(), setSpread() and
+	 * setColor() then adjust one value, for example while animating
+	 * between two levels.
+	 *
+	 * @code
+	 * registry.addComponent<components::Elevation>(id).setElevationLevel(
+	 * 	theme::ElevationLevel::Level2);
+	 * @endcode
+	 *
+	 * @note setElevationLevel() overwrites the level factor, the spread
+	 * and the color: call the fine-grained setters after it, never before.
+	 * @note A freshly constructed component is at Level1, so adding it to
+	 * an entity is enough to draw a shadow.
+	 *
+	 * @see systems::ElevationRender, theme::ElevationLevel
 	 */
 	class Elevation: public ecs::Component
 	{
 		private:
-		float _level { 1.0f };	   ///< Elevation level driving the shadow size.
+		float _level { 1.0f };	   ///< Spread factor; 0 paints no shadow.
 		int _layers { 4 };		   ///< Number of fading shadow layers.
-		float _spread { 0.0f };	   ///< Expansion per elevation level.
+		float _spread { 0.0f };	   ///< Shadow reach, in dp, at level 1.
 		utility::graphic::Color32Bit _color {
 			0, 0, 0, 0
-		};	  ///< Shadow color (including opacity).
+		};	  ///< Shadow color; its alpha is the opacity.
 
 		theme::ElevationLevel _elevationLevel {
 			theme::ElevationLevel::Level1
-		};	  ///< M3 level the shadow was resolved from.
+		};	  ///< Token last applied by setElevationLevel().
 
 		public:
 		/**
-		 * @brief Default constructor for the Elevation component.
-		 */
-		/**
-		 * @brief Construct an elevation resolved from the M3 level 1 token.
+		 * @brief Construct an elevation resolved from the Level1 token of
+		 * the active theme. The component starts unchanged.
 		 */
 		Elevation(void);
 
@@ -69,77 +86,105 @@ namespace guillaume::components
 		~Elevation(void) = default;
 
 		/**
-		 * @brief Get the elevation level.
-		 * @return The elevation level.
+		 * @brief Get the factor applied to the spread.
+		 * @return 0 when no shadow is painted, 1 after setElevationLevel()
+		 * with any level above Level0, or the value given to setLevel().
 		 */
 		float getLevel(void) const;
 
 		/**
-		 * @brief Set the elevation level.
-		 * @param level The new elevation level.
-		 * @return Reference to this Elevation for chaining.
+		 * @brief Set the factor applied to the spread.
+		 *
+		 * The shadow reaches `spread * level` dp beyond the bound. This is
+		 * a plain multiplier, not a theme::ElevationLevel; to pick a
+		 * Material level use setElevationLevel(). Marks the component
+		 * changed only when the value differs.
+		 *
+		 * @param level The factor; 0 or less paints no shadow.
+		 * @return This component, for chaining.
 		 */
 		Elevation &setLevel(float level);
 
 		/**
-		 * @brief Get the number of shadow layers.
-		 * @return The number of shadow layers.
+		 * @brief Get the number of shapes the shadow is made of.
+		 * @return The layer count (4 by default).
 		 */
 		int getLayers(void) const;
 
 		/**
-		 * @brief Set the number of shadow layers.
-		 * @param layers The new number of shadow layers.
-		 * @return Reference to this Elevation for chaining.
+		 * @brief Set the number of shapes the shadow is made of.
+		 *
+		 * More layers give a smoother fade for more triangles. Marks the
+		 * component changed only when the value differs.
+		 *
+		 * @param layers The layer count; systems::ElevationRender draws at
+		 * least 1 layer whatever the value.
+		 * @return This component, for chaining.
 		 */
 		Elevation &setLayers(int layers);
 
 		/**
-		 * @brief Get the expansion per elevation level.
-		 * @return The spread per elevation level.
+		 * @brief Get how far the shadow reaches beyond the bound.
+		 * @return The spread, in dp, for a level factor of 1.
 		 */
 		float getSpread(void) const;
 
 		/**
-		 * @brief Set the expansion per elevation level.
-		 * @param spread The new spread per elevation level.
-		 * @return Reference to this Elevation for chaining.
+		 * @brief Set how far the shadow reaches beyond the bound.
+		 *
+		 * Marks the component changed only when the value differs.
+		 * setElevationLevel() replaces it with the token's spread.
+		 *
+		 * @param spread The spread, in dp, for a level factor of 1.
+		 * @return This component, for chaining.
 		 */
 		Elevation &setSpread(float spread);
 
 		/**
 		 * @brief Get the shadow color.
-		 * @return The shadow color.
+		 * @return A copy of the color; its alpha sets how opaque the
+		 * shadow is.
 		 */
 		utility::graphic::Color32Bit getColor(void) const;
 
 		/**
 		 * @brief Set the shadow color.
-		 * @param color The new shadow color.
-		 * @return Reference to this Elevation for chaining.
+		 *
+		 * Marks the component changed only when the color differs.
+		 * setElevationLevel() replaces it with black at the token's
+		 * opacity.
+		 *
+		 * @param color The color; an alpha of 0 paints no shadow.
+		 * @return This component, for chaining.
 		 */
 		Elevation &setColor(const utility::graphic::Color32Bit &color);
 
 		/**
-		 * @brief Resolve the shadow from an M3 elevation level token.
+		 * @brief Resolve the shadow from a Material 3 elevation level.
 		 *
-		 * Level 0 paints no shadow; levels 1-5 read the spread and opacity
-		 * of the active theme's elevation scale.
+		 * Reads the token of @p level in the active theme and writes three
+		 * values: the level factor (0 for Level0, 1 otherwise), the spread
+		 * and the color (black at the token's opacity). Level0 therefore
+		 * paints no shadow. The component is marked changed only when one
+		 * of the resolved values differs, so calling it every frame is
+		 * cheap and still picks up a theme change.
 		 *
-		 * @param level M3 elevation level.
-		 * @return Reference to this Elevation component for chaining.
+		 * @param level The Material 3 elevation level.
+		 * @return This component, for chaining.
 		 */
 		Elevation &setElevationLevel(theme::ElevationLevel level);
 
 		/**
-		 * @brief Get the M3 level last applied with setElevationLevel().
-		 * @return The elevation level.
+		 * @brief Get the level last applied with setElevationLevel().
+		 * @return The level (Level1 on a new component). It does not
+		 * reflect later calls to setLevel(), setSpread() or setColor().
 		 */
 		theme::ElevationLevel getElevationLevel(void) const;
 
 		/**
 		 * @brief Check whether a visible shadow must be painted.
-		 * @return True when the level and the shadow alpha are non-zero.
+		 * @return True when the level factor is above 0 and the alpha of
+		 * the shadow color is not 0.
 		 */
 		bool hasShadow(void) const;
 	};

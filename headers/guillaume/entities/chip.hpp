@@ -46,111 +46,163 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Chip entity: a compact pill-shaped action or filter.
+	 * @brief A compact, 32 dp high pill with a label and optional icons,
+	 * used as an action, a filter, an entered value or a suggestion.
 	 *
-	 * The chip reuses `SurfaceBase` for the pill geometry and
-	 * `components::Selectable` for the selected state. The Material Design
-	 * variants are:
-	 * - `Assist`: leading action icon plus a label.
-	 * - `Filter`: leading check icon toggling a secondary-container fill.
-	 * - `Input`: label plus a trailing remove icon.
-	 * - `Suggestion`: label only.
+	 * Its state lives in components::Chip (variant, mode, label, flags,
+	 * callbacks, child identifiers), its selected state in
+	 * components::Selectable and its enabled state in
+	 * components::StyleState; systems::Chip colors the chip and its
+	 * children and arranges them in a row each frame, in the Layout phase.
+	 * The class itself holds no field: its setters write the components
+	 * and restyle at once.
 	 *
-	 * The class is a facade without fields: its state is components::Chip
-	 * and systems::Chip styles the chip and arranges its children.
-	 * `build()` only builds the child entities. `getChildren()` returns
-	 * the ones currently laid out (the check replaces the leading icon while
-	 * selected), read from the chip's components::Layout.
+	 * The variant decides which children are built:
+	 * - `Assist`: a leading icon (a default glyph when none is given) and
+	 *   the label.
+	 * - `Filter`: the label, a leading icon when a glyph is given, and a
+	 *   check icon that takes the place of the leading icon while the chip
+	 *   is selected. A press toggles the selection.
+	 * - `Input`: the label, a leading icon when a glyph is given, and a
+	 *   trailing close icon that calls the close handler.
+	 * - `Suggestion`: the label, and a leading icon when a glyph is given.
 	 *
-	 * @see SurfaceBase
-	 * @see components::Selectable
+	 * @code
+	 * Chip::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto chip = builder.makeChip(parent, Chip::Variant::Filter, "Vegan",
+	 * 	"", false);
+	 * chip->setOnPress([] {
+	 * 	// called when the user presses the chip
+	 * });
+	 * @endcode
+	 *
+	 * `Chip::create(registry, config, variant, label, iconGlyph, selected)`
+	 * builds the same widget without registering it in an entity registry;
+	 * `config` is the SurfaceConfig of the pill (pose, padding, height).
+	 *
+	 * The chip owns its icon and label children: it is the entity registry
+	 * they are registered in. The children are built once, from the variant
+	 * given at creation: setVariant() changes the behavior and the colors
+	 * but adds no icon. The chip's Color, Borders, Elevation and layout
+	 * padding are written each frame, so values set by hand on them are
+	 * overwritten. setSelected() does not call the press handler; only a
+	 * user press does. getChildren() returns the children currently laid
+	 * out, read from the chip's components::Layout.
+	 *
+	 * @see components::Chip, systems::Chip, SurfaceBase
 	 */
 	class Chip:
 		public SurfaceBase<components::Selectable, components::Elevation,
 						   components::Chip>
 	{
 		public:
-		/// Chip variant.
+		/// Chip variant: Assist, Filter, Input or Suggestion (see
+		/// components::Chip::Variant).
 		using Variant = components::Chip::Variant;
 
-		/// Paper chip mode: tonal flat (default) or outlined.
+		/// Paper chip mode: Flat (tonal fill, the default) or Outlined.
 		using Mode = components::Chip::Mode;
 
 		/**
-		 * @brief Builder used to configure and create `Chip` entities.
+		 * @brief Configures, creates and registers Chip widgets.
+		 *
+		 * Set options with the `with...` methods then call registerEntity(),
+		 * or use makeChip() to do both in one call.
 		 */
 		class Builder: public EntityBuilderBase<Chip>
 		{
 			private:
-			SurfaceConfig _config;					 ///< Surface configuration.
+			SurfaceConfig _config;	  ///< Pose, layout and size of the pill.
 			Variant _variant { Variant::Assist };	 ///< Chip variant.
-			std::string _label {};					 ///< Chip label.
-			std::string _iconGlyph {};				 ///< Leading icon glyph.
-			bool _selected { false };				 ///< Selected state.
+			std::string _label {};					 ///< Label text.
+			std::string
+				_iconGlyph {};	  ///< Leading icon glyph name; may be empty.
+			bool _selected { false };	 ///< Whether the chip starts selected.
 
 			public:
 			/**
-			 * @brief Construct a new Chip Builder.
-			 * @param componentRegistry The component registry.
-			 * @param entityRegistry The entity registry.
+			 * @brief Construct a builder with the default configuration (see
+			 * reset()).
+			 * @param componentRegistry The registry that stores the
+			 * components of the chips to build.
+			 * @param entityRegistry The registry the built chips are added
+			 * to (usually the scene's).
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the Chip entity from the current configuration.
-			 * @return The newly created Chip.
+			 * @brief Build a Chip, with its icon and label children, from
+			 * the current configuration, without registering it.
+			 *
+			 * registerEntity() calls it, then sets the parent, registers the
+			 * chip and resets the builder.
+			 * @return The new chip.
 			 */
 			std::shared_ptr<Chip> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder.
+			 * @brief Restore the default configuration.
+			 *
+			 * Defaults: Variant::Assist, empty label, no icon glyph, not
+			 * selected, default pose. The pill is a horizontal row with
+			 * centered content, 8 dp between children, 12 dp of padding, a
+			 * fixed height of 32 dp and the theme's small corner radius.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the chip pose.
-			 * @param pose The new pose.
+			 * @brief Set the position and orientation of the chip.
+			 * @param pose The pose written to the chip's Transform. Default:
+			 * a default-constructed pose.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
-			 * @brief Set the chip variant.
-			 * @param variant The new variant.
+			 * @brief Set the variant, which decides the children built and
+			 * whether a press toggles the selection.
+			 * @param variant The variant. Default: Variant::Assist.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withVariant(Variant variant);
 
 			/**
-			 * @brief Set the chip label.
-			 * @param label The new label.
+			 * @brief Set the label text.
+			 * @param label The text shown in the chip, also used as its
+			 * accessibility label. Default: empty.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withLabel(const std::string &label);
 
 			/**
-			 * @brief Set the leading icon glyph.
-			 * @param iconGlyph The new icon glyph.
+			 * @brief Set the leading icon.
+			 * @param iconGlyph The glyph name of the leading icon. Default:
+			 * empty, which means no leading icon, except for an Assist chip
+			 * which then shows components::Chip::DefaultAssistGlyph.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withIcon(const std::string &iconGlyph);
 
 			/**
-			 * @brief Set the selected state.
-			 * @param selected The new selected state.
+			 * @brief Choose whether the chip starts selected.
+			 * @param selected True for a selected chip. Default: false.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withSelected(bool selected);
 
 			/**
-			 * @brief Create a chip using the builder.
-			 * @param parent The parent entity.
-			 * @param variant The chip variant.
-			 * @param label The chip label.
-			 * @param iconGlyph The leading icon glyph.
-			 * @param selected The selected state.
-			 * @return The newly created chip.
+			 * @brief Build a chip, register it under `parent` and reset the
+			 * builder.
+			 *
+			 * A pose set before the call with withPose() also applies.
+			 * @param parent The entity the chip becomes a child of.
+			 * @param variant The variant.
+			 * @param label The text shown in the chip.
+			 * @param iconGlyph The glyph name of the leading icon; may be
+			 * empty.
+			 * @param selected True for a chip that starts selected.
+			 * @return The new chip, registered in the entity registry.
 			 */
 			std::shared_ptr<Chip> makeChip(std::shared_ptr<ecs::Entity> parent,
 										   Variant variant,
@@ -160,14 +212,16 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a chip and its icon and label children, without
+		 * registering it in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
-		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * The constructor is private because the children need a chip
+		 * already held by a `std::shared_ptr` as parent: create() constructs
+		 * the chip then calls build(), which creates them.
+		 * @tparam Arguments The types of the constructor arguments.
+		 * @param arguments The arguments forwarded to the constructor:
+		 * (registry, config, variant, label, iconGlyph, selected).
+		 * @return The new chip.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<Chip> create(Arguments &&...arguments)
@@ -179,129 +233,174 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destructor.
 		 */
 		~Chip(void) override;
 
 		/**
-		 * @brief Set the chip variant.
+		 * @brief Set the variant. Restyles at once.
+		 *
+		 * Only the behavior follows (a Filter chip toggles its selection on
+		 * a press): the icon children were built for the variant given at
+		 * creation and none is added or removed.
 		 * @param variant The new variant.
 		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setVariant(Variant variant);
 
 		/**
-		 * @brief Get the chip variant.
-		 * @return The variant.
+		 * @brief Get the variant.
+		 * @return The variant stored in components::Chip.
 		 */
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Set the chip label.
-		 * @param label The new label.
+		 * @brief Set the label text. Restyles at once.
+		 * @param label The text shown in the chip, also used as its
+		 * accessibility label.
 		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setLabel(const std::string &label);
 
 		/**
-		 * @brief Set the selected state.
-		 * @param selected The new selected state.
+		 * @brief Select or deselect the chip, whatever its variant.
+		 * Restyles at once.
+		 *
+		 * The press handler is not called.
+		 * @param selected True to select the chip.
 		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setSelected(bool selected);
 
 		/**
-		 * @brief Whether the chip is currently selected.
-		 * @return True when selected.
+		 * @brief Check whether the chip is selected.
+		 * @return True when its components::Selectable is selected.
 		 */
 		bool isSelected(void) const;
 
-		/** @brief Set the mode. @param mode New mode. @return *this. */
+		/**
+		 * @brief Set the mode. Restyles at once.
+		 * @param mode Mode::Flat for a tonal fill, Mode::Outlined for a
+		 * transparent chip with a 1 dp outline until it is selected.
+		 * @return Reference to this chip for chaining.
+		 */
 		Chip &setMode(Mode mode);
 
-		/** @brief Get the mode. @return The mode. */
+		/**
+		 * @brief Get the mode.
+		 * @return Mode::Flat (the default) or Mode::Outlined.
+		 */
 		Mode getMode(void) const;
 
 		/**
-		 * @brief Enable or disable the chip.
-		 * @param disabled True to disable.
-		 * @return *this.
+		 * @brief Enable or disable the chip. Restyles at once.
+		 *
+		 * A disabled chip is drawn with the disabled colors and calls
+		 * neither the press handler nor the close handler.
+		 * @param disabled True to disable the chip, false to enable it.
+		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setDisabled(bool disabled);
 
-		/** @brief Check whether disabled. @return True when disabled. */
+		/**
+		 * @brief Check whether the chip is disabled.
+		 * @return True when the chip ignores input.
+		 */
 		bool isDisabled(void) const;
 
 		/**
-		 * @brief Use compact padding (Paper `compact`).
-		 * @param compact New flag.
-		 * @return *this.
+		 * @brief Use the compact padding (Paper `compact`). Restyles at
+		 * once.
+		 * @param compact True for 8 dp of padding around the content, false
+		 * for 12 dp (the default).
+		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setCompact(bool compact);
 
 		/**
-		 * @brief Paint a level-1 shadow (Paper `elevated`).
-		 * @param elevated New flag.
-		 * @return *this.
+		 * @brief Paint a level 1 shadow under the chip (Paper `elevated`).
+		 * Restyles at once.
+		 * @param elevated True for a shadow, false for none (the default). A
+		 * disabled chip has no shadow.
+		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setElevated(bool elevated);
 
 		/**
-		 * @brief Overlay a pressed state layer while selected (Paper
-		 * `showSelectedOverlay`).
-		 * @param show New flag.
-		 * @return *this.
+		 * @brief Darken the chip with a pressed state layer while it is
+		 * selected (Paper `showSelectedOverlay`). Restyles at once.
+		 * @param show True to overlay the layer while selected, false not to
+		 * (the default).
+		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setShowSelectedOverlay(bool show);
 
 		/**
-		 * @brief Show the check glyph while selected (Paper
-		 * `showSelectedCheck`).
-		 * @param show New flag.
-		 * @return *this.
+		 * @brief Show the check icon while the chip is selected (Paper
+		 * `showSelectedCheck`). Restyles at once.
+		 *
+		 * Only a chip created as a Filter chip has a check icon.
+		 * @param show True to show the check while selected (the default),
+		 * false to keep the leading icon.
+		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setShowSelectedCheck(bool show);
 
 		/**
-		 * @brief Set the activation handler (Paper `onPress`).
-		 * @param onPress Handler.
-		 * @return *this.
+		 * @brief Set the handler called when the user presses the chip
+		 * (Paper `onPress`).
+		 *
+		 * For a Filter chip it is called after the selection was toggled.
+		 * @param onPress The function to call. Pass an empty function to
+		 * remove the handler.
+		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setOnPress(std::function<void(void)> onPress);
 
 		/**
-		 * @brief Set the close-icon handler (Paper `onClose`); the trailing
-		 * close icon is pressable.
-		 * @param onClose Handler.
-		 * @return *this.
+		 * @brief Set the handler called when the user presses the trailing
+		 * close icon (Paper `onClose`).
+		 *
+		 * The handler decides what closing means; the chip does not remove
+		 * itself. Only a chip created as an Input chip has a close icon:
+		 * setting a handler on another chip adds none.
+		 * @param onClose The function to call. Pass an empty function to
+		 * remove the handler.
+		 * @return Reference to this chip for chaining.
 		 */
 		Chip &setOnClose(std::function<void(void)> onClose);
 
 		/**
-		 * @brief Get the trailing close icon identifier.
-		 * @return The identifier, or InvalidIdentifier.
+		 * @brief Get the identifier of the trailing close icon child.
+		 * @return The identifier of the close icon, or
+		 * ecs::Entity::InvalidIdentifier when the chip has none.
 		 */
 		ecs::Entity::Identifier getCloseIconIdentifier(void) const;
 
 		private:
 		/**
-		 * @brief Construct a Chip entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The chip variant.
-		 * @param label The chip label.
-		 * @param iconGlyph The leading icon glyph.
-		 * @param selected The selected state.
+		 * @brief Construct a chip without its children; create() calls it
+		 * then build().
+		 *
+		 * Fills components::Chip and components::Selectable and installs
+		 * systems::Chip on the entity.
+		 * @param registry The registry that stores the chip's components.
+		 * @param config The pose, layout and size of the pill.
+		 * @param variant The variant, which decides the children built.
+		 * @param label The text shown in the chip.
+		 * @param iconGlyph The glyph name of the leading icon; may be empty.
+		 * @param selected True for a chip that starts selected.
 		 */
 		Chip(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 			 Variant variant, const std::string &label,
 			 const std::string &iconGlyph, bool selected);
 
 		/**
-		 * @brief Create the child entities.
+		 * @brief Create the icon and label children the variant needs and
+		 * record their identifiers in components::Chip.
 		 *
-		 * Called once by create(), when the entity is owned and can be given
-		 * as parent to its children.
+		 * Called once by create(), when the chip is held by a
+		 * `std::shared_ptr` and can be given as parent to its children.
 		 */
 		void build(void);
 	};

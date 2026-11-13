@@ -210,6 +210,9 @@ namespace guillaume::systems
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::StyleState>());
+		// Keeps a button's icon glyph and accessibility state in step with
+		// components::Button when the component is written directly.
+		systemRegistry.registerNewSystem(std::make_unique<systems::Button>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Overlay>(eventBus, engine));
 		systemRegistry.registerNewSystem(

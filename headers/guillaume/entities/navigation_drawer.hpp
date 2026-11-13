@@ -47,36 +47,80 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Material 3 navigation drawer (Paper `Drawer.Section`,
-	 * `Drawer.Item` and `Drawer.CollapsedItem`).
+	 * @brief A side sheet listing destinations, of which exactly one is
+	 * selected, with optional section titles and dividers (Paper
+	 * `Drawer.Section`, `Drawer.Item` and `Drawer.CollapsedItem`).
 	 *
-	 * Destinations are pressable rows; the selected one shows the
-	 * `secondaryContainer` active pill. Sections add a `titleSmall` header,
-	 * dividers separate groups, and the modal variant paints a `backdrop`
-	 * behind the sheet. The collapsed variant renders a narrow rail of
-	 * icon-over-label destinations.
+	 * Its state lives in components::NavigationDrawer (variant, entries,
+	 * child identifiers, index-change handler); systems::NavigationDrawer
+	 * sizes and colors the sheet, places the entries in a column and
+	 * drives the backdrop each frame, in the Layout phase. Which
+	 * destination is selected is stored in the components::Selectable of
+	 * each destination child; whether the drawer is shown is stored in its
+	 * components::Overlay. The class itself holds no field.
 	 *
-	 * The class is a facade without fields: its state is
-	 * components::NavigationDrawer and systems::NavigationDrawer styles the
-	 * sheet, arranges the entries and drives the backdrop. `build()`
-	 * only builds the child entities.
+	 * @code
+	 * NavigationDrawer::Builder builder(getComponentRegistry(),
+	 * 	getEntityRegistry());
+	 * auto drawer = builder.addSection("Mail")
+	 * 	.addDestination("inbox", "Inbox", "24")
+	 * 	.addDestination("send", "Sent")
+	 * 	.addDivider()
+	 * 	.withOnIndexChange([](std::size_t index) {
+	 * 		// called when the user selects another destination
+	 * 	})
+	 * 	.makeNavigationDrawer(parent, NavigationDrawer::Variant::Modal, {});
+	 * drawer->open();
+	 * @endcode
+	 *
+	 * `NavigationDrawer::create(registry, config, variant, entries,
+	 * onIndexChange)` builds the same widget without registering it in an
+	 * entity registry.
+	 *
+	 * Things to know:
+	 * - A destination index counts destinations only, from 0: sections and
+	 *   dividers are skipped.
+	 * - The drawer is closed at creation: isOpen() is false until open().
+	 * - The first enabled destination is selected at creation. select()
+	 *   does not call the index-change handler and does not check the
+	 *   disabled flag; only a press by the user on another, enabled
+	 *   destination calls the handler.
+	 * - The size is fixed by the variant and overwritten each frame:
+	 *   320 dp wide (`Standard`, `Modal`) or 80 dp wide (`Collapsed`),
+	 *   640 dp high. The color, corners, padding and spacing are
+	 *   overwritten too.
+	 * - `Modal` dims what is behind the drawer with a backdrop while it is
+	 *   open, and sets its components::Overlay to be dismissed by a click
+	 *   outside. `Collapsed` is a narrow rail with the label under the
+	 *   icon, without section titles or trailing texts.
+	 * - The drawer is the entity registry that owns its children.
+	 *   setVariant() removes and rebuilds every entry child when it
+	 *   switches between `Collapsed` and another variant: the identifiers
+	 *   returned before by getDestinationIdentifier(), getRightIdentifier()
+	 *   and getSectionIdentifier() are then invalid. The backdrop is kept.
+	 *
+	 * @see components::NavigationDrawer, systems::NavigationDrawer,
+	 * NavigationBar
 	 */
 	class NavigationDrawer:
 		public SurfaceBase<components::Overlay, components::SelectionGroup,
 						   components::NavigationDrawer>
 	{
 		public:
-		/// Drawer variant.
+		/// Variant: `Standard` (docked sheet), `Modal` (sheet over a
+		/// backdrop) or `Collapsed` (narrow rail).
 		using Variant = components::NavigationDrawer::Variant;
 
-		/// Kind of a drawer entry.
+		/// Kind of a drawer entry: destination, section title or divider.
 		using EntryKind = components::NavigationDrawer::EntryKind;
 
-		/// One drawer entry.
+		/// One drawer entry: kind, icon glyph name, label, trailing text
+		/// and disabled flag.
 		using Entry = components::NavigationDrawer::Entry;
 
 		/**
-		 * @brief Builder used to configure and create drawers.
+		 * @brief Configures a NavigationDrawer, creates it and registers it
+		 * in an entity registry.
 		 */
 		class Builder: public EntityBuilderBase<NavigationDrawer>
 		{
@@ -89,45 +133,57 @@ namespace guillaume::entities
 
 			public:
 			/**
-			 * @brief Construct a drawer builder.
-			 * @param componentRegistry The component registry.
-			 * @param entityRegistry The entity registry.
+			 * @brief Create a builder set to the defaults of reset().
+			 * @param componentRegistry The registry that stores the
+			 * components of the drawers built.
+			 * @param entityRegistry The registry the drawers are added to.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the drawer.
-			 * @return The drawer.
+			 * @brief Build a drawer and its children from the current
+			 * configuration, without registering it or setting its parent.
+			 * @return The new drawer.
 			 */
 			std::shared_ptr<NavigationDrawer> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder to the M3 defaults.
+			 * @brief Restore the defaults.
+			 *
+			 * Defaults: `Standard` variant, no entry, no index-change
+			 * handler, default pose, 320 dp wide and 640 dp high
+			 * (components::NavigationDrawer::Width and Height), 12 dp of
+			 * padding and 4 dp between entries.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the drawer pose.
-			 * @param pose The pose.
-			 * @return Reference to this builder for chaining.
+			 * @brief Set where the drawer is placed.
+			 * @param pose The pose of the drawer. Default: a
+			 * default-constructed pose.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
-			 * @brief Set the drawer variant.
-			 * @param variant The variant.
-			 * @return Reference to this builder for chaining.
+			 * @brief Set the variant.
+			 * @param variant `Standard` (the default), `Modal` or
+			 * `Collapsed`.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withVariant(Variant variant);
 
 			/**
-			 * @brief Append a destination.
-			 * @param iconGlyph Icon glyph name.
-			 * @param label Label text.
-			 * @param right Trailing text ("" for none).
-			 * @param disabled Whether the destination is disabled.
-			 * @return Reference to this builder for chaining.
+			 * @brief Append a destination after the entries already added.
+			 * @param iconGlyph The glyph name of the icon, such as
+			 * `"inbox"`; empty for no icon.
+			 * @param label The text of the destination.
+			 * @param right A short text shown at the far edge of the row,
+			 * such as a count; empty for none. Not shown by the `Collapsed`
+			 * variant.
+			 * @param disabled True to make the destination ignore presses.
+			 * @return This builder, for chaining.
 			 */
 			Builder &addDestination(const std::string &iconGlyph,
 									const std::string &label,
@@ -135,33 +191,44 @@ namespace guillaume::entities
 									bool disabled			 = false);
 
 			/**
-			 * @brief Append a section header.
-			 * @param title Section title.
-			 * @return Reference to this builder for chaining.
+			 * @brief Append a section title after the entries already
+			 * added.
+			 * @param title The title text. The `Collapsed` variant builds
+			 * no child for it.
+			 * @return This builder, for chaining.
 			 */
 			Builder &addSection(const std::string &title);
 
 			/**
-			 * @brief Append a divider.
-			 * @return Reference to this builder for chaining.
+			 * @brief Append a horizontal divider after the entries already
+			 * added.
+			 * @return This builder, for chaining.
 			 */
 			Builder &addDivider(void);
 
 			/**
-			 * @brief Set the handler called with the new destination index
-			 * when the user selects another destination.
-			 * @param onIndexChange Handler.
-			 * @return Reference to this builder for chaining.
+			 * @brief Set the handler called when the user selects another
+			 * destination.
+			 * @param onIndexChange Called with the index of the newly
+			 * selected destination (sections and dividers are not counted).
+			 * Not called by select(). Default: none.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withOnIndexChange(
 				std::function<void(std::size_t)> onIndexChange);
 
 			/**
-			 * @brief Build a drawer.
-			 * @param parent Parent entity.
-			 * @param variant Drawer variant.
-			 * @param destinations Destination (icon, label) pairs.
-			 * @return The registered drawer.
+			 * @brief Build a drawer, register it under `parent` and reset
+			 * the builder.
+			 *
+			 * The destinations given here come after the entries already
+			 * added with addDestination(), addSection() and addDivider().
+			 * @param parent The entity the drawer becomes a child of, or
+			 * nullptr for a root entity.
+			 * @param variant The variant of the drawer.
+			 * @param destinations The (icon glyph name, label) pair of each
+			 * destination to append; may be empty.
+			 * @return The new drawer.
 			 */
 			std::shared_ptr<NavigationDrawer> makeNavigationDrawer(
 				std::shared_ptr<ecs::Entity> parent, Variant variant,
@@ -170,14 +237,19 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a drawer and its children, without registering it
+		 * in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
-		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * The constructors are private because the children need the
+		 * drawer to be owned by a shared pointer before they can take it as
+		 * parent; create() constructs the drawer, builds the backdrop and
+		 * one child per entry, and selects the first enabled destination.
+		 * @tparam Arguments The types of the constructor arguments.
+		 * @param arguments Forwarded to a private constructor: either
+		 * (registry, config, variant, entries, onIndexChange) with `Entry`
+		 * values, or (registry, config, variant, destinations) with (icon
+		 * glyph name, label) pairs.
+		 * @return The new drawer.
 		 */
 		template<typename... Arguments> static std::shared_ptr<NavigationDrawer>
 			create(Arguments &&...arguments)
@@ -194,128 +266,168 @@ namespace guillaume::entities
 		~NavigationDrawer(void) override;
 
 		/**
-		 * @brief Set the drawer variant.
+		 * @brief Change the variant.
+		 *
+		 * Restyles at once. Switching between `Collapsed` and another
+		 * variant removes every entry child and builds new ones (a rail
+		 * and a sheet are made of different children), then selects the
+		 * same destination index again; identifiers of entry children
+		 * obtained before are then invalid. This rebuild is skipped when
+		 * the drawer has no destination child. Switching between
+		 * `Standard` and `Modal` keeps the children.
 		 * @param variant The new variant.
-		 * @return Reference to this drawer for chaining.
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &setVariant(Variant variant);
 
 		/**
-		 * @brief Get the drawer variant.
-		 * @return The variant.
+		 * @brief Get the variant.
+		 * @return The variant stored in components::NavigationDrawer.
 		 */
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Select a destination by index (sections and dividers are
-		 * not counted).
-		 * @param index Destination index.
-		 * @return Reference to this drawer for chaining.
+		 * @brief Select a destination and deselect the others.
+		 *
+		 * Restyles at once. Does not call the index-change handler and
+		 * does not check whether the destination is disabled.
+		 * @param index The index of the destination, sections and dividers
+		 * not counted; nothing happens when it is out of range.
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &select(std::size_t index);
 
 		/**
-		 * @brief Get the selected destination index.
-		 * @return The selected index.
+		 * @brief Get the index of the selected destination.
+		 * @return The index, sections and dividers not counted, or 0 when
+		 * no destination is selected.
 		 */
 		std::size_t getSelectedIndex(void) const;
 
 		/**
-		 * @brief Enable or disable a destination.
-		 * @param index Destination index.
-		 * @param disabled Whether the destination is disabled.
-		 * @return Reference to this drawer for chaining.
+		 * @brief Enable or disable a destination. Restyles it at once.
+		 *
+		 * A disabled destination ignores presses. Disabling the selected
+		 * destination does not move the selection.
+		 * @param index The index of the destination, sections and dividers
+		 * not counted; nothing happens when it is out of range.
+		 * @param disabled True to disable, false to enable.
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &setDestinationDisabled(std::size_t index,
 												 bool disabled);
 
 		/**
-		 * @brief Set the selection change handler.
-		 * @param onIndexChange Handler receiving the new destination index.
-		 * @return Reference to this drawer for chaining.
+		 * @brief Set the handler called when the user selects another
+		 * destination.
+		 * @param onIndexChange Called with the index of the newly selected
+		 * destination, after the selection changed. Not called by select()
+		 * nor when the user presses the selected destination.
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &
 			setOnIndexChange(std::function<void(std::size_t)> onIndexChange);
 
 		/**
-		 * @brief Show the drawer.
-		 * @return Reference to this drawer for chaining.
+		 * @brief Open the drawer. Same as show().
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &open(void);
 
 		/**
-		 * @brief Hide the drawer.
-		 * @return Reference to this drawer for chaining.
+		 * @brief Close the drawer. Same as hide().
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &close(void);
 
 		/**
-		 * @brief Check whether the drawer is shown.
-		 * @return True when shown.
+		 * @brief Whether the drawer is open. Same as isVisible().
+		 * @return True between open() and close(); false at creation.
 		 */
 		bool isOpen(void) const;
 
 		/**
-		 * @brief Show the drawer.
-		 * @return Reference to this drawer for chaining.
+		 * @brief Show the drawer, and its backdrop when the variant is
+		 * `Modal`.
+		 *
+		 * Sets the drawer's components::Overlay visible and restyles at
+		 * once.
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &show(void);
 
 		/**
-		 * @brief Hide the drawer.
-		 * @return Reference to this drawer for chaining.
+		 * @brief Hide the drawer and its backdrop.
+		 *
+		 * Sets the drawer's components::Overlay not visible and restyles at
+		 * once.
+		 * @return This drawer, for chaining.
 		 */
 		NavigationDrawer &hide(void);
 
 		/**
-		 * @brief Check whether the drawer is shown.
-		 * @return True when shown.
+		 * @brief Whether the drawer is shown.
+		 * @return True when its components::Overlay is visible; false at
+		 * creation.
 		 */
 		bool isVisible(void) const;
 
 		/**
 		 * @brief Get the number of destinations.
-		 * @return The destination count.
+		 * @return How many entries are destinations.
 		 */
 		std::size_t getDestinationCount(void) const;
 
 		/**
-		 * @brief Get the identifier of a destination.
-		 * @param index Destination index.
-		 * @return The identifier, or InvalidIdentifier.
+		 * @brief Get the child entity of a destination: its pressable row.
+		 * @param index The index of the destination, sections and dividers
+		 * not counted.
+		 * @return The identifier of the destination entity, or
+		 * ecs::Entity::InvalidIdentifier when `index` is out of range.
 		 */
 		ecs::Entity::Identifier
 			getDestinationIdentifier(std::size_t index) const;
 
 		/**
-		 * @brief Get the identifier of the trailing text of a destination.
-		 * @param index Destination index.
-		 * @return The identifier, or InvalidIdentifier.
+		 * @brief Get the trailing text entity of a destination.
+		 * @param index The index of the destination, sections and dividers
+		 * not counted.
+		 * @return The identifier of the text, or
+		 * ecs::Entity::InvalidIdentifier when `index` is out of range, the
+		 * destination has no trailing text or the variant is `Collapsed`.
 		 */
 		ecs::Entity::Identifier getRightIdentifier(std::size_t index) const;
 
 		/**
-		 * @brief Get the number of section headers.
-		 * @return The section count.
+		 * @brief Get the number of section titles built.
+		 * @return How many section entries have a title child: sections
+		 * with an empty title are not counted, and the count is 0 with the
+		 * `Collapsed` variant.
 		 */
 		std::size_t getSectionCount(void) const;
 
 		/**
-		 * @brief Get the identifier of a section header.
-		 * @param index Section index.
-		 * @return The identifier, or InvalidIdentifier.
+		 * @brief Get the text entity of a section title.
+		 * @param index The position among the section titles built, from 0.
+		 * @return The identifier of the text, or
+		 * ecs::Entity::InvalidIdentifier when `index` is out of range.
 		 */
 		ecs::Entity::Identifier getSectionIdentifier(std::size_t index) const;
 
 		/**
 		 * @brief Get the number of dividers.
-		 * @return The divider count.
+		 * @return How many divider children the drawer has.
 		 */
 		std::size_t getDividerCount(void) const;
 
 		/**
-		 * @brief Get the identifier of the modal backdrop.
-		 * @return The identifier, or InvalidIdentifier.
+		 * @brief Get the backdrop: the child that dims what is behind an
+		 * open `Modal` drawer.
+		 *
+		 * The backdrop exists for every variant; it is only shown for
+		 * `Modal`.
+		 * @return The identifier of the backdrop, or
+		 * ecs::Entity::InvalidIdentifier before the children are built.
 		 */
 		ecs::Entity::Identifier getBackdropIdentifier(void) const;
 
@@ -323,16 +435,21 @@ namespace guillaume::entities
 		/**
 		 * @brief Build the backdrop when it is missing, and a child for
 		 * every entry, then wire them to the system.
+		 *
+		 * Entry children of a previous call are removed first. Does nothing
+		 * until the drawer is owned by a shared pointer.
 		 */
 		void buildDestinations(void);
 
 		private:
 		/**
-		 * @brief Construct a drawer from (icon, label) pairs.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The drawer variant.
-		 * @param destinations The destination (icon, label) pairs.
+		 * @brief Construct a drawer from (icon, label) pairs: enabled
+		 * destinations only, without index-change handler.
+		 * @param registry The registry that stores the components.
+		 * @param config The surface configuration (pose).
+		 * @param variant The variant.
+		 * @param destinations The (icon glyph name, label) pair of each
+		 * destination, in display order.
 		 */
 		NavigationDrawer(ecs::ComponentRegistry &registry,
 						 const SurfaceConfig &config, Variant variant,
@@ -341,11 +458,16 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Construct a drawer from entries.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
-		 * @param variant The drawer variant.
-		 * @param entries The drawer entries.
-		 * @param onIndexChange Selection change handler.
+		 *
+		 * Writes the configuration to components::NavigationDrawer and
+		 * styles the sheet. The children are built by build().
+		 * @param registry The registry that stores the components.
+		 * @param config The surface configuration (pose).
+		 * @param variant The variant.
+		 * @param entries The destinations, section titles and dividers, in
+		 * display order.
+		 * @param onIndexChange Called with the new destination index when
+		 * the user selects another destination; may be empty.
 		 */
 		NavigationDrawer(ecs::ComponentRegistry &registry,
 						 const SurfaceConfig &config, Variant variant,
@@ -353,10 +475,11 @@ namespace guillaume::entities
 						 std::function<void(std::size_t)> onIndexChange);
 
 		/**
-		 * @brief Create the child entities.
+		 * @brief Build the backdrop and the entry children, then select the
+		 * first enabled destination and style the drawer.
 		 *
-		 * Called once by create(), when the entity is owned and can be given
-		 * as parent to its children.
+		 * Called once by create(), when the drawer is owned by a shared
+		 * pointer and can be given as parent to its children.
 		 */
 		void build(void);
 	};

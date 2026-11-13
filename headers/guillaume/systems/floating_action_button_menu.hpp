@@ -29,23 +29,51 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Opens and closes a floating action button menu (speed dial).
+	 * @brief Opens and closes a floating action button menu (speed dial): a
+	 * trigger button that reveals a column of action buttons above it.
 	 *
-	 * Reads components::FloatingActionButtonMenu and writes the visibility of
-	 * the action buttons, the trigger's icon and expanded state, and the
-	 * column of children the Layout system arranges (the actions only while
-	 * the menu is open). Runs in the Layout phase, after the buttons have
-	 * been styled.
+	 * The menu entity is a vertical layout container. Its children are
+	 * buttons built by the widget class (entities::FloatingActionButtonMenu)
+	 * and recorded by identifier in components::FloatingActionButtonMenu:
+	 * one trigger and one button per action.
+	 *
+	 * - **Reads**: components::FloatingActionButtonMenu (open flag, trigger
+	 *   icon, actions, child identifiers) and the components::Button of
+	 *   each child.
+	 * - **Writes**: on each action button, the visible flag of
+	 *   components::Button and the focusable flag of
+	 *   components::Accessibility; on the trigger, the icon glyph (the
+	 *   CloseGlyph while open) and the expanded flag of
+	 *   components::Accessibility; on the menu, the children of its
+	 *   components::Layout (the actions only while open, then the trigger),
+	 *   which it then arranges through systems::Layout::apply.
+	 * - **Phase**: Layout. It is registered after systems::Layout and after
+	 *   the button variant systems, so the buttons it arranges have their
+	 *   size for this frame.
+	 *
+	 * @code
+	 * // Close the menu from code, for example after an action ran.
+	 * systems::FloatingActionButtonMenu::close(registry, identifier);
+	 * @endcode
+	 *
+	 * The list of children in the menu's components::Layout is overwritten
+	 * each frame: add or remove actions through the component (and call
+	 * install again), not through the layout.
+	 *
+	 * @see guillaume::components::FloatingActionButtonMenu,
+	 * guillaume::systems::FloatingActionButton, guillaume::systems::Layout
 	 */
 	class FloatingActionButtonMenu:
 		public ecs::SystemFiller<components::FloatingActionButtonMenu>
 	{
 		public:
-		/// Glyph shown on the trigger while the menu is open.
+		/// Name of the glyph the trigger shows while the menu is open, in
+		/// place of the icon configured in the component.
 		static constexpr const char *CloseGlyph = "close";
 
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the system for the Layout phase, matching entities
+		 * that have a components::FloatingActionButtonMenu.
 		 */
 		FloatingActionButtonMenu(void);
 
@@ -57,20 +85,45 @@ namespace guillaume::systems
 		/**
 		 * @brief Make an entity behave as a floating action button menu.
 		 *
-		 * Configures the column layout, labels the trigger recorded in the
-		 * component and wires its click to toggle(), and gives every action
-		 * button the click handler of its action. Call it again after the
-		 * button children change. The entity must have a
+		 * Does three things:
+		 * - configures the menu's components::Layout as a vertical column,
+		 *   packed at the end, centered across, with
+		 *   components::FloatingActionButtonMenu::Spacing between buttons
+		 *   and no padding;
+		 * - makes a click on the trigger call toggle, and copies the
+		 *   accessibility label of the component onto the trigger;
+		 * - gives each action button the `onClick` of the action at the
+		 *   same index.
+		 *
+		 * Call it once the trigger and the action buttons exist and are
+		 * recorded in the component, and again whenever the actions or
+		 * their buttons change. A child identifier that is invalid or has
+		 * no components::Button is skipped. It does not show or hide
+		 * anything: `apply` does.
+		 * @param componentRegistry The registry holding the components. The
+		 * trigger handler keeps its address, so it must outlive the menu.
+		 * @param entityIdentifier The menu entity. It must have a
 		 * components::FloatingActionButtonMenu and a components::Layout.
-		 * @param componentRegistry The registry holding the components.
-		 * @param entityIdentifier The menu entity.
 		 */
 		static void install(ecs::ComponentRegistry &componentRegistry,
 							const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Show or hide the actions, update the trigger and lay out the
-		 * column.
+		 * @brief Bring the buttons in line with the open flag of the
+		 * component, then lay out the column.
+		 *
+		 * Each action button is made visible and focusable when the menu is
+		 * open, hidden and not focusable when it is closed, and restyled
+		 * when its visibility changed. The trigger shows CloseGlyph while
+		 * open and the configured icon otherwise, and reports its expanded
+		 * state to accessibility. The layout children become the open
+		 * actions followed by the trigger, and systems::Layout::apply
+		 * places them at once.
+		 *
+		 * The frame calls it through `update`; open, close and toggle call
+		 * it on a change. Call it yourself after writing
+		 * `components::FloatingActionButtonMenu::setOpen` directly, which
+		 * changes the flag without calling the state-change callback.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The menu entity.
 		 */
@@ -78,8 +131,10 @@ namespace guillaume::systems
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Open the menu and call the state-change callback, unless it
-		 * is already open.
+		 * @brief Open the menu: show its actions at once, then call the
+		 * state-change callback with `true`.
+		 *
+		 * Does nothing, and calls nothing, when the menu is already open.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The menu entity.
 		 */
@@ -87,8 +142,12 @@ namespace guillaume::systems
 						 const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Close the menu and call the state-change callback, unless it
-		 * is already closed.
+		 * @brief Close the menu: hide its actions at once, then call the
+		 * state-change callback with `false`.
+		 *
+		 * Does nothing, and calls nothing, when the menu is already closed.
+		 * Clicking an action does not close the menu by itself; call this
+		 * from the action's handler when that is wanted.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The menu entity.
 		 */
@@ -96,7 +155,10 @@ namespace guillaume::systems
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Open the menu when closed, close it when open.
+		 * @brief Open the menu when it is closed, close it when it is open,
+		 * and call the state-change callback with the new state.
+		 *
+		 * This is what a click on the trigger does.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The menu entity.
 		 */
@@ -104,18 +166,23 @@ namespace guillaume::systems
 						   const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Refresh the menu with the given identifier.
-		 * @param entityIdentifier The identifier of the entity to update.
+		 * @brief Frame entry point: call `apply` on one menu.
+		 * @param entityIdentifier The menu entity. An entity without a
+		 * components::FloatingActionButtonMenu is logged and skipped.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 
 		private:
 		/**
-		 * @brief Set the open state; on a change, restyle and call the
-		 * state-change callback.
+		 * @brief Shared body of open, close and toggle.
+		 *
+		 * When the state really changes: writes the open flag, calls
+		 * `apply`, then calls the state-change callback of the component
+		 * (if any) with the new state. The callback is copied first, so it
+		 * may replace itself.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The menu entity.
-		 * @param open The new open state.
+		 * @param open True to open the menu, false to close it.
 		 */
 		static void setOpen(ecs::ComponentRegistry &componentRegistry,
 							const ecs::Entity::Identifier &entityIdentifier,

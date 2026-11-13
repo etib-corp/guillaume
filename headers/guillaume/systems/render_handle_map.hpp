@@ -34,45 +34,78 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Per-entity render handle linking an entity to an engine object.
+	 * @brief What a render system remembers about the engine object it
+	 * created for one entity.
 	 *
-	 * Keeps the stable engine object id returned by
-	 * utility::Engine::createObject and the renderable that was last uploaded,
-	 * so updateObject/removeObject can be called with the matching renderable.
+	 * It pairs the object id returned by utility::Engine::createObject with
+	 * the renderable that was uploaded last, because
+	 * utility::Engine::updateObject and utility::Engine::removeObject need
+	 * both. A render system sets `used` each frame it draws the entity.
+	 * @see RenderHandleMap
 	 */
 	struct RenderHandle {
-		size_t objectId { 0 };	  ///< utility::Engine object identifier
+		size_t objectId { 0 };	  ///< Identifier given by the engine
 		std::shared_ptr<utility::graphic::Renderable>
-			renderable;		   ///< Last uploaded renderable
-		bool used { true };	   ///< Whether the entity was seen this frame
+			renderable;		   ///< Renderable uploaded last for this object
+		bool used { true };	   ///< Whether the entity was drawn this frame
 	};
 
 	/**
-	 * @brief Map of per-entity render handles with frame-scoped garbage
-	 * collection.
+	 * @brief The engine objects one render system owns, keyed by entity
+	 * identifier.
 	 *
-	 * Replaces the former pose+content cache: handles are keyed by entity
-	 * identifier, so an object is created once per entity and updated in place
-	 * afterwards. Entries not touched during a frame are removed on cleanup.
+	 * Every render system (RectangleRender, TextRender, ...) inherits from
+	 * this class. An engine object is created the first time an entity is
+	 * drawn and updated in place afterwards. An entity that is not drawn
+	 * during a frame (it was destroyed or lost a component) has its engine
+	 * object removed at the end of that frame.
+	 *
+	 * The sequence in a render system is:
+	 * @code
+	 * void MyRender::prepare(void) { markAllUnused(); }
+	 *
+	 * void MyRender::update(const ecs::Entity::Identifier &identifier)
+	 * {
+	 * 	auto renderable = buildRenderable(identifier);
+	 * 	RenderHandle *handle = find(identifier);
+	 * 	if (handle == nullptr) {
+	 * 		insert(identifier, RenderHandle {
+	 * 			_engine.createObject(renderable), renderable, true });
+	 * 	} else {
+	 * 		_engine.updateObject(renderable, handle->objectId);
+	 * 		handle->renderable = renderable;
+	 * 		handle->used	   = true;
+	 * 	}
+	 * }
+	 *
+	 * void MyRender::cleanup(void) { removeUnused(_engine); }
+	 * @endcode
+	 *
+	 * find() does not set `used`: a system that finds a handle and forgets to
+	 * set the flag loses the engine object at cleanup.
+	 * @see RenderHandle
 	 */
 	class RenderHandleMap
 	{
 		private:
-		std::map<ecs::Entity::Identifier, RenderHandle> _handles;
+		std::map<ecs::Entity::Identifier, RenderHandle>
+			_handles;	 ///< One handle per entity drawn by the owning system
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create an empty map.
 		 */
 		RenderHandleMap(void) = default;
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the map without removing the engine objects it
+		 * refers to.
 		 */
 		~RenderHandleMap(void) = default;
 
 		/**
-		 * @brief Mark every handle as unused at the start of a frame.
+		 * @brief Clear the `used` flag of every handle. Call it from the
+		 * system's prepare(), before any entity is drawn.
 		 */
 		void markAllUnused(void)
 		{
@@ -82,8 +115,10 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Remove unused handles, calling utility::Engine::removeObject.
-		 * @param engine utility::Engine used to remove stale objects.
+		 * @brief Remove from the engine, then from the map, every handle
+		 * whose `used` flag is still false. Call it from the system's
+		 * cleanup().
+		 * @param engine The engine the objects were created in.
 		 */
 		void removeUnused(utility::Engine &engine)
 		{
@@ -99,9 +134,14 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Get the handle for an entity, or nullptr.
-		 * @param identifier The target entity identifier.
-		 * @return Mutable pointer to the handle, or nullptr.
+		 * @brief Look up the handle of an entity.
+		 *
+		 * The `used` flag is left as it is: the caller sets it once the
+		 * entity has been drawn.
+		 * @param identifier The entity to look up.
+		 * @return The handle, or `nullptr` when the entity has no engine
+		 * object in this map. The pointer is valid until the handle is
+		 * removed.
 		 */
 		RenderHandle *find(const ecs::Entity::Identifier &identifier)
 		{
@@ -113,9 +153,14 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Insert a handle for an entity.
-		 * @param identifier The target entity identifier.
-		 * @param handle The handle to store.
+		 * @brief Store the handle of an entity, replacing the one it had.
+		 *
+		 * A replaced handle is dropped without calling
+		 * utility::Engine::removeObject: remove the engine object first when
+		 * the entity already has one.
+		 * @param identifier The entity the engine object belongs to.
+		 * @param handle The handle to store, with `used` set to true if the
+		 * entity was drawn this frame.
 		 */
 		void insert(const ecs::Entity::Identifier &identifier,
 					RenderHandle handle)
@@ -124,8 +169,8 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Get the number of tracked handles.
-		 * @return Number of entity handles currently tracked.
+		 * @brief Count the entities that have an engine object in this map.
+		 * @return The number of handles stored.
 		 */
 		std::size_t size(void) const
 		{
@@ -133,7 +178,9 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Clear all handles without removing engine objects.
+		 * @brief Forget every handle without calling
+		 * utility::Engine::removeObject. Use it only when the engine objects
+		 * are gone already or are destroyed with the engine.
 		 */
 		void clear(void)
 		{

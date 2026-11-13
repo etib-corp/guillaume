@@ -43,7 +43,40 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Text component
+	 * @brief A single run of text drawn with a typescale role, a color and
+	 * an optional explicit font size.
+	 *
+	 * Text is a leaf widget: it has no children. Its state lives in four
+	 * components: components::Text (content and font metrics),
+	 * components::Typography (typescale role and explicit size),
+	 * components::Color and components::Transform. Each frame, in the
+	 * Measure phase, systems::Typography resolves the role against the
+	 * active theme into the font metrics, then systems::MeasureText writes
+	 * the measured size into components::Bound. systems::TextRender draws
+	 * the text in the Render phase. The class itself holds no field.
+	 *
+	 * @code
+	 * Text::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto title = builder.makeText(parent, "Settings",
+	 * 	theme::TypeRole::TitleLarge,
+	 * 	getActiveColor(SchemeColorRole::OnSurface));
+	 * title->setContent("Preferences");
+	 * @endcode
+	 *
+	 * `Text::create(registry, content, role, color)` or
+	 * `Text::create(registry, content, fontSize, color)` builds the same
+	 * widget without registering it in an entity registry.
+	 *
+	 * Watch out:
+	 * - The Bound is overwritten every frame with the measured size; do not
+	 *   size a text by hand.
+	 * - The font weight, line height and letter spacing always come from
+	 *   the role. An explicit font size only replaces the size of the role.
+	 * - The font metrics in components::Text are overwritten every frame
+	 *   from components::Typography; change them through setTypeRole() and
+	 *   setFontSize().
+	 *
+	 * @see components::Typography, systems::Typography, systems::MeasureText
 	 */
 	class Text:
 		public ecs::EntityFiller<components::Transform, components::Bound,
@@ -52,90 +85,99 @@ namespace guillaume::entities
 	{
 		public:
 		/**
-		 * @brief Text type, which can be Normal, Condensed, Monospace, Serif,
-		 * or Slab.
+		 * @brief Font family kinds. No function of the library reads this
+		 * enumeration.
 		 */
 		enum class Type { Normal, Condensed, Monospace, Serif, Slab };
 
 		/**
-		 * @brief Builder used to configure and create `Text` entities.
+		 * @brief Configures Text widgets and registers them in the scene's
+		 * entity registry.
 		 */
 		class Builder: public EntityBuilderBase<Text>
 		{
 			public:
 			private:
-			std::string
-				_content;	 ///< Text content to be set in the Text component
-			theme::TypeRole _typeRole;	  ///< Typescale role of the text
+			std::string _content;		  ///< Characters to draw.
+			theme::TypeRole _typeRole;	  ///< Typescale role of the text.
 			std::optional<float>
-				_fontSize;	  ///< Explicit size overriding the role size
-			utility::graphic::Color32Bit
-				_color;	   ///< Color to be set in the Text component (RGBA)
+				_fontSize;	  ///< Explicit size overriding the role size, in
+							  ///< dp; std::nullopt uses the role size.
+			utility::graphic::Color32Bit _color;	///< Text color (RGBA).
 
 			public:
 			/**
-			 * @brief Construct a new Text Builder object.
-			 * @param componentRegistry The component registry to register
-			 * components to.
-			 * @param entityRegistry The entity registry to register entities
-			 * to.
+			 * @brief Construct a builder holding the defaults of reset().
+			 * @param componentRegistry The registry the components of the
+			 * built texts are stored in.
+			 * @param entityRegistry The registry that owns the texts built
+			 * by `makeText`.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the Text entity from the current configuration.
-			 * @return The newly created Text.
+			 * @brief Build a text from the current configuration, without
+			 * registering it or giving it a parent.
+			 * @return The new text.
 			 */
 			std::shared_ptr<Text> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder to its initial state for creating a new
-			 * Text entity.
+			 * @brief Restore the defaults: empty content, role `BodyMedium`,
+			 * no explicit font size, and the OnSurface color of the active
+			 * theme.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the text content for the Text component.
-			 * @param content The text content to set.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the characters to draw.
+			 * @param content The text content. Empty by default.
+			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withContent(const std::string &content);
 
 			/**
-			 * @brief Set the font size for the Text component.
-			 * @param fontSize The font size to set.
-			 * @return Reference to the builder for chaining.
-			 */
-			/**
 			 * @brief Override the role font size with an explicit size.
-			 * @param fontSize Font size, in dp.
+			 *
+			 * The other metrics still come from the role. A later call to
+			 * withTypeRole() drops this size.
+			 * @param fontSize The font size, in dp. By default the role
+			 * size is used.
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withFontSize(const float &fontSize);
 
 			/**
-			 * @brief Set the typescale role (default `BodyMedium`).
-			 * @param role Typescale role.
+			 * @brief Set the typescale role and drop any explicit font
+			 * size.
+			 * @param role The typescale role, resolved against the active
+			 * theme each frame. `BodyMedium` by default.
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withTypeRole(theme::TypeRole role);
 
 			/**
-			 * @brief Set the color for the Text component.
-			 * @param color The color to set (RGBA).
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the text color.
+			 * @param color The color (RGBA). By default the OnSurface color
+			 * the active theme had when the builder was last reset.
+			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withColor(const utility::graphic::Color32Bit &color);
 
 			/**
-			 * @brief Create a default Text entity using the builder.
-			 * @param parent The parent entity to which the new text entity will
-			 * be attached.
-			 * @param content The text content for the default Text entity.
-			 * @param fontSize The font size for the default Text entity.
-			 * @param color The color for the default Text entity (RGBA).
-			 * @return The entity identifier of the newly created text entity.
+			 * @brief Build a text with an explicit font size, register it
+			 * under `parent` and reset the builder.
+			 *
+			 * The role is the one configured on the builder (`BodyMedium`
+			 * unless withTypeRole() was called): it gives the weight, line
+			 * height and letter spacing.
+			 * @param parent The entity the text is attached to, or nullptr
+			 * for a root entity.
+			 * @param content The characters to draw.
+			 * @param fontSize The font size, in dp.
+			 * @param color The text color (RGBA).
+			 * @return The registered text.
 			 */
 			std::shared_ptr<Text>
 				makeText(std::shared_ptr<Entity> parent,
@@ -143,12 +185,15 @@ namespace guillaume::entities
 						 const utility::graphic::Color32Bit &color);
 
 			/**
-			 * @brief Build a text styled by a typescale role.
-			 * @param parent Parent entity.
-			 * @param content Text content.
-			 * @param role Typescale role.
-			 * @param color Text color.
-			 * @return The registered text entity.
+			 * @brief Build a text styled by a typescale role, register it
+			 * under `parent` and reset the builder.
+			 * @param parent The entity the text is attached to, or nullptr
+			 * for a root entity.
+			 * @param content The characters to draw.
+			 * @param role The typescale role giving the font size, weight,
+			 * line height and letter spacing.
+			 * @param color The text color (RGBA).
+			 * @return The registered text.
 			 */
 			std::shared_ptr<Text>
 				makeText(std::shared_ptr<Entity> parent,
@@ -158,14 +203,16 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Build a text without registering it in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
+		 * The arguments are forwarded to a private constructor:
+		 * `(registry, content, role, color)`, optionally followed by an
+		 * explicit font size, or `(registry, content, fontSize, color)`,
+		 * which uses the role `theme::TypeRole::Default`. A text has no
+		 * children to build.
 		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * @param arguments The constructor arguments, as listed above.
+		 * @return The new text. The caller owns it.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<Text> create(Arguments &&...arguments)
@@ -176,41 +223,52 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Default destructor for the Text component.
+		 * @brief Destructor.
 		 */
 		~Text(void);
 
 		/**
-		 * @brief Set the text content for this Text component.
-		 * @param content The new text content to set.
-		 * @return Reference to this Text component for chaining.
+		 * @brief Replace the characters to draw.
+		 *
+		 * Writes components::Text. The Bound follows at the next Measure
+		 * phase.
+		 * @param content The new text content.
+		 * @return Reference to this text for chaining.
 		 */
 		Text &setContent(const std::string &content);
 
 		/**
-		 * @brief Set the font size for this Text component.
-		 * @param fontSize The new font size to set.
-		 * @return Reference to this Text component for chaining.
+		 * @brief Override the role font size with an explicit size.
+		 *
+		 * Writes components::Typography and resolves the font metrics at
+		 * once. The weight, line height and letter spacing still come from
+		 * the role.
+		 * @param fontSize The new font size, in dp.
+		 * @return Reference to this text for chaining.
 		 */
 		Text &setFontSize(const float &fontSize);
 
 		/**
-		 * @brief Set the typescale role and drop any explicit size override.
-		 * @param role Typescale role.
+		 * @brief Set the typescale role and drop any explicit font size.
+		 *
+		 * Writes components::Typography and resolves the font metrics at
+		 * once.
+		 * @param role The typescale role, resolved against the active theme
+		 * each frame.
 		 * @return Reference to this text for chaining.
 		 */
 		Text &setTypeRole(theme::TypeRole role);
 
 		/**
-		 * @brief Get the typescale role.
-		 * @return The typescale role.
+		 * @brief Get the typescale role the text is styled with.
+		 * @return The role stored in components::Typography.
 		 */
 		theme::TypeRole getTypeRole(void) const;
 
 		/**
-		 * @brief Set the color for this Text component.
-		 * @param color The new color to set (RGBA).
-		 * @return Reference to this Text component for chaining.
+		 * @brief Set the text color.
+		 * @param color The new color (RGBA), written to components::Color.
+		 * @return Reference to this text for chaining.
 		 */
 		Text &setColor(const utility::graphic::Color32Bit &color);
 
@@ -228,30 +286,32 @@ namespace guillaume::entities
 		const components::Typography &typography(void) const;
 
 		/**
-		 * @brief Run systems::Typography on this entity right now.
+		 * @brief Run systems::Typography on this entity right now, so the
+		 * font metrics of components::Text match the role and explicit size
+		 * without waiting for the next frame.
 		 */
 		void applyTypography(void);
 
 		private:
 		/**
-		 * @brief Default constructor for the Text component.
-		 * @param registry Reference to the component registry for initializing
-		 * components.
-		 * @param content The text content to initialize the Text component
-		 * with.
-		 * @param fontSize The font size to initialize the Text component with.
-		 * @param color The color to initialize the Text component with (RGBA).
+		 * @brief Construct a text with an explicit font size and the role
+		 * `theme::TypeRole::Default`.
+		 * @param registry The registry the components are stored in.
+		 * @param content The characters to draw.
+		 * @param fontSize The font size, in dp.
+		 * @param color The text color (RGBA).
 		 */
 		Text(ecs::ComponentRegistry &registry, const std::string &content,
 			 const float &fontSize, const utility::graphic::Color32Bit &color);
 
 		/**
 		 * @brief Construct a text styled by a typescale role.
-		 * @param registry Component registry.
-		 * @param content Text content.
-		 * @param role Typescale role.
-		 * @param color Text color.
-		 * @param fontSize Optional size overriding the role size.
+		 * @param registry The registry the components are stored in.
+		 * @param content The characters to draw.
+		 * @param role The typescale role giving the font metrics.
+		 * @param color The text color (RGBA).
+		 * @param fontSize An explicit size, in dp, overriding the role
+		 * size; std::nullopt uses the role size.
 		 */
 		Text(ecs::ComponentRegistry &registry, const std::string &content,
 			 theme::TypeRole role, const utility::graphic::Color32Bit &color,

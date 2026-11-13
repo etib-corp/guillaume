@@ -25,10 +25,15 @@
 
 /**
  * @file
- * @brief Source-compatibility aliases for the interaction helpers.
+ * @brief Makes the interaction helpers callable from
+ * guillaume::entities without qualification.
  *
- * The helpers live in guillaume::systems since the widget rules moved to
- * systems; this header keeps the names available in guillaume::entities.
+ * This header declares nothing of its own: the functions are defined in
+ * guillaume::systems::interaction. They make an entity pressable
+ * (`makeInteractive`), enable or disable it, tell whether it is hovered or
+ * pressed, and compute its container color with the state layer applied.
+ *
+ * @see guillaume::systems::interaction
  */
 namespace guillaume::entities
 {

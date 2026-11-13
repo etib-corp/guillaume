@@ -33,27 +33,38 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief State of a progress indicator.
+	 * @brief State of a progress indicator: a bar or a ring that fills up
+	 * with a value from 0 to 1, or loops when the value is unknown.
 	 *
-	 * This component is the whole state of a progress indicator besides its
-	 * target value (components::Value): its configuration (variant, track
-	 * length, diameter, color override, visibility), its track and fill
-	 * children, and the transient values of its value transition, of its fade
-	 * and of its indeterminate animation. systems::ProgressIndicator turns it
-	 * into the size of the widget and into the geometry and color of the
-	 * children.
+	 * It holds two kinds of state. The configuration (variant, track
+	 * length, diameter, color, visibility) and the identifiers of the track
+	 * and fill children are written by the entities::ProgressIndicator
+	 * widget. The running state (drawn value, fade opacity, loop progress)
+	 * is written by systems::ProgressIndicator from the animations it
+	 * installs. In the Layout phase, systems::ProgressIndicator turns all
+	 * of it into the size of the widget and the geometry and color of the
+	 * two children.
+	 *
+	 * The value to reach is not stored here: it is the components::Value of
+	 * the same entity. Set it with systems::ProgressIndicator::setValue;
+	 * the drawn value then moves to it over a short animation.
+	 *
+	 * @see systems::ProgressIndicator, components::Value,
+	 * entities::ProgressIndicator
 	 */
 	class ProgressIndicator: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Progress indicator visual variant.
+		 * @brief Shape of the indicator and whether it shows a value.
 		 */
 		enum class Variant {
-			LinearDeterminate,		 ///< Linear determinate bar.
-			LinearIndeterminate,	 ///< Linear indeterminate bar.
-			CircularDeterminate,	 ///< Circular determinate ring.
-			CircularIndeterminate	 ///< Circular indeterminate ring.
+			LinearDeterminate,		 ///< Bar filled up to the value.
+			LinearIndeterminate,	 ///< Bar with a segment that slides in
+									 ///< a loop.
+			CircularDeterminate,	 ///< Ring filled up to the value.
+			CircularIndeterminate	 ///< Ring with an arc that turns in a
+									 ///< loop.
 		};
 
 		/// Default length of the linear track, in dp.
@@ -68,15 +79,17 @@ namespace guillaume::components
 		/// Stroke width of the circular track and fill, in dp.
 		static constexpr float RingThickness = 4.0f;
 
-		/// Indeterminate linear segment length, as a fraction of the track
-		/// (Paper uses 60%).
+		/// Length of the sliding segment of the linear indeterminate
+		/// variant, as a fraction of the track (0 to 1).
 		static constexpr float IndeterminateSegment = 0.6f;
 
-		/// Indeterminate circular arc length, as a fraction of the ring.
+		/// Length of the turning arc of the circular indeterminate variant,
+		/// as a fraction of the ring (0 to 1).
 		static constexpr float IndeterminateSweep = 0.25f;
 
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the state of a visible linear determinate indicator
+		 * with the default sizes and no child.
 		 */
 		ProgressIndicator(void) = default;
 
@@ -85,108 +98,248 @@ namespace guillaume::components
 		 */
 		~ProgressIndicator(void) = default;
 
-		/** @brief Get: visual variant. @return The value. */
+		/**
+		 * @brief Get the shape of the indicator and whether it shows a
+		 * value.
+		 * @return The variant, Variant::LinearDeterminate by default.
+		 */
 		Variant getVariant(void) const noexcept;
 
-		/** @brief Set: visual variant. @param variant The value. @return It. */
+		/**
+		 * @brief Set the shape of the indicator and whether it shows a
+		 * value.
+		 *
+		 * The children depend on the variant; this setter does not rebuild
+		 * them, the widget does. Marks the component changed only when the
+		 * variant differs.
+		 * @param variant The new variant.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setVariant(Variant variant);
 
-		/** @brief Whether the variant is a ring. @return True for the
-		 * circular variants. */
+		/**
+		 * @brief Tell whether the indicator is a ring.
+		 * @return True for the two circular variants.
+		 */
 		bool isCircular(void) const noexcept;
 
-		/** @brief Whether the variant carries no value. @return True for the
-		 * indeterminate variants. */
+		/**
+		 * @brief Tell whether the indicator loops instead of showing a
+		 * value.
+		 * @return True for the two indeterminate variants.
+		 */
 		bool isIndeterminate(void) const noexcept;
 
-		/** @brief Get: linear track length, in dp. @return The value. */
+		/**
+		 * @brief Get the length of the track of the linear variants.
+		 * @return The length, in dp.
+		 */
 		float getTrackLength(void) const noexcept;
 
-		/** @brief Set: linear track length, in dp. @param length The value.
-		 * @return It. */
+		/**
+		 * @brief Set the length of the track of the linear variants.
+		 *
+		 * The circular variants ignore it. Marks the component changed only
+		 * when the value differs.
+		 * @param length The new length, in dp.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setTrackLength(float length);
 
-		/** @brief Get: circular diameter, in dp. @return The value. */
+		/**
+		 * @brief Get the diameter of the circular variants.
+		 * @return The diameter, in dp.
+		 */
 		float getDiameter(void) const noexcept;
 
-		/** @brief Set: circular diameter, in dp. @param diameter The value.
-		 * @return It. */
+		/**
+		 * @brief Set the diameter of the circular variants.
+		 *
+		 * The linear variants ignore it. Marks the component changed only
+		 * when the value differs.
+		 * @param diameter The new diameter, in dp.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setDiameter(float diameter);
 
-		/** @brief Get: track child. @return The value. */
+		/**
+		 * @brief Get the child that draws the track: the full bar or ring
+		 * behind the fill.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when it
+		 * has not been built.
+		 */
 		ecs::Entity::Identifier getTrack(void) const noexcept;
 
-		/** @brief Set: track child. @param identifier The value. @return It.
+		/**
+		 * @brief Record the child that draws the track.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
 		 */
 		ProgressIndicator &setTrack(ecs::Entity::Identifier identifier);
 
-		/** @brief Get: fill child. @return The value. */
+		/**
+		 * @brief Get the child that draws the fill: the part of the bar or
+		 * ring that shows the progress.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when it
+		 * has not been built.
+		 */
 		ecs::Entity::Identifier getFill(void) const noexcept;
 
-		/** @brief Set: fill child. @param identifier The value. @return It. */
+		/**
+		 * @brief Record the child that draws the fill.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setFill(ecs::Entity::Identifier identifier);
 
-		/** @brief Get: whether the children have been built for the current
-		 * variant. @return The value. */
+		/**
+		 * @brief Tell whether the track and fill children match the
+		 * current variant.
+		 * @return True once the widget has built them; false for a new
+		 * component and after the widget changes the variant.
+		 */
 		bool isBuilt(void) const noexcept;
 
-		/** @brief Set: whether the children have been built for the current
-		 * variant. @param built The value. @return It. */
+		/**
+		 * @brief Record whether the track and fill children match the
+		 * current variant.
+		 *
+		 * The widget lowers the flag when it changes the variant and raises
+		 * it once it has rebuilt the children. Marks the component changed
+		 * only when the flag differs.
+		 * @param built True when the children are up to date.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setBuilt(bool built);
 
-		/** @brief Get: value currently drawn, which trails the target value.
-		 * @return The value. */
+		/**
+		 * @brief Get the value currently drawn.
+		 * @return The drawn value, 0 to 1. It trails the target value of
+		 * components::Value while the transition runs.
+		 */
 		float getDisplayed(void) const noexcept;
 
-		/** @brief Set: value currently drawn. @param displayed The value.
-		 * @return It. */
+		/**
+		 * @brief Store the value currently drawn.
+		 *
+		 * Running state written by systems::ProgressIndicator on every
+		 * sample of the value transition. Marks the component changed only
+		 * when the value differs.
+		 * @param displayed The drawn value, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setDisplayed(float displayed);
 
-		/** @brief Get: drawn value when the transition began. @return The
-		 * value. */
+		/**
+		 * @brief Get the value that was drawn when the running transition
+		 * began.
+		 * @return The starting value, 0 to 1.
+		 */
 		float getValueFrom(void) const noexcept;
 
-		/** @brief Set: drawn value when the transition began. @param value
-		 * The value. @return It. */
+		/**
+		 * @brief Store the value drawn at the start of a transition.
+		 *
+		 * The drawn value is interpolated from this one to the target.
+		 * Marks the component changed only when the value differs.
+		 * @param value The starting value, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setValueFrom(float value);
 
-		/** @brief Get: target visibility (Paper `visible`). @return The value.
+		/**
+		 * @brief Tell whether the indicator is meant to be visible.
+		 * @return True when visible, which is the default. The indicator
+		 * may still be fading; see getOpacity().
 		 */
 		bool isVisible(void) const noexcept;
 
-		/** @brief Set: target visibility. @param visible The value. @return
-		 * It. */
+		/**
+		 * @brief Record whether the indicator is meant to be visible.
+		 *
+		 * This only stores the flag. Use
+		 * systems::ProgressIndicator::setVisible instead: it also starts
+		 * the fade. Marks the component changed only when the flag differs.
+		 * @param visible True to show the indicator.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setVisible(bool visible);
 
-		/** @brief Get: current fade opacity, in [0, 1]. @return The value. */
+		/**
+		 * @brief Get the opacity the indicator is drawn with.
+		 * @return The opacity, 0 (hidden) to 1 (fully visible).
+		 */
 		float getOpacity(void) const noexcept;
 
-		/** @brief Set: current fade opacity. @param opacity The value.
-		 * @return It. */
+		/**
+		 * @brief Store the opacity the indicator is drawn with.
+		 *
+		 * Running state written by systems::ProgressIndicator on every
+		 * sample of the fade. Marks the component changed only when the
+		 * value differs.
+		 * @param opacity The opacity, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setOpacity(float opacity);
 
-		/** @brief Get: opacity when the fade began. @return The value. */
+		/**
+		 * @brief Get the opacity the indicator had when the running fade
+		 * began.
+		 * @return The starting opacity, 0 to 1.
+		 */
 		float getOpacityFrom(void) const noexcept;
 
-		/** @brief Set: opacity when the fade began. @param opacity The value.
-		 * @return It. */
+		/**
+		 * @brief Store the opacity at the start of a fade.
+		 *
+		 * The opacity is interpolated from this one to 1 (visible) or 0
+		 * (hidden). Marks the component changed only when the value
+		 * differs.
+		 * @param opacity The starting opacity, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setOpacityFrom(float opacity);
 
-		/** @brief Get: latest eased progress of the indeterminate animation,
-		 * in [0, 1]. @return The value. */
+		/**
+		 * @brief Get how far the loop of an indeterminate variant has
+		 * advanced.
+		 * @return The eased progress of the current loop, 0 to 1.
+		 */
 		float getCycle(void) const noexcept;
 
-		/** @brief Set: latest eased progress of the indeterminate animation.
-		 * @param cycle The value. @return It. */
+		/**
+		 * @brief Store how far the loop of an indeterminate variant has
+		 * advanced.
+		 *
+		 * Running state written by the looping animation of the fill
+		 * child. It sets the position of the sliding segment or the start
+		 * angle of the turning arc. Marks the component changed only when
+		 * the value differs.
+		 * @param cycle The eased progress of the current loop, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setCycle(float cycle);
 
-		/** @brief Get: fill color override (Paper `color`), empty for the
-		 * theme `Primary`. @return The value. */
+		/**
+		 * @brief Get the color chosen for the fill.
+		 * @return The color, or std::nullopt when the fill uses the theme's
+		 * `Primary` color.
+		 */
 		const std::optional<utility::graphic::Color32Bit> &
 			getIndicatorColor(void) const noexcept;
 
-		/** @brief Set: fill color override. @param color The value. @return
-		 * It. */
+		/**
+		 * @brief Choose the color of the fill.
+		 *
+		 * Marks the component changed only when the value differs.
+		 * @param color The color, or std::nullopt to use the theme's
+		 * `Primary` color.
+		 * @return This component, for chaining.
+		 */
 		ProgressIndicator &setIndicatorColor(
 			const std::optional<utility::graphic::Color32Bit> &color);
 

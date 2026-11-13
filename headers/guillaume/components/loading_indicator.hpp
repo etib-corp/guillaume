@@ -33,23 +33,33 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief State of a loading indicator.
+	 * @brief State of a loading indicator: an arc that turns, or a bar that
+	 * slides, in a loop while something is in progress.
 	 *
-	 * This component is the whole state of a loading indicator: its
-	 * configuration (variant, diameter, color override, whether it hides when
-	 * stopped), its animated child, and the transient values of its looping
-	 * animation and of its fade. systems::LoadingIndicator turns it into the
-	 * size of the widget and into the geometry and color of the child.
+	 * It holds two kinds of state. The configuration (variant, diameter,
+	 * color, whether it hides when stopped) and the identifier of the
+	 * animated child are written by the entities::LoadingIndicator widget.
+	 * The running state (loop progress, fade opacity) is written by
+	 * systems::LoadingIndicator from the animations it installs. In the
+	 * Layout phase, systems::LoadingIndicator turns all of it into the size
+	 * of the widget and the geometry and color of the child.
+	 *
+	 * Whether the indicator runs is not stored here: it is whether the
+	 * looping components::Animation of the child plays. Use
+	 * systems::LoadingIndicator::start and systems::LoadingIndicator::stop.
+	 *
+	 * @see systems::LoadingIndicator, components::ProgressIndicator,
+	 * entities::LoadingIndicator
 	 */
 	class LoadingIndicator: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Loading indicator visual variant.
+		 * @brief Shape of the indicator.
 		 */
 		enum class Variant {
-			Linear,		///< Linear sliding bar.
-			Circular	///< Circular rotating arc.
+			Linear,		///< Bar that slides along a 200 dp line.
+			Circular	///< Arc that turns around a circle.
 		};
 
 		/// Length of the linear variant, in dp.
@@ -58,18 +68,20 @@ namespace guillaume::components
 		/// Thickness of the linear variant, in dp.
 		static constexpr float LinearHeight = 4.0f;
 
-		/// Length of the sliding bar, as a fraction of the linear length.
+		/// Length of the sliding bar, as a fraction of the linear length
+		/// (0 to 1).
 		static constexpr float LinearSegment = 0.4f;
 
 		/// Default diameter of the circular variant, in dp.
 		static constexpr float DefaultSize = 48.0f;
 
-		/// Stroke width of the arc, as a fraction of the diameter (M3: 4 dp
-		/// at 48 dp).
+		/// Stroke width of the arc, as a fraction of the diameter: 4 dp for
+		/// a 48 dp indicator.
 		static constexpr float StrokeRatio = 4.0f / 48.0f;
 
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the state of a circular indicator of the default
+		 * size, with no child, that hides when stopped.
 		 */
 		LoadingIndicator(void) = default;
 
@@ -78,78 +90,180 @@ namespace guillaume::components
 		 */
 		~LoadingIndicator(void) = default;
 
-		/** @brief Get: visual variant. @return The value. */
+		/**
+		 * @brief Get the shape of the indicator.
+		 * @return The variant, Variant::Circular by default.
+		 */
 		Variant getVariant(void) const noexcept;
 
-		/** @brief Set: visual variant. @param variant The value. @return It. */
+		/**
+		 * @brief Set the shape of the indicator.
+		 *
+		 * The child depends on the variant; this setter does not rebuild
+		 * it, the widget does. Marks the component changed only when the
+		 * variant differs.
+		 * @param variant The new variant.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setVariant(Variant variant);
 
-		/** @brief Get: circular diameter, in dp. @return The value. */
+		/**
+		 * @brief Get the diameter of the circular variant.
+		 * @return The diameter, in dp.
+		 */
 		float getSize(void) const noexcept;
 
-		/** @brief Set: circular diameter, in dp. @param size The value.
-		 * @return It. */
+		/**
+		 * @brief Set the diameter of the circular variant.
+		 *
+		 * The stroke width follows it (StrokeRatio). The linear variant
+		 * ignores it. Marks the component changed only when the value
+		 * differs.
+		 * @param size The new diameter, in dp.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setSize(float size);
 
-		/** @brief Get: animated child. @return The value. */
+		/**
+		 * @brief Get the child that draws the turning arc or the sliding
+		 * bar.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when it
+		 * has not been built.
+		 */
 		ecs::Entity::Identifier getIndicator(void) const noexcept;
 
-		/** @brief Set: animated child. @param identifier The value. @return
-		 * It. */
+		/**
+		 * @brief Record the child that draws the turning arc or the sliding
+		 * bar.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setIndicator(ecs::Entity::Identifier identifier);
 
-		/** @brief Get: whether the animated child has been built for the
-		 * current variant. @return The value. */
+		/**
+		 * @brief Tell whether the animated child matches the current
+		 * variant.
+		 * @return True once the widget has built it; false for a new
+		 * component and after the widget changes the variant.
+		 */
 		bool isBuilt(void) const noexcept;
 
-		/** @brief Set: whether the animated child has been built for the
-		 * current variant. @param built The value. @return It. */
+		/**
+		 * @brief Record whether the animated child matches the current
+		 * variant.
+		 *
+		 * The widget lowers the flag when it changes the variant and raises
+		 * it once it has rebuilt the child. Marks the component changed
+		 * only when the flag differs.
+		 * @param built True when the child is up to date.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setBuilt(bool built);
 
-		/** @brief Get: latest eased progress of the looping animation, in
-		 * [0, 1]. @return The value. */
+		/**
+		 * @brief Get how far the loop has advanced.
+		 * @return The eased progress of the current loop, 0 to 1.
+		 */
 		float getProgress(void) const noexcept;
 
-		/** @brief Set: latest eased progress of the looping animation.
-		 * @param progress The value. @return It. */
+		/**
+		 * @brief Store how far the loop has advanced.
+		 *
+		 * Running state written by the looping animation of the child. It
+		 * sets the start angle of the arc or the position of the bar. Marks
+		 * the component changed only when the value differs.
+		 * @param progress The eased progress of the current loop, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setProgress(float progress);
 
-		/** @brief Get: whether the indicator fades out when stopped (Paper
-		 * `hidesWhenStopped`). @return The value. */
+		/**
+		 * @brief Tell whether the indicator fades out when it is stopped.
+		 * @return True when a stopped indicator is hidden, which is the
+		 * default; false when it stays visible, frozen in place.
+		 */
 		bool hidesWhenStopped(void) const noexcept;
 
-		/** @brief Set: whether the indicator fades out when stopped.
-		 * @param hides The value. @return It. */
+		/**
+		 * @brief Choose whether the indicator fades out when it is
+		 * stopped.
+		 *
+		 * The choice is applied the next time the indicator starts or
+		 * stops. Marks the component changed only when the flag differs.
+		 * @param hides True to hide a stopped indicator.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setHidesWhenStopped(bool hides);
 
-		/** @brief Get: current fade opacity, in [0, 1]. @return The value. */
+		/**
+		 * @brief Get the opacity the indicator is drawn with.
+		 * @return The opacity, 0 (hidden) to 1 (fully visible).
+		 */
 		float getOpacity(void) const noexcept;
 
-		/** @brief Set: current fade opacity. @param opacity The value.
-		 * @return It. */
+		/**
+		 * @brief Store the opacity the indicator is drawn with.
+		 *
+		 * Running state written by systems::LoadingIndicator on every
+		 * sample of the fade. Marks the component changed only when the
+		 * value differs.
+		 * @param opacity The opacity, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setOpacity(float opacity);
 
-		/** @brief Get: opacity when the fade began. @return The value. */
+		/**
+		 * @brief Get the opacity the indicator had when the running fade
+		 * began.
+		 * @return The starting opacity, 0 to 1.
+		 */
 		float getOpacityFrom(void) const noexcept;
 
-		/** @brief Set: opacity when the fade began. @param opacity The value.
-		 * @return It. */
+		/**
+		 * @brief Store the opacity at the start of a fade.
+		 *
+		 * Marks the component changed only when the value differs.
+		 * @param opacity The starting opacity, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setOpacityFrom(float opacity);
 
-		/** @brief Get: opacity the fade moves to. @return The value. */
+		/**
+		 * @brief Get the opacity the running fade ends at.
+		 * @return 1 while the indicator runs or stays visible when
+		 * stopped, 0 when it is stopped and hides.
+		 */
 		float getOpacityTarget(void) const noexcept;
 
-		/** @brief Set: opacity the fade moves to. @param opacity The value.
-		 * @return It. */
+		/**
+		 * @brief Store the opacity a fade ends at.
+		 *
+		 * Written by systems::LoadingIndicator when the indicator starts
+		 * or stops. Marks the component changed only when the value
+		 * differs.
+		 * @param opacity The final opacity, 0 to 1.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setOpacityTarget(float opacity);
 
-		/** @brief Get: indicator color override, empty for the theme
-		 * `Primary`. @return The value. */
+		/**
+		 * @brief Get the color chosen for the indicator.
+		 * @return The color, or std::nullopt when the indicator uses the
+		 * theme's `Primary` color.
+		 */
 		const std::optional<utility::graphic::Color32Bit> &
 			getIndicatorColor(void) const noexcept;
 
-		/** @brief Set: indicator color override. @param color The value.
-		 * @return It. */
+		/**
+		 * @brief Choose the color of the indicator.
+		 *
+		 * Marks the component changed only when the value differs.
+		 * @param color The color, or std::nullopt to use the theme's
+		 * `Primary` color.
+		 * @return This component, for chaining.
+		 */
 		LoadingIndicator &setIndicatorColor(
 			const std::optional<utility::graphic::Color32Bit> &color);
 
@@ -162,7 +276,7 @@ namespace guillaume::components
 
 		bool _built { false };				///< Whether the child is built
 		float _progress { 0.0f };			///< Looping animation progress
-		bool _hidesWhenStopped { true };	///< Paper `hidesWhenStopped`
+		bool _hidesWhenStopped { true };	///< Fade out when stopped
 		float _opacity { 1.0f };			///< Current fade opacity
 		float _opacityFrom { 1.0f };		///< Opacity when the fade began
 		float _opacityTarget { 1.0f };		///< Opacity the fade moves to

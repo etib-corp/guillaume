@@ -32,60 +32,78 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Base class for building entities with specific components.
+	 * @brief Base class of the widget builders: remembers in which registries
+	 * the entities it creates go.
 	 *
-	 * This class provides an interface for creating entities and managing their
-	 * components. It is intended to be inherited by specific entity builders
-	 * that define the components and structure of the entities they create.
+	 * A builder is the comfortable way to create a widget in a scene: it is
+	 * configured with fluent calls or a `makeXxx()` preset, creates the
+	 * entity with its components in the component registry, and registers
+	 * it in the entity registry. Each widget has its own builder
+	 * (`entities::Button::Builder`, ...), derived from
+	 * entities::EntityBuilderBase, which adds the creation step. A Scene
+	 * holds one builder per widget type in its EntityBuilderManager.
+	 *
+	 * This base class only stores the two registries and declares reset().
+	 * Both registries must outlive the builder.
+	 *
+	 * @see EntityBuilderManager
+	 * @see guillaume::entities::EntityBuilderBase
 	 */
 	class EntityBuilder
 	{
 		private:
 		ComponentRegistry
-			&_componentRegistry;	///< Reference to the component
-									///< registry for entity creation
-		EntityRegistry
-			&_entityRegistry;	 ///< Reference to the entity registry for
-								 ///< entity registration
+			&_componentRegistry;	///< Where the components of the built
+									///< entities are created
+		EntityRegistry &_entityRegistry;	///< Where the built entities are
+											///< registered
 
 		protected:
 		/**
-		 * @brief Get the component registry reference.
-		 * @return Reference to the component registry.
+		 * @brief Get the registry in which the builder creates components.
+		 * @return Reference to the component registry given to the
+		 * constructor.
 		 */
 		ComponentRegistry &getComponentRegistry(void);
 
 		/**
-		 * @brief Get the entity registry reference.
-		 * @return Reference to the entity registry.
+		 * @brief Get the registry in which the builder registers the
+		 * entities it creates.
+		 * @return Reference to the entity registry given to the constructor.
 		 */
 		EntityRegistry &getEntityRegistry(void);
 
 		public:
 		/**
-		 * @brief Default constructor for the EntityBuilder class.
-		 * @param componentRegistry The component registry to use for entity
-		 * construction.
-		 * @param entityRegistry The entity registry to use for entity
-		 * construction.
+		 * @brief Create a builder working on a pair of registries, normally
+		 * those of one scene.
+		 * @param componentRegistry The registry that receives the components
+		 * of the built entities. It must outlive the builder.
+		 * @param entityRegistry The registry that owns the built entities.
+		 * It must outlive the builder.
 		 */
 		EntityBuilder(ecs::ComponentRegistry &componentRegistry,
 					  ecs::EntityRegistry &entityRegistry);
 
 		/**
-		 * @brief Default destructor for the EntityBuilder class.
+		 * @brief Virtual destructor.
 		 */
 		virtual ~EntityBuilder(void) = default;
 
 		/**
-		 * @brief Reset the builder to its initial state for creating a new
-		 * entity.
+		 * @brief Forget the configuration accumulated for the entity being
+		 * built, so the builder is ready for the next one.
+		 *
+		 * Implemented by each widget builder, which restores its options to
+		 * their defaults. entities::EntityBuilderBase::registerEntity calls
+		 * it after every build.
 		 */
 		virtual void reset(void) = 0;
 	};
 
 	/**
-	 * @brief Concept to ensure a type inherits from EntityBuilder.
+	 * @brief Constrains a template parameter to a type derived from
+	 * EntityBuilder.
 	 * @tparam Type The type to check.
 	 */
 	template<typename Type>

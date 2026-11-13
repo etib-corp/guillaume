@@ -11,27 +11,20 @@ Versions follow the calendar scheme described in
 
 ### Changed
 
-- `entities::Badge`, `Chip`, `Tooltip`, `Snackbar`, `LoadingIndicator` and
-  `ProgressIndicator` are facades without fields and no longer override
-  `update()`. Visible differences:
-  - The chip's accessibility label follows `setLabel()`.
-  - An indicator's shape (fixed size, padding, radius, transparent container)
-    is enforced every frame; a later `setColor()` or size set through
-    `setSurfaceConfig()` on an indicator is overwritten.
-  - An indeterminate `ProgressIndicator` is drawn before its first animation
-    tick, and rebuilding an indicator's children stops the old animation.
-  - `Tooltip` and `Snackbar` build a missing child as soon as a setter needs
-    it, not on the next update.
-- **Breaking:** `SurfaceBase::getChildren()` returns the identifiers of the
-  layout children (read from the Layout component) instead of entity
-  handles, and a surface no longer keeps its attached children alive: they
-  must be owned by an entity registry, which is what the builders do.
-- The style, interaction and placement helpers moved from
-  `guillaume/entities/` to `guillaume/systems/` (namespaces
-  `systems::style`, `systems::interaction`, `systems::placement`,
-  `systems::button_style`, `systems::fab_style`). The old headers remain and
-  forward the names into `guillaume::entities`.
-- `systems::Selection` reads a group's members from `components::Hierarchy`.
+- The in-code documentation was rewritten for newcomers: every class says
+  what it is, who writes and reads it and in which phase, with examples.
+  `headers/guillaume/namespaces.hpp` is the map of the modules, and
+  `docs/CODE_CONVENTIONS.md` has the documentation guide.
+- **Breaking:** widgets are created with a static `create()` that returns
+  them fully built; their constructors are private and
+  `ecs::Entity::initialize()` is removed (`EntityRegistry::addEntity()` no
+  longer calls it). Replace `std::make_shared<Widget>(...)` followed by
+  `initialize()` with `Widget::create(...)`. Builders are unchanged.
+
+### Fixed
+
+- `systems::Button` is registered by `registerCoreSystems()`; its per-frame
+  sync of a button's icon and accessibility state did not run.
 
 ## [2026.6.0] - 2026-11-13
 

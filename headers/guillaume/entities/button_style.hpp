@@ -25,10 +25,14 @@
 
 /**
  * @file
- * @brief Source-compatibility alias for the button style tables.
+ * @brief Makes the Button style tables reachable as
+ * `guillaume::entities::button_style`.
  *
- * The helpers live in guillaume::systems since the widget rules moved to
- * systems; this header keeps the names available in guillaume::entities.
+ * This header declares nothing of its own: the functions that map a button
+ * size, shape and color to metrics in dp and to scheme colors are defined
+ * in guillaume::systems::button_style.
+ *
+ * @see guillaume::systems::button_style
  */
 namespace guillaume::entities
 {

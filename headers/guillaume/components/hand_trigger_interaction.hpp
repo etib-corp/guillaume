@@ -28,20 +28,27 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component handling hand trigger interactions.
-	 * @see systems::HandTrigger
+	 * @brief Marks an entity as a target of XR controller trigger input and
+	 * stores the callback for it.
+	 *
+	 * systems::HandTrigger selects the entities that have this component, a
+	 * Transform and a Bound, and consumes one trigger event per frame in the
+	 * Event phase. It has no per-entity rule: it neither writes this
+	 * component nor calls the handler set with setOnEventHandler().
+	 *
+	 * @see systems::HandTrigger, Interaction
 	 */
 	class HandTriggerInteraction:
 		public Interaction<utility::event::HandTriggerEvent>
 	{
 		public:
 		/**
-		 * @brief Constructs a HandTriggerInteraction component.
+		 * @brief Construct a component without handler.
 		 */
 		HandTriggerInteraction(void);
 
 		/**
-		 * @brief Destructor for the HandTriggerInteraction component.
+		 * @brief Default destructor.
 		 */
 		~HandTriggerInteraction(void) = default;
 	};

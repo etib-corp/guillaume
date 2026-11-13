@@ -40,14 +40,22 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Build an `Icon` child entity.
-	 * @param registry The component registry.
-	 * @param parent The parent entity (usually the owning surface).
-	 * @param glyphName The glyph name to render.
-	 * @param fontSize The icon font size.
-	 * @param color The icon color.
-	 * @param style The glyph style.
-	 * @return The newly created icon entity, or nullptr when the name is empty.
+	 * @brief Create an Icon as a child of a widget, or nothing when there is
+	 * no glyph to show.
+	 *
+	 * Widgets call this from their `build()` for optional icons, so an empty
+	 * glyph name simply produces no child.
+	 * @param registry The registry that stores the icon's components.
+	 * @param entityRegistry The entity registry that owns the icon (usually
+	 * the parent widget itself).
+	 * @param parent The entity the icon is attached to.
+	 * @param glyphName The name of the glyph to draw, such as "check".
+	 * @param fontSize The glyph size, in dp.
+	 * @param color The glyph color.
+	 * @param style The glyph style (outlined by default).
+	 * @return The registered icon, or nullptr when @p glyphName is empty or
+	 * @p parent is null.
+	 * @see Icon::Builder::makeIcon
 	 */
 	inline std::shared_ptr<Icon> buildIcon(
 		ecs::ComponentRegistry &registry, ecs::EntityRegistry &entityRegistry,
@@ -65,13 +73,18 @@ namespace guillaume::entities
 	}
 
 	/**
-	 * @brief Build a `Text` child entity.
-	 * @param registry The component registry.
-	 * @param parent The parent entity (usually the owning surface).
-	 * @param content The text content.
-	 * @param fontSize The text font size.
+	 * @brief Create a Text of a given font size as a child of a widget, or
+	 * nothing when there is no content.
+	 * @param registry The registry that stores the text's components.
+	 * @param entityRegistry The entity registry that owns the text (usually
+	 * the parent widget itself).
+	 * @param parent The entity the text is attached to.
+	 * @param content The string to display.
+	 * @param fontSize The font size, in dp.
 	 * @param color The text color.
-	 * @return The newly created text entity, or nullptr when content is empty.
+	 * @return The registered text, or nullptr when @p content is empty or
+	 * @p parent is null.
+	 * @see Text::Builder::makeText
 	 */
 	inline std::shared_ptr<Text> buildText(
 		ecs::ComponentRegistry &registry, ecs::EntityRegistry &entityRegistry,
@@ -88,14 +101,19 @@ namespace guillaume::entities
 	}
 
 	/**
-	 * @brief Build a child text styled by a Material 3 typescale role.
-	 * @param registry Component registry.
-	 * @param entityRegistry Entity registry receiving the text.
-	 * @param parent Parent entity; nothing is built when null.
-	 * @param content Text content; nothing is built when empty.
-	 * @param role Typescale role.
-	 * @param color Text color.
-	 * @return The text entity, or nullptr.
+	 * @brief Create a Text styled by a type scale role as a child of a
+	 * widget, or nothing when there is no content.
+	 * @param registry The registry that stores the text's components.
+	 * @param entityRegistry The entity registry that owns the text (usually
+	 * the parent widget itself).
+	 * @param parent The entity the text is attached to.
+	 * @param content The string to display.
+	 * @param role The type scale role that sets the font size and weight,
+	 * such as theme::TypeRole::LabelLarge.
+	 * @param color The text color.
+	 * @return The registered text, or nullptr when @p content is empty or
+	 * @p parent is null.
+	 * @see Text::Builder::makeText
 	 */
 	inline std::shared_ptr<Text> buildText(
 		ecs::ComponentRegistry &registry, ecs::EntityRegistry &entityRegistry,

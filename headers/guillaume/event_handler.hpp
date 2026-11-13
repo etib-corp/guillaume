@@ -34,24 +34,33 @@ namespace guillaume
 {
 
 	/**
-	 * @brief Interface for event handlers.
+	 * @brief Interface of an event source: something that reads platform
+	 * input and reports it as `utility::event::Event` objects through a
+	 * callback.
 	 *
-	 * This class provides an abstract interface for handling events in the
-	 * Guillaume framework. Implementations should poll or process
-	 * platform-specific events and convert them to Guillaume Event objects.
+	 * An implementation overrides pollEvents() to read what the platform
+	 * has pending, convert it and call the callback once per event. The
+	 * owner sets the callback, typically to forward to
+	 * event::EventBus::publish.
 	 *
 	 * @code
-	 * class MyEventHandler : public event::EventHandler {
-	 *   public:
-	 *     void pollEvents(void) override {
-	 *         // Convert platform events to utility::event::Event and call
-	 * callback.
-	 *         // getEventCallback()(event);
-	 *     }
+	 * class MyEventHandler: public guillaume::EventHandler
+	 * {
+	 * 	public:
+	 * 	void pollEvents(void) override
+	 * 	{
+	 * 		std::shared_ptr<utility::event::Event> event = readPlatform();
+	 * 		if (event && getEventCallback()) {
+	 * 			getEventCallback()(event);
+	 * 		}
+	 * 	}
 	 * };
 	 * @endcode
 	 *
-	 * @see EventBus
+	 * @note Application does not use this class: it receives its events
+	 * from `utility::Engine` (`setEventCallback` and `pollEvents`), which
+	 * has the same shape.
+	 * @see event::EventBus
 	 */
 	class EventHandler:
 		protected utility::logging::Loggable<EventHandler,
@@ -59,56 +68,56 @@ namespace guillaume
 	{
 		public:
 		/**
-		 * @brief Type alias for an event handler callback function.
+		 * @brief The callback type: a function called with each event read
+		 * from the platform.
 		 *
-		 * Takes a unique pointer to an Event and performs an action.
+		 * It receives the shared pointer by reference and may move from it.
 		 */
 		using Handler =
 			std::function<void(std::shared_ptr<utility::event::Event> &)>;
 
 		private:
-		Handler _callback;	  ///< Event callback function
+		Handler _callback;	  ///< Called with each event; empty until set
 
 		protected:
 		/**
-		 * @brief Get the current event callback function.
-		 * @return Reference to the event callback function.
+		 * @brief Get the callback, for pollEvents() to call.
+		 * @return Reference to the callback. It is an empty function until
+		 * setEventCallback() is called: test it before calling it.
 		 */
 		Handler &getEventCallback(void);
 
 		public:
 		/**
-		 * @brief Default constructor
+		 * @brief Create an event source with no callback.
 		 */
 		EventHandler(void);
 
 		/**
-		 * @brief Default destructor
+		 * @brief Virtual destructor.
 		 */
 		virtual ~EventHandler(void) = default;
 
 		/**
-		 * @brief Set the event callback function.
-		 *
-		 * The callback will be invoked for each event when pollEvents() is
-		 * called.
-		 *
-		 * @param callback Function to call when an event is received.
+		 * @brief Choose the function that receives the events.
+		 * @param callback The function pollEvents() calls once per event.
+		 * It replaces the previous one; an empty function removes it.
 		 */
 		void setEventCallback(const Handler &callback);
 
 		/**
-		 * @brief Poll for events and dispatch them.
+		 * @brief Read the events the platform has pending and report each
+		 * one through the callback.
 		 *
-		 * This method should check for pending events from the underlying
-		 * platform, convert them to Event objects, and call the registered
-		 * callback for each event.
+		 * Implemented by each event source. It is meant to be called once
+		 * per frame and to return without waiting when nothing is pending.
 		 */
 		virtual void pollEvents(void) = 0;
 	};
 
 	/**
-	 * @brief Concept to ensure a type inherits from EventHandler.
+	 * @brief Constrains a template parameter to a type derived from
+	 * EventHandler.
 	 * @tparam Type The type to check.
 	 */
 	template<typename Type>

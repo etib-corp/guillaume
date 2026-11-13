@@ -44,13 +44,45 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Floating action button menu (speed dial) entity. A trigger
-	 * `FloatingActionButton` that expands a column of smaller action buttons
-	 * when opened.
+	 * @brief A floating action button menu (speed dial): a trigger FAB that
+	 * shows a column of smaller action buttons above it when opened.
 	 *
-	 * The class is a facade: its state lives in
-	 * components::FloatingActionButtonMenu and its rules in
-	 * systems::FloatingActionButtonMenu.
+	 * Its state lives in components::FloatingActionButtonMenu (trigger icon,
+	 * actions, open flag, callback, child identifiers);
+	 * systems::FloatingActionButtonMenu shows or hides the action buttons,
+	 * swaps the trigger icon for a close glyph while open and fills the
+	 * column each frame, in the Layout phase. systems::Layout then places
+	 * the column. The class itself holds no field: open(), close() and
+	 * toggle() call the system.
+	 *
+	 * @code
+	 * FloatingActionButtonMenu::Builder builder(getComponentRegistry(),
+	 * 	getEntityRegistry());
+	 * auto menu = builder.addAction("mail", "Send", [] {
+	 * 		// called when the user clicks the "Send" action
+	 * 	})
+	 * 	.addAction("alarm", [] {})
+	 * 	.withAccessibilityLabel("Actions")
+	 * 	.makeFloatingActionButtonMenu(parent, "add");
+	 * menu->setOnStateChange([](bool open) {
+	 * 	// called when the menu opens or closes
+	 * });
+	 * @endcode
+	 *
+	 * `FloatingActionButtonMenu::create(registry, iconGlyphName, actions,
+	 * accessibilityLabel)` builds the same widget without registering it in
+	 * an entity registry.
+	 *
+	 * The menu owns its trigger and action buttons: it is the entity
+	 * registry they are registered in. The actions are fixed at creation.
+	 * Clicking an action calls its handler and leaves the menu open; call
+	 * close() from the handler to close it. open(), close() and toggle()
+	 * call the state-change handler like a click on the trigger does. The
+	 * click handler of the trigger and the menu's Layout configuration are
+	 * set by the system; do not replace them.
+	 *
+	 * @see components::FloatingActionButtonMenu,
+	 * systems::FloatingActionButtonMenu, FloatingActionButton
 	 */
 	class FloatingActionButtonMenu:
 		public std::enable_shared_from_this<FloatingActionButtonMenu>,
@@ -59,84 +91,107 @@ namespace guillaume::entities
 									   components::FloatingActionButtonMenu>
 	{
 		public:
-		/// Describes a single action in the menu.
+		/// One action of the menu: a label (may be empty), an icon glyph
+		/// name and a click handler.
 		using Action = components::FloatingActionButtonMenu::Action;
 
 		/**
-		 * @brief Builder used to configure and create
-		 * `FloatingActionButtonMenu` entities.
+		 * @brief Configures, creates and registers FloatingActionButtonMenu
+		 * widgets.
+		 *
+		 * Add the actions with addAction(), then call
+		 * makeFloatingActionButtonMenu() or registerEntity().
 		 */
 		class Builder: public EntityBuilderBase<FloatingActionButtonMenu>
 		{
 			private:
-			std::string _iconGlyphName;			///< Trigger icon glyph name
-			std::vector<Action> _actions;		///< Menu actions
+			std::string _iconGlyphName;	   ///< Trigger icon glyph name
+			std::vector<Action>
+				_actions;	 ///< Actions, in the order they were added
 			std::string _accessibilityLabel;	///< Trigger accessibility label
 
 			public:
 			/**
-			 * @brief Construct a new FloatingActionButtonMenu Builder object.
-			 * @param componentRegistry The component registry used to build
-			 * entities.
-			 * @param entityRegistry The entity registry used to build entities.
+			 * @brief Construct a builder with the default configuration (see
+			 * reset()).
+			 * @param componentRegistry The registry that stores the
+			 * components of the menus to build.
+			 * @param entityRegistry The registry the built menus are added
+			 * to (usually the scene's).
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the FloatingActionButtonMenu entity from the current
-			 * configuration.
-			 * @return The newly created FloatingActionButtonMenu.
+			 * @brief Build a FloatingActionButtonMenu, with its trigger and
+			 * action buttons, from the current configuration, without
+			 * registering it.
+			 *
+			 * registerEntity() calls it, then sets the parent, registers the
+			 * menu and resets the builder.
+			 * @return The new menu.
 			 */
 			std::shared_ptr<FloatingActionButtonMenu>
 				buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder to its initial state.
+			 * @brief Restore the default configuration.
+			 *
+			 * Defaults: empty trigger icon, no action, empty accessibility
+			 * label.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the trigger icon glyph name.
-			 * @param iconGlyphName The trigger icon glyph name.
+			 * @brief Set the icon of the trigger while the menu is closed.
+			 * @param iconGlyphName The glyph name of the trigger icon (for
+			 * example "add"). Default: empty.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &withIcon(const std::string &iconGlyphName);
 
 			/**
-			 * @brief Add an action to the menu.
-			 * @param iconGlyphName The action icon glyph name.
-			 * @param onClick The action click handler.
+			 * @brief Add an action shown as a small icon-only FAB.
+			 * @param iconGlyphName The glyph name of the action icon.
+			 * @param onClick The function called when the user clicks the
+			 * action (may be empty).
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &addAction(const std::string &iconGlyphName,
 							   std::function<void(void)> onClick);
 
 			/**
-			 * @brief Add a labelled action (Paper FAB.Group `label`).
-			 * @param iconGlyphName Action icon glyph.
-			 * @param label Visible and accessible label.
-			 * @param onClick Action handler.
-			 * @return Reference to this builder for chaining.
+			 * @brief Add an action shown with a label next to its icon (Paper
+			 * FAB.Group `label`).
+			 * @param iconGlyphName The glyph name of the action icon.
+			 * @param label The text shown next to the icon, also used as the
+			 * accessibility label. When empty, the action is icon-only.
+			 * @param onClick The function called when the user clicks the
+			 * action (may be empty).
+			 * @return Reference to the builder for chaining.
 			 */
 			Builder &addAction(const std::string &iconGlyphName,
 							   const std::string &label,
 							   std::function<void(void)> onClick);
 
 			/**
-			 * @brief Set the trigger accessibility label.
-			 * @param accessibilityLabel The trigger accessibility label.
+			 * @brief Set the label of the trigger read by assistive
+			 * technology.
+			 * @param accessibilityLabel The accessibility label of the
+			 * trigger. Default: empty.
 			 * @return Reference to the builder for chaining.
 			 */
 			Builder &
 				withAccessibilityLabel(const std::string &accessibilityLabel);
 
 			/**
-			 * @brief Create a FAB menu using the builder.
-			 * @param parent The parent entity to which the new entity will be
-			 * attached.
-			 * @param iconGlyphName The trigger icon glyph name.
-			 * @return A shared pointer to the newly created menu entity.
+			 * @brief Build a menu with the actions added so far, register it
+			 * under `parent` and reset the builder.
+			 * @param parent The entity the menu becomes a child of.
+			 * @param iconGlyphName The glyph name of the trigger icon while
+			 * the menu is closed.
+			 * @return The new menu, closed and registered in the entity
+			 * registry.
 			 */
 			std::shared_ptr<FloatingActionButtonMenu>
 				makeFloatingActionButtonMenu(std::shared_ptr<Entity> parent,
@@ -144,14 +199,16 @@ namespace guillaume::entities
 		};
 
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a menu with its trigger and action buttons, without
+		 * registering it in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
-		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * The constructor is private because the buttons need a menu already
+		 * held by a `std::shared_ptr` as parent: create() constructs the
+		 * menu then calls build(), which creates them.
+		 * @tparam Arguments The types of the constructor arguments.
+		 * @param arguments The arguments forwarded to the constructor:
+		 * (registry, iconGlyphName, actions, accessibilityLabel).
+		 * @return The new menu, closed.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<FloatingActionButtonMenu>
@@ -165,38 +222,54 @@ namespace guillaume::entities
 		}
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destructor.
 		 */
 		~FloatingActionButtonMenu(void);
 
 		/**
-		 * @brief Open the menu.
+		 * @brief Open the menu: show the action buttons and the close glyph
+		 * on the trigger, at once.
+		 *
+		 * Calls the state-change handler with `true`. Does nothing when the
+		 * menu is already open.
 		 * @return Reference to this menu for chaining.
 		 */
 		FloatingActionButtonMenu &open(void);
 
 		/**
-		 * @brief Close the menu.
+		 * @brief Close the menu: hide the action buttons and restore the
+		 * trigger icon, at once.
+		 *
+		 * Calls the state-change handler with `false`. Does nothing when the
+		 * menu is already closed.
 		 * @return Reference to this menu for chaining.
 		 */
 		FloatingActionButtonMenu &close(void);
 
 		/**
-		 * @brief Toggle the open state.
+		 * @brief Open the menu when it is closed, close it when it is open.
+		 *
+		 * Calls the state-change handler with the new state. A click on the
+		 * trigger does the same.
 		 * @return Reference to this menu for chaining.
 		 */
 		FloatingActionButtonMenu &toggle(void);
 
 		/**
 		 * @brief Get whether the menu is open.
-		 * @return True when open, false otherwise.
+		 * @return True when the action buttons are shown. A new menu is
+		 * closed.
 		 */
 		bool isOpen(void) const;
 
 		/**
 		 * @brief Set the handler called when the menu opens or closes (Paper
 		 * `onStateChange`).
-		 * @param onStateChange Handler receiving the new open state.
+		 *
+		 * It is called after the change, by a click on the trigger and by
+		 * open(), close() and toggle().
+		 * @param onStateChange The function that receives the new open state
+		 * (true when open). Pass an empty function to remove the handler.
 		 * @return Reference to this menu for chaining.
 		 */
 		FloatingActionButtonMenu &
@@ -204,21 +277,24 @@ namespace guillaume::entities
 
 		/**
 		 * @brief Get the number of actions.
-		 * @return The number of actions.
+		 * @return The number of action buttons, shown or not.
 		 */
 		std::size_t getActionCount(void) const;
 
 		/**
-		 * @brief Get the identifier of the trigger child entity.
-		 * @return The trigger entity identifier, or InvalidIdentifier.
+		 * @brief Get the identifier of the trigger button, a
+		 * FloatingActionButton child of the menu.
+		 * @return The trigger identifier, or ecs::Entity::InvalidIdentifier
+		 * before the children are built.
 		 */
 		ecs::Entity::Identifier getTriggerIdentifier(void) const;
 
 		/**
-		 * @brief Get the identifier of an action child entity.
-		 * @param index The index of the action.
-		 * @return The action entity identifier, or InvalidIdentifier when out
-		 * of range.
+		 * @brief Get the identifier of the button of one action.
+		 * @param index The index of the action, in the order the actions
+		 * were added (0 is the first).
+		 * @return The identifier of the action button, or
+		 * ecs::Entity::InvalidIdentifier when @p index is out of range.
 		 */
 		ecs::Entity::Identifier getActionIdentifier(std::size_t index) const;
 
@@ -230,18 +306,22 @@ namespace guillaume::entities
 		components::FloatingActionButtonMenu &state(void);
 
 		/**
-		 * @brief Access the menu state.
+		 * @brief Access the menu state, read-only.
 		 * @return The components::FloatingActionButtonMenu of this entity.
 		 */
 		const components::FloatingActionButtonMenu &state(void) const;
 
 		private:
 		/**
-		 * @brief Construct a FloatingActionButtonMenu entity.
-		 * @param registry Reference to the component registry.
-		 * @param iconGlyphName Trigger icon glyph name.
-		 * @param actions The menu actions.
-		 * @param accessibilityLabel Trigger accessibility label.
+		 * @brief Construct a menu without its buttons; create() calls it
+		 * then build().
+		 * @param registry The registry that stores the menu's components.
+		 * @param iconGlyphName The glyph name of the trigger icon while the
+		 * menu is closed.
+		 * @param actions The actions, in display order. One button is built
+		 * for each.
+		 * @param accessibilityLabel The label of the trigger read by
+		 * assistive technology.
 		 */
 		FloatingActionButtonMenu(ecs::ComponentRegistry &registry,
 								 const std::string &iconGlyphName,
@@ -249,10 +329,14 @@ namespace guillaume::entities
 								 const std::string &accessibilityLabel);
 
 		/**
-		 * @brief Create the child entities.
+		 * @brief Create the trigger and one button per action, then wire
+		 * their clicks through systems::FloatingActionButtonMenu::install.
 		 *
-		 * Called once by create(), when the entity is owned and can be given
-		 * as parent to its children.
+		 * The trigger is a medium primary FloatingActionButton. An action
+		 * without label is a small surface FloatingActionButton; an action
+		 * with a label is a small surface ExtendedFloatingActionButton.
+		 * Called once by create(), when the menu is held by a
+		 * `std::shared_ptr` and can be given as parent to its children.
 		 */
 		void build(void);
 	};

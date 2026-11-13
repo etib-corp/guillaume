@@ -46,146 +46,206 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Snackbar entity: a transient message bar.
+	 * @brief A short message bar that disappears by itself after a few
+	 * seconds, with an optional action label the user can press.
 	 *
-	 * Snackbars reuse `SurfaceBase` for the layout, geometry and background
-	 * surface and `components::Overlay` for the transient overlay behaviour
-	 * (auto-dismiss). The M3 variants are:
-	 * - `SingleLine`: a single message line, height 48.
-	 * - `MultiLine`: a taller message bar, height 68.
-	 * - `WithAction`: a message line followed by a trailing action, height 48.
+	 * Its state lives in components::Snackbar (variant, message, action
+	 * label, visibility, duration, callbacks). systems::Snackbar styles the
+	 * bar and arranges its children each frame, in the Layout phase, and
+	 * copies the visibility and the duration to components::Overlay;
+	 * systems::Overlay runs the countdown. The class itself holds no field:
+	 * its setters write the component and restyle at once.
 	 *
-	 * The class is a facade without fields: its state is
-	 * components::Snackbar and systems::Snackbar styles the bar and runs its
-	 * dismissal. `build()` only builds the child entities.
+	 * @code
+	 * Snackbar::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto snackbar = builder.withDuration(Snackbar::DurationShort)
+	 * 	.withOnAction([]() {
+	 * 		// called when the user presses "Undo"
+	 * 	})
+	 * 	.makeSnackbar(parent, Snackbar::Variant::WithAction,
+	 * 		"Message archived", "Undo");
+	 * @endcode
 	 *
-	 * @see SurfaceBase
-	 * @see components::Overlay
+	 * `Snackbar::create(registry, config, variant, message, action)` builds
+	 * the same widget without registering it in an entity registry.
+	 *
+	 * Showing and hiding: a snackbar is shown as soon as it is created,
+	 * unless the builder was given `withVisible(false)`. show() shows it
+	 * and restarts the countdown; hide() hides it without calling the
+	 * dismiss handler. The snackbar dismisses itself, and then calls the
+	 * dismiss handler, when its duration has elapsed, when the user
+	 * presses Escape, and after the action is pressed. The duration is in
+	 * seconds; 0 keeps the snackbar until it is hidden.
+	 *
+	 * The variants are:
+	 * - `SingleLine`: a message, in a 48 dp high bar.
+	 * - `MultiLine`: a message, in a 68 dp high bar.
+	 * - `WithAction`: a message followed by the action label, in a 48 dp
+	 *   high bar. Only this variant builds the action label.
+	 *
+	 * Things to know:
+	 * - The builder makes the bar 344 dp wide.
+	 * - A hidden snackbar keeps its place in its parent's layout; it is
+	 *   painted transparent.
+	 * - systems::Snackbar overwrites the bar's layout settings, height,
+	 *   color, corner radius and elevation every frame.
+	 * - systems::Overlay only counts down, and only applies Escape to, the
+	 *   topmost visible overlay: a snackbar under a dialog waits.
+	 * - The action label is fixed at creation.
+	 *
+	 * @see components::Snackbar, systems::Snackbar, systems::Overlay
 	 */
 	class Snackbar:
 		public SurfaceBase<components::Overlay, components::Elevation,
 						   components::Accessibility, components::Snackbar>
 	{
 		public:
-		/// Snackbar variant.
+		/// Look of the snackbar: SingleLine, MultiLine or WithAction.
 		using Variant = components::Snackbar::Variant;
 
 		/**
-		 * @brief Paper `Snackbar.DURATION_SHORT`, in seconds.
+		 * @brief Short display time: 4 seconds (Paper
+		 * `Snackbar.DURATION_SHORT`).
 		 */
 		static constexpr float DurationShort =
 			components::Snackbar::DurationShort;
 
 		/**
-		 * @brief Paper `Snackbar.DURATION_MEDIUM` (the default), in seconds.
+		 * @brief Default display time: 7 seconds (Paper
+		 * `Snackbar.DURATION_MEDIUM`).
 		 */
 		static constexpr float DurationMedium =
 			components::Snackbar::DurationMedium;
 
 		/**
-		 * @brief Paper `Snackbar.DURATION_LONG`, in seconds.
+		 * @brief Long display time: 10 seconds (Paper
+		 * `Snackbar.DURATION_LONG`).
 		 */
 		static constexpr float DurationLong =
 			components::Snackbar::DurationLong;
 
 		/**
-		 * @brief Builder used to configure and create `Snackbar` entities.
+		 * @brief Configures a Snackbar, then builds it and registers it in
+		 * the entity registry given at construction.
 		 */
 		class Builder: public EntityBuilderBase<Snackbar>
 		{
 			private:
-			SurfaceConfig _config;	  ///< Surface configuration.
+			SurfaceConfig _config;	  ///< Pose and layout of the bar.
 			Variant _variant { Variant::SingleLine };	 ///< Snackbar variant.
 			std::string _message {};					 ///< Message text.
 			std::string _action {};						 ///< Action label.
-			bool _visible { true };						///< Initial visibility.
-			float _duration { DurationMedium };			///< Display time.
+			bool _visible { true };						 ///< Shown when built.
+			float _duration { DurationMedium };	   ///< Display time (seconds).
 			std::function<void(void)> _onDismiss {};	///< Dismiss handler.
 			std::function<void(void)> _onAction {};		///< Action handler.
 
 			public:
 			/**
-			 * @brief Construct a new Snackbar Builder.
-			 * @param componentRegistry The component registry.
-			 * @param entityRegistry The entity registry.
+			 * @brief Create a builder set to the defaults of reset().
+			 * @param componentRegistry The registry the snackbar's
+			 * components are created in.
+			 * @param entityRegistry The registry the built snackbars are
+			 * added to.
 			 */
 			Builder(ecs::ComponentRegistry &componentRegistry,
 					ecs::EntityRegistry &entityRegistry);
 
 			/**
-			 * @brief Build the Snackbar entity from the current configuration.
-			 * @return The newly created Snackbar.
+			 * @brief Build a snackbar and its children from the current
+			 * configuration, without registering it or setting its parent.
+			 * @return The new snackbar.
+			 * @throws std::invalid_argument If the duration given to
+			 * withDuration() is negative.
 			 */
 			std::shared_ptr<Snackbar> buildEntity(void) override;
 
 			/**
-			 * @brief Reset the builder.
+			 * @brief Restore the defaults: SingleLine variant, no message,
+			 * no action label, shown, DurationMedium (7 seconds), no
+			 * handler, a default pose and a 344 dp wide bar.
 			 */
 			void reset(void) override;
 
 			/**
-			 * @brief Set the snackbar pose.
-			 * @param pose The new pose.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the pose the snackbar is created with.
+			 * @param pose The position and orientation of the bar. Default:
+			 * a default-constructed pose.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withPose(const utility::graphic::PoseF &pose);
 
 			/**
 			 * @brief Set the snackbar variant.
-			 * @param variant The new variant.
-			 * @return Reference to the builder for chaining.
+			 * @param variant The variant. Default: `Variant::SingleLine`.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withVariant(Variant variant);
 
 			/**
-			 * @brief Set the snackbar message.
-			 * @param message The new message text.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the message.
+			 * @param message The message text. Default: empty, which builds
+			 * no message child.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withMessage(const std::string &message);
 
 			/**
-			 * @brief Set the snackbar action label.
-			 * @param action The new action label.
-			 * @return Reference to the builder for chaining.
+			 * @brief Set the label of the action.
+			 * @param action The label. Used by the WithAction variant only;
+			 * an empty label builds no action. Default: empty.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withAction(const std::string &action);
 
 			/**
-			 * @brief Set the initial visibility (default shown).
-			 * @param visible Visibility.
-			 * @return Reference to this builder for chaining.
+			 * @brief Choose whether the snackbar is shown once built.
+			 * @param visible True to show it at once, false to build it
+			 * hidden. Default: true.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withVisible(bool visible);
 
 			/**
-			 * @brief Set the display time (Paper `duration`).
-			 * @param seconds Seconds before auto-dismiss (0: never).
-			 * @return Reference to this builder for chaining.
+			 * @brief Set how long the snackbar stays shown (Paper
+			 * `duration`).
+			 * @param seconds The display time, in seconds; 0 never
+			 * dismisses. Default: DurationMedium. A negative value makes
+			 * the build throw.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withDuration(float seconds);
 
 			/**
-			 * @brief Set the dismiss handler (Paper `onDismiss`).
-			 * @param onDismiss Handler.
-			 * @return Reference to this builder for chaining.
+			 * @brief Set the handler called when the snackbar dismisses
+			 * itself (see Snackbar::setOnDismiss()).
+			 * @param onDismiss The handler. Default: none.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withOnDismiss(std::function<void(void)> onDismiss);
 
 			/**
-			 * @brief Set the action handler (Paper `action.onPress`).
-			 * @param onAction Handler.
-			 * @return Reference to this builder for chaining.
+			 * @brief Set the handler called when the action is pressed
+			 * (Paper `action.onPress`).
+			 * @param onAction The handler. Default: none.
+			 * @return This builder, for chaining.
 			 */
 			Builder &withOnAction(std::function<void(void)> onAction);
 
 			/**
-			 * @brief Create a snackbar using the builder.
-			 * @param parent The parent entity.
+			 * @brief Build a snackbar, register it under @p parent and reset
+			 * the builder.
+			 *
+			 * The arguments replace the variant, message and action label
+			 * set before; the other settings are kept.
+			 * @param parent The entity the snackbar is attached to.
 			 * @param variant The snackbar variant.
-			 * @param message The snackbar message.
-			 * @param action The snackbar action label.
-			 * @return The newly created snackbar.
+			 * @param message The message text.
+			 * @param action The action label, used by the WithAction
+			 * variant only.
+			 * @return The registered snackbar.
+			 * @throws std::invalid_argument If the duration given to
+			 * withDuration() is negative.
 			 */
 			std::shared_ptr<Snackbar>
 				makeSnackbar(std::shared_ptr<ecs::Entity> parent,
@@ -195,14 +255,16 @@ namespace guillaume::entities
 
 		public:
 		/**
-		 * @brief Create the entity, fully built.
+		 * @brief Create a snackbar and its children, without registering it
+		 * in an entity registry.
 		 *
-		 * Constructors are private: an entity must be owned before it can
-		 * parent its children, so construction and child creation happen
-		 * together here.
+		 * The arguments are forwarded to the private constructor:
+		 * (registry, config, variant, message, action). The children are
+		 * built here, by build(), because a child needs its parent to be
+		 * owned by a shared pointer.
 		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments.
-		 * @return The new entity.
+		 * @param arguments The constructor arguments, as listed above.
+		 * @return The new snackbar, shown, with no parent.
 		 */
 		template<typename... Arguments>
 		static std::shared_ptr<Snackbar> create(Arguments &&...arguments)
@@ -219,82 +281,115 @@ namespace guillaume::entities
 		~Snackbar(void) override = default;
 
 		/**
-		 * @brief Set the snackbar variant.
+		 * @brief Change the snackbar variant.
+		 *
+		 * Builds the action label when the new variant is WithAction, the
+		 * action label is not empty and the child does not exist yet, then
+		 * restyles at once.
 		 * @param variant The new variant.
-		 * @return Reference to this snackbar for chaining.
+		 * @return This snackbar, for chaining.
 		 */
 		Snackbar &setVariant(Variant variant);
 
 		/**
 		 * @brief Get the snackbar variant.
-		 * @return The variant.
+		 * @return The variant stored in components::Snackbar.
 		 */
 		Variant getVariant(void) const;
 
 		/**
-		 * @brief Set the snackbar message.
+		 * @brief Change the message text.
+		 *
+		 * Builds the message child when the snackbar had none and
+		 * @p message is not empty, then restyles at once.
 		 * @param message The new message text.
-		 * @return Reference to this snackbar for chaining.
+		 * @return This snackbar, for chaining.
 		 */
 		Snackbar &setMessage(const std::string &message);
 
 		/**
 		 * @brief Show or hide the snackbar (Paper `visible`).
 		 *
-		 * Showing restarts the auto-dismiss countdown run by
-		 * `systems::Overlay`; a hidden snackbar paints nothing.
-		 *
-		 * @param visible Visibility.
-		 * @return Reference to this snackbar for chaining.
+		 * Restyles at once. Showing a hidden snackbar restarts the
+		 * auto-dismiss countdown run by systems::Overlay. Hiding does not
+		 * call the dismiss handler. A hidden snackbar is painted
+		 * transparent.
+		 * @param visible True to show, false to hide.
+		 * @return This snackbar, for chaining.
 		 */
 		Snackbar &setVisible(bool visible);
 
-		/** @brief Show the snackbar. @return *this. */
+		/**
+		 * @brief Show the snackbar; same as `setVisible(true)`.
+		 * @return This snackbar, for chaining.
+		 */
 		Snackbar &show(void);
 
-		/** @brief Hide the snackbar without calling onDismiss. @return *this.
+		/**
+		 * @brief Hide the snackbar without calling the dismiss handler;
+		 * same as `setVisible(false)`.
+		 * @return This snackbar, for chaining.
 		 */
 		Snackbar &hide(void);
 
-		/** @brief Check the visibility. @return True when shown. */
+		/**
+		 * @brief Check whether the snackbar is shown.
+		 * @return True when shown.
+		 */
 		bool isVisible(void) const;
 
 		/**
-		 * @brief Set the display time (Paper `duration`).
-		 * @param seconds Seconds before auto-dismiss (0: never).
-		 * @return Reference to this snackbar for chaining.
+		 * @brief Set how long the snackbar stays shown (Paper `duration`).
+		 *
+		 * Restyles at once, which copies the duration to
+		 * components::Overlay. Does not restart a running countdown.
+		 * @param seconds The display time, in seconds; 0 never dismisses.
+		 * @return This snackbar, for chaining.
 		 * @throws std::invalid_argument If @p seconds is negative.
 		 */
 		Snackbar &setDuration(float seconds);
 
-		/** @brief Get the display time. @return Seconds (0: never). */
+		/**
+		 * @brief Get how long the snackbar stays shown.
+		 * @return The display time, in seconds; 0 means it never dismisses
+		 * itself.
+		 */
 		float getDuration(void) const;
 
 		/**
-		 * @brief Set the dismiss handler (Paper `onDismiss`), called on
-		 * auto-dismiss, Escape and action press.
-		 * @param onDismiss Handler.
-		 * @return Reference to this snackbar for chaining.
+		 * @brief Set the handler called when the snackbar dismisses itself
+		 * (Paper `onDismiss`).
+		 *
+		 * It is called after the snackbar has been hidden by the end of
+		 * its duration, by Escape or by a press on the action. hide() and
+		 * `setVisible(false)` do not call it.
+		 * @param onDismiss The handler; an empty one removes it.
+		 * @return This snackbar, for chaining.
 		 */
 		Snackbar &setOnDismiss(std::function<void(void)> onDismiss);
 
 		/**
-		 * @brief Set the action handler (Paper `action.onPress`).
-		 * @param onAction Handler.
-		 * @return Reference to this snackbar for chaining.
+		 * @brief Set the handler called when the action is pressed (Paper
+		 * `action.onPress`).
+		 * @param onAction The handler; an empty one removes it.
+		 * @return This snackbar, for chaining.
 		 */
 		Snackbar &setOnAction(std::function<void(void)> onAction);
 
 		/**
-		 * @brief Activate the action as a press would: run the action handler,
-		 * then dismiss.
-		 * @return Reference to this snackbar for chaining.
+		 * @brief Activate the action as a press on its label would: call
+		 * the action handler, then hide the snackbar and call the dismiss
+		 * handler.
+		 *
+		 * Does nothing while the snackbar is hidden.
+		 * @return This snackbar, for chaining.
 		 */
 		Snackbar &pressAction(void);
 
 		/**
-		 * @brief Get the action label entity.
-		 * @return The action entity, or nullptr.
+		 * @brief Get the text entity that shows the action label.
+		 * @return The action label, or `nullptr` when the snackbar has
+		 * none.
 		 */
 		std::shared_ptr<Text> getActionEntity(void) const;
 
@@ -309,22 +404,25 @@ namespace guillaume::entities
 
 		private:
 		/**
-		 * @brief Construct a Snackbar entity.
-		 * @param registry The component registry.
-		 * @param config The surface configuration.
+		 * @brief Construct a snackbar, without its children.
+		 * @param registry The registry the snackbar's components are
+		 * created in.
+		 * @param config Pose and layout of the bar. systems::Snackbar
+		 * overwrites the layout settings and the height.
 		 * @param variant The snackbar variant.
-		 * @param message The snackbar message.
-		 * @param action The snackbar action label.
+		 * @param message The message text.
+		 * @param action The action label, used by the WithAction variant
+		 * only.
 		 */
 		Snackbar(ecs::ComponentRegistry &registry, const SurfaceConfig &config,
 				 Variant variant, const std::string &message,
 				 const std::string &action);
 
 		/**
-		 * @brief Create the child entities.
+		 * @brief Build the children and restyle.
 		 *
-		 * Called once by create(), when the entity is owned and can be given
-		 * as parent to its children.
+		 * Called once by create(), when the snackbar is owned by a shared
+		 * pointer and can be given as parent to its children.
 		 */
 		void build(void);
 	};

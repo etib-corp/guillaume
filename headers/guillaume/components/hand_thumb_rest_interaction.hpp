@@ -28,20 +28,27 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component handling thumb rest interactions.
-	 * @see systems::HandThumbRest
+	 * @brief Marks an entity as a target of XR controller thumb rest input
+	 * and stores the callback for it.
+	 *
+	 * systems::HandThumbRest selects the entities that have this component, a
+	 * Transform and a Bound, and consumes one thumb rest event per frame in
+	 * the Event phase. It has no per-entity rule: it neither writes this
+	 * component nor calls the handler set with setOnEventHandler().
+	 *
+	 * @see systems::HandThumbRest, Interaction
 	 */
 	class HandThumbRestInteraction:
 		public Interaction<utility::event::HandThumbRestEvent>
 	{
 		public:
 		/**
-		 * @brief Constructs a HandThumbRestInteraction component.
+		 * @brief Construct a component without handler.
 		 */
 		HandThumbRestInteraction(void);
 
 		/**
-		 * @brief Destructor for the HandThumbRestInteraction component.
+		 * @brief Default destructor.
 		 */
 		~HandThumbRestInteraction(void) = default;
 	};

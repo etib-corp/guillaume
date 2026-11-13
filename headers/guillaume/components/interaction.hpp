@@ -30,97 +30,96 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Concept to check if an EventType has an associated Factory type.
+	 * @brief True when an event type declares a nested `Factory` type.
 	 *
-	 * This concept checks whether a given EventType has a nested type named
-	 * Factory. It is used to determine which constructor to use for the
-	 * Interaction class template, allowing for different initialization logic
-	 * based on the presence of a Factory type.
+	 * Interaction uses it as the default value of its second template
+	 * parameter, to pick the specialization that matches the event type.
 	 *
-	 * @tparam EventType The type to check for the presence of a Factory type.
-	 * @return True if EventType has a nested Factory type, false otherwise.
+	 * @tparam EventType The event type to inspect.
 	 */
 	template<typename EventType>
 	concept HasFactoryType = requires { typename EventType::Factory; };
 
 	/**
-	 * @brief Base class for interaction components that handle events of a
-	 * specific type.
+	 * @brief The part shared by every Interaction: one callback to run when
+	 * the input the component stands for reaches the entity.
 	 *
-	 * This class provides common functionality for interaction components, such
-	 * as storing an event handler function that can be called when the
-	 * interaction event occurs. It is designed to be inherited by more specific
-	 * interaction component classes that handle particular types of events.
+	 * User code (or a widget system) stores the handler; the input system of
+	 * the matching event calls it during the Event phase.
 	 *
-	 * @tparam EventType The type of event that this interaction component will
-	 * handle. This should be a type that represents an event in the system,
-	 * such as a user input event or a game event.
+	 * @tparam EventType The event the component reacts to. It only makes each
+	 * interaction a distinct component type; the handler receives nothing.
+	 * @see Interaction
 	 */
 	template<typename EventType> class InteractionBase: public ecs::Component
 	{
 		public:
 		using EventHandler = std::function<void(
-			void)>;	   ///< Type alias for the event handler function.
+			void)>;	   ///< Callback run when the input reaches the entity.
 
 		/**
-		 * @brief Constructor for the InteractionBase class.
+		 * @brief Construct an interaction without handler.
 		 */
 		InteractionBase(void);
 
 		/**
-		 * @brief Set the On Event Handler object
+		 * @brief Store the callback to run when the input reaches the entity.
 		 *
-		 * @param handler The event handler function to be called when the
-		 * interaction event occurs.
+		 * Always marks the component changed.
+		 *
+		 * @param handler The callback, or `nullptr` to remove the current one.
 		 */
 		void setOnEventHandler(const EventHandler &handler);
 
 		/**
-		 * @brief Get the On Event Handler object
-		 *
-		 * @return The current event handler function, which will be called when
-		 * the interaction event occurs.
+		 * @brief Get the callback run when the input reaches the entity.
+		 * @return A copy of the handler; empty (`nullptr`) when none was set.
 		 */
 		EventHandler getOnEventHandler(void) const;
 
 		EventHandler _onEventHandler {
 			nullptr
-		};	  ///< Handler function to be called when
-			  ///< the interaction event occurs.
+		};	  ///< Callback run when the input reaches the entity; empty by
+			  ///< default.
 	};
 
 	/**
-	 * @brief Template class for interaction components that handle events of a
-	 * specific type, with optional Factory type support.
+	 * @brief Component that makes an entity react to one kind of input event
+	 * (a hand pinch, a hand poke, a trigger pull, ...).
 	 *
-	 * This class inherits from both the specified EventType and the
-	 * InteractionBase class, allowing it to handle events of the given type
-	 * while also providing common interaction functionality. The template
-	 * parameter HasFactory determines which constructor is used, allowing for
-	 * different initialization logic based on whether the EventType has an
-	 * associated Factory type.
+	 * Each hand interaction component derives from it:
+	 * HandPinchInteraction is `Interaction<utility::event::HandPinchEvent>`.
+	 * The system of the same input (systems::HandPinch, ...) runs in the Event
+	 * phase on the entities that have the component, a Transform and a Bound.
+	 * systems::HandPinch and systems::HandPoke call the handler stored in
+	 * InteractionBase; the other hand systems have no per-entity rule (see
+	 * each derived component).
 	 *
-	 * @tparam EventType The type of event that this interaction component will
-	 * handle. This should be a type that represents an event in the system,
-	 * such as a user input event or a game event.
-	 * @tparam HasFactory A boolean template parameter that indicates whether
-	 * the EventType has an associated Factory type. This is determined using
-	 * the HasFactoryType concept.
+	 * @code
+	 * auto &pinch =
+	 * 	registry.addComponent<components::HandPinchInteraction>(identifier);
+	 * pinch.setOnEventHandler([] { openMenu(); });
+	 * @endcode
+	 *
+	 * The component also derives from `EventType`, so it has the fields of
+	 * that event, but no system of the library writes them: read the state
+	 * from the accessors of the derived component instead
+	 * (HandPinchInteraction::isPinch, HandPokeInteraction::isPoke).
+	 *
+	 * @tparam EventType The event the component reacts to.
+	 * @tparam HasFactory Whether `EventType` declares a nested `Factory`
+	 * type. Deduced with HasFactoryType; leave it to its default.
+	 * @see InteractionBase, HandPinchInteraction, HandPokeInteraction
 	 */
 	template<typename EventType, bool HasFactory = HasFactoryType<EventType>>
 	class Interaction;
 
 	/**
-	 * @brief Specialization of the Interaction class template for EventTypes
-	 * that do not have an associated Factory type. This specialization is used
-	 * when the EventType does not have a nested Factory type. It inherits from
-	 * both the EventType and the InteractionBase class, allowing it to handle
-	 * events of the given type while also providing common interaction
-	 * functionality.
-	 * @tparam EventType The type of event that this interaction component will
-	 * handle. This should be a type that represents an event in the system,
-	 * such as a user input event or a game event, and it should not have an
-	 * associated Factory type.
+	 * @brief Interaction for an event type without nested `Factory` type.
+	 *
+	 * See the primary Interaction template for the role and the usage.
+	 *
+	 * @tparam EventType The event the component reacts to.
 	 */
 	template<typename EventType> class Interaction<EventType, false>:
 		public EventType,
@@ -128,29 +127,21 @@ namespace guillaume::components
 	{
 		public:
 		/**
-		 * @brief Constructor for the Interaction class when the EventType does
-		 * not have a Factory type.
-		 *
-		 * This constructor initializes the Interaction component and ensures
-		 * that it is properly set up to handle events of the specified
-		 * EventType, which does not include an associated Factory for event
-		 * creation.
+		 * @brief Construct an interaction without handler, on a
+		 * default-constructed event.
 		 */
 		Interaction(void);
 	};
 
 	/**
-	 * @brief Specialization of the Interaction class template for EventTypes
-	 * that have an associated Factory type. This specialization is used when
-	 * the EventType has a nested Factory type. It inherits from both the
-	 * EventType and the InteractionBase class, allowing it to handle events of
-	 * the given type while also providing common interaction functionality.
-	 * Additionally, it defines a type alias for the Factory type associated
-	 * with the EventType.
-	 * @tparam EventType The type of event that this interaction component will
-	 * handle. This should be a type that represents an event in the system,
-	 * such as a user input event or a game event, and it should have an
-	 * associated Factory type.
+	 * @brief Interaction for an event type that declares a nested `Factory`
+	 * type.
+	 *
+	 * It behaves like the other specialization; it only names the factory of
+	 * the event in a private alias. See the primary Interaction template for
+	 * the role and the usage.
+	 *
+	 * @tparam EventType The event the component reacts to.
 	 */
 	template<typename EventType> class Interaction<EventType, true>:
 		public EventType,
@@ -158,20 +149,15 @@ namespace guillaume::components
 	{
 		public:
 		/**
-		 * @brief Constructor for the Interaction class when the EventType has a
-		 * Factory type.
-		 *
-		 * This constructor initializes the Interaction component and ensures
-		 * that it is properly set up to handle events of the specified
-		 * EventType, which includes having an associated Factory for event
-		 * creation.
+		 * @brief Construct an interaction without handler, on a
+		 * default-constructed event.
 		 */
 		Interaction(void);
 
 		private:
 		using Factory =
-			typename EventType::Factory;	///< Type alias for the
-											///< event's factory type.
+			typename EventType::Factory;	///< Factory type declared by the
+											///< event.
 	};
 }	 // namespace guillaume::components
 

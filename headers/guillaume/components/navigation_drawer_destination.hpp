@@ -32,33 +32,41 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Configuration of one destination of a navigation drawer (Paper
-	 * `Drawer.Item` or `Drawer.CollapsedItem`).
+	 * @brief State of one destination of a navigation drawer: an icon, a
+	 * label and an optional text at the trailing edge.
 	 *
-	 * This component is the whole state of a destination: its glyph, label
-	 * and trailing text, whether it is disabled, whether it is rendered as a
-	 * collapsed (rail) item, and the identifiers of its lead group, icon,
-	 * label and trailing text children. Whether the destination is selected
-	 * is its components::Selectable. systems::NavigationDrawerDestination
-	 * turns it into the active pill, the content colors and the placement of
-	 * those children.
+	 * It has two renderings. A regular item is a 56 dp row whose whole
+	 * surface is the active pill. A collapsed item (the rail of a collapsed
+	 * drawer) stacks a small pill holding the icon above the label.
+	 *
+	 * The entities::detail::DrawerDestination widget writes the content and
+	 * the identifiers of the children it builds.
+	 * systems::NavigationDrawerDestination reads everything in the Layout
+	 * phase and turns it into the pill color, the content colors and the
+	 * placement of those children.
+	 *
+	 * Whether the destination is selected is not stored here: it is the
+	 * components::Selectable of the same entity.
+	 *
+	 * @see systems::NavigationDrawerDestination,
+	 * components::NavigationDrawer
 	 */
 	class NavigationDrawerDestination: public ecs::Component
 	{
 		public:
-		/// Called when the user presses the destination.
+		/// Callback run when the user presses the destination.
 		using PressHandler = std::function<void(void)>;
 
-		/// M3 drawer destination height, in dp.
+		/// Height of a regular destination, in dp.
 		static constexpr float Height = 56.0f;
 
-		/// Width of the active indicator of a collapsed item, in dp.
+		/// Width of the active indicator pill of a collapsed item, in dp.
 		static constexpr float CollapsedIndicatorWidth = 56.0f;
 
-		/// Height of the active indicator of a collapsed item, in dp.
+		/// Height of the active indicator pill of a collapsed item, in dp.
 		static constexpr float CollapsedIndicatorHeight = 32.0f;
 
-		/// Icon size, in dp.
+		/// Size of the icon, in dp.
 		static constexpr float IconSize = 24.0f;
 
 		private:
@@ -87,7 +95,8 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the configuration of an enabled, regular
+		 * destination with no icon and no text.
 		 */
 		NavigationDrawerDestination(void) = default;
 
@@ -96,74 +105,176 @@ namespace guillaume::components
 		 */
 		~NavigationDrawerDestination(void) = default;
 
-		/** @brief Get the icon glyph. @return The glyph name. */
+		/**
+		 * @brief Get the icon of the destination.
+		 * @return The glyph name.
+		 */
 		const std::string &getIcon(void) const noexcept;
 
-		/** @brief Set the icon glyph. @param icon It. @return It. */
+		/**
+		 * @brief Set the icon of the destination.
+		 *
+		 * Marks the component changed only when the name differs.
+		 * @param icon The glyph name.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &setIcon(const std::string &icon);
 
-		/** @brief Get the label text. @return The label. */
+		/**
+		 * @brief Get the label of the destination.
+		 * @return The label; it is also the destination's accessible name.
+		 */
 		const std::string &getLabel(void) const noexcept;
 
-		/** @brief Set the label text. @param label It. @return It. */
+		/**
+		 * @brief Set the label of the destination.
+		 *
+		 * Marks the component changed only when the text differs.
+		 * @param label The new label.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &setLabel(const std::string &label);
 
-		/** @brief Get the trailing text. @return The text ("" for none). */
+		/**
+		 * @brief Get the text shown at the trailing edge of a regular item.
+		 * @return The text; empty when there is none.
+		 */
 		const std::string &getRight(void) const noexcept;
 
-		/** @brief Set the trailing text. @param right It. @return It. */
+		/**
+		 * @brief Set the text shown at the trailing edge of a regular item,
+		 * such as an unread count.
+		 *
+		 * When it is not empty, the row spreads its content so this text
+		 * reaches the far edge. Marks the component changed only when the
+		 * text differs.
+		 * @param right The new text; empty for none.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &setRight(const std::string &right);
 
-		/** @brief Whether the destination is disabled. @return True when
-		 * disabled. */
+		/**
+		 * @brief Tell whether the destination ignores presses.
+		 * @return True when disabled.
+		 */
 		bool isDisabled(void) const noexcept;
 
-		/** @brief Set whether the destination is disabled. @param disabled
-		 * It. @return It. */
+		/**
+		 * @brief Disable or enable the destination.
+		 *
+		 * A disabled destination is drawn with the disabled content color,
+		 * shows no active pill and does not run its press callback.
+		 * systems::NavigationDrawerDestination copies the flag to the
+		 * entity's components::StyleState. Marks the component changed only
+		 * when the flag differs.
+		 * @param disabled True to disable the destination.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &setDisabled(bool disabled);
 
-		/** @brief Whether the destination is a collapsed (rail) item. @return
-		 * True when collapsed. */
+		/**
+		 * @brief Tell which rendering the destination uses.
+		 * @return True for a collapsed (rail) item, false for a regular row.
+		 */
 		bool isCollapsed(void) const noexcept;
 
-		/** @brief Set whether the destination is a collapsed item. @param
-		 * collapsed It. @return It. */
+		/**
+		 * @brief Choose between the regular row and the collapsed (rail)
+		 * rendering.
+		 *
+		 * Marks the component changed only when the flag differs.
+		 * @param collapsed True for a collapsed item.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &setCollapsed(bool collapsed);
 
-		/** @brief Get the lead group child. @return Its identifier. */
+		/**
+		 * @brief Get the leading child of the destination.
+		 * @return For a regular item, the group that holds the icon and the
+		 * label; for a collapsed item, the pill that holds the icon.
+		 * ecs::Entity::InvalidIdentifier when it has not been built.
+		 */
 		ecs::Entity::Identifier getLead(void) const noexcept;
 
-		/** @brief Set the lead group child. @param identifier It. @return It.
+		/**
+		 * @brief Record the leading child of the destination.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The identifier of the icon-and-label group
+		 * (regular item) or of the pill (collapsed item).
+		 * @return This component, for chaining.
 		 */
 		NavigationDrawerDestination &
 			setLead(ecs::Entity::Identifier identifier);
 
-		/** @brief Get the icon child. @return Its identifier. */
+		/**
+		 * @brief Get the child that draws the icon.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when it
+		 * has not been built.
+		 */
 		ecs::Entity::Identifier getIconEntity(void) const noexcept;
 
-		/** @brief Set the icon child. @param identifier It. @return It. */
+		/**
+		 * @brief Record the child that draws the icon.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &
 			setIconEntity(ecs::Entity::Identifier identifier);
 
-		/** @brief Get the label child. @return Its identifier. */
+		/**
+		 * @brief Get the child that draws the label.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when it
+		 * has not been built.
+		 */
 		ecs::Entity::Identifier getLabelEntity(void) const noexcept;
 
-		/** @brief Set the label child. @param identifier It. @return It. */
+		/**
+		 * @brief Record the child that draws the label.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &
 			setLabelEntity(ecs::Entity::Identifier identifier);
 
-		/** @brief Get the trailing text child. @return Its identifier. */
+		/**
+		 * @brief Get the child that draws the trailing text.
+		 * @return Its identifier, or ecs::Entity::InvalidIdentifier when the
+		 * destination has none.
+		 */
 		ecs::Entity::Identifier getRightEntity(void) const noexcept;
 
-		/** @brief Set the trailing text child. @param identifier It. @return
-		 * It. */
+		/**
+		 * @brief Record the child that draws the trailing text.
+		 *
+		 * Marks the component changed only when the identifier differs.
+		 * @param identifier The child's identifier.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &
 			setRightEntity(ecs::Entity::Identifier identifier);
 
-		/** @brief Get the press callback. @return The callback. */
+		/**
+		 * @brief Get the callback run when the user presses the
+		 * destination.
+		 * @return The callback; empty when none is set.
+		 */
 		const PressHandler &getOnPress(void) const noexcept;
 
-		/** @brief Set the press callback. @param handler It. @return It. */
+		/**
+		 * @brief Set the callback run when the user presses the
+		 * destination while it is enabled.
+		 *
+		 * Inside a navigation drawer, systems::NavigationDrawer::install
+		 * sets it to select the destination, so a callback set by hand is
+		 * replaced. Does not mark the component changed.
+		 * @param handler The callback; an empty one removes it.
+		 * @return This component, for chaining.
+		 */
 		NavigationDrawerDestination &setOnPress(PressHandler handler);
 	};
 

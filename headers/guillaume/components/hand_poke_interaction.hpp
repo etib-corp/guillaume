@@ -28,35 +28,51 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component handling hand poke interactions.
-	 * @see systems::HandPoke
+	 * @brief Whether an XR hand pokes an entity (touches it with a finger),
+	 * and what to call when it does.
+	 *
+	 * systems::HandPoke writes it in the Event phase. On each hand poke event
+	 * it casts a ray from the poke pose along its forward direction and tests
+	 * it against the entity's Transform and Bound: the poke flag becomes the
+	 * result of that test, and the handler set with setOnEventHandler() is
+	 * called when the ray hits. systems::Focus reads the flag to give the
+	 * focus to the entity and systems::StyleState reads it as "pressed".
+	 *
+	 * The handler runs for every poke event that hits the entity, not only
+	 * for the first one. The flag only changes in a frame that received a
+	 * poke event.
+	 *
+	 * @see systems::HandPoke, Interaction, HandPinchInteraction
 	 */
 	class HandPokeInteraction: public Interaction<utility::event::HandPokeEvent>
 	{
 		private:
-		bool _isPoking { false };	 ///< Current poke state
+		bool _isPoking { false };	 ///< Last poke event hit the entity
 
 		public:
 		/**
-		 * @brief Construct a HandPokeInteraction component with default
-		 * handlers and states.
+		 * @brief Construct a component that is not poked and has no handler.
 		 */
 		HandPokeInteraction(void);
 
 		/**
-		 * @brief Destroy the HandPokeInteraction component.
+		 * @brief Default destructor.
 		 */
 		~HandPokeInteraction(void) = default;
 
 		/**
-		 * @brief Check if a poke gesture is currently active.
-		 * @return True if poking, false otherwise.
+		 * @brief Check whether a hand pokes the entity.
+		 * @return True when the ray of the last poke event hit the entity.
 		 */
 		bool isPoke(void) const;
 
 		/**
-		 * @brief Set the poke state.
-		 * @param poking True if poking, false otherwise.
+		 * @brief Record whether a hand pokes the entity.
+		 *
+		 * Called by systems::HandPoke; it calls no handler. Always marks the
+		 * component changed, even when the flag is the same.
+		 *
+		 * @param poking True when the ray of the poke event hits the entity.
 		 */
 		void setPoking(bool poking);
 	};

@@ -38,11 +38,21 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling ellipse rendering from ECS components.
-	 * @see components::Transform
-	 * @see components::Bound
-	 * @see components::Color
-	 * @see components::Ellipse
+	 * @brief Draws a filled ellipse (a disc when the bound is square) for
+	 * every entity that has a components::Ellipse.
+	 *
+	 * Runs in the Render phase on entities with Transform, Bound, Color and
+	 * Ellipse. It reads the four and writes no component: its output is one
+	 * engine object per entity, rebuilt and uploaded every frame.
+	 * - components::Transform gives the top-left corner of the bound and the
+	 *   orientation.
+	 * - components::Bound gives the two diameters, in dp: the ellipse touches
+	 *   the four sides of the bound.
+	 * - components::Color gives the fill color.
+	 * - components::Ellipse gives the number of segments of the outline.
+	 *
+	 * @see RenderHandleMap, shape::buildTriangleFanVertices
+	 * @see components::Ellipse, systems::RingRender
 	 */
 	class EllipseRender:
 		public RenderHandleMap,
@@ -50,28 +60,31 @@ namespace guillaume::systems
 								 components::Color, components::Ellipse>
 	{
 		private:
-		utility::Engine &_engine;	 ///< utility::Engine instance
+		utility::Engine &_engine;	 ///< Engine the ellipses are uploaded to
 
 		private:
 		/**
-		 * @brief Build local vertices for an ellipse.
-		 * @param halfWidth Semi-axis along X.
-		 * @param halfHeight Semi-axis along Y.
-		 * @param segments Number of outline segments.
-		 * @return Ellipse local vertices in draw order.
+		 * @brief Build the outline of an ellipse centered on the origin.
+		 * @param halfWidth Half the width of the ellipse, in dp.
+		 * @param halfHeight Half the height of the ellipse, in dp.
+		 * @param segments Number of segments of the outline. A value of zero
+		 * or less is treated as 1.
+		 * @return `segments + 1` points in drawing order; the last one
+		 * repeats the first.
 		 */
 		std::vector<utility::math::Vector2F>
 			buildLocalEllipseVertices(float halfWidth, float halfHeight,
 									  int segments) const;
 
 		/**
-		 * @brief Build the outline vertices of an ellipse in world space.
-		 * @param center Ellipse center.
-		 * @param orientation Ellipse orientation.
-		 * @param scale Ellipse scale.
-		 * @param size Ellipse size before scaling.
-		 * @param segments Number of outline segments.
-		 * @return World-space outline vertices.
+		 * @brief Build the outline of an ellipse in world space.
+		 * @param center World position of the center of the ellipse.
+		 * @param orientation World orientation of the ellipse.
+		 * @param scale Factors applied to the width and to the height. Their
+		 * sign is ignored.
+		 * @param size Width and height before scaling, in dp.
+		 * @param segments Number of segments of the outline.
+		 * @return The outline points in drawing order.
 		 */
 		std::vector<utility::graphic::PositionF> buildEllipseVertices(
 			const utility::graphic::PositionF &center,
@@ -81,35 +94,35 @@ namespace guillaume::systems
 
 		public:
 		/**
-		 * @brief Construct an ellipse rendering system.
-		 * @param engine The engine used to draw ellipses.
+		 * @brief Create the system in the Render phase.
+		 * @param engine The engine the ellipses are uploaded to. It must
+		 * outlive the system.
 		 */
 		EllipseRender(utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Forget the engine objects without removing them from the
+		 * engine.
 		 */
 		~EllipseRender(void);
 
 		/**
-		 * @brief Prepare the EllipseRender system before rendering.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Mark every engine object as not drawn yet. Called once per
+		 * frame before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the EllipseRender system after rendering.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Remove the engine objects of the entities that were not
+		 * drawn this frame. Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the EllipseRender system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Rebuild the mesh of one ellipse and upload it, creating the
+		 * engine object on the first frame.
+		 * @param entityIdentifier The entity to draw. It is skipped, with a
+		 * log message, when one of the four components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

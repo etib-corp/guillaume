@@ -38,8 +38,22 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling ring rendering from ECS components.
-	 * @see components::Ring
+	 * @brief Draws a full ring (a circle outline with a thickness) for every
+	 * entity that has a components::Ring.
+	 *
+	 * Runs in the Render phase on entities with Transform, Bound, Color and
+	 * Ring. It reads the four and writes no component: its output is one
+	 * engine object per entity, rebuilt and uploaded every frame.
+	 * - components::Transform gives the top-left corner of the bound and the
+	 *   orientation.
+	 * - components::Bound gives the outer diameters, in dp: the outer edge
+	 *   touches the four sides of the bound.
+	 * - components::Color gives the color of the ring.
+	 * - components::Ring gives the thickness, measured inwards from the
+	 *   outer edge, and the number of segments.
+	 *
+	 * @see RenderHandleMap, shape::buildRingMesh
+	 * @see components::Ring, systems::ArcRender
 	 */
 	class RingRender:
 		public RenderHandleMap,
@@ -47,33 +61,39 @@ namespace guillaume::systems
 								 components::Color, components::Ring>
 	{
 		private:
-		utility::Engine &_engine;	 ///< utility::Engine.
+		utility::Engine &_engine;	 ///< Engine the rings are uploaded to
 
 		public:
 		/**
-		 * @brief Construct a ring rendering system.
-		 * @param engine The engine used to draw rings.
+		 * @brief Create the system in the Render phase.
+		 * @param engine The engine the rings are uploaded to. It must outlive
+		 * the system.
 		 */
 		RingRender(utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. The engine objects it created are left
+		 * in the engine.
 		 */
 		~RingRender(void) override = default;
 
 		/**
-		 * @brief Prepare the system before rendering.
+		 * @brief Mark every engine object as not drawn yet. Called once per
+		 * frame before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the system after rendering.
+		 * @brief Remove the engine objects of the entities that were not
+		 * drawn this frame. Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Rebuild the mesh of one ring and upload it, creating the
+		 * engine object on the first frame.
+		 * @param entityIdentifier The entity to draw. It is skipped, with a
+		 * log message, when one of the four components is missing.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

@@ -36,8 +36,25 @@ namespace guillaume::systems
 {
 
 	/**
-	 * @brief System handling keyboard control keys for text entities.
+	 * @brief Applies editing keys (arrows, Home, End, Delete, Backspace) to
+	 * editable text.
+	 *
+	 * Runs in the Event phase on entities that have a components::Text and
+	 * a components::Focus. On a key-down event it writes the Text
+	 * component:
+	 * - Left / Right move the cursor by one character;
+	 * - Home / End move it to the start / end of the content;
+	 * - Delete / Backspace remove the character after / before the cursor.
+	 *
+	 * Other keys and key-up events are ignored; characters are inserted by
+	 * systems::TextInput.
+	 *
+	 * @note The components::Focus is only required to be present: the
+	 * system does not test whether the entity is the focused one, so every
+	 * matching entity receives the key.
+	 *
 	 * @see components::Text
+	 * @see systems::TextInput
 	 */
 	class KeyboardControl:
 		public ecs::SystemFiller<components::Text, components::Focus>,
@@ -45,31 +62,32 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Default constructor for the KeyboardControl system.
-		 * @param eventBus The event bus to subscribe to.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * keyboard events.
+		 * @param eventBus The event bus delivering the keyboard events.
 		 */
 		KeyboardControl(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the KeyboardControl system.
+		 * @brief Default destructor.
 		 */
 		~KeyboardControl(void) = default;
 
 		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
+		 * @brief Take the next pending keyboard event, once per frame.
+		 *
+		 * When none is pending, the previous event stays the current one.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
+		 * @brief Does nothing.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the KeyboardControl system for the specified entity.
-		 * @param entityIdentifier The identifier of the entity to update.
+		 * @brief Apply the current keyboard event to the text of one entity.
+		 * @param entityIdentifier The entity holding the components::Text.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;
