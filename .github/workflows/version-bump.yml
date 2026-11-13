@@ -1,8 +1,13 @@
 name: Version Bump
 
+# Runs on every push to main, which is what merging a pull request does.
+# Running on the push instead of on the pull request event matters: a pull
+# request opened from a fork only gets a read-only token, so a bump triggered
+# by it could never push.
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -14,40 +19,50 @@ concurrency:
 
 jobs:
   bump:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v6.0.2
         with:
+          # The latest main, not the pushed commit: a bump queued behind
+          # another one must start from the version that one wrote.
+          ref: main
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine bump type from PR title
+      - name: Determine bump type from the pushed commits
         id: bump
         env:
           # Passed through the environment, never interpolated into the
-          # script: a PR title is untrusted text.
-          PR_TITLE: ${{ github.event.pull_request.title }}
+          # script: commit messages are untrusted text.
+          COMMITS: ${{ toJSON(github.event.commits) }}
         run: |
-          title="$PR_TITLE"
-          lower="$(printf '%s' "$title" | tr '[:upper:]' '[:lower:]')"
-          case "$lower" in
-            feat*)
-              echo "type=minor" >> "$GITHUB_OUTPUT"
-              ;;
-            fix*)
-              echo "type=patch" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "type=none" >> "$GITHUB_OUTPUT"
-              ;;
-          esac
+          # A squash merge pushes one commit whose subject is the pull
+          # request title. For a push of several commits, the largest bump
+          # wins. The bump commit of this workflow starts with "chore" and so
+          # never triggers another bump.
+          type=none
+          while IFS= read -r subject; do
+            lower="$(printf '%s' "$subject" | tr '[:upper:]' '[:lower:]')"
+            case "$lower" in
+              feat*)
+                type=minor
+                ;;
+              fix*)
+                if [ "$type" = none ]; then
+                  type=patch
+                fi
+                ;;
+            esac
+          done < <(printf '%s' "$COMMITS" | jq -r '.[].message | split("\n")[0]')
+          echo "type=$type" >> "$GITHUB_OUTPUT"
 
       - name: Report when no version bump is required
         if: steps.bump.outputs.type == 'none'
         run: |
-          echo "PR title does not indicate a feature or fix; skipping version bump."
+          echo "No pushed commit is a feature or a fix; skipping version bump."
 
       - name: Read current version
         if: steps.bump.outputs.type != 'none'
@@ -112,6 +127,20 @@ jobs:
 
       - name: Create release tag
         if: steps.bump.outputs.type != 'none'
+        id: tag
         run: |
-          git tag "v${{ steps.next.outputs.new }}"
-          git push origin "v${{ steps.next.outputs.new }}"
+          tag="v${{ steps.next.outputs.new }}"
+          git tag "$tag"
+          git push origin "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  # A tag pushed with the workflow token does not start other workflows, so
+  # the release is called directly instead of waiting for the tag event.
+  release:
+    needs: bump
+    if: needs.bump.outputs.tag != ''
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.bump.outputs.tag }}
