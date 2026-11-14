@@ -146,7 +146,7 @@ namespace guillaume
 		 * - integer types: the whole text must be a number that fits the
 		 *   type.
 		 * - floating-point types: the whole text must be a number in range,
-		 *   as read by `std::strtold`. An empty text reads as 0.
+		 *   as read by `std::strtold`. An empty text cannot be converted.
 		 *
 		 * @tparam ValueType The type to convert to: `std::string`, `bool`,
 		 * an integer type or a floating-point type. Any other type does not

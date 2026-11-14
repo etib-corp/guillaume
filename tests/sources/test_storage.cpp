@@ -204,6 +204,23 @@ namespace guillaume::tests
 		EXPECT_FALSE(*ok);
 	}
 
+	TEST_F(TestStorage, GetItemAsFloatingPointRejectsAnEmptyString)
+	{
+		SessionStorage sessionStorage;
+
+		sessionStorage.setItem("gamma", "");
+
+		EXPECT_FALSE(sessionStorage.getItemAs<float>("gamma").has_value());
+		EXPECT_FALSE(sessionStorage.getItemAs<double>("gamma").has_value());
+		EXPECT_FALSE(
+			sessionStorage.getItemAs<long double>("gamma").has_value());
+
+		sessionStorage.setItem("zero", "0");
+		const auto zero = sessionStorage.getItemAs<float>("zero");
+		ASSERT_TRUE(zero.has_value());
+		EXPECT_FLOAT_EQ(*zero, 0.0f);
+	}
+
 	TEST_F(TestStorage, LocalStorageIsPersistentWhenTheFileOpens)
 	{
 		LocalStorage localStorage(_localStoragePath);
