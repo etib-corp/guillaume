@@ -263,7 +263,7 @@ namespace guillaume::systems
 
 		if (icon) {
 			const float iconY = buttonPose.getPosition().y
-				+ (containerSize - iconHeight) / 2.0f;
+				- (containerSize - iconHeight) / 2.0f;
 
 			const auto iconPose = Layout::contentLayerPose(
 				utility::graphic::PositionF(startX, iconY,
@@ -277,7 +277,7 @@ namespace guillaume::systems
 		if (label) {
 			const float labelX = startX + iconWidth + gap;
 			const float labelY = buttonPose.getPosition().y
-				+ (containerSize - labelHeight) / 2.0f;
+				- (containerSize - labelHeight) / 2.0f;
 
 			const auto labelPose = Layout::contentLayerPose(
 				utility::graphic::PositionF(labelX, labelY,

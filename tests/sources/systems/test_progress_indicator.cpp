@@ -95,8 +95,8 @@ namespace guillaume::systems::tests
 			_registry.getComponent<components::Ring>(_track).getThickness(),
 			4.0f);
 		EXPECT_FLOAT_EQ(arc.getThickness(), 4.0f);
-		EXPECT_FLOAT_EQ(arc.getStartAngle(), -Pi / 2.0f);
-		EXPECT_FLOAT_EQ(arc.getSweepAngle(), Pi);
+		EXPECT_FLOAT_EQ(arc.getStartAngle(), Pi / 2.0f);
+		EXPECT_FLOAT_EQ(arc.getSweepAngle(), -Pi);
 	}
 
 	TEST_F(TestProgressIndicatorSystem, ValueChangesAreAnimated)
@@ -171,15 +171,15 @@ namespace guillaume::systems::tests
 
 		_system.update(_entity);
 
-		EXPECT_FLOAT_EQ(arc.getStartAngle(), -Pi / 2.0f);
-		EXPECT_FLOAT_EQ(arc.getSweepAngle(), Pi / 2.0f);
+		EXPECT_FLOAT_EQ(arc.getStartAngle(), Pi / 2.0f);
+		EXPECT_FLOAT_EQ(arc.getSweepAngle(), -Pi / 2.0f);
 
 		animation.advance(0.75f);
 
 		EXPECT_GT(state().getCycle(), 0.0f);
 		EXPECT_FLOAT_EQ(arc.getStartAngle(),
-						-Pi / 2.0f + state().getCycle() * 2.0f * Pi);
-		EXPECT_FLOAT_EQ(arc.getSweepAngle(), Pi / 2.0f);
+						Pi / 2.0f - state().getCycle() * 2.0f * Pi);
+		EXPECT_FLOAT_EQ(arc.getSweepAngle(), -Pi / 2.0f);
 	}
 
 	TEST_F(TestProgressIndicatorSystem, DeterminateFillIsNotAnimated)

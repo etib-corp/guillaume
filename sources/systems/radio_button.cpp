@@ -196,6 +196,12 @@ namespace guillaume::systems
 			placement::placeChild(componentRegistry, entityIdentifier, label,
 								  utility::graphic::PositionF(x, y, 0.0f),
 								  layer);
+			placement::reserveTrailingWidth(componentRegistry, entityIdentifier,
+											x + labelBound.getWidth()
+												- ring.getWidth());
+		} else {
+			placement::reserveTrailingWidth(componentRegistry, entityIdentifier,
+											0.0f);
 		}
 	}
 

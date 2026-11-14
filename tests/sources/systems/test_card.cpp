@@ -212,22 +212,23 @@ namespace guillaume::systems::tests
 					  .getChildren(),
 				  (Ids { _button }));
 
-		// 16 dp padding, then each section followed by an 8 dp gap.
+		// 16 dp padding, then each section followed by an 8 dp gap. Offsets
+		// are measured down from the card's top edge (y points up).
 		const float titleY	 = 16.0f + components::Card::CoverHeight + 8.0f;
 		const float contentY = titleY + components::Card::TitleMinHeight + 8.0f;
 		const float actionsY = contentY + 20.0f + 8.0f;
-		EXPECT_FLOAT_EQ(positionOf(_cover).getY(), 16.0f);
-		EXPECT_FLOAT_EQ(positionOf(_titleSection).getY(), titleY);
-		EXPECT_FLOAT_EQ(positionOf(_content).getY(), contentY);
-		EXPECT_FLOAT_EQ(positionOf(_actionsSection).getY(), actionsY);
+		EXPECT_FLOAT_EQ(positionOf(_cover).getY(), -16.0f);
+		EXPECT_FLOAT_EQ(positionOf(_titleSection).getY(), -titleY);
+		EXPECT_FLOAT_EQ(positionOf(_content).getY(), -contentY);
+		EXPECT_FLOAT_EQ(positionOf(_actionsSection).getY(), -actionsY);
 		EXPECT_FLOAT_EQ(
 			_registry.getComponent<components::Bound>(_entity).getHeight(),
 			actionsY + 40.0f + 16.0f);
 
 		// The content of a section follows the section the card just moved.
-		EXPECT_FLOAT_EQ(positionOf(_titleText).getY(), titleY);
-		EXPECT_FLOAT_EQ(positionOf(_subtitleText).getY(), titleY + 20.0f);
-		EXPECT_FLOAT_EQ(positionOf(_button).getY(), actionsY);
+		EXPECT_FLOAT_EQ(positionOf(_titleText).getY(), -titleY);
+		EXPECT_FLOAT_EQ(positionOf(_subtitleText).getY(), -(titleY + 20.0f));
+		EXPECT_FLOAT_EQ(positionOf(_button).getY(), -actionsY);
 	}
 
 	TEST_F(TestCardSystem, MissingSectionsAreLeftOutOfTheLayout)
@@ -254,7 +255,8 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(
 			_registry.getComponent<components::Layout>(_entity).getChildren(),
 			(Ids { _content }));
-		EXPECT_FLOAT_EQ(positionOf(_content).getY(), 16.0f);
+		// 16 dp down from the card's top edge (y points up).
+		EXPECT_FLOAT_EQ(positionOf(_content).getY(), -16.0f);
 	}
 
 	TEST_F(TestCardSystem, ChildrenFollowTheConfiguredContent)

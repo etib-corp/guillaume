@@ -9,8 +9,27 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+### Added
+
+- `components::LayoutExtent`: a widget can reserve layout room beyond the
+  shape it draws; `systems::Layout` adds it to the child's width.
+- `components::Mesh::setFitSize()` / `entities::Mesh::setFitSize()` scale a
+  3D model so its longest side has a given length in dp.
+- The evan example is a widget gallery on nine pages; `GUILLAUME_GALLERY_PAGE`
+  opens it on a given page.
+
 ### Changed
 
+- **Breaking:** an entity's position is its top-left corner and content
+  extends down, with y pointing up. Shapes used to be drawn upward from the
+  position while text and icons were drawn downward, and vertical layouts
+  stacked their first child at the bottom. Code that computes world
+  positions by hand must subtract vertical offsets.
+- `Scene::placeEntitiesInFrontOfView()` centres each root vertically on the
+  view.
+- Circular progress and loading arcs start at the top and run clockwise.
+- An `Image` without a size takes its texture's size.
+- A closed `Menu` draws nothing and ignores presses on its rows.
 - The in-code documentation was rewritten for newcomers: every class says
   what it is, who writes and reads it and in which phase, with examples.
   `headers/guillaume/namespaces.hpp` is the map of the modules, and
@@ -23,6 +42,17 @@ Versions follow the calendar scheme described in
 
 ### Fixed
 
+- Transparent shapes were drawn solid black and translucent colors at full
+  strength: the engine draws shapes with an opaque material. Fully
+  transparent shapes, text and icons are no longer submitted, and
+  translucent colors are composited over the scheme's Surface. Real
+  blending needs an alpha-blended material in the engine.
+- Labels of checkboxes, radio buttons and switches overlapped the next
+  widget in a row.
+- Radio buttons were filled discs, the indeterminate checkbox dash and
+  progress fills were hidden behind their own shapes.
+- 3D models were drawn at the world origin in their file's units, whatever
+  their entity's position.
 - `systems::Button` is registered by `registerCoreSystems()`; its per-frame
   sync of a button's icon and accessibility state did not run.
 

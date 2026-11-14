@@ -76,19 +76,29 @@ namespace guillaume::systems
 								<< "' already measured, skipping.";
 			const auto &cacheValue = get(cacheKey);
 			if (cacheValue.has_value()) {
+				const float scale = modelComponent.scaleFor(
+					cacheValue->getWidth(), cacheValue->getHeight());
 				getComponent<components::Bound>(entityIdentifier)
-					.setWidth(cacheValue->getWidth())
-					.setHeight(cacheValue->getHeight());
+					.setWidth(cacheValue->getWidth() * scale)
+					.setHeight(cacheValue->getHeight() * scale);
 			}
 			return;
 		}
 
-		auto model		 = _ressourceProvider->loadModel(cacheKey.meshPath);
-		auto boundingBox = model->computeBoundingSize();
+		auto model = _ressourceProvider->loadModel(cacheKey.meshPath);
+		if (model == nullptr) {
+			getLogger().warning()
+				<< "Failed to load model '" << cacheKey.meshPath
+				<< "' for entity " << entityIdentifier;
+			return;
+		}
+		auto boundingBox  = model->computeBoundingSize();
+		const float scale = modelComponent.scaleFor(boundingBox.getWidth(),
+													boundingBox.getHeight());
 
 		getComponent<components::Bound>(entityIdentifier)
-			.setWidth(boundingBox.getWidth())
-			.setHeight(boundingBox.getHeight());
+			.setWidth(boundingBox.getWidth() * scale)
+			.setHeight(boundingBox.getHeight() * scale);
 
 		put(cacheKey, boundingBox);
 	}

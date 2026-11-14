@@ -22,6 +22,8 @@
 
 #include "guillaume/components/mesh.hpp"
 
+#include <algorithm>
+
 namespace guillaume::components
 {
 	Mesh &Mesh::setMeshPath(const std::string &path)
@@ -52,5 +54,29 @@ namespace guillaume::components
 	std::string Mesh::getTexturePath(void) const
 	{
 		return _texturePath;
+	}
+
+	const std::optional<float> &Mesh::getFitSize(void) const noexcept
+	{
+		return _fitSize;
+	}
+
+	Mesh &Mesh::setFitSize(std::optional<float> size)
+	{
+		if (_fitSize != size) {
+			_fitSize = size;
+			setHasChanged(true);
+		}
+		return *this;
+	}
+
+	float Mesh::scaleFor(float modelWidth, float modelHeight) const noexcept
+	{
+		const float longest = std::max(modelWidth, modelHeight);
+
+		if (!_fitSize.has_value() || longest <= 0.0f) {
+			return 1.0f;
+		}
+		return *_fitSize / longest;
 	}
 }	 // namespace guillaume::components

@@ -287,8 +287,9 @@ namespace guillaume::entities::tests
 									 .getComponent<components::Transform>(
 										 field->getSupportingIdentifier())
 									 .getPose();
-		EXPECT_GE(supportPose.getPosition().getY()
-					  - fieldPose.getPosition().getY(),
+		// Below means a smaller y (y points up).
+		EXPECT_GE(fieldPose.getPosition().getY()
+					  - supportPose.getPosition().getY(),
 				  56.0f);
 	}
 

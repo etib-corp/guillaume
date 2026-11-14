@@ -27,6 +27,7 @@
 #include <utility>
 
 #include "guillaume/components/hierarchy.hpp"
+#include "guillaume/components/layout_extent.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::systems
@@ -157,9 +158,17 @@ namespace guillaume::systems
 
 			const auto &childBound =
 				registry.getComponent<components::Bound>(childIdentifier);
+			// A child may reserve room beyond what it draws (a checkbox and
+			// its label).
+			const float trailing =
+				registry.hasComponent<components::LayoutExtent>(childIdentifier)
+				? registry
+					  .getComponent<components::LayoutExtent>(childIdentifier)
+					  .getTrailingWidth()
+				: 0.0f;
 			children.push_back(LayoutChild {
 				.identifier = childIdentifier,
-				.width		= childBound.getWidth(),
+				.width		= childBound.getWidth() + trailing,
 				.height		= childBound.getHeight(),
 			});
 		}
@@ -234,10 +243,10 @@ namespace guillaume::systems
 
 			if (horizontal) {
 				childX = originX + cursor;
-				childY = originY + crossPosition;
+				childY = originY - crossPosition;
 			} else {
 				childX = originX + crossPosition;
-				childY = originY + cursor;
+				childY = originY - cursor;
 			}
 
 			auto &childTransform =

@@ -67,7 +67,7 @@ namespace guillaume::systems
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + bound.getWidth() / 2.0f,
-			pose.getPosition().y + bound.getHeight() / 2.0f,
+			pose.getPosition().y - bound.getHeight() / 2.0f,
 			pose.getPosition().z);
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
@@ -77,6 +77,12 @@ namespace guillaume::systems
 							 bound.getWidth() / 2.0f, bound.getHeight() / 2.0f,
 							 ring.getThickness(), 0.0f, 2.0f * std::acos(-1.0f),
 							 ring.getSegments(), true, color);
+
+		// A transparent shape adds no geometry: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (mesh.getVertices().empty()) {
+			return;
+		}
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");

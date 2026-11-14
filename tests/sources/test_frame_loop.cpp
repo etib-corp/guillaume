@@ -142,6 +142,8 @@ namespace guillaume::tests
 			item.label = "Item";
 		}
 		menu->setItems(items);
+		// Open it, so its rows are drawn.
+		menu->show();
 		runFrame();
 		runFrame();
 		const auto removedBefore = _engine.removeObjectCallCount;

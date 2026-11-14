@@ -43,6 +43,7 @@ set(GUILLAUME_SOURCES
     sources/components/icon_button.cpp
     sources/components/image.cpp
     sources/components/layout.cpp
+    sources/components/layout_extent.cpp
     sources/components/line.cpp
     sources/components/list.cpp
     sources/components/loading_indicator.cpp

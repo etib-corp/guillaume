@@ -72,6 +72,7 @@ namespace guillaume::systems
 						ecs::Entity::Identifier label)
 		{
 			if (!registry.hasComponent<components::Bound>(label)) {
+				placement::reserveTrailingWidth(registry, identifier, 0.0f);
 				return;
 			}
 
@@ -89,6 +90,9 @@ namespace guillaume::systems
 			placement::placeChild(registry, identifier, label,
 								  utility::graphic::PositionF(x, y, 0.0f),
 								  Layout::layerOf(registry, identifier));
+			placement::reserveTrailingWidth(registry, identifier,
+											x + labelBound.getWidth()
+												- box.getWidth());
 		}
 	}	 // namespace
 

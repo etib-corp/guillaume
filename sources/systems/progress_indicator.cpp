@@ -252,10 +252,13 @@ namespace guillaume::systems
 				  state.getOpacity()));
 		placement::placeChild(componentRegistry, entityIdentifier, track,
 							  origin, layer);
+		// The fill covers the track: one step closer to the viewer, or the
+		// two would sit at the same depth and the track could hide it.
+		const auto fillLayer = layer + 1;
 
 		if (circular) {
 			placement::placeChild(componentRegistry, entityIdentifier, fill,
-								  origin, layer);
+								  origin, fillLayer);
 			componentRegistry.getComponent<components::Bound>(track)
 				.setWidth(diameter)
 				.setHeight(diameter);
@@ -272,13 +275,15 @@ namespace guillaume::systems
 
 				arc.setThickness(components::ProgressIndicator::RingThickness);
 				if (indeterminate) {
-					arc.setStartAngle(-HalfPi + state.getCycle() * TwoPi)
-						.setSweepAngle(TwoPi
+					// y points up: the top is +pi/2 and clockwise is a
+					// negative sweep.
+					arc.setStartAngle(HalfPi - state.getCycle() * TwoPi)
+						.setSweepAngle(-TwoPi
 									   * components::ProgressIndicator::
 										   IndeterminateSweep);
 				} else {
-					arc.setStartAngle(-HalfPi).setSweepAngle(normalized
-															 * TwoPi);
+					arc.setStartAngle(HalfPi).setSweepAngle(-normalized
+															* TwoPi);
 				}
 			}
 			return;
@@ -299,13 +304,13 @@ namespace guillaume::systems
 				componentRegistry, entityIdentifier, fill,
 				utility::graphic::PositionF(
 					state.getCycle() * (length - segment), 0.0f, 0.0f),
-				layer);
+				fillLayer);
 			componentRegistry.getComponent<components::Bound>(fill)
 				.setWidth(segment)
 				.setHeight(height);
 		} else {
 			placement::placeChild(componentRegistry, entityIdentifier, fill,
-								  origin, layer);
+								  origin, fillLayer);
 			componentRegistry.getComponent<components::Bound>(fill)
 				.setWidth(length * normalized)
 				.setHeight(height);

@@ -83,6 +83,8 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestMenuSystem, OverlayDismissesOnOutsideClickAndEscape)
 	{
+		// Applying the style must not open a closed menu.
+		overlay().setVisible(false);
 		_system.update(_entity);
 
 		EXPECT_FALSE(overlay().isModal());
@@ -101,8 +103,9 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(boundOf(_copyRow).getHeight(), 48.0f);
 		EXPECT_FLOAT_EQ(boundOf(_pasteRow).getHeight(), 32.0f);
 		EXPECT_FLOAT_EQ(boundOf(_entity).getHeight(), 80.0f);
+		// Rows stack downward from the top edge (y points up).
 		EXPECT_FLOAT_EQ(positionOf(_copyRow).getY(), 0.0f);
-		EXPECT_FLOAT_EQ(positionOf(_pasteRow).getY(), 48.0f);
+		EXPECT_FLOAT_EQ(positionOf(_pasteRow).getY(), -48.0f);
 	}
 
 	TEST_F(TestMenuSystem, RowContentIsLaidOutFromThePadding)
@@ -115,8 +118,9 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(positionOf(_copyIcon).getX(), ItemPadding);
 		EXPECT_FLOAT_EQ(positionOf(_copyLabel).getX(),
 						ItemPadding + 24.0f + ItemPadding);
-		// The second row sits below the first: its content follows it.
-		EXPECT_GT(positionOf(_pasteLabel).getY(), 48.0f);
+		// The second row sits below the first: its content follows it
+		// (y points up).
+		EXPECT_LT(positionOf(_pasteLabel).getY(), -48.0f);
 	}
 
 	TEST_F(TestMenuSystem, WidthFollowsTheWidestRowWithinTheMaterialRange)
@@ -244,17 +248,19 @@ namespace guillaume::systems::tests
 		menu().setAnchor(_anchor);
 
 		_system.update(_entity);
-		// Anchor at y = 100, 40 dp high, plus the 4 dp gap.
+		// Anchor top at y = 100, 40 dp high, plus the 4 dp gap, downward
+		// (y points up).
 		EXPECT_FLOAT_EQ(positionOf(_entity).getX(), 10.0f);
-		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 144.0f);
-		EXPECT_FLOAT_EQ(positionOf(_copyRow).getY(), 144.0f);
+		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 56.0f);
+		EXPECT_FLOAT_EQ(positionOf(_copyRow).getY(), 56.0f);
 		EXPECT_FLOAT_EQ(positionOf(_copyIcon).getX(), 10.0f + ItemPadding);
 
 		menu().setAnchorPosition(AnchorPosition::Top);
 		_system.update(_entity);
-		// The 80 dp high menu ends 4 dp above the anchor.
-		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 16.0f);
-		EXPECT_FLOAT_EQ(positionOf(_pasteRow).getY(), 64.0f);
+		// The 80 dp high menu ends 4 dp above the anchor: its top is at
+		// 100 + 4 + 80.
+		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 184.0f);
+		EXPECT_FLOAT_EQ(positionOf(_pasteRow).getY(), 136.0f);
 	}
 
 	TEST_F(TestMenuSystem, AMenuWithoutAnchorKeepsItsPose)
@@ -276,7 +282,7 @@ namespace guillaume::systems::tests
 
 		MenuSystem::show(_registry, _entity);
 		EXPECT_TRUE(overlay().isVisible());
-		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 144.0f);
+		EXPECT_FLOAT_EQ(positionOf(_entity).getY(), 56.0f);
 
 		MenuSystem::hide(_registry, _entity);
 		EXPECT_FALSE(overlay().isVisible());

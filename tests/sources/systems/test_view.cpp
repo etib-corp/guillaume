@@ -21,6 +21,7 @@
  */
 #include "systems/test_view.hpp"
 
+#include <guillaume/components/layout_extent.hpp>
 namespace guillaume::systems::tests
 {
 	namespace
@@ -53,9 +54,10 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(offsetX(_first), 16.0f);
 		EXPECT_FLOAT_EQ(offsetX(_second), 74.0f);
 
-		// Cross axis centered in a 60 high region: 16 + (60 - 30) / 2 = 31.
-		EXPECT_FLOAT_EQ(offsetY(_first), 31.0f);
-		EXPECT_FLOAT_EQ(offsetY(_second), 16.0f);
+		// Cross axis centered in a 60 high region: 16 + (60 - 30) / 2 = 31,
+		// measured down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(offsetY(_first), -31.0f);
+		EXPECT_FLOAT_EQ(offsetY(_second), -16.0f);
 	}
 
 	TEST_F(TestViewSystem, ColumnSizesAndPlacesChildren)
@@ -69,8 +71,9 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(bound().getWidth(), 82.0f);
 		EXPECT_FLOAT_EQ(bound().getHeight(), 130.0f);
 
-		EXPECT_FLOAT_EQ(offsetY(_first), 16.0f);
-		EXPECT_FLOAT_EQ(offsetY(_second), 54.0f);
+		// Stacked down from the top edge (y points up).
+		EXPECT_FLOAT_EQ(offsetY(_first), -16.0f);
+		EXPECT_FLOAT_EQ(offsetY(_second), -54.0f);
 
 		// Cross axis centered in a 50 wide region: 16 + (50 - 20) / 2 = 31.
 		EXPECT_FLOAT_EQ(offsetX(_first), 16.0f);
@@ -79,14 +82,15 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestViewSystem, CrossAxisAlignmentMovesChildren)
 	{
+		// Offsets are measured down from the top edge (y points up).
 		layout().setCrossAxisAlignment(CrossAxisAlignment::Start);
 		_system.update(_view);
-		EXPECT_FLOAT_EQ(offsetY(_first), 16.0f);
+		EXPECT_FLOAT_EQ(offsetY(_first), -16.0f);
 
 		layout().setCrossAxisAlignment(CrossAxisAlignment::End);
 		_system.update(_view);
 		// Padding(16) + region(60) - height(30) = 46.
-		EXPECT_FLOAT_EQ(offsetY(_first), 46.0f);
+		EXPECT_FLOAT_EQ(offsetY(_first), -46.0f);
 	}
 
 	TEST_F(TestViewSystem, FixedSizeOverridesAutoSizing)
@@ -195,8 +199,9 @@ namespace guillaume::systems::tests
 
 		_system.update(_view);
 
+		// 16 right of x = 10 and 31 down from y = 20 (y points up).
 		EXPECT_FLOAT_EQ(position(_first).getX(), 26.0f);
-		EXPECT_FLOAT_EQ(position(_first).getY(), 51.0f);
+		EXPECT_FLOAT_EQ(position(_first).getY(), -11.0f);
 		EXPECT_FLOAT_EQ(position(_first).getZ(), -199.0f);
 	}
 
@@ -248,6 +253,29 @@ namespace guillaume::systems::tests
 		EXPECT_FALSE(_registry.hasChanged(_view));
 		EXPECT_FALSE(_registry.hasChanged(_first));
 		EXPECT_FALSE(_registry.hasChanged(_second));
+	}
+
+	TEST_F(TestViewSystem, LayoutExtentReservesRoomAfterAChild)
+	{
+		// The first child draws 50 dp but needs 30 more for a label beside
+		// it: the second child moves right by 30.
+		_registry.addComponent<components::LayoutExtent>(_first)
+			.setTrailingWidth(30.0f);
+
+		_system.update(_view);
+
+		EXPECT_FLOAT_EQ(offsetX(_first), 16.0f);
+		EXPECT_FLOAT_EQ(offsetX(_second), 16.0f + 50.0f + 30.0f + 8.0f);
+	}
+
+	TEST_F(TestViewSystem, ANegativeLayoutExtentReservesNothing)
+	{
+		_registry.addComponent<components::LayoutExtent>(_first)
+			.setTrailingWidth(-10.0f);
+
+		_system.update(_view);
+
+		EXPECT_FLOAT_EQ(offsetX(_second), 74.0f);
 	}
 
 }	 // namespace guillaume::systems::tests

@@ -101,4 +101,12 @@ namespace guillaume::entities
 		return *this;
 	}
 
+	Mesh &Mesh::setFitSize(std::optional<float> size)
+	{
+		getComponentRegistry()
+			.getComponent<components::Mesh>(getIdentifier())
+			.setFitSize(size);
+		return *this;
+	}
+
 }	 // namespace guillaume::entities

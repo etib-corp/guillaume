@@ -94,10 +94,11 @@ namespace guillaume::entities::tests
 		ASSERT_EQ(positions.size(), 1u);
 
 		// Paper 4 dp padding on the main axis; the title is the only child
-		// and its bound is unmeasured (0x0) so it is centered in the 64 dp bar.
+		// and its bound is unmeasured (0x0) so it is centered in the 64 dp bar,
+		// 32 dp below the bar's top edge (y points up).
 		EXPECT_FLOAT_EQ(positions[0].getX(),
 						100.0f + AppBar::HorizontalPadding);
-		EXPECT_FLOAT_EQ(positions[0].getY(), 82.0f);
+		EXPECT_FLOAT_EQ(positions[0].getY(), 18.0f);
 		EXPECT_FLOAT_EQ(
 			positions[0].getZ(),
 			static_cast<float>(systems::Layout::ContentLayerOffset));

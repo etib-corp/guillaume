@@ -107,7 +107,8 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(
 			_registry.getComponent<components::Bound>(_entity).getHeight(),
 			Destination::Height + theme::SpacingScale::get(2));
-		EXPECT_LT(positionOf(_lead).getY(), positionOf(_label).getY());
+		// Above means a larger y (y points up).
+		EXPECT_GT(positionOf(_lead).getY(), positionOf(_label).getY());
 	}
 
 	TEST_F(TestNavigationDrawerDestinationSystem,

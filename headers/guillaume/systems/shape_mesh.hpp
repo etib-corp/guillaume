@@ -78,6 +78,30 @@ namespace guillaume::systems::shape
 		const utility::graphic::OrientationF &orientation);
 
 	/**
+	 * @brief Whether a color draws nothing.
+	 *
+	 * The shape builders add no geometry for such a color, and the render
+	 * systems then submit nothing, so a transparent shape is not drawn.
+	 * @param color The color to test.
+	 * @return True when the alpha is 0.
+	 */
+	bool isInvisible(const utility::graphic::Color32Bit &color);
+
+	/**
+	 * @brief Turn a translucent color into the opaque color it looks like.
+	 *
+	 * The engine draws shapes with an opaque material, so alpha is ignored.
+	 * A translucent color (a state layer, a disabled container, a shadow)
+	 * is composited over the active scheme's Surface, which is what it is
+	 * drawn on in most cases. Opaque and fully transparent colors are
+	 * returned unchanged.
+	 * @param color The color.
+	 * @return The color to put in the vertices.
+	 */
+	utility::graphic::Color32Bit
+		opaqueColor(const utility::graphic::Color32Bit &color);
+
+	/**
 	 * @brief Make a mesh vertex from a position and a color.
 	 * @param position World position of the vertex.
 	 * @param color Color of the vertex.

@@ -170,8 +170,10 @@ namespace guillaume::systems
 				componentRegistry.getComponent<components::Arc>(child)
 					.setThickness(
 						strokeWidth(componentRegistry, entityIdentifier))
-					.setStartAngle(-HalfPi + state.getProgress() * TwoPi)
-					.setSweepAngle(ArcSweep);
+					// y points up: the top is +pi/2 and clockwise is a
+					// negative sweep.
+					.setStartAngle(HalfPi - state.getProgress() * TwoPi)
+					.setSweepAngle(-ArcSweep);
 			}
 			placement::placeChild(componentRegistry, entityIdentifier, child,
 								  utility::graphic::PositionF(0.0f, 0.0f, 0.0f),

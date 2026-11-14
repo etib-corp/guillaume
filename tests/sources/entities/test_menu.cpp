@@ -182,6 +182,8 @@ namespace guillaume::entities::tests
 		};
 		items[1].disabled = true;
 		auto menu		  = makeMenu(registry, items);
+		// A closed menu ignores presses.
+		menu->show();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -259,10 +261,12 @@ namespace guillaume::entities::tests
 				.getPosition()
 				.getY();
 		};
-		EXPECT_GT(y(), 140.0f);
+		// Below the anchor: under its bottom edge (100 - 40), y points up.
+		EXPECT_LT(y(), 60.0f);
 
+		// Above the anchor: the menu's top is above the anchor's top.
 		menu->setAnchorPosition(Menu::AnchorPosition::Top);
-		EXPECT_LT(y(), 100.0f);
+		EXPECT_GT(y(), 100.0f);
 		EXPECT_EQ(menu->getAnchor(), anchor.getIdentifier());
 	}
 
@@ -270,9 +274,13 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(1));
-
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(menu->getIdentifier());
+
+		// A closed menu casts no shadow.
+		EXPECT_FALSE(elevation.hasShadow());
+
+		menu->show();
 		EXPECT_EQ(elevation.getElevationLevel(), theme::ElevationLevel::Level2);
 		EXPECT_TRUE(elevation.hasShadow());
 
@@ -324,6 +332,41 @@ namespace guillaume::entities::tests
 				.getChildIdentifiers()
 				.size(),
 			2U);
+	}
+
+	TEST_F(TestMenu, AClosedMenuDrawsNothingAndIgnoresPresses)
+	{
+		ecs::ComponentRegistry registry;
+		int presses		 = 0;
+		auto items		 = makeItems(1);
+		items[0].onPress = [&presses]() {
+			++presses;
+		};
+		auto menu = makeMenu(registry, items);
+
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(menu->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(menu->getItemIdentifier(0))
+				.getColor()
+				.getAlpha(),
+			0);
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				menu->getItemIdentifier(0))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(presses, 0);
+
+		menu->show();
+		EXPECT_GT(
+			registry.getComponent<components::Color>(menu->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
 	}
 
 }	 // namespace guillaume::entities::tests

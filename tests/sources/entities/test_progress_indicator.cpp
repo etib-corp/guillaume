@@ -147,7 +147,8 @@ namespace guillaume::entities::tests
 
 		const auto &arc =
 			registry.getComponent<components::Arc>(fill->getIdentifier());
-		EXPECT_NEAR(arc.getSweepAngle(), 3.14159265358979323846f, 1e-3f);
+		// Clockwise from the top: a negative sweep (y points up).
+		EXPECT_NEAR(arc.getSweepAngle(), -3.14159265358979323846f, 1e-3f);
 	}
 
 	TEST_F(TestProgressIndicator, IndeterminateBuildsAnimatedFill)

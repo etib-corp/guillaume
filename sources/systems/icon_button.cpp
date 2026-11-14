@@ -323,7 +323,7 @@ namespace guillaume::systems
 			const float iconX = buttonPose.getPosition().x
 				+ (containerSize - iconBound.getWidth()) / 2.0f;
 			const float iconY = buttonPose.getPosition().y
-				+ (containerSize - iconBound.getHeight()) / 2.0f;
+				- (containerSize - iconBound.getHeight()) / 2.0f;
 
 			const auto iconPose = Layout::contentLayerPose(
 				utility::graphic::PositionF(iconX, iconY,

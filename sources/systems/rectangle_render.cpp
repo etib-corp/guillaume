@@ -21,6 +21,8 @@
  */
 
 #include "guillaume/systems/rectangle_render.hpp"
+
+#include "guillaume/components/ring.hpp"
 #include "guillaume/mesh_renderable.hpp"
 #include "guillaume/systems/shape_mesh.hpp"
 
@@ -161,6 +163,14 @@ namespace guillaume::systems
 			return;
 		}
 
+		// An entity with a Ring is drawn as that ring by systems::RingRender,
+		// with the same Color: filling its rectangle would cover the ring
+		// (a radio button would be a filled disc).
+		if (getComponentRegistry().hasComponent<components::Ring>(
+				entityIdentifier)) {
+			return;
+		}
+
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
 		const auto &boundComponent =
@@ -180,7 +190,7 @@ namespace guillaume::systems
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + boundComponent.getWidth() / 2.0f,
-			pose.getPosition().y + boundComponent.getHeight() / 2.0f,
+			pose.getPosition().y - boundComponent.getHeight() / 2.0f,
 			pose.getPosition().z);
 
 		const auto roundedVertices = buildRoundedRectVertices(
@@ -192,7 +202,10 @@ namespace guillaume::systems
 									std::vector<uint32_t> {});
 		shape::buildTriangleFanVertices(mesh, center, roundedVertices, color);
 
-		std::vector<utility::graphic::Mesh> meshes { mesh };
+		std::vector<utility::graphic::Mesh> meshes;
+		if (!mesh.getVertices().empty()) {
+			meshes.push_back(mesh);
+		}
 
 		if (bordersComponent.hasStroke()) {
 			const utility::graphic::PositionF strokeCenter(
@@ -209,7 +222,15 @@ namespace guillaume::systems
 				boundComponent.getHeight() / 2.0f,
 				extractAverageRadius(bordersComponent),
 				bordersComponent.getWidth(), 16, bordersComponent.getColor());
-			meshes.push_back(stroke);
+			if (!stroke.getVertices().empty()) {
+				meshes.push_back(stroke);
+			}
+		}
+
+		// Transparent fill and no visible stroke: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (meshes.empty()) {
+			return;
 		}
 
 		auto renderable =

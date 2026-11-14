@@ -154,7 +154,8 @@ namespace guillaume::systems
 
 			const utility::graphic::PositionF position(
 				anchorPose.getPosition().getX(),
-				anchorPose.getPosition().getY() + offsetY,
+				// offsetY is measured downward; y points up.
+				anchorPose.getPosition().getY() - offsetY,
 				anchorPose.getPosition().getZ());
 			registry.getComponent<components::Transform>(identifier)
 				.setPose(utility::graphic::PoseF(position,
@@ -214,6 +215,16 @@ namespace guillaume::systems
 		}
 	}
 
+	bool Menu::isOpen(const ecs::ComponentRegistry &componentRegistry,
+					  const ecs::Entity::Identifier &entityIdentifier)
+	{
+		return componentRegistry.hasComponent<components::Overlay>(
+				   entityIdentifier)
+			&& componentRegistry
+				   .getComponent<components::Overlay>(entityIdentifier)
+				   .isVisible();
+	}
+
 	void Menu::styleRow(ecs::ComponentRegistry &componentRegistry,
 						const ecs::Entity::Identifier &entityIdentifier,
 						std::size_t index)
@@ -229,6 +240,17 @@ namespace guillaume::systems
 		const auto &row = rows[index];
 		const bool enabled =
 			interaction::isEnabled(componentRegistry, row.view);
+
+		// A closed menu draws nothing: its rows, labels and icons turn
+		// transparent, which the renderers skip.
+		if (!isOpen(componentRegistry, entityIdentifier)) {
+			colorChild(componentRegistry, row.view, transparentColor());
+			colorChild(componentRegistry, row.label, transparentColor());
+			for (const auto icon: row.icons) {
+				colorChild(componentRegistry, icon, transparentColor());
+			}
+			return;
+		}
 
 		colorChild(componentRegistry, row.view,
 				   interaction::stateLayerColor(
@@ -252,7 +274,8 @@ namespace guillaume::systems
 			componentRegistry.getComponent<components::Menu>(entityIdentifier)
 				.getItems();
 
-		if (index >= items.size() || items[index].disabled) {
+		if (index >= items.size() || items[index].disabled
+			|| !isOpen(componentRegistry, entityIdentifier)) {
 			return;
 		}
 
@@ -275,9 +298,9 @@ namespace guillaume::systems
 	void Menu::show(ecs::ComponentRegistry &componentRegistry,
 					const ecs::Entity::Identifier &entityIdentifier)
 	{
-		apply(componentRegistry, entityIdentifier);
 		componentRegistry.getComponent<components::Overlay>(entityIdentifier)
 			.setVisible(true);
+		apply(componentRegistry, entityIdentifier);
 	}
 
 	void Menu::hide(ecs::ComponentRegistry &componentRegistry,
@@ -285,6 +308,7 @@ namespace guillaume::systems
 	{
 		componentRegistry.getComponent<components::Overlay>(entityIdentifier)
 			.setVisible(false);
+		apply(componentRegistry, entityIdentifier);
 	}
 
 	void Menu::dismiss(ecs::ComponentRegistry &componentRegistry,
@@ -340,12 +364,15 @@ namespace guillaume::systems
 
 		componentRegistry.getComponent<components::Borders>(entityIdentifier)
 			.setBorderRadius(getShapeRadius(theme::ShapeRole::ExtraSmall));
+		const bool open = isOpen(componentRegistry, entityIdentifier);
 		componentRegistry.getComponent<components::Elevation>(entityIdentifier)
-			.setElevationLevel(elevated ? theme::ElevationLevel::Level2
-										: theme::ElevationLevel::Level0);
+			.setElevationLevel(elevated && open
+								   ? theme::ElevationLevel::Level2
+								   : theme::ElevationLevel::Level0);
 		componentRegistry.getComponent<components::Color>(entityIdentifier)
 			.setColor(
-				elevated
+				!open ? transparentColor()
+					: elevated
 					? getElevatedSurfaceColor(theme::ElevationLevel::Level2)
 					: schemeColor(SchemeColorRole::SurfaceContainer));
 

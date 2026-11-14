@@ -116,10 +116,11 @@ namespace guillaume::systems::tests
 				.getPosition()
 				.getY();
 		};
-		EXPECT_FLOAT_EQ(y(_icon), DialogSystem::Padding);
-		EXPECT_LT(y(_icon), y(_title));
-		EXPECT_LT(y(_title), y(_message));
-		EXPECT_LT(y(_message), y(_actionRow));
+		// Stacked downward from the top edge (y points up).
+		EXPECT_FLOAT_EQ(y(_icon), -DialogSystem::Padding);
+		EXPECT_GT(y(_icon), y(_title));
+		EXPECT_GT(y(_title), y(_message));
+		EXPECT_GT(y(_message), y(_actionRow));
 	}
 
 	TEST_F(TestDialogSystem, MissingChildrenAreLeftOut)

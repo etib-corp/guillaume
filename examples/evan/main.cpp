@@ -24,18 +24,20 @@
  * @file
  * @brief Widget gallery for manual testing.
  *
- * Every widget of the library, on seven pages:
+ * Every widget of the library, on nine pages:
  * 1. Buttons: common buttons, icon buttons, FABs, FAB menu, segmented button.
  * 2. Selection: checkboxes, radio buttons, radio group, switches, chips.
  * 3. Text and input: type scale, icons, image, text fields, search bar.
- * 4. Containers: surfaces, cards, dividers, badges, list.
- * 5. Feedback: progress and loading indicators, snackbar, tooltip, dialog,
+ * 4. Surfaces and cards.
+ * 5. Dividers, badges and lists.
+ * 6. Feedback: progress and loading indicators, snackbar, tooltip, dialog,
  *    menu.
- * 6. Navigation: app bar, navigation bar, navigation drawer.
- * 7. A 3D mesh, alone because the model is large.
+ * 7. App bar and navigation bar.
+ * 8. Navigation drawers.
+ * 9. A 3D mesh.
  *
  * The Previous and Next buttons at the bottom of each page switch pages. Set
- * GUILLAUME_GALLERY_PAGE to a page number (1 to 7) to open the gallery on
+ * GUILLAUME_GALLERY_PAGE to a page number (1 to 9) to open the gallery on
  * that page.
  * Every interaction logs a line on standard output, so a click that does
  * nothing visible can still be checked.
@@ -287,7 +289,7 @@ namespace
 		void onEnter(void) override;
 	};
 
-	/// Page 4: containers.
+	/// Page 4: surfaces and cards.
 	class ContainersPage: public Page
 	{
 		public:
@@ -295,7 +297,15 @@ namespace
 		void onEnter(void) override;
 	};
 
-	/// Page 5: feedback and overlays.
+	/// Page 5: dividers, badges and lists.
+	class ListsPage: public Page
+	{
+		public:
+		using Page::Page;
+		void onEnter(void) override;
+	};
+
+	/// Page 6: feedback and overlays.
 	class FeedbackPage: public Page
 	{
 		public:
@@ -303,7 +313,7 @@ namespace
 		void onEnter(void) override;
 	};
 
-	/// Page 6: navigation.
+	/// Page 7: app bar and navigation bar.
 	class NavigationPage: public Page
 	{
 		public:
@@ -311,7 +321,15 @@ namespace
 		void onEnter(void) override;
 	};
 
-	/// Page 7: a 3D model, alone because the model is large.
+	/// Page 8: navigation drawers.
+	class DrawerPage: public Page
+	{
+		public:
+		using Page::Page;
+		void onEnter(void) override;
+	};
+
+	/// Page 9: a 3D model.
 	class MeshPage: public Page
 	{
 		public:
@@ -320,7 +338,7 @@ namespace
 	};
 
 	/**
-	 * @brief Jump to the page named by GUILLAUME_GALLERY_PAGE (1 to 7).
+	 * @brief Jump to the page named by GUILLAUME_GALLERY_PAGE (1 to 9).
 	 *
 	 * Only on the first entry of the first page, so Previous / Next work
 	 * normally afterwards.
@@ -346,12 +364,18 @@ namespace
 				page.goToScene<ContainersPage>();
 				break;
 			case 5:
-				page.goToScene<FeedbackPage>();
+				page.goToScene<ListsPage>();
 				break;
 			case 6:
-				page.goToScene<NavigationPage>();
+				page.goToScene<FeedbackPage>();
 				break;
 			case 7:
+				page.goToScene<NavigationPage>();
+				break;
+			case 8:
+				page.goToScene<DrawerPage>();
+				break;
+			case 9:
 				page.goToScene<MeshPage>();
 				break;
 			default:
@@ -365,7 +389,7 @@ namespace
 		auto &registry = getComponentRegistry();
 
 		openRequestedPage(*this);
-		beginPage("1 / 7  Buttons");
+		beginPage("1 / 9  Buttons");
 
 		// Common buttons: one per color style, plus a toggle and a disabled.
 		{
@@ -494,7 +518,7 @@ namespace
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("2 / 7  Selection");
+		beginPage("2 / 9  Selection");
 
 		// Checkboxes: the three states and the three variants.
 		{
@@ -605,7 +629,7 @@ namespace
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("3 / 7  Text and input");
+		beginPage("3 / 9  Text and input");
 
 		// The type scale, one sample per group.
 		{
@@ -638,8 +662,10 @@ namespace
 					guillaume::components::Glyph::Style::Outlined));
 			}
 			entities::Image::Builder imageBuilder(registry, *row);
-			widgets.push_back(
-				imageBuilder.makeImage(row, "textures/default_texture.png"));
+			auto image =
+				imageBuilder.makeImage(row, "textures/default_texture.png");
+			image->setSize(64.0f, 64.0f);
+			widgets.push_back(image);
 			endRow(row, "Icon, Image", widgets);
 		}
 
@@ -685,7 +711,7 @@ namespace
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("4 / 7  Containers");
+		beginPage("4 / 9  Surfaces and cards");
 
 		// Surfaces at three elevation levels, flat and elevated.
 		{
@@ -736,6 +762,15 @@ namespace
 			widgets.push_back(outlined);
 			endRow(row, "Card", widgets);
 		}
+
+		endPage<TextPage, ListsPage>();
+	}
+
+	void ListsPage::onEnter(void)
+	{
+		auto &registry = getComponentRegistry();
+
+		beginPage("5 / 9  Dividers, badges and lists");
 
 		// Dividers and badges.
 		{
@@ -790,14 +825,14 @@ namespace
 			endRow(row, "List", { list });
 		}
 
-		endPage<TextPage, FeedbackPage>();
+		endPage<ContainersPage, FeedbackPage>();
 	}
 
 	void FeedbackPage::onEnter(void)
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("5 / 7  Feedback");
+		beginPage("6 / 9  Feedback");
 
 		// Progress and loading indicators.
 		{
@@ -899,14 +934,14 @@ namespace
 			endRow(row, "Overlays", widgets);
 		}
 
-		endPage<ContainersPage, NavigationPage>();
+		endPage<ListsPage, NavigationPage>();
 	}
 
 	void NavigationPage::onEnter(void)
 	{
 		auto &registry = getComponentRegistry();
 
-		beginPage("6 / 7  Navigation");
+		beginPage("7 / 9  App bar and navigation bar");
 
 		// App bar.
 		{
@@ -940,6 +975,15 @@ namespace
 			endRow(row, "NavigationBar", { bar });
 		}
 
+		endPage<FeedbackPage, DrawerPage>();
+	}
+
+	void DrawerPage::onEnter(void)
+	{
+		auto &registry = getComponentRegistry();
+
+		beginPage("8 / 9  Navigation drawers");
+
 		// Navigation drawer, standard and collapsed.
 		{
 			using Drawer = entities::NavigationDrawer;
@@ -962,19 +1006,22 @@ namespace
 			endRow(row, "NavigationDrawer", widgets);
 		}
 
-		endPage<FeedbackPage, MeshPage>();
+		endPage<NavigationPage, MeshPage>();
 	}
 
 	void MeshPage::onEnter(void)
 	{
-		beginPage("7 / 7  3D mesh");
+		beginPage("9 / 9  3D mesh");
 
 		auto row = beginRow();
 		entities::Mesh::Builder meshBuilder(getComponentRegistry(), *row);
-		endRow(row, "Mesh",
-			   { meshBuilder.makeMesh(row, "models/teapot.obj", "") });
+		// No texture: the engine draws an untextured model flat, which
+		// shows its silhouette on the light page.
+		auto teapot = meshBuilder.makeMesh(row, "models/teapot.obj", "");
+		teapot->setFitSize(160.0f);
+		endRow(row, "Mesh", { teapot });
 
-		endPage<NavigationPage, ButtonsPage>();
+		endPage<DrawerPage, ButtonsPage>();
 	}
 
 	/**
@@ -1010,7 +1057,8 @@ int main(void)
 		std::make_unique<evan::Engine>(resources, std::move(platform));
 
 	guillaume::Application<ButtonsPage, SelectionPage, TextPage, ContainersPage,
-						   FeedbackPage, NavigationPage, MeshPage>
+						   ListsPage, FeedbackPage, NavigationPage, DrawerPage,
+						   MeshPage>
 		app(resources, std::move(engine));
 
 	return app.run();

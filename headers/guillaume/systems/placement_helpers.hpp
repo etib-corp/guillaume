@@ -31,6 +31,7 @@
 #include "guillaume/ecs/entity.hpp"
 
 #include "guillaume/components/bound.hpp"
+#include "guillaume/components/layout_extent.hpp"
 #include "guillaume/components/transform.hpp"
 
 #include "guillaume/systems/layout.hpp"
@@ -127,7 +128,7 @@ namespace guillaume::systems::placement
 
 		const utility::graphic::PositionF basePosition(
 			origin.getPosition().getX() + offset.x,
-			origin.getPosition().getY() + offset.y,
+			origin.getPosition().getY() - offset.y,
 			origin.getPosition().getZ());
 
 		const auto pose = systems::Layout::contentLayerPose(
@@ -219,6 +220,31 @@ namespace guillaume::systems::placement
 				(parentBound.getHeight() - childBound.getHeight()) / 2.0f,
 				0.0f),
 			parentLayer);
+	}
+
+	/**
+	 * @brief Reserve layout room after an entity's Bound.
+	 *
+	 * For a widget that draws a small shape and places a child beside it
+	 * (a checkbox and its label): the parent layout then keeps that room
+	 * free instead of putting the next widget over the child. Adds the
+	 * components::LayoutExtent when needed.
+	 * @param registry The registry holding the components.
+	 * @param identifier The widget entity.
+	 * @param width The room after the Bound, in dp; 0 or less releases it.
+	 */
+	inline void reserveTrailingWidth(ecs::ComponentRegistry &registry,
+									 const ecs::Entity::Identifier &identifier,
+									 float width)
+	{
+		if (!registry.hasComponent<components::LayoutExtent>(identifier)) {
+			if (width <= 0.0f) {
+				return;
+			}
+			registry.addComponent<components::LayoutExtent>(identifier);
+		}
+		registry.getComponent<components::LayoutExtent>(identifier)
+			.setTrailingWidth(width);
 	}
 
 }	 // namespace guillaume::systems::placement

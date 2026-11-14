@@ -140,9 +140,10 @@ namespace guillaume::systems::tests
 		configuration().setVariant(Variant::Outlined);
 		Field::setText(_registry, _entity, "value");
 
-		// The label leaves the column and is placed over the top edge.
+		// The label leaves the column and is placed over the top edge: it is
+		// raised above it (y points up).
 		EXPECT_EQ(laidOut(_column), (Ids { _input }));
-		EXPECT_LT(yOf(_label), yOf(_entity));
+		EXPECT_GT(yOf(_label), yOf(_entity));
 	}
 
 	TEST_F(TestTextFieldSystem, SupportingTextSitsBelowTheField)
@@ -150,7 +151,8 @@ namespace guillaume::systems::tests
 		_system.update(_entity);
 
 		EXPECT_EQ(contentOf(_supporting), "Support");
-		EXPECT_FLOAT_EQ(yOf(_supporting) - yOf(_entity),
+		// Below means a smaller y (y points up).
+		EXPECT_FLOAT_EQ(yOf(_entity) - yOf(_supporting),
 						Field::Height + Field::SupportingGap);
 		EXPECT_EQ(colorOf(_supporting),
 				  getActiveColor(SchemeColorRole::OnSurfaceVariant));

@@ -84,8 +84,9 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(layoutChildren(),
 				  (std::vector<ecs::Entity::Identifier> {
 					  _actions[0], _actions[1], _trigger }));
-		EXPECT_LT(positionY(_actions[0]), positionY(_actions[1]));
-		EXPECT_LT(positionY(_actions[1]), positionY(_trigger));
+		// Above means a larger y (y points up).
+		EXPECT_GT(positionY(_actions[0]), positionY(_actions[1]));
+		EXPECT_GT(positionY(_actions[1]), positionY(_trigger));
 		for (const auto action: _actions) {
 			EXPECT_TRUE(
 				_registry.getComponent<components::Button>(action).isVisible());

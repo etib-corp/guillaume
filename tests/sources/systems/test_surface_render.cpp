@@ -36,9 +36,10 @@ namespace guillaume::systems::tests
 
 		EXPECT_EQ(_engineMock->createObjectCallCount, 1u);
 		// Each layer is a triangle fan with one center vertex and 4 * 9 arc
-		// vertices, so 2 layers produce 2 * (1 + 36) vertices.
-		EXPECT_EQ(lastMeshVertexCount(),
-				  static_cast<std::size_t>(2 * (1 + 36)));
+		// vertices. Layer alpha fades to 0 at the outermost layer, which is
+		// fully transparent and adds no geometry, so 2 layers produce one
+		// fan of 1 + 36 vertices.
+		EXPECT_EQ(lastMeshVertexCount(), static_cast<std::size_t>(1 + 36));
 	}
 
 	TEST_F(TestSurfaceRender, ElevationSecondUpdateReusesObject)
@@ -95,10 +96,12 @@ namespace guillaume::systems::tests
 
 		_scrimSystem->update(entity);
 
-		// The first local corner (-half, -half) sits on the bound top-left.
+		// The quad extends right and down from the top-left corner (y points
+		// up): the first local corner (-half, -half) is the bottom-left one,
+		// at (10, 20 - 50).
 		const auto firstVertex = lastMeshFirstVertex();
 		EXPECT_FLOAT_EQ(firstVertex[0], 10.0f);
-		EXPECT_FLOAT_EQ(firstVertex[1], 20.0f);
+		EXPECT_FLOAT_EQ(firstVertex[1], -30.0f);
 	}
 
 	TEST_F(TestSurfaceRender, ScrimRotatesWithOrientation)
@@ -112,10 +115,11 @@ namespace guillaume::systems::tests
 
 		_scrimSystem->update(entity);
 
-		// local (-50, -25) rotated 180 degrees -> (50, 25); center is (60, 45).
+		// local (-50, -25) rotated 180 degrees -> (50, 25); center is (60, -5)
+		// (half the height down from the top-left corner, y points up).
 		const auto firstVertex = lastMeshFirstVertex();
 		EXPECT_FLOAT_EQ(firstVertex[0], 110.0f);
-		EXPECT_FLOAT_EQ(firstVertex[1], 70.0f);
+		EXPECT_FLOAT_EQ(firstVertex[1], 20.0f);
 	}
 
 	TEST_F(TestSurfaceRender, ClipResolvesBoundDerivedRect)
