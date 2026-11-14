@@ -3,3 +3,7 @@
 
 # Local storage database created by tests
 .guillaume-local-storage.db
+
+# Claude Code local files
+.claude/settings.local.json
+.claude/worktrees/

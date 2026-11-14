@@ -139,3 +139,32 @@ cmake -S . -B build -DBUILD_DOCS=ON
 2. **Add a source/header pair to an existing module**: Place `.hpp` in `headers/guillaume/` and `.cpp` in `sources/`, follow naming conventions (`PascalCase` class, `camelCase` methods, `_` prefix for members), update namespace nesting, add the `.cpp` to `cmake/Sources.cmake`, verify build.
 
 3. **Refactor a component to match existing error handling patterns**: Replace raw pointers with `std::unique_ptr` or `std::shared_ptr`, add `const` correctness, use `enum class` for state machines, follow class layout order (public → protected → private).
+
+## Agent tooling
+
+`AGENTS.md` is the single source of instructions. Skills and subagents live
+under `.agents/`; Claude Code reads them through symlinks, so there is one
+copy of everything:
+
+```text
+AGENTS.md
+CLAUDE.md        -> AGENTS.md
+.agents/skills/  one directory per skill, each with a SKILL.md
+.agents/agents/  one Markdown file per subagent
+.claude/skills   -> ../.agents/skills
+.claude/agents   -> ../.agents/agents
+```
+
+Edit the files under `.agents/`, never through `.claude/`. On Windows, clone
+with `git config core.symlinks true` so the links are created.
+
+| Skill | Use it to |
+| --- | --- |
+| `build-and-test` | Configure, build, test, format. |
+| `add-widget` | Add a component, entity and system and register them everywhere. |
+| `run-gallery` | Build and run the widget gallery to look at a widget. |
+
+| Subagent | Use it to |
+| --- | --- |
+| `build-verifier` | Build and test, and get a short report. |
+| `convention-reviewer` | Check a change against this file. |
