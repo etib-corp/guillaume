@@ -9,6 +9,8 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+## [2026.6.1] - 2026-11-14
+
 ### Added
 
 - `components::LayoutExtent`: a widget can reserve layout room beyond the
