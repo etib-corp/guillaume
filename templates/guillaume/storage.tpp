@@ -74,7 +74,10 @@ namespace guillaume
 			const long double parsed =
 				std::strtold(value->c_str(), &endPointer);
 
-			if (errno == ERANGE
+			// strtold reports "no conversion" by returning 0 and leaving
+			// endPointer at the start. An empty string also has size 0,
+			// so the end-of-text check alone accepts it as the value 0.
+			if (errno == ERANGE || endPointer == value->c_str()
 				|| endPointer != value->c_str() + value->size()) {
 				return std::nullopt;
 			}

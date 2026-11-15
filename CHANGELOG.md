@@ -9,6 +9,11 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+### Fixed
+
+- `Storage::getItemAs` returns no value for empty floating-point text. A
+  stored `"0"` still reads as 0.
+
 ## [2026.6.1] - 2026-11-14
 
 ### Added
