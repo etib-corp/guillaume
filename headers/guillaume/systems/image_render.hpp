@@ -37,10 +37,32 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling image rendering from ECS components.
-	 * @see components::Transform
-	 * @see components::Bound
-	 * @see components::Image
+	 * @brief Draws the picture of every entity that has a
+	 * components::Image, stretched over its bound.
+	 *
+	 * Runs in the Render phase on entities with Transform, Bound and Image.
+	 * - Reads: the position of components::Transform (top-left corner), the
+	 *   size of components::Bound, and the texture path and fallback path
+	 *   of components::Image.
+	 * - Writes: the load state of components::Image
+	 *   (components::Image::setLoadState), and one engine object per entity,
+	 *   rebuilt and uploaded every frame.
+	 *
+	 * Each frame the texture is requested from the resource provider. If it
+	 * cannot be loaded the fallback path is tried. The Image ends up
+	 * `Loaded` (with components::Image::isUsingFallback telling which
+	 * texture is shown) or `Failed`; in the `Failed` case nothing is drawn
+	 * and a picture drawn on an earlier frame is removed.
+	 *
+	 * Things to know:
+	 * - The picture fills the bound exactly: the aspect ratio of the
+	 *   texture is not preserved. Size the Bound accordingly.
+	 * - The quad is built along the world X and Y axes: the orientation of
+	 *   the Transform is not applied.
+	 * - This is the last system registered, so within the Render phase
+	 *   images are uploaded after every other shape.
+	 *
+	 * @see components::Image, RenderHandleMap
 	 */
 	class ImageRender:
 		public RenderHandleMap,
@@ -49,45 +71,46 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;		 //< Shared resource provider for loading
-									 // image materials
-		utility::Engine &_engine;	 ///< utility::Engine instance
+			_ressourceProvider;		 ///< Provider the textures are loaded
+									 ///< from
+		utility::Engine &_engine;	 ///< Engine the pictures are uploaded to
 
 		public:
 		/**
-		 * @brief Construct an image rendering system.
-		 * @param ressourceProvider Shared resource provider for loading image
-		 * materials.
-		 * @param engine The engine used to draw images.
+		 * @brief Create the system in the Render phase.
+		 * @param ressourceProvider Provider used to load the textures. Must
+		 * not be null.
+		 * @param engine The engine the pictures are uploaded to. It must
+		 * outlive the system.
 		 */
 		ImageRender(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
 			utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Forget the engine objects without removing them from the
+		 * engine.
 		 */
 		~ImageRender(void);
 
 		/**
-		 * @brief Prepare the ImageRender system for rendering.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Mark every picture as not drawn yet. Called once per frame
+		 * before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the ImageRender system after rendering.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Remove the engine objects of the entities that were not
+		 * drawn this frame, including those whose texture failed to load.
+		 * Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the ImageRender system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Load the texture of one image, record the outcome in its
+		 * components::Image and upload a textured quad covering its bound.
+		 * @param entityIdentifier The entity to draw. It is skipped, with a
+		 * log message, when one of the three components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

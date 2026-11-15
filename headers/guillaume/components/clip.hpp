@@ -28,12 +28,24 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component describing a clip region resolved from an entity bound.
+	 * @brief Asks that drawing be cut to the entity's rectangle, and holds
+	 * the rectangle that results.
 	 *
-	 * The `systems::Clip` system derives a clip rectangle from the entity
-	 * `components::Transform` and `components::Bound` (shrunk by `margin`) and
-	 * stores it here. Consumers (or an engine layer) can then apply it as a
-	 * scissor rectangle.
+	 * The application or a widget sets the margin and the enabled flag.
+	 * systems::Clip (Layout phase) reads them with the entity's Transform
+	 * and Bound, computes the rectangle (the bound shrunk by the margin on
+	 * every side), stores it with setRect() and gives it to the engine as
+	 * the scissor rectangle.
+	 *
+	 * @code
+	 * registry.addComponent<components::Clip>(id).setMargin(8.0f);
+	 * @endcode
+	 *
+	 * @note The rectangle is overwritten every frame while the clip is
+	 * enabled; while it is disabled the system skips the entity and the
+	 * rectangle keeps its last value.
+	 * @note The rectangle is built from the X and Y of the position only:
+	 * the orientation of the entity is ignored.
 	 *
 	 * @see systems::Clip
 	 */
@@ -41,18 +53,19 @@ namespace guillaume::components
 	{
 		public:
 		/**
-		 * @brief Resolved clip rectangle.
+		 * @brief The clip rectangle, in the same coordinates as the
+		 * position of a components::Transform.
 		 */
 		struct Rect {
-			float x { 0.0f };		  ///< Rectangle origin X.
-			float y { 0.0f };		  ///< Rectangle origin Y.
-			float width { 0.0f };	  ///< Rectangle width.
-			float height { 0.0f };	  ///< Rectangle height.
+			float x { 0.0f };		  ///< Left edge, in dp.
+			float y { 0.0f };		  ///< Top edge, in dp.
+			float width { 0.0f };	  ///< Width, in dp.
+			float height { 0.0f };	  ///< Height, in dp.
 
 			/**
-			 * @brief Equality operator.
-			 * @param other The other rectangle.
-			 * @return True when both rectangles are equal.
+			 * @brief Compare the origin and the size of two rectangles.
+			 * @param other The rectangle to compare with.
+			 * @return True when the four values are equal.
 			 */
 			bool operator==(const Rect &other) const
 			{
@@ -62,9 +75,9 @@ namespace guillaume::components
 		};
 
 		private:
-		float _margin { 0.0f };	   ///< Inset applied to the clip rectangle.
+		float _margin { 0.0f };	   ///< Inset on every side, in dp.
 		bool _enabled { true };	   ///< Whether clipping is active.
-		Rect _rect {};			   ///< Resolved clip rectangle.
+		Rect _rect {};			   ///< Written by systems::Clip.
 
 		public:
 		/**
@@ -78,41 +91,53 @@ namespace guillaume::components
 		~Clip(void) = default;
 
 		/**
-		 * @brief Get the clip rectangle margin.
-		 * @return The margin.
+		 * @brief Get the inset between the bound and the clip rectangle.
+		 * @return The margin, in dp, removed on every side (0 by default).
 		 */
 		float getMargin(void) const;
 
 		/**
-		 * @brief Set the clip rectangle margin.
-		 * @param margin The new margin.
-		 * @return Reference to this Clip for chaining.
+		 * @brief Set the inset between the bound and the clip rectangle.
+		 *
+		 * Marks the component changed only when the value differs.
+		 *
+		 * @param margin The margin, in dp, removed on every side. A
+		 * negative value makes the rectangle larger than the bound.
+		 * @return This component, for chaining.
 		 */
 		Clip &setMargin(float margin);
 
 		/**
-		 * @brief Check whether clipping is enabled.
-		 * @return True when enabled.
+		 * @brief Check whether systems::Clip processes this entity.
+		 * @return True when clipping is enabled (the default).
 		 */
 		bool isEnabled(void) const;
 
 		/**
-		 * @brief Set whether clipping is enabled.
-		 * @param enabled Whether clipping is enabled.
-		 * @return Reference to this Clip for chaining.
+		 * @brief Turn clipping on or off without removing the component.
+		 *
+		 * Marks the component changed only when the value differs.
+		 *
+		 * @param enabled False to make systems::Clip skip this entity.
+		 * @return This component, for chaining.
 		 */
 		Clip &setEnabled(bool enabled);
 
 		/**
-		 * @brief Get the resolved clip rectangle.
-		 * @return The resolved rectangle.
+		 * @brief Get the rectangle computed by systems::Clip.
+		 * @return The rectangle of the last frame the clip was enabled; a
+		 * rectangle of zeros before the system ran once.
 		 */
 		const Rect &getRect(void) const;
 
 		/**
-		 * @brief Set the resolved clip rectangle.
-		 * @param rect The resolved rectangle.
-		 * @return Reference to this Clip for chaining.
+		 * @brief Store the computed rectangle. Called by systems::Clip;
+		 * a value set by hand is replaced on the next frame.
+		 *
+		 * Marks the component changed only when the rectangle differs.
+		 *
+		 * @param rect The clip rectangle, in dp.
+		 * @return This component, for chaining.
 		 */
 		Clip &setRect(const Rect &rect);
 	};

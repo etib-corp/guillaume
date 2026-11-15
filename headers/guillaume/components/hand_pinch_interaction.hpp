@@ -28,36 +28,54 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component handling hand pinch interactions.
-	 * @see systems::HandPinch
+	 * @brief Whether an XR hand pinches while pointing at an entity, and what
+	 * to call when it does.
+	 *
+	 * systems::HandPinch writes it in the Event phase. On each hand pinch
+	 * event it casts a ray from the hand pose along its forward direction and
+	 * tests it against the entity's Transform and Bound: the pinch flag
+	 * becomes the result of that test, and the handler set with
+	 * setOnEventHandler() is called when the ray hits. systems::Focus reads
+	 * the flag to give the focus to the entity and systems::StyleState reads
+	 * it as "pressed".
+	 *
+	 * The handler runs for every pinch event that hits the entity, not only
+	 * for the first one. The flag only changes in a frame that received a
+	 * pinch event.
+	 *
+	 * @see systems::HandPinch, Interaction, HandPokeInteraction
 	 */
 	class HandPinchInteraction:
 		public Interaction<utility::event::HandPinchEvent>
 	{
 		private:
-		bool _isPinching { false };	   ///< Current pinch state
+		bool _isPinching { false };	   ///< Last pinch event hit the entity
 
 		public:
 		/**
-		 * @brief Construct a HandPinchInteraction component with default
-		 * handlers and states.
+		 * @brief Construct a component that is not pinched and has no handler.
 		 */
 		HandPinchInteraction(void);
 
 		/**
-		 * @brief Destroy the HandPinchInteraction component.
+		 * @brief Default destructor.
 		 */
 		~HandPinchInteraction(void) = default;
 
 		/**
-		 * @brief Check if a pinch gesture is currently active.
-		 * @return True if pinching, false otherwise.
+		 * @brief Check whether a hand pinches the entity.
+		 * @return True when the ray of the last pinch event hit the entity.
 		 */
 		bool isPinch(void) const;
 
 		/**
-		 * @brief Set the pinch state.
-		 * @param pinching True if pinching, false otherwise.
+		 * @brief Record whether a hand pinches the entity.
+		 *
+		 * Called by systems::HandPinch; it calls no handler. Always marks the
+		 * component changed, even when the flag is the same.
+		 *
+		 * @param pinching True when the ray of the pinch event hits the
+		 * entity.
 		 */
 		void setPinching(bool pinching);
 	};

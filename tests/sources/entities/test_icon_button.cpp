@@ -47,14 +47,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestIconButton, ToggleFlipsSelectedOnRelease)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<IconButton>(
+		auto button = IconButton::create(
 			registry, "favorite", "favorite_border",
 			components::Glyph::Style::Outlined, true,
 			IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
 			std::function<void(void)>());
-
-		button->initialize();
-		button->update();
 
 		EXPECT_FALSE(button->isSelected());
 
@@ -70,14 +67,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestIconButton, IconIsCenteredAndLiftedByTheContentLayer)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<IconButton>(
+		auto button = IconButton::create(
 			registry, "favorite", "favorite_border",
 			components::Glyph::Style::Outlined, false,
 			IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
 			std::function<void(void)>());
-
-		button->initialize();
-		button->update();
 
 		const auto iconId = button->getIconIdentifier();
 		ASSERT_NE(iconId, ecs::Entity::InvalidIdentifier);
@@ -95,21 +89,19 @@ namespace guillaume::entities::tests
 				+ static_cast<float>(systems::Layout::ContentLayerOffset));
 		EXPECT_GT(iconPose.getPosition().getX(),
 				  buttonPose.getPosition().getX());
-		EXPECT_GT(iconPose.getPosition().getY(),
+		// Inset from the top-left corner: right and down (y points up).
+		EXPECT_LT(iconPose.getPosition().getY(),
 				  buttonPose.getPosition().getY());
 	}
 
 	TEST_F(TestIconButton, SetSelectedUpdatesState)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<IconButton>(
+		auto button = IconButton::create(
 			registry, "favorite", "favorite_border",
 			components::Glyph::Style::Outlined, true,
 			IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
 			std::function<void(void)>());
-
-		button->initialize();
-		button->update();
 
 		button->setSelected(true);
 		EXPECT_TRUE(button->isSelected());
@@ -121,14 +113,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestIconButton, SetSelectedIgnoredWhenNotToggle)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<IconButton>(
+		auto button = IconButton::create(
 			registry, "favorite", "favorite_border",
 			components::Glyph::Style::Outlined, false,
 			IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
 			std::function<void(void)>());
-
-		button->initialize();
-		button->update();
 
 		button->setSelected(true);
 		EXPECT_FALSE(button->isSelected());
@@ -138,16 +127,13 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		bool clicked = false;
-		auto button	 = std::make_shared<IconButton>(
+		auto button	 = IconButton::create(
 			 registry, "favorite", "favorite_border",
 			 components::Glyph::Style::Outlined, true,
 			 IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
 			 [&clicked]() {
 				 clicked = true;
 			 });
-
-		button->initialize();
-		button->update();
 
 		button->setDisabled(true);
 		EXPECT_TRUE(button->isDisabled());
@@ -166,14 +152,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestIconButton, AccessibilityLabelRoundTrip)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<IconButton>(
+		auto button = IconButton::create(
 			registry, "favorite", "favorite_border",
 			components::Glyph::Style::Outlined, false,
 			IconButton::Variant::Standard, IconButton::Size::Medium, false, "",
 			std::function<void(void)>());
-
-		button->initialize();
-		button->update();
 
 		button->setAccessibilityLabel("Favorite");
 		EXPECT_EQ(button->getAccessibilityLabel(), "Favorite");
@@ -199,13 +182,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestIconButton, SmallIconButtonReachesTouchTarget)
 	{
 		ecs::ComponentRegistry registry;
-		auto button = std::make_shared<IconButton>(
+		auto button = IconButton::create(
 			registry, "favorite", "", components::Glyph::Style::Outlined, false,
 			IconButton::Variant::Standard, IconButton::Size::Small, false, "",
 			std::function<void(void)>());
-
-		button->initialize();
-		button->update();
 
 		const auto &bound =
 			registry.getComponent<components::Bound>(button->getIdentifier());
@@ -229,12 +209,10 @@ namespace guillaume::entities::tests
 							  IconButton::Variant variant, bool toggle,
 							  bool disabled = false)
 		{
-			auto button = std::make_shared<IconButton>(
+			auto button = IconButton::create(
 				registry, "favorite", "", components::Glyph::Style::Outlined,
 				toggle, variant, IconButton::Size::Medium, disabled, "Like",
 				std::function<void(void)>());
-			button->initialize();
-			button->update();
 			return button;
 		}
 

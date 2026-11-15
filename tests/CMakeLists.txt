@@ -6,6 +6,7 @@ set(TEST_SOURCES
     sources/components/test_bound.cpp
     sources/components/test_focus.cpp
     sources/components/test_hierarchy.cpp
+    sources/components/test_mesh_fit.cpp
     sources/components/test_text.cpp
     sources/components/test_transform.cpp
     sources/components/test_value.cpp
@@ -53,9 +54,33 @@ set(TEST_SOURCES
     sources/event/test_event_bus.cpp
     sources/event/test_event_handler.cpp
     sources/event/test_event_subscriber.cpp
+    sources/systems/test_app_bar.cpp
+    sources/systems/test_badge.cpp
+    sources/systems/test_button.cpp
+    sources/systems/test_card.cpp
+    sources/systems/test_checkbox.cpp
+    sources/systems/test_chip.cpp
     sources/systems/test_focus.cpp
     sources/systems/test_backdrop.cpp
     sources/systems/test_divider.cpp
+    sources/systems/test_loading_indicator.cpp
+    sources/systems/test_progress_indicator.cpp
+    sources/systems/test_radio_button.cpp
+    sources/systems/test_radio_group.cpp
+    sources/systems/test_segmented_button.cpp
+    sources/systems/test_floating_action_button_menu.cpp
+    sources/systems/test_dialog.cpp
+    sources/systems/test_menu.cpp
+    sources/systems/test_list.cpp
+    sources/systems/test_search.cpp
+    sources/systems/test_navigation_bar.cpp
+    sources/systems/test_navigation_bar_destination.cpp
+    sources/systems/test_navigation_drawer.cpp
+    sources/systems/test_navigation_drawer_destination.cpp
+    sources/systems/test_snackbar.cpp
+    sources/systems/test_switch.cpp
+    sources/systems/test_text_field.cpp
+    sources/systems/test_tooltip.cpp
     sources/systems/test_typography.cpp
     sources/systems/test_ellipse_render.cpp
     sources/systems/test_animation.cpp
@@ -70,8 +95,10 @@ set(TEST_SOURCES
     sources/systems/test_text_input.cpp
     sources/systems/test_text_render.cpp
     sources/systems/test_value_interactions.cpp
+    sources/systems/test_view.cpp
     sources/systems/test_glyph_render.cpp
     sources/test_application.cpp
+    sources/test_frame_loop.cpp
     sources/test_ecs.cpp
     sources/test_engine.cpp
     sources/test_metadata.cpp

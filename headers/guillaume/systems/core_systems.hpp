@@ -33,15 +33,39 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Register every built-in system into a registry.
+	 * @brief Register every built-in system of the library in a registry.
 	 *
-	 * This is the single place that lists the core systems: adding a built-in
-	 * system means adding it here, not editing Application.
-	 * @param systemRegistry Registry receiving the systems.
-	 * @param eventBus Event bus the input systems subscribe to.
-	 * @param engine Engine handle used by the measuring and rendering systems.
-	 * It must outlive the registered systems.
-	 * @param ressourceProvider Provider used to load fonts, images and meshes.
+	 * This function is the one list of the built-in systems: a new one is
+	 * added in `sources/systems/core_systems.cpp`, nowhere else.
+	 *
+	 * A frame runs the phases in the order Event, Measure, Layout, Render
+	 * (see ecs::Phase). The registry keeps one list per phase, so the order
+	 * of registration only matters between systems of the same phase, where
+	 * it is the order they run in. The constraints the list respects:
+	 * - **Measure**: systems::Typography first, because it resolves the
+	 *   font metrics systems::MeasureText measures with.
+	 * - **Event**: the systems that turn events into interaction
+	 *   components (MouseMotion, MouseButton, the hand systems) before
+	 *   Focus and StyleState, which read those components. Drag runs after
+	 *   MouseMotion and MouseButton but before the hand systems, so it sees
+	 *   a hand button press one frame after it happened.
+	 * - **Layout**: systems::Layout before the widget systems (Checkbox,
+	 *   Menu, ...), which place the children Layout does not arrange from
+	 *   the bounds it has just resolved.
+	 * - **Layout**: a destination system before the system of the bar or
+	 *   drawer that owns it (NavigationBarDestination before NavigationBar,
+	 *   NavigationDrawerDestination before NavigationDrawer).
+	 *
+	 * @param systemRegistry The registry receiving the systems.
+	 * @param eventBus The event bus the input systems subscribe to.
+	 * @param engine The engine used by the input, measuring and rendering
+	 * systems. It must outlive the registered systems.
+	 * @param ressourceProvider The provider the measuring and rendering
+	 * systems load fonts, images and meshes from.
+	 * @throws std::out_of_range If a system reports a phase the registry
+	 * does not know (ecs::SystemRegistry::registerNewSystem).
+	 * @see ecs::SystemRegistry
+	 * @see ecs::Phase
 	 */
 	void registerCoreSystems(
 		ecs::SystemRegistry &systemRegistry, event::EventBus &eventBus,

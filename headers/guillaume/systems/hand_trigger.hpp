@@ -31,7 +31,18 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand trigger interactions.
+	 * @brief Receives XR trigger events (the index trigger of a
+	 * controller).
+	 *
+	 * Runs in the Event phase on entities that have a
+	 * components::HandTriggerInteraction, a Transform and a Bound, and
+	 * takes one trigger event per frame. It does not override
+	 * HandEventSystem::update, so it writes no component and calls no
+	 * handler: the trigger interaction component is not driven by this
+	 * system.
+	 *
+	 * @see components::HandTriggerInteraction
+	 * @see systems::HandEventSystem
 	 */
 	class HandTrigger:
 		public HandEventSystem<components::HandTriggerInteraction,
@@ -39,14 +50,14 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandTrigger system and subscribe to hand
-		 * trigger events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand trigger events.
+		 * @param eventBus The event bus delivering the hand trigger events.
 		 */
 		explicit HandTrigger(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandTrigger system.
+		 * @brief Destructor.
 		 */
 		~HandTrigger(void) override;
 	};

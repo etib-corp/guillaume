@@ -70,9 +70,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry);
 
-		card->initialize();
-		card->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(card->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 240.0f);
@@ -88,9 +85,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry, Card::Variant::Elevated);
 
-		card->initialize();
-		card->update();
-
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(card->getIdentifier());
 		EXPECT_GT(elevation.getLevel(), 0.0f);
@@ -101,9 +95,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry, Card::Variant::Filled);
 
-		card->initialize();
-		card->update();
-
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(card->getIdentifier());
 		EXPECT_FLOAT_EQ(elevation.getLevel(), 0.0f);
@@ -113,9 +104,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry, Card::Variant::Outlined);
-
-		card->initialize();
-		card->update();
 
 		const auto &color =
 			registry.getComponent<components::Color>(card->getIdentifier());
@@ -189,7 +177,6 @@ namespace guillaume::entities::tests
 		card->setOnPress([&presses]() {
 			++presses;
 		});
-		card->initialize();
 
 		EXPECT_TRUE(card->isInteractive());
 		EXPECT_EQ(
@@ -237,7 +224,6 @@ namespace guillaume::entities::tests
 			++presses;
 		});
 		card->setDisabled(true);
-		card->initialize();
 
 		EXPECT_TRUE(card->isDisabled());
 		registry
@@ -255,7 +241,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto card = makeCard(registry);
-		card->initialize();
 
 		int actionPresses = 0;
 		card->addAction("Ok", [&actionPresses]() {
@@ -265,12 +250,12 @@ namespace guillaume::entities::tests
 		card->setTitle("Title", "Subtitle");
 		card->setCover("images/cover.png");
 
-		const auto &children = card->getChildren();
+		const auto children = card->getChildren();
 		ASSERT_EQ(children.size(), 4u);
-		EXPECT_EQ(children[0], card->getCover());
-		EXPECT_EQ(children[1], card->getTitleSection());
-		EXPECT_EQ(children[2], card->getContent());
-		EXPECT_EQ(children[3], card->getActionsSection());
+		EXPECT_EQ(children[0], card->getCover()->getIdentifier());
+		EXPECT_EQ(children[1], card->getTitleSection()->getIdentifier());
+		EXPECT_EQ(children[2], card->getContent()->getIdentifier());
+		EXPECT_EQ(children[3], card->getActionsSection()->getIdentifier());
 
 		EXPECT_FLOAT_EQ(registry
 							.getComponent<components::Bound>(
@@ -283,7 +268,6 @@ namespace guillaume::entities::tests
 					  .getRole(),
 				  components::AccessibilityRole::Header);
 		// Text entities push their content on update (as the systems do).
-		card->getContent()->update();
 		EXPECT_EQ(registry
 					  .getComponent<components::Text>(
 						  card->getContent()->getIdentifier())

@@ -203,8 +203,9 @@ namespace guillaume::systems::tests
 			minY = std::min(minY, vertex.getPosition()[1]);
 			maxY = std::max(maxY, vertex.getPosition()[1]);
 		}
-		EXPECT_NEAR(minY, 55.0f, 1e-4f);
-		EXPECT_NEAR(maxY, 56.0f, 1e-4f);
+		// The bottom edge is 56 below the top-left corner (y points up).
+		EXPECT_NEAR(minY, -56.0f, 1e-4f);
+		EXPECT_NEAR(maxY, -55.0f, 1e-4f);
 	}
 
 }	 // namespace guillaume::systems::tests

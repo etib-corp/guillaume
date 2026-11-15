@@ -22,6 +22,8 @@
 
 #include "guillaume/systems/elevation_render.hpp"
 
+#include "guillaume/systems/shape_mesh.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -129,6 +131,9 @@ namespace guillaume::systems
 						 float halfWidth, float halfHeight, float radius,
 						 const utility::graphic::Color32Bit &color)
 		{
+			if (shape::isInvisible(color)) {
+				return;
+			}
 			const auto outline =
 				buildRoundedRectOutline(halfWidth, halfHeight, radius, 8);
 
@@ -137,7 +142,7 @@ namespace guillaume::systems
 
 			utility::graphic::VertexF centerVertex;
 			centerVertex.setPosition(center);
-			centerVertex.setColor(color);
+			centerVertex.setColor(shape::opaqueColor(color));
 			mesh.addVertex(centerVertex);
 
 			for (const auto &localVertex: outline) {
@@ -150,7 +155,7 @@ namespace guillaume::systems
 				vertex.setPosition(utility::graphic::PositionF(
 					center[0] + rotated[0], center[1] + rotated[1],
 					center[2] + rotated[2]));
-				vertex.setColor(color);
+				vertex.setColor(shape::opaqueColor(color));
 				mesh.addVertex(vertex);
 			}
 
@@ -205,7 +210,7 @@ namespace guillaume::systems
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + bound.getWidth() / 2.0f,
-			pose.getPosition().y + bound.getHeight() / 2.0f,
+			pose.getPosition().y - bound.getHeight() / 2.0f,
 			pose.getPosition().z);
 
 		const float halfWidth  = bound.getWidth() / 2.0f;
@@ -230,6 +235,12 @@ namespace guillaume::systems
 						halfHeight + expansion,
 						(std::min)(halfWidth, halfHeight) + expansion,
 						color.withAlpha(static_cast<std::uint8_t>(alpha)));
+		}
+
+		// A transparent shape adds no geometry: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (mesh.getVertices().empty()) {
+			return;
 		}
 
 		auto renderable = std::make_shared<MeshRenderable>(

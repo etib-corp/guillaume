@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <utility>
 #include <functional>
 #include <memory>
 #include <string>
@@ -32,6 +33,7 @@
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
 #include "guillaume/components/layout.hpp"
+#include "guillaume/components/navigation_drawer_destination.hpp"
 #include "guillaume/components/selection.hpp"
 #include "guillaume/components/transform.hpp"
 
@@ -43,26 +45,60 @@
 namespace guillaume::entities::detail
 {
 	/**
-	 * @brief Internal drawer destination (Paper `Drawer.Item` or
+	 * @brief One destination of a NavigationDrawer: a pressable row with an
+	 * icon, a label and an optional trailing text, or, collapsed, an icon
+	 * in a pill with the label under it (Paper `Drawer.Item` and
 	 * `Drawer.CollapsedItem`).
+	 *
+	 * Internal to NavigationDrawer, which creates one per destination
+	 * entry with `DrawerDestination::create(registry, entry, collapsed,
+	 * width)` and adds it to itself; applications use the NavigationDrawer
+	 * methods instead. Its state lives in
+	 * components::NavigationDrawerDestination (icon, label, trailing text,
+	 * disabled and collapsed flags, child identifiers, press handler) and
+	 * its selection in components::Selectable;
+	 * systems::NavigationDrawerDestination styles it for its selection and
+	 * places its children each frame, in the Layout phase. The class
+	 * itself holds no field.
+	 *
+	 * The collapsed flag is chosen at creation and decides which children
+	 * are built; NavigationDrawer creates new destinations to change it.
+	 * systems::NavigationDrawer overwrites the width of the destination,
+	 * its press handler and its selection-change handler.
+	 *
+	 * @see NavigationDrawer, components::NavigationDrawerDestination,
+	 * systems::NavigationDrawerDestination
 	 */
 	class DrawerDestination:
 		public std::enable_shared_from_this<DrawerDestination>,
 		public ecs::ParentEntityFiller<
 			components::Layout, components::Transform, components::Bound,
-			components::Color, components::Borders, components::Selectable>
+			components::Color, components::Borders, components::Selectable,
+			components::NavigationDrawerDestination>
 	{
 		public:
 		/**
-		 * @brief Construct a drawer destination.
-		 * @param registry The component registry.
-		 * @param entry The destination data.
-		 * @param collapsed Whether to render a collapsed item.
-		 * @param width Destination width.
+		 * @brief Create a destination and its children, without registering
+		 * it in an entity registry or setting its parent.
+		 *
+		 * The constructor is private because the children need the
+		 * destination to be owned by a shared pointer before they can take
+		 * it as parent; create() constructs it, then builds the icon, the
+		 * label and the trailing text.
+		 * @tparam Arguments The types of the constructor arguments.
+		 * @param arguments Forwarded to the private constructor:
+		 * (registry, entry, collapsed, width).
+		 * @return The new destination.
 		 */
-		DrawerDestination(ecs::ComponentRegistry &registry,
-						  const NavigationDrawer::Entry &entry, bool collapsed,
-						  float width);
+		template<typename... Arguments>
+		static std::shared_ptr<DrawerDestination>
+			create(Arguments &&...arguments)
+		{
+			std::shared_ptr<DrawerDestination> entity(
+				new DrawerDestination(std::forward<Arguments>(arguments)...));
+			entity->build();
+			return entity;
+		}
 
 		/**
 		 * @brief Default destructor.
@@ -70,65 +106,78 @@ namespace guillaume::entities::detail
 		~DrawerDestination(void) override = default;
 
 		/**
-		 * @brief Build the icon, label and trailing children.
-		 */
-		void initialize(void) override;
-
-		/**
-		 * @brief Set the press handler.
-		 * @param onPress Press handler.
+		 * @brief Set the handler called when the user presses the
+		 * destination while it is enabled.
+		 *
+		 * systems::NavigationDrawer::install sets this handler on every
+		 * destination of a drawer; setting another one replaces it.
+		 * @param onPress The handler; an empty function for none.
 		 */
 		void setOnPress(std::function<void(void)> onPress);
 
 		/**
-		 * @brief Enable or disable the destination.
-		 * @param disabled Whether the destination is disabled.
+		 * @brief Enable or disable the destination. Restyles at once.
+		 * @param disabled True to make the destination ignore presses and
+		 * use the disabled content color.
 		 */
 		void setDisabled(bool disabled);
 
 		/**
-		 * @brief Check whether the destination is disabled.
+		 * @brief Whether the destination ignores presses.
 		 * @return True when disabled.
 		 */
 		bool isDisabled(void) const;
 
 		/**
-		 * @brief Set the selection change handler.
-		 * @param handler The handler to invoke on selection change.
+		 * @brief Set the handler of the destination's
+		 * components::Selectable.
+		 *
+		 * systems::NavigationDrawer::install sets this handler on every
+		 * destination of a drawer; setting another one replaces it.
+		 * @param handler Called with the new state when the destination
+		 * becomes selected or deselected.
 		 */
 		void setOnSelectionChanged(
 			const components::Selectable::Handler &handler);
 
 		/**
-		 * @brief Whether the destination is selected.
-		 * @return True when selected.
+		 * @brief Whether the destination is the selected one of its drawer.
+		 * @return True when its components::Selectable is selected.
 		 */
-		bool isSelected(void);
+		bool isSelected(void) const;
 
 		/**
-		 * @brief Apply the active pill, content colors and semantics.
-		 * @param selected Whether the destination is selected.
-		 */
-		void applySelectionColor(bool selected);
-
-		/**
-		 * @brief Arrange the destination content.
-		 */
-		void applyGeometry(void);
-
-		/**
-		 * @brief Get the trailing text identifier.
-		 * @return The identifier, or InvalidIdentifier.
+		 * @brief Get the trailing text entity.
+		 * @return The identifier of the text, or
+		 * ecs::Entity::InvalidIdentifier when the destination has no
+		 * trailing text or is collapsed.
 		 */
 		ecs::Entity::Identifier getRightIdentifier(void) const;
 
 		private:
-		NavigationDrawer::Entry _entry {};	  ///< Destination data.
-		bool _collapsed { false };			  ///< Collapsed (rail) rendering.
-		std::shared_ptr<View> _lead {};		  ///< Icon+label group / pill.
-		std::shared_ptr<Icon> _icon {};		  ///< Icon child.
-		std::shared_ptr<Text> _labelEntity {};	  ///< Label child.
-		std::shared_ptr<Text> _rightEntity {};	  ///< Trailing text.
-		std::function<void(void)> _onPress {};	  ///< Press handler.
+		/**
+		 * @brief Construct a drawer destination.
+		 *
+		 * Writes `entry` to components::NavigationDrawerDestination and
+		 * makes the entity pressable. The children are built by build().
+		 * @param registry The registry that stores the components.
+		 * @param entry The icon, label, trailing text and disabled flag of
+		 * the destination; its kind is not read.
+		 * @param collapsed True for a rail item (icon in a pill, label
+		 * under it), false for a full row.
+		 * @param width The width of the destination, in dp.
+		 */
+		DrawerDestination(ecs::ComponentRegistry &registry,
+						  const NavigationDrawer::Entry &entry, bool collapsed,
+						  float width);
+
+		/**
+		 * @brief Build the icon, the label and, for a full row, the
+		 * trailing text, then style the destination.
+		 *
+		 * Called once by create(), when the destination is owned by a
+		 * shared pointer and can be given as parent to its children.
+		 */
+		void build(void);
 	};
 }	 // namespace guillaume::entities::detail

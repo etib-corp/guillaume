@@ -22,6 +22,8 @@
 
 #include "guillaume/systems/shape_mesh.hpp"
 
+#include "guillaume/theme.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -84,8 +86,28 @@ namespace guillaume::systems::shape
 	{
 		utility::graphic::VertexF vertex;
 		vertex.setPosition(position);
-		vertex.setColor(color);
+		vertex.setColor(opaqueColor(color));
 		return vertex;
+	}
+
+	bool isInvisible(const utility::graphic::Color32Bit &color)
+	{
+		return color.getAlpha() == 0;
+	}
+
+	utility::graphic::Color32Bit
+		opaqueColor(const utility::graphic::Color32Bit &color)
+	{
+		if (color.getAlpha() == 255 || color.getAlpha() == 0) {
+			return color;
+		}
+		// The engine draws shapes without blending, so a translucent color
+		// would come out at full strength. Composite it over the surface it
+		// is normally drawn on instead.
+		const auto surface = getActiveColor(SchemeColorRole::Surface);
+		auto blended	   = color.blendOver(surface);
+		return utility::graphic::Color32Bit(
+			blended.getRed(), blended.getGreen(), blended.getBlue(), 255);
 	}
 
 	void buildTriangleFanVertices(
@@ -93,6 +115,10 @@ namespace guillaume::systems::shape
 		const std::vector<utility::graphic::PositionF> &outline,
 		const utility::graphic::Color32Bit &color)
 	{
+		if (isInvisible(color)) {
+			return;
+		}
+
 		mesh.addVertex(createVertex(center, color));
 
 		for (const auto &outlineVertex: outline) {
@@ -128,6 +154,10 @@ namespace guillaume::systems::shape
 					   int segments, bool closed,
 					   const utility::graphic::Color32Bit &color)
 	{
+		if (isInvisible(color)) {
+			return;
+		}
+
 		if (segments <= 0) {
 			segments = 1;
 		}
@@ -184,6 +214,10 @@ namespace guillaume::systems::shape
 					   float dashLength, float gapLength,
 					   const utility::graphic::Color32Bit &color)
 	{
+		if (isInvisible(color)) {
+			return;
+		}
+
 		const float length = std::abs(halfLength);
 		const float half   = std::abs(halfThickness);
 
@@ -238,6 +272,10 @@ namespace guillaume::systems::shape
 		const float width, int arcSegments,
 		const utility::graphic::Color32Bit &color)
 	{
+		if (isInvisible(color)) {
+			return;
+		}
+
 		const float pi = std::acos(-1.0f);
 		if (arcSegments <= 0) {
 			arcSegments = 1;

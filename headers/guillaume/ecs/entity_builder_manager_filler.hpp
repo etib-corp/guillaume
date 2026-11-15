@@ -28,23 +28,41 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Manager class for handling multiple entity builders.
+	 * @brief An EntityBuilderManager that creates one builder of each listed
+	 * type when it is constructed.
+	 *
+	 * Scene uses it to make the builder of every widget of the library
+	 * available from Scene::getBuilderManager.
+	 *
+	 * @code
+	 * ecs::EntityBuilderManagerFiller<entities::Text::Builder,
+	 * 								entities::Button::Builder>
+	 * 	builders(componentRegistry, entityRegistry);
+	 * auto &text = builders.getBuilder<entities::Text::Builder>();
+	 * @endcode
+	 *
+	 * @tparam BuilderTypes The builder types to create. Each must appear
+	 * once and be constructible from the two registries.
+	 * @see EntityBuilderManager
 	 */
 	template<InheritFromEntityBuilder... BuilderTypes>
 	class EntityBuilderManagerFiller: public EntityBuilderManager
 	{
 		public:
 		/**
-		 * @brief Default constructor.
-		 * @param componentRegistry The component registry to pass to builders.
-		 * @param entityRegistry The entity registry to pass to builders.
+		 * @brief Create the manager and one builder of each listed type,
+		 * all working on the same pair of registries.
+		 * @param componentRegistry The registry in which the builders create
+		 * components. It must outlive the manager.
+		 * @param entityRegistry The registry in which the builders register
+		 * entities. It must outlive the manager.
+		 * @throws std::runtime_error When a builder type is listed twice.
 		 */
 		EntityBuilderManagerFiller(ComponentRegistry &componentRegistry,
 								   EntityRegistry &entityRegistry);
 
 		/**
-		 * @brief Default destructor for the Entity Builder Manager Filler
-		 * class.
+		 * @brief Destroy the manager and the builders it holds.
 		 */
 		virtual ~EntityBuilderManagerFiller(void) = default;
 	};

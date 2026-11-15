@@ -31,6 +31,9 @@
 namespace guillaume::components
 {
 
+	/**
+	 * @brief The mouse buttons a MouseButtonInteraction tracks.
+	 */
 	inline constexpr std::array<utility::event::MouseButtonEvent::Button, 5>
 		MouseButtons = { utility::event::MouseButtonEvent::Button::Left,
 						 utility::event::MouseButtonEvent::Button::Middle,
@@ -39,8 +42,22 @@ namespace guillaume::components
 						 utility::event::MouseButtonEvent::Button::X2 };
 
 	/**
-	 * @brief Component handling mouse button interactions.
-	 * @see systems::MouseButton
+	 * @brief Which mouse buttons are held on an entity, with a press and a
+	 * release handler per button.
+	 *
+	 * systems::MouseButton writes it in the Event phase: it casts a ray from
+	 * the pointer position of each mouse button event and tests it against the
+	 * entity's Transform and Bound. The left button is the primary one:
+	 * systems::StyleState, systems::Focus and systems::Drag read its pressed
+	 * state.
+	 *
+	 * @code
+	 * using Button = utility::event::MouseButtonEvent::Button;
+	 * registry.addComponent<components::MouseButtonInteraction>(identifier)
+	 * 	.setOnButtonReleaseHandler(Button::Left, [] { save(); });
+	 * @endcode
+	 *
+	 * @see ButtonInteraction for the members, systems::MouseButton
 	 */
 	using MouseButtonInteraction =
 		ButtonInteraction<utility::event::MouseButtonEvent,

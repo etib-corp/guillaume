@@ -103,8 +103,9 @@ namespace guillaume::systems::tests
 		const auto entity = createOverlayEntity(0.0f, 0.0f, 100.0f, 50.0f);
 		_overlaySystem->show(entity);
 
+		// The overlay extends down from its top-left corner (y points up).
 		_overlaySystem->handleOutsideClick(
-			utility::math::Vector2F({ 10.0f, 10.0f }));
+			utility::math::Vector2F({ 10.0f, -10.0f }));
 
 		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
 	}

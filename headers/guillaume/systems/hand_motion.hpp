@@ -36,7 +36,24 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand motion interactions.
+	 * @brief Tracks which entities an XR hand is pointing at.
+	 *
+	 * The hand counterpart of systems::MouseMotion. Runs in the Event phase
+	 * on entities that have a components::HandHoverInteraction, a Transform
+	 * and a Bound. It casts the forward ray of the aim pose of the current
+	 * hand motion event and tests it against the rectangle of the entity,
+	 * grown by its accessibility margin. It writes the hovered flag of
+	 * components::HandHoverInteraction and calls its hover handler when the
+	 * ray enters and its unhover handler when it leaves. A disabled entity
+	 * is never hovered.
+	 *
+	 * Every entity is tested on its own: overlapping entities on the ray
+	 * are all hovered. Nothing is tested until a first hand motion event
+	 * has been received.
+	 *
+	 * @see components::HandHoverInteraction
+	 * @see systems::MouseMotion
+	 * @see systems::hitTest
 	 */
 	class HandMotion:
 		public ecs::SystemFiller<components::HandHoverInteraction,
@@ -45,34 +62,35 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandMotion system and subscribe to hand motion
-		 * events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand motion events.
+		 * @param eventBus The event bus delivering the hand motion events.
 		 */
 		HandMotion(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandMotion system.
+		 * @brief Destructor.
 		 */
 		~HandMotion(void);
 
 		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
+		 * @brief Take the next pending hand motion event, once per frame.
+		 *
+		 * When none is pending, the previous event stays the current one.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
+		 * @brief Does nothing.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update method called for each entity with the relevant
-		 * components. Processes hand motion events and updates interaction
-		 * states accordingly.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief Test the hand ray against one entity and update its
+		 * hovered flag, calling the hover or unhover handler when the flag
+		 * changes.
+		 * @param entityIdentifier The entity holding the
+		 * components::HandHoverInteraction.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

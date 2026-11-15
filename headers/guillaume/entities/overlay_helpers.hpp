@@ -31,10 +31,17 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Set the visibility of an entity's overlay component.
-	 * @param registry The component registry.
-	 * @param identifier The owning entity identifier.
-	 * @param visible The new visibility.
+	 * @brief Show or hide an overlay widget (dialog, menu, snackbar,
+	 * tooltip).
+	 *
+	 * Only writes the `visible` flag of the entity's components::Overlay.
+	 * systems::Overlay reads the flag in the Event phase and opens or closes
+	 * the overlay accordingly.
+	 * @param registry The registry holding the components.
+	 * @param identifier The overlay entity. It must have a
+	 * components::Overlay.
+	 * @param visible True to show the overlay, false to hide it.
+	 * @see components::Overlay, systems::Overlay
 	 */
 	inline void setOverlayVisible(ecs::ComponentRegistry &registry,
 								  const ecs::Entity::Identifier &identifier,
@@ -45,10 +52,12 @@ namespace guillaume::entities
 	}
 
 	/**
-	 * @brief Get the visibility of an entity's overlay component.
-	 * @param registry The component registry.
-	 * @param identifier The owning entity identifier.
-	 * @return True when the overlay is visible.
+	 * @brief Tell whether an overlay widget is shown.
+	 * @param registry The registry holding the components.
+	 * @param identifier The overlay entity. It must have a
+	 * components::Overlay.
+	 * @return The `visible` flag of its components::Overlay. systems::Overlay
+	 * clears it when it dismisses the overlay.
 	 */
 	inline bool isOverlayVisible(const ecs::ComponentRegistry &registry,
 								 const ecs::Entity::Identifier &identifier)

@@ -44,6 +44,9 @@
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/entities/style_helpers.hpp>
 #include <guillaume/theme.hpp>
+#include <guillaume/components/hierarchy.hpp>
+#include <guillaume/components/list.hpp>
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -80,9 +83,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry);
 
-		list->initialize();
-		list->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(list->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 360.0f);
@@ -92,9 +92,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(2));
-
-		list->initialize();
-		list->update();
 
 		// Heights follow the content: each row is its content column plus
 		// the 16 dp M3 padding on both edges.
@@ -128,9 +125,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(2));
 
-		list->initialize();
-		list->update();
-
 		const auto first  = list->getItemIdentifier(0);
 		const auto second = list->getItemIdentifier(1);
 
@@ -147,8 +141,6 @@ namespace guillaume::entities::tests
 		items[0].supporting = "Details";
 		auto list = makeList(registry, List::Variant::SingleLine, items);
 
-		list->initialize();
-		list->update();
 		EXPECT_EQ(
 			registry
 				.getComponent<components::Layout>(list->getContentIdentifier(0))
@@ -157,7 +149,6 @@ namespace guillaume::entities::tests
 			1U);
 
 		list->setVariant(List::Variant::TwoLine);
-		list->update();
 		EXPECT_EQ(list->getVariant(), List::Variant::TwoLine);
 		EXPECT_EQ(
 			registry
@@ -197,8 +188,6 @@ namespace guillaume::entities::tests
 		};
 		items[1].disabled = true;
 		auto list = makeList(registry, List::Variant::SingleLine, items);
-		list->initialize();
-		list->update();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -228,8 +217,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto list = makeList(registry, List::Variant::SingleLine, makeItems(1));
-		list->initialize();
-		list->update();
 
 		const auto row = list->getItemIdentifier(0);
 		EXPECT_EQ(
@@ -253,8 +240,6 @@ namespace guillaume::entities::tests
 		items.insert(items.end(), rows.begin(), rows.end());
 		items.push_back(List::divider());
 		auto list = makeList(registry, List::Variant::SingleLine, items);
-		list->initialize();
-		list->update();
 
 		const auto header = list->getItemIdentifier(0);
 		EXPECT_EQ(
@@ -276,8 +261,6 @@ namespace guillaume::entities::tests
 		accordion.children = makeItems(2);
 		auto list =
 			makeList(registry, List::Variant::SingleLine, { accordion });
-		list->initialize();
-		list->update();
 
 		const auto row	= list->getItemIdentifier(0);
 		auto childCount = [&]() {
@@ -311,6 +294,28 @@ namespace guillaume::entities::tests
 						 .getComponent<components::StyleState>(
 							 list->getChildIdentifier(0, 1))
 						 .isEnabled());
+	}
+
+	TEST_F(TestList, ReplacingItemsRemovesThePreviousRows)
+	{
+		ecs::ComponentRegistry registry;
+		auto list = makeList(registry, List::Variant::SingleLine, makeItems(3));
+		const auto previous =
+			registry.getComponent<components::List>(list->getIdentifier())
+				.getRows();
+		ASSERT_FALSE(previous.empty());
+
+		list->setItems(makeItems(1));
+
+		for (const auto &row: previous) {
+			EXPECT_FALSE(
+				registry.hasComponent<components::Transform>(row.entity));
+		}
+		const auto &hierarchy =
+			registry.getComponent<components::Hierarchy>(list->getIdentifier());
+		for (const auto &row: previous) {
+			EXPECT_FALSE(hierarchy.hasChild(row.entity));
+		}
 	}
 
 }	 // namespace guillaume::entities::tests

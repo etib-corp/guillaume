@@ -19,50 +19,17 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-
 #pragma once
 
-#include <vector>
+#include <gtest/gtest.h>
 
-#include "guillaume/ecs/component.hpp"
-#include "guillaume/ecs/entity.hpp"
+#include <guillaume/components/mesh.hpp>
 
-namespace guillaume::components
+namespace guillaume::components::tests
 {
 
-	/**
-	 * @brief Component representing a parent-child relationship between
-	 * entities.
-	 */
-	class Parent: public ecs::Component
+	class TestMeshFit: public ::testing::Test
 	{
-		private:
-		ecs::Entity::Identifier _parentIdentifier {
-			ecs::Entity::InvalidIdentifier
-		};	  ///< Parent entity identifier
-
-		public:
-		/**
-		 * @brief Default constructor for the Parent component.
-		 */
-		Parent(void) = default;
-
-		/**
-		 * @brief Default destructor for the Parent component.
-		 */
-		~Parent(void) = default;
-
-		/**
-		 * @brief Set the parent entity identifier.
-		 * @param identifier The new parent entity identifier.
-		 */
-		void setParentIdentifier(ecs::Entity::Identifier identifier);
-
-		/**
-		 * @brief Get the parent entity identifier.
-		 * @return The parent entity identifier.
-		 */
-		ecs::Entity::Identifier getParentIdentifier(void) const;
 	};
 
-}	 // namespace guillaume::components
+}	 // namespace guillaume::components::tests

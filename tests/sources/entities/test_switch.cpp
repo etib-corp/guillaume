@@ -87,9 +87,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry);
 
-		toggle->initialize();
-		toggle->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(toggle->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 52.0f);
@@ -105,8 +102,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry);
 
-		toggle->initialize();
-
 		EXPECT_FALSE(toggle->isChecked());
 		toggle->setChecked(true);
 		EXPECT_TRUE(toggle->isChecked());
@@ -120,9 +115,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, true);
 
-		toggle->initialize();
-		toggle->update();
-
 		const auto &value =
 			registry.getComponent<components::Value>(toggle->getIdentifier());
 		EXPECT_FLOAT_EQ(value.getValue(), 1.0f);
@@ -135,8 +127,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, false,
 								 "check", "Label");
-
-		toggle->update();
 
 		const float baseZ =
 			registry
@@ -160,8 +150,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Enabled, false,
 								 "check", "Dark mode");
-
-		toggle->update();
 
 		const auto &layoutChildren =
 			registry.getComponent<components::Layout>(toggle->getIdentifier())
@@ -190,9 +178,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto toggle =
 			makeSwitch(registry, Switch::Variant::Enabled, false, "", "Wifi");
-
-		toggle->initialize();
-		toggle->update();
 
 		const float trackWidth =
 			registry.getComponent<components::Bound>(toggle->getIdentifier())
@@ -227,7 +212,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry, Switch::Variant::Disabled);
-		toggle->initialize();
 
 		int changes = 0;
 		toggle->setOnValueChange([&changes](bool) {
@@ -254,7 +238,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto toggle = makeSwitch(registry);
-		toggle->initialize();
 
 		bool reported = false;
 		toggle->setOnValueChange([&reported](bool value) {

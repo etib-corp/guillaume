@@ -28,23 +28,42 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Traverse entities from leaves toward roots.
+	 * @brief Visits owned entities before their owners: the deepest
+	 * entities first, the entities owned by the scene last.
+	 *
+	 * It is the exact reverse of LevelOrderTraveler. For a scene owning A
+	 * and B, where A owns A1 and A2 and B owns B1, the order is B1, A2, A1,
+	 * B, A. Used by the Measure phase, where a parent is sized from its
+	 * children, and by the Event phase, where the input handlers of a child
+	 * run before those of its parent.
+	 *
+	 * @see LevelOrderTraveler
+	 * @see EventPhase
+	 * @see MeasurePhase
 	 */
 	class ReverseLevelOrderTraveler final: public EntityTreeTraveler
 	{
 		public:
 		/**
-		 * @brief Traverse hierarchy in reverse level order.
-		 * @param entityRegistry Root entity registry to traverse.
-		 * @return Ordered mutable entity shared pointers.
+		 * @brief List every entity below a registry, children before
+		 * parents.
+		 * @param entityRegistry The registry to start from, usually the
+		 * scene.
+		 * @return The entities from the deepest level to the root level,
+		 * each level in reverse insertion order; empty when the registry
+		 * owns nothing.
 		 */
 		std::vector<std::shared_ptr<Entity>>
 			travel(EntityRegistry &entityRegistry) const override;
 
 		/**
-		 * @brief Traverse hierarchy in reverse level order.
-		 * @param entityRegistry Root entity registry to traverse.
-		 * @return Ordered const entity shared pointers.
+		 * @brief List every entity below a registry, children before
+		 * parents, read-only.
+		 * @param entityRegistry The registry to start from, usually the
+		 * scene.
+		 * @return The entities from the deepest level to the root level,
+		 * each level in reverse insertion order; empty when the registry
+		 * owns nothing.
 		 */
 		std::vector<std::shared_ptr<const Entity>>
 			travel(const EntityRegistry &entityRegistry) const override;

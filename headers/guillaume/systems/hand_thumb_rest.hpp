@@ -31,7 +31,18 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand thumb-rest interactions.
+	 * @brief Receives XR thumb-rest events (the thumb touching the rest
+	 * pad of a controller).
+	 *
+	 * Runs in the Event phase on entities that have a
+	 * components::HandThumbRestInteraction, a Transform and a Bound, and
+	 * takes one thumb-rest event per frame. It does not override
+	 * HandEventSystem::update, so it writes no component and calls no
+	 * handler: the thumb-rest interaction component is not driven by this
+	 * system.
+	 *
+	 * @see components::HandThumbRestInteraction
+	 * @see systems::HandEventSystem
 	 */
 	class HandThumbRest:
 		public HandEventSystem<components::HandThumbRestInteraction,
@@ -39,14 +50,14 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandThumbRest system and subscribe to hand
-		 * thumb-rest events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand thumb-rest events.
+		 * @param eventBus The event bus delivering the thumb-rest events.
 		 */
 		explicit HandThumbRest(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandThumbRest system.
+		 * @brief Destructor.
 		 */
 		~HandThumbRest(void) override;
 	};

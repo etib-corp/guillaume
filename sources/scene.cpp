@@ -146,6 +146,7 @@ namespace guillaume
 		const auto origin	 = centerRay.origin();
 		const auto forward	 = centerRay.direction();
 		const auto right	 = view.getRight();
+		const auto up		 = view.getUp();
 
 		const auto anchor		   = origin + forward * distance;
 		const auto &directEntities = accessDirectEntities();
@@ -191,7 +192,11 @@ namespace guillaume
 			// Renderers treat the transform position as the top-left corner,
 			// so lay the group out from `cursor` (its left edge) directly
 			// instead of adding half the width as a center offset.
-			utility::graphic::PositionF entityPosition(anchor + right * cursor);
+			// The position is the top-left corner and content extends down:
+			// raise it by half the height so the entity is centred
+			// vertically on the view.
+			utility::graphic::PositionF entityPosition(
+				anchor + right * cursor + up * (bound.getHeight() / 2.0f));
 
 			auto &transform =
 				_componentRegistry.getComponent<components::Transform>(id);

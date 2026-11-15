@@ -29,25 +29,49 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Templated System class that automatically sets its signature based
-	 * on the specified component types.
-	 * @tparam ComponentTypes The component types that define the system's
-	 * signature.
+	 * @brief The base class to derive a system from: a System whose
+	 * signature is the list of component types given as template arguments.
+	 *
+	 * The list answers "which entities does this system run on?": update()
+	 * is called for every entity of the scene that declares all the listed
+	 * components. List the components the system cannot work without;
+	 * check the optional ones in update() with hasComponent().
+	 *
+	 * @code
+	 * // Runs in the Measure phase on every entity that has both a
+	 * // Transform and a Bound.
+	 * class Snap:
+	 * 	public ecs::SystemFiller<components::Transform, components::Bound>
+	 * {
+	 * 	public:
+	 * 	Snap(void)
+	 * 		: ecs::SystemFiller<components::Transform, components::Bound>(
+	 * 			  ecs::Phase::Measure)
+	 * 	{
+	 * 	}
+	 *
+	 * 	void update(const ecs::Entity::Identifier &identifier) override;
+	 * };
+	 * @endcode
+	 *
+	 * @tparam ComponentTypes The component types an entity must declare to
+	 * be visited. An empty list makes the system visit every entity.
 	 * @see System
+	 * @see Phase
 	 */
 	template<InheritFromComponent... ComponentTypes> class SystemFiller:
 		public System
 	{
 		public:
 		/**
-		 * @brief Construct a new System Filler object and set its signature.
-		 * @param phase The update phase during which this system should be
-		 * executed.
+		 * @brief Create the system and set its signature from
+		 * `ComponentTypes`.
+		 * @param phase The phase of the frame in which the system runs.
 		 */
 		SystemFiller(Phase phase);
 
 		/**
-		 * @brief Default destructor for the SystemFiller class.
+		 * @brief Virtual destructor.
 		 */
 		virtual ~SystemFiller(void) = default;
 	};

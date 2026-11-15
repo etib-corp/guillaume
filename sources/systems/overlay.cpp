@@ -186,8 +186,10 @@ namespace guillaume::systems
 		const float width  = bound.getWidth();
 		const float height = bound.getHeight();
 
-		const bool inside = point.x >= x && point.x <= x + width && point.y >= y
-			&& point.y <= y + height;
+		// The position is the top-left corner and y points up, so the
+		// rectangle spans [y - height, y].
+		const bool inside = point.x >= x && point.x <= x + width && point.y <= y
+			&& point.y >= y - height;
 
 		if (!inside) {
 			dismiss();

@@ -39,9 +39,9 @@ namespace guillaume::entities
 
 	std::shared_ptr<Divider> Divider::Builder::buildEntity(void)
 	{
-		auto entity = std::make_shared<Divider>(this->getComponentRegistry(),
-												_pose, _color, _length,
-												_thickness, _inset, _variant);
+		auto entity =
+			Divider::create(this->getComponentRegistry(), _pose, _color,
+							_length, _thickness, _inset, _variant);
 		return entity;
 	}
 

@@ -28,23 +28,38 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Traverse entities level-by-level from root to leaves.
+	 * @brief Visits owners before what they own: the entities owned by the
+	 * scene first, then the entities those own, and so on.
+	 *
+	 * For a scene owning A and B, where A owns A1 and A2 and B owns B1, the
+	 * order is A, B, A1, A2, B1. Used by the Layout and Render phases, where
+	 * a parent must be placed before its children.
+	 *
+	 * @see ReverseLevelOrderTraveler
+	 * @see LayoutPhase
+	 * @see RenderPhase
 	 */
 	class LevelOrderTraveler final: public EntityTreeTraveler
 	{
 		public:
 		/**
-		 * @brief Traverse hierarchy in top-down level order.
-		 * @param entityRegistry Root entity registry to traverse.
-		 * @return Ordered mutable entity shared pointers.
+		 * @brief List every entity below a registry, parents before
+		 * children.
+		 * @param entityRegistry The registry to start from, usually the
+		 * scene.
+		 * @return The entities level by level, each level in insertion
+		 * order; empty when the registry owns nothing.
 		 */
 		std::vector<std::shared_ptr<Entity>>
 			travel(EntityRegistry &entityRegistry) const override;
 
 		/**
-		 * @brief Traverse hierarchy in top-down level order.
-		 * @param entityRegistry Root entity registry to traverse.
-		 * @return Ordered const entity shared pointers.
+		 * @brief List every entity below a registry, parents before
+		 * children, read-only.
+		 * @param entityRegistry The registry to start from, usually the
+		 * scene.
+		 * @return The entities level by level, each level in insertion
+		 * order; empty when the registry owns nothing.
 		 */
 		std::vector<std::shared_ptr<const Entity>>
 			travel(const EntityRegistry &entityRegistry) const override;

@@ -9,16 +9,27 @@ set(GUILLAUME_SOURCES
     sources/component_registry.cpp
     sources/components/accessibility.cpp
     sources/components/animation.cpp
+    sources/components/app_bar.cpp
     sources/components/arc.cpp
     sources/components/backdrop.cpp
+    sources/components/badge.cpp
     sources/components/borders.cpp
     sources/components/bound.cpp
+    sources/components/button.cpp
+    sources/components/card.cpp
+    sources/components/checkbox.cpp
+    sources/components/chip.cpp
     sources/components/clip.cpp
     sources/components/color.cpp
+    sources/components/common_button.cpp
+    sources/components/dialog.cpp
     sources/components/divider.cpp
     sources/components/drag_interaction.cpp
     sources/components/elevation.cpp
     sources/components/ellipse.cpp
+    sources/components/extended_floating_action_button.cpp
+    sources/components/floating_action_button.cpp
+    sources/components/floating_action_button_menu.cpp
     sources/components/focus.cpp
     sources/components/glyph.cpp
     sources/components/hierarchy.cpp
@@ -29,22 +40,39 @@ set(GUILLAUME_SOURCES
     sources/components/hand_thumb_rest_interaction.cpp
     sources/components/hand_thumb_stick_interaction.cpp
     sources/components/hand_trigger_interaction.cpp
+    sources/components/icon_button.cpp
     sources/components/image.cpp
     sources/components/layout.cpp
+    sources/components/layout_extent.cpp
     sources/components/line.cpp
+    sources/components/list.cpp
+    sources/components/loading_indicator.cpp
+    sources/components/menu.cpp
     sources/components/mesh.cpp
     sources/components/mouse_hover_interaction.cpp
+    sources/components/navigation_bar.cpp
+    sources/components/navigation_bar_destination.cpp
+    sources/components/navigation_drawer.cpp
+    sources/components/navigation_drawer_destination.cpp
     sources/components/overlay.cpp
-    sources/components/parent.cpp
+    sources/components/progress_indicator.cpp
+    sources/components/radio_button.cpp
+    sources/components/radio_group.cpp
     sources/components/range.cpp
     sources/components/ring.cpp
     sources/components/scrim.cpp
     sources/components/scrollable.cpp
+    sources/components/search.cpp
+    sources/components/segmented_button.cpp
     sources/components/selection.cpp
+    sources/components/snackbar.cpp
     sources/components/style_state.cpp
     sources/components/surface_tone.cpp
+    sources/components/switch.cpp
     sources/components/text.cpp
     sources/components/text_field.cpp
+    sources/components/text_field_configuration.cpp
+    sources/components/tooltip.cpp
     sources/components/transform.cpp
     sources/components/typography.cpp
     sources/components/value.cpp
@@ -70,7 +98,6 @@ set(GUILLAUME_SOURCES
     sources/ecs/system_registry.cpp
     sources/entities/button.cpp
     sources/entities/button_base.cpp
-    sources/entities/button_style.cpp
     sources/entities/app_bar.cpp
     sources/entities/backdrop.cpp
     sources/entities/badge.cpp
@@ -89,13 +116,11 @@ set(GUILLAUME_SOURCES
     sources/entities/search.cpp
     sources/entities/segmented_button.cpp
     sources/entities/extended_floating_action_button.cpp
-    sources/entities/fab_style.cpp
     sources/entities/floating_action_button.cpp
     sources/entities/floating_action_button_menu.cpp
     sources/entities/icon.cpp
     sources/entities/icon_button.cpp
     sources/entities/image.cpp
-    sources/entities/interaction_helpers.cpp
     sources/entities/list.cpp
     sources/entities/mesh.cpp
     sources/entities/view.cpp
@@ -120,14 +145,27 @@ set(GUILLAUME_SOURCES
     sources/session_storage.cpp
     sources/storage.cpp
     sources/systems/animation.cpp
+    sources/systems/app_bar.cpp
     sources/systems/arc_render.cpp
     sources/systems/backdrop.cpp
+    sources/systems/badge.cpp
+    sources/systems/button.cpp
+    sources/systems/button_style.cpp
+    sources/systems/card.cpp
+    sources/systems/checkbox.cpp
+    sources/systems/chip.cpp
     sources/systems/clip.cpp
+    sources/systems/common_button.cpp
     sources/systems/core_systems.cpp
+    sources/systems/dialog.cpp
     sources/systems/divider.cpp
     sources/systems/drag.cpp
     sources/systems/ellipse_render.cpp
     sources/systems/elevation_render.cpp
+    sources/systems/extended_floating_action_button.cpp
+    sources/systems/fab_style.cpp
+    sources/systems/floating_action_button.cpp
+    sources/systems/floating_action_button_menu.cpp
     sources/systems/focus.cpp
     sources/systems/focus_ring_render.cpp
     sources/systems/glyph_render.cpp
@@ -139,28 +177,45 @@ set(GUILLAUME_SOURCES
     sources/systems/hand_thumb_rest.cpp
     sources/systems/hand_thumb_stick.cpp
     sources/systems/hand_trigger.cpp
+    sources/systems/icon_button.cpp
     sources/systems/image_render.cpp
+    sources/systems/interaction_helpers.cpp
     sources/systems/keyboard_control.cpp
     sources/systems/layout.cpp
     sources/systems/line_render.cpp
+    sources/systems/list.cpp
+    sources/systems/loading_indicator.cpp
     sources/systems/measure_glyph.cpp
     sources/systems/measure_mesh.cpp
     sources/systems/measure_text.cpp
+    sources/systems/menu.cpp
     sources/systems/mesh_render.cpp
     sources/systems/mouse_button.cpp
     sources/systems/mouse_motion.cpp
+    sources/systems/navigation_bar.cpp
+    sources/systems/navigation_bar_destination.cpp
+    sources/systems/navigation_drawer.cpp
+    sources/systems/navigation_drawer_destination.cpp
     sources/systems/overlay.cpp
+    sources/systems/progress_indicator.cpp
+    sources/systems/radio_button.cpp
+    sources/systems/radio_group.cpp
     sources/systems/rectangle_render.cpp
     sources/systems/ring_render.cpp
     sources/systems/scroll.cpp
+    sources/systems/search.cpp
+    sources/systems/segmented_button.cpp
     sources/systems/selection.cpp
     sources/systems/scrim_render.cpp
     sources/systems/shape_mesh.cpp
+    sources/systems/snackbar.cpp
     sources/systems/style_state.cpp
     sources/systems/surface_tone.cpp
+    sources/systems/switch.cpp
     sources/systems/text_field.cpp
     sources/systems/text_input.cpp
     sources/systems/text_render.cpp
+    sources/systems/tooltip.cpp
     sources/systems/typography.cpp
     sources/theme.cpp
     sources/theme/default_theme.cpp

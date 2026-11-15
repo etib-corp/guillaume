@@ -28,23 +28,38 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component marking an entity as an ellipse shape.
+	 * @brief Marks an entity as a filled ellipse: a dot, a switch thumb, a
+	 * disc.
 	 *
-	 * The component also carries the outline resolution used by
-	 * systems::EllipseRender when building the triangle fan mesh.
+	 * The ellipse is the one inscribed in the entity's components::Bound
+	 * (a square bound gives a circle) and is filled with the entity's
+	 * components::Color. The only value held here is how many segments
+	 * approximate the outline.
+	 *
+	 * Added by the widget classes that need a round shape, or by the
+	 * application. Read by systems::EllipseRender in the Render phase,
+	 * with the entity's Transform, Bound and Color.
+	 *
+	 * @code
+	 * registry.addComponent<components::Ellipse>(id);
+	 * registry.getComponent<components::Bound>(id)
+	 * 	.setWidth(16.0f)
+	 * 	.setHeight(16.0f);
+	 * @endcode
+	 *
+	 * @see systems::EllipseRender, components::Ring for an outline only
 	 */
 	class Ellipse: public ecs::Component
 	{
 		public:
-		using SegmentCount = int;	 ///< Type representing the outline
-									 ///< segment count
+		using SegmentCount = int;	 ///< A number of straight segments.
 
 		private:
-		SegmentCount _segments { 48 };	  ///< Number of outline segments
+		SegmentCount _segments { 48 };	  ///< Segments around the outline
 
 		public:
 		/**
-		 * @brief Constructor for the Ellipse component.
+		 * @brief Construct an ellipse drawn with 48 segments.
 		 */
 		explicit Ellipse(void);
 
@@ -54,15 +69,20 @@ namespace guillaume::components
 		~Ellipse(void) = default;
 
 		/**
-		 * @brief Get the number of outline segments.
-		 * @return The number of outline segments.
+		 * @brief Get how many straight segments approximate the outline.
+		 * @return The segment count (48 by default, never below 1).
 		 */
 		SegmentCount getSegments(void) const;
 
 		/**
-		 * @brief Set the number of outline segments.
-		 * @param segments The new number of outline segments.
-		 * @return Reference to this Ellipse component for chaining.
+		 * @brief Set how many straight segments approximate the outline.
+		 *
+		 * More segments give a smoother curve for more triangles. Always
+		 * marks the component changed, even when the count is the same.
+		 *
+		 * @param segments The segment count; a value below 1 is stored as
+		 * 1.
+		 * @return This component, for chaining.
 		 */
 		Ellipse &setSegments(SegmentCount segments);
 	};

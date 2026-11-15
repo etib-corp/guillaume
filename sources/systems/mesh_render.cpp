@@ -25,6 +25,8 @@
 #include <utility/graphic/model.hpp>
 
 #include "guillaume/systems/mesh_render.hpp"
+
+#include "guillaume/systems/shape_mesh.hpp"
 #include "guillaume/mesh_renderable.hpp"
 
 namespace guillaume::systems
@@ -86,10 +88,61 @@ namespace guillaume::systems
 			return;
 		}
 
+		// The model's vertices are in its own local units, around its own
+		// origin, and MeshRenderable draws vertices as given: move them into
+		// the entity's box. The model is scaled to its fit size (see
+		// components::Mesh::setFitSize), centred in the Bound, and rotated
+		// with the entity, like the other renderers do.
+		utility::graphic::PositionF localMin(0.0f, 0.0f, 0.0f);
+		utility::graphic::PositionF localMax(0.0f, 0.0f, 0.0f);
+		bool first = true;
+		for (const auto &mesh: model->getMeshes()) {
+			for (const auto &vertex: mesh->getVertices()) {
+				const auto position = vertex.getPosition();
+				for (std::size_t axis = 0; axis < 3; ++axis) {
+					if (first || position[axis] < localMin[axis]) {
+						localMin[axis] = position[axis];
+					}
+					if (first || position[axis] > localMax[axis]) {
+						localMax[axis] = position[axis];
+					}
+				}
+				first = false;
+			}
+		}
+		const float scale = modelComponent.scaleFor(localMax[0] - localMin[0],
+													localMax[1] - localMin[1]);
+		const auto &bound = getComponent<components::Bound>(entityIdentifier);
+		// The model has depth: move its centre toward the viewer by half its
+		// depth, so it sits in front of the surface it is laid out on
+		// instead of half inside it.
+		const float halfDepth = (localMax[2] - localMin[2]) * scale / 2.0f;
+		const auto towardViewer =
+			-pose.getOrientation().getForward() * (halfDepth + 1.0f);
+		const utility::graphic::PositionF center(
+			pose.getPosition().x + bound.getWidth() / 2.0f + towardViewer[0],
+			pose.getPosition().y - bound.getHeight() / 2.0f + towardViewer[1],
+			pose.getPosition().z + towardViewer[2]);
+
 		std::vector<utility::graphic::Mesh> meshes;
 		meshes.reserve(model->getMeshes().size());
 		for (const auto &mesh: model->getMeshes()) {
-			meshes.push_back(*mesh);
+			std::vector<utility::graphic::VertexF> vertices;
+			vertices.reserve(mesh->getVertices().size());
+			for (auto vertex: mesh->getVertices()) {
+				const auto position = vertex.getPosition();
+				const utility::graphic::PositionF local(
+					(position[0] - (localMin[0] + localMax[0]) / 2.0f) * scale,
+					(position[1] - (localMin[1] + localMax[1]) / 2.0f) * scale,
+					(position[2] - (localMin[2] + localMax[2]) / 2.0f) * scale);
+				const auto rotated = shape::rotatePositionByQuaternion(
+					local, pose.getOrientation());
+				vertex.setPosition(utility::graphic::PositionF(
+					center[0] + rotated[0], center[1] + rotated[1],
+					center[2] + rotated[2]));
+				vertices.push_back(vertex);
+			}
+			meshes.emplace_back(vertices, mesh->getIndices());
 		}
 
 		auto renderable = std::make_shared<MeshRenderable>(

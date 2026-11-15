@@ -30,8 +30,17 @@ namespace guillaume
 	 * @brief Build the default Material Design 3 theme.
 	 *
 	 * Fills the six color schemes (light and dark, each with medium and high
-	 * contrast variants) and the tonal palettes from material-theme.json.
-	 * @return The populated theme.
+	 * contrast variants) and the five tonal palettes with the Material 3
+	 * baseline colors, and derives the `SurfaceDisabled`,
+	 * `OnSurfaceDisabled` and `Backdrop` roles of each scheme. The type
+	 * scale, shapes, elevations, state layers and motion keep the baseline
+	 * values a Theme is constructed with.
+	 *
+	 * Application code does not need to call it: `defaultTheme` and the
+	 * initial active theme are both built with it. Call it to get a fresh,
+	 * modifiable copy of the default theme.
+	 * @return A new theme named "Material Design 3 Theme".
+	 * @see getActiveTheme
 	 */
 	Theme initializeDefaultTheme(void);
 

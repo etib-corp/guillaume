@@ -31,29 +31,43 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Base entity type that can own child entities.
+	 * @brief An entity that owns child entities: both an Entity and an
+	 * EntityRegistry.
 	 *
-	 * This class combines the ECS entity identity/signature with the
-	 * EntityRegistry ownership contract. Parent-capable entities can inherit
-	 * from this class to expose a consistent child management API.
+	 * Widgets with children (a card, a menu, a view) derive from it through
+	 * ParentEntityFiller. The children it owns stay alive as long as it does
+	 * and are reached by the systems through it; removing it with
+	 * EntityRegistry::removeEntity removes them too.
+	 *
+	 * @code
+	 * child->setParent(parent);	   // parent is a shared_ptr<ParentEntity>
+	 * parent->addEntity(child);
+	 * @endcode
+	 *
+	 * @note addEntity only records ownership. The parent link, the layer
+	 * and components::Hierarchy are set by Entity::setParent, so call both.
+	 * @see ParentEntityFiller
+	 * @see EntityRegistry
 	 */
 	class ParentEntity: public Entity, public EntityRegistry
 	{
 		private:
 		std::vector<std::shared_ptr<Entity>>
-			_children;	  ///< Direct child entities owned by this parent.
+			_children;	  ///< Entities owned directly, in insertion order
 
 		protected:
 		/**
-		 * @brief Access mutable direct child entities owned by this registry.
-		 * @return Mutable reference to the direct child entities storage.
+		 * @brief Give access to the list of entities this entity owns
+		 * directly.
+		 * @return Mutable reference to the list, in insertion order.
 		 */
 		std::vector<std::shared_ptr<Entity>> &
 			accessDirectEntities(void) override;
 
 		/**
-		 * @brief Access direct child entities owned by this registry.
-		 * @return Const reference to the direct child entities storage.
+		 * @brief Give read access to the list of entities this entity owns
+		 * directly.
+		 * @return Const reference to the list, in insertion order.
 		 */
 		const std::vector<std::shared_ptr<Entity>> &
 			accessDirectEntities(void) const override;

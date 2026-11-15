@@ -23,6 +23,8 @@
 #include <memory>
 
 #include "guillaume/systems/glyph_render.hpp"
+
+#include "guillaume/systems/shape_mesh.hpp"
 #include "guillaume/text_renderable.hpp"
 
 namespace guillaume::systems
@@ -96,6 +98,12 @@ namespace guillaume::systems
 			getComponent<components::Glyph>(entityIdentifier);
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
+
+		// A fully transparent color is how widgets hide a child; the text
+		// shader ignores vertex alpha, so submit nothing instead.
+		if (shape::isInvisible(colorComponent.getColor())) {
+			return;
+		}
 
 		getLogger().debug() << "Rendering glyph '" << glyphComponent.getName()
 							<< "' for entity " << entityIdentifier;

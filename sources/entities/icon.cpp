@@ -38,8 +38,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Icon> Icon::Builder::buildEntity(void)
 	{
-		auto entity =
-			std::make_shared<Icon>(this->getComponentRegistry(), _glyphName,
+		auto entity = Icon::create(this->getComponentRegistry(), _glyphName,
 								   _fontSize, _color, _style);
 		return entity;
 	}

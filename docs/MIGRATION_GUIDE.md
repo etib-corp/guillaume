@@ -217,6 +217,59 @@ value.
 **After:** Both have default no-op implementations. Derived entities may still
 override them.
 
+## Widgets are created with `create()`; `Entity::initialize()` is removed
+
+**Before:** A widget was built in two steps: construct it, then call
+`initialize()` (the entity registry did it when the entity was added) so it
+could create its children.
+
+```cpp
+auto checkbox = std::make_shared<Checkbox>(registry, config, state, variant,
+                                           "Label");
+checkbox->initialize();
+```
+
+**After:** Constructors are private. `create()` takes the same arguments and
+returns the widget fully built. `Entity::initialize()` no longer exists and
+`EntityRegistry::addEntity()` no longer calls anything on the entity.
+
+```cpp
+auto checkbox = Checkbox::create(registry, config, state, variant, "Label");
+```
+
+**Update:**
+
+- Replace `std::make_shared<Widget>(...)` with `Widget::create(...)` and
+  delete the `initialize()` calls. Code that uses the builders needs no
+  change.
+- In your own entities, do in the constructor (or in your own factory) what
+  `initialize()` did.
+
+## `Entity::update()` is removed
+
+**Before:** `ecs::System::routine` called `update()` on an entity whose
+components had changed, then on its parent. Library widgets restyled and
+re-arranged themselves there.
+
+**After:** Systems are the only place behavior lives. Every library widget is
+a facade without fields; its rules are static functions of a system named
+after it (`systems::Checkbox::apply`, `systems::Button::release`, ...), run
+every frame in the Layout phase and callable on an identifier.
+`Entity::update()` no longer exists, and neither does the unused
+`components::Parent` (use `components::Hierarchy`).
+
+**Update:**
+
+- Delete calls to `widget->update()`. To refresh a widget after writing its
+  components by hand, call the widget's system, for example
+  `systems::Chip::apply(registry, chip->getIdentifier())`, or let the next
+  frame do it.
+- Move logic from your own `update()` overrides into a system
+  (see "Widget shape and how to add one" in `docs/ARCHITECTURE.md`).
+- A subclass of `entities::ButtonBase` must provide a variant system and
+  register its `apply` with `components::Button::setRestyle()`;
+  `applyStyleState()` and `applyGeometry()` no longer exist.
+
 **Update:** No change required; existing overrides continue to work.
 
 ## `noexcept` on trivial getters

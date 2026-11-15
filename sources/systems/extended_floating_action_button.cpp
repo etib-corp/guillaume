@@ -1,0 +1,334 @@
+/*
+ Copyright (c) 2026 ETIB Corporation
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ of the Software, and to permit persons to whom the Software is furnished to do
+ so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+
+#include "guillaume/systems/extended_floating_action_button.hpp"
+
+#include <algorithm>
+#include <array>
+#include <cctype>
+#include <cstddef>
+#include <optional>
+#include <stdexcept>
+#include <string>
+
+#include "guillaume/components/borders.hpp"
+#include "guillaume/components/bound.hpp"
+#include "guillaume/components/color.hpp"
+#include "guillaume/components/elevation.hpp"
+#include "guillaume/components/transform.hpp"
+#include "guillaume/systems/button_style.hpp"
+#include "guillaume/systems/fab_style.hpp"
+#include "guillaume/systems/style_helpers.hpp"
+#include "guillaume/systems/button.hpp"
+#include "guillaume/systems/layout.hpp"
+#include "guillaume/theme.hpp"
+
+namespace guillaume::systems
+{
+	namespace
+	{
+		using Mode = components::ExtendedFloatingActionButton::Mode;
+	}	 // namespace
+
+	ExtendedFloatingActionButton::ExtendedFloatingActionButton(void)
+		: ecs::SystemFiller<components::ExtendedFloatingActionButton,
+							components::Button>(ecs::Phase::Layout)
+	{
+	}
+
+	void ExtendedFloatingActionButton::install(
+		ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &identifier)
+	{
+		if (!registry.hasComponent<components::Elevation>(identifier)) {
+			registry.addComponent<components::Elevation>(identifier)
+				.setElevationLevel(theme::ElevationLevel::Level0);
+		}
+		Button::install(registry, identifier);
+		registry.getComponent<components::Button>(identifier)
+			.setRestyle(&ExtendedFloatingActionButton::apply);
+	}
+
+	float ExtendedFloatingActionButton::iconFontSize(
+		const ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &identifier)
+	{
+		const auto &config =
+			registry.getComponent<components::ExtendedFloatingActionButton>(
+				identifier);
+		return fab_style::getLabelFontSize(config.getSize());
+	}
+
+	utility::graphic::Color32Bit ExtendedFloatingActionButton::contentColor(
+		const ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &identifier)
+	{
+		const auto &button =
+			registry.getComponent<components::Button>(identifier);
+		const auto &config =
+			registry.getComponent<components::ExtendedFloatingActionButton>(
+				identifier);
+		return Button::resolveContentColor(
+			button, fab_style::getContentColor(config.getVariant()));
+	}
+
+	void ExtendedFloatingActionButton::elevation(
+		ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &identifier)
+	{
+		const auto &button =
+			registry.getComponent<components::Button>(identifier);
+		const auto &config =
+			registry.getComponent<components::ExtendedFloatingActionButton>(
+				identifier);
+		const bool disabled = Button::isDisabled(registry, identifier);
+		const bool hovered	= Button::isHovered(registry, identifier);
+		const bool pressed	= Button::isPressed(registry, identifier);
+		const bool visible	= button.isVisible();
+		const auto mode		= config.getMode();
+		const bool lowered	= config.isLowered();
+		// M3 FAB: level 3 at rest (1 when lowered), one level up on hover,
+		// and flat when disabled.
+		auto level = lowered ? theme::ElevationLevel::Level1
+							 : theme::ElevationLevel::Level3;
+		if (disabled || !visible || mode == Mode::Flat) {
+			level = theme::ElevationLevel::Level0;
+		} else if (hovered && !pressed) {
+			level = static_cast<theme::ElevationLevel>(
+				static_cast<std::size_t>(level) + 1);
+		}
+		registry.getComponent<components::Elevation>(identifier)
+			.setElevationLevel(level);
+	}
+
+	void ExtendedFloatingActionButton::styleState(
+		ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &identifier)
+	{
+		const auto &button =
+			registry.getComponent<components::Button>(identifier);
+		const auto &config =
+			registry.getComponent<components::ExtendedFloatingActionButton>(
+				identifier);
+		const Button::Child icon(registry, button.getIcon());
+		const Button::Child label(registry, button.getLabel());
+		// A collapsed FAB, or one whose label measures nothing, keeps its
+		// label child but hides it. geometry() uses the same rule; deciding
+		// it here too keeps the two from rewriting the color every frame.
+		const bool labelShown = config.isExtended() && label
+			&& registry.getComponent<components::Bound>(label.getIdentifier())
+					.getWidth()
+				> 0.0f;
+		const bool disabled = Button::isDisabled(registry, identifier);
+		const bool hovered	= Button::isHovered(registry, identifier);
+		const bool pressed	= Button::isPressed(registry, identifier);
+		const bool visible	= button.isVisible();
+		const auto variant	= config.getVariant();
+		const bool lowered	= config.isLowered();
+		elevation(registry, identifier);
+
+		if (!visible) {
+			registry.getComponent<components::Color>(identifier)
+				.setColor(style::transparentColor());
+			if (icon) {
+				icon.setColor(style::transparentColor());
+			}
+			if (label) {
+				label.setColor(style::transparentColor());
+			}
+			return;
+		}
+
+		if (disabled) {
+			registry.getComponent<components::Color>(identifier)
+				.setColor(style::disabledContainerColor());
+
+			if (icon) {
+				icon.setColor(style::disabledContentColor());
+			}
+
+			if (label) {
+				label.setColor(labelShown ? style::disabledContentColor()
+										  : style::transparentColor());
+			}
+
+			return;
+		}
+
+		const auto baseContainerColor = Button::resolveContainerColor(
+			button, fab_style::getContainerColor(variant, lowered));
+		const auto contentColor = Button::resolveContentColor(
+			button, fab_style::getContentColor(variant));
+
+		utility::graphic::Color32Bit containerColor = baseContainerColor;
+
+		if (pressed) {
+			containerColor = style::stateLayer(baseContainerColor, contentColor,
+											   theme::StateLayer::Pressed);
+		} else if (hovered) {
+			containerColor = style::stateLayer(baseContainerColor, contentColor,
+											   theme::StateLayer::Hovered);
+		}
+
+		registry.getComponent<components::Color>(identifier)
+			.setColor(containerColor);
+
+		if (icon) {
+			icon.setColor(contentColor);
+		}
+
+		if (label) {
+			label.setColor(labelShown ? contentColor
+									  : style::transparentColor());
+		}
+	}
+
+	void ExtendedFloatingActionButton::geometry(
+		ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &identifier)
+	{
+		const auto &button =
+			registry.getComponent<components::Button>(identifier);
+		const auto &config =
+			registry.getComponent<components::ExtendedFloatingActionButton>(
+				identifier);
+		const Button::Child icon(registry, button.getIcon());
+		const Button::Child label(registry, button.getLabel());
+		const bool disabled	   = Button::isDisabled(registry, identifier);
+		const bool visible	   = button.isVisible();
+		const auto layer	   = Layout::layerOf(registry, identifier);
+		const auto variant	   = config.getVariant();
+		const auto size		   = config.getSize();
+		const auto &customSize = config.getCustomSize();
+		const bool extended	   = config.isExtended();
+		const float baseHeight =
+			customSize.value_or(fab_style::getContainerSize(size));
+		const float fontHeight = fab_style::getLabelFontSize(size);
+
+		registry.getComponent<components::Borders>(identifier)
+			.setBorderRadius(customSize.has_value()
+								 ? *customSize / 3.5f
+								 : fab_style::getBorderRadius(size));
+
+		if (!icon && !label) {
+			return;
+		}
+
+		if (icon) {
+			icon.setFontSize(fontHeight);
+		}
+
+		if (label) {
+			label.setTypeRole(theme::TypeRole::LabelLarge);
+			label.setContent(button.getLabelContent());
+		}
+
+		// M3 extended FAB: 16 dp leading, 12 dp icon-label gap, 20 dp
+		// trailing; collapsed it is a square icon-only FAB.
+		constexpr float leading	 = 16.0f;
+		constexpr float gap		 = 12.0f;
+		constexpr float trailing = 20.0f;
+
+		const auto &buttonPose =
+			registry.getComponent<components::Transform>(identifier).getPose();
+
+		const auto sizeOf = [&registry](const Button::Child &child) {
+			const auto &bound =
+				registry.getComponent<components::Bound>(child.getIdentifier());
+			return std::make_pair(bound.getWidth(), bound.getHeight());
+		};
+
+		const auto place = [&](const Button::Child &child, float x,
+							   float height) {
+			registry.getComponent<components::Transform>(child.getIdentifier())
+				.setPose(Layout::contentLayerPose(
+					utility::graphic::PositionF(buttonPose.getPosition().x + x,
+												buttonPose.getPosition().y
+													- (baseHeight - height)
+														/ 2.0f,
+												buttonPose.getPosition().z),
+					buttonPose.getOrientation(), layer));
+		};
+
+		const auto [iconWidth, iconHeight] =
+			icon ? sizeOf(icon) : std::make_pair(0.0f, 0.0f);
+		const auto [labelWidth, labelHeight] =
+			label ? sizeOf(label) : std::make_pair(0.0f, 0.0f);
+
+		const bool showLabel = extended && labelWidth > 0.0f;
+		float width			 = baseHeight;
+
+		if (showLabel) {
+			width		 = leading + labelWidth + trailing;
+			float cursor = leading;
+			if (iconWidth > 0.0f) {
+				place(icon, cursor, iconHeight);
+				cursor += iconWidth + gap;
+				width += iconWidth + gap;
+			}
+			place(label, cursor, labelHeight);
+		} else {
+			if (icon) {
+				place(icon, (baseHeight - iconWidth) / 2.0f, iconHeight);
+			}
+			if (label) {
+				place(label, (baseHeight - labelWidth) / 2.0f, labelHeight);
+			}
+		}
+
+		if (label) {
+			// A collapsed FAB keeps its label child but hides it.
+			const auto contentColor = Button::resolveContentColor(
+				button, fab_style::getContentColor(variant));
+			if (!showLabel) {
+				label.setColor(style::transparentColor());
+			} else if (!disabled && visible) {
+				label.setColor(contentColor);
+			}
+		}
+
+		registry.getComponent<components::Bound>(identifier)
+			.setWidth(width)
+			.setHeight(baseHeight);
+		Button::applyTouchTarget(registry, identifier, width, baseHeight);
+	}
+
+	void ExtendedFloatingActionButton::apply(
+		ecs::ComponentRegistry &registry,
+		const ecs::Entity::Identifier &identifier)
+	{
+		styleState(registry, identifier);
+		geometry(registry, identifier);
+	}
+
+	void ExtendedFloatingActionButton::update(
+		const ecs::Entity::Identifier &entityIdentifier)
+	{
+		if (!requireComponent<components::ExtendedFloatingActionButton>(
+				entityIdentifier)
+			|| !requireComponent<components::Button>(entityIdentifier)) {
+			return;
+		}
+
+		apply(getComponentRegistry(), entityIdentifier);
+	}
+}	 // namespace guillaume::systems

@@ -128,7 +128,7 @@ namespace guillaume::systems
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + boundComponent.getWidth() / 2.0f,
-			pose.getPosition().y + boundComponent.getHeight() / 2.0f,
+			pose.getPosition().y - boundComponent.getHeight() / 2.0f,
 			pose.getPosition().z);
 
 		const auto ellipseVertices = buildEllipseVertices(
@@ -138,6 +138,12 @@ namespace guillaume::systems
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
 		shape::buildTriangleFanVertices(mesh, center, ellipseVertices, color);
+
+		// A transparent shape adds no geometry: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (mesh.getVertices().empty()) {
+			return;
+		}
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");

@@ -41,6 +41,7 @@
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/entities/style_helpers.hpp>
+#include <guillaume/systems/app_bar.hpp>
 #include <guillaume/systems/layout.hpp>
 #include <guillaume/theme.hpp>
 
@@ -68,9 +69,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto appBar = makeAppBar(registry, AppBar::Variant::Small);
 
-		appBar->initialize();
-		appBar->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(appBar->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 360.0f);
@@ -88,16 +86,19 @@ namespace guillaume::entities::tests
 				utility::graphic::PositionF(100.0f, 50.0f, 0.0f),
 				utility::graphic::OrientationF()));
 
-		appBar->update();
+		// The pose was written behind the facade: run the system as a frame
+		// would.
+		systems::AppBar::apply(registry, appBar->getIdentifier());
 
 		const auto positions = directChildPositions(registry, appBar);
 		ASSERT_EQ(positions.size(), 1u);
 
 		// Paper 4 dp padding on the main axis; the title is the only child
-		// and its bound is unmeasured (0x0) so it is centered in the 64 dp bar.
+		// and its bound is unmeasured (0x0) so it is centered in the 64 dp bar,
+		// 32 dp below the bar's top edge (y points up).
 		EXPECT_FLOAT_EQ(positions[0].getX(),
 						100.0f + AppBar::HorizontalPadding);
-		EXPECT_FLOAT_EQ(positions[0].getY(), 82.0f);
+		EXPECT_FLOAT_EQ(positions[0].getY(), 18.0f);
 		EXPECT_FLOAT_EQ(
 			positions[0].getZ(),
 			static_cast<float>(systems::Layout::ContentLayerOffset));
@@ -107,12 +108,8 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto smallEntity = makeAppBar(registry, AppBar::Variant::Small);
-		smallEntity->initialize();
-		smallEntity->update();
 
 		auto largeEntity = makeAppBar(registry, AppBar::Variant::Large);
-		largeEntity->initialize();
-		largeEntity->update();
 
 		const float smallHeight =
 			registry
@@ -150,12 +147,9 @@ namespace guillaume::entities::tests
 
 		auto appBar = builder.makeAppBar(nullptr, AppBar::Variant::Small);
 		appBar->setTitle("Title");
-		appBar->initialize();
-		appBar->update();
 
 		EXPECT_EQ(appBar->getChildren().size(), 1U);
-		EXPECT_NE(appBar->getChildren()[0]->getIdentifier(),
-				  ecs::Entity::InvalidIdentifier);
+		EXPECT_NE(appBar->getChildren()[0], ecs::Entity::InvalidIdentifier);
 	}
 
 	TEST_F(TestAppBar, BuilderAttachesNavigationAndActions)
@@ -171,13 +165,11 @@ namespace guillaume::entities::tests
 			.addAction("more_vert");
 
 		auto appBar = builder.registerEntity(nullptr);
-		appBar->initialize();
-		appBar->update();
 
 		EXPECT_EQ(appBar->getChildren().size(), 4U);
 
 		for (const auto &child: appBar->getChildren()) {
-			EXPECT_NE(child->getIdentifier(), ecs::Entity::InvalidIdentifier);
+			EXPECT_NE(child, ecs::Entity::InvalidIdentifier);
 		}
 	}
 
@@ -185,9 +177,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto appBar = makeAppBar(registry, AppBar::Variant::Small);
-
-		appBar->initialize();
-		appBar->update();
 
 		const auto &color =
 			registry.getComponent<components::Color>(appBar->getIdentifier());
@@ -230,7 +219,6 @@ namespace guillaume::entities::tests
 			auto appBar =
 				builder.withVariant(variant).withTitle("Title").registerEntity(
 					nullptr);
-			appBar->update();
 
 			EXPECT_FLOAT_EQ(
 				registry
@@ -266,7 +254,6 @@ namespace guillaume::entities::tests
 							  },
 							  "Search")
 						  .registerEntity(nullptr);
-		appBar->update();
 
 		auto action = appBar->getActionButton(0);
 		ASSERT_NE(action, nullptr);

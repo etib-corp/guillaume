@@ -29,39 +29,71 @@
 namespace guillaume::ecs
 {
 	/**
-	 * @brief Parent-capable entity filler that also owns child entities.
-	 * @tparam ComponentTypes The component types that define the entity's
-	 * signature.
+	 * @brief The base class of a widget with children: an EntityFiller that
+	 * is also a ParentEntity.
+	 *
+	 * Like EntityFiller, the constructor sets the signature, creates one
+	 * default component of each listed type and attaches a
+	 * components::Hierarchy. In addition the entity owns child entities
+	 * (EntityRegistry::addEntity) and the systems reach them through it.
+	 *
+	 * @code
+	 * class Row:
+	 * 	public ecs::ParentEntityFiller<components::Transform,
+	 * 								   components::Bound, components::Layout>,
+	 * 	public std::enable_shared_from_this<Row>
+	 * {
+	 * 	public:
+	 * 	using ParentEntityFiller::ParentEntityFiller;
+	 *
+	 * 	void add(std::shared_ptr<ecs::Entity> child)
+	 * 	{
+	 * 		child->setParent(shared_from_this());
+	 * 		addEntity(child);
+	 * 	}
+	 * };
+	 * @endcode
+	 *
+	 * @tparam ComponentTypes The component types the entity starts with.
+	 * @see EntityFiller
+	 * @see ParentEntity
 	 */
 	template<InheritFromComponent... ComponentTypes> class ParentEntityFiller:
 		public ParentEntity
 	{
 		private:
-		ComponentRegistry &_componentRegistry;
+		ComponentRegistry &_componentRegistry;	  ///< Registry storing the
+												  ///< entity's components
 
 		protected:
 		/**
-		 * @brief Get the Component Registry.
-		 * @return Reference to the component registry.
+		 * @brief Get the registry that stores this entity's components.
+		 * @return Reference to the registry given to the constructor.
 		 */
 		ComponentRegistry &getComponentRegistry(void);
 
 		/**
-		 * @brief Get the Component Registry (const).
-		 * @return Const reference to the component registry.
+		 * @brief Get the registry that stores this entity's components,
+		 * read-only.
+		 * @return Const reference to the registry given to the constructor.
 		 */
 		const ComponentRegistry &getComponentRegistry(void) const;
 
 		public:
 		/**
-		 * @brief Construct a new Parent Entity Filler object.
-		 * @param componentRegistry The component registry to register
-		 * components to.
+		 * @brief Create the entity, its listed components and its
+		 * components::Hierarchy. It owns no child yet.
+		 * @param componentRegistry The registry in which the components are
+		 * created, normally the scene's. It must outlive the entity.
+		 * @throws ComponentTypeLimitExceededException When more than
+		 * MaxComponentTypes component types are in use.
 		 */
 		ParentEntityFiller(ComponentRegistry &componentRegistry);
 
 		/**
-		 * @brief Default destructor for the Parent Entity Filler class.
+		 * @brief Destroy the entity object and release the children it
+		 * owns; components stay in the registry (see
+		 * EntityRegistry::removeEntity).
 		 */
 		virtual ~ParentEntityFiller(void) = default;
 	};

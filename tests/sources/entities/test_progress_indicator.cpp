@@ -38,6 +38,8 @@
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/systems/layout.hpp>
+#include <guillaume/components/progress_indicator.hpp>
+#include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -76,9 +78,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
 
-		progress->initialize();
-		progress->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 200.0f);
@@ -91,9 +90,6 @@ namespace guillaume::entities::tests
 		auto progress = makeProgressIndicator(
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.25f);
 
-		progress->initialize();
-		progress->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(progress->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 48.0f);
@@ -104,8 +100,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-
-		progress->update();
 
 		const float baseZ =
 			registry
@@ -148,15 +142,13 @@ namespace guillaume::entities::tests
 		auto progress = makeProgressIndicator(
 			registry, ProgressIndicator::Variant::CircularDeterminate, 0.5f);
 
-		progress->initialize();
-		progress->update();
-
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);
 
 		const auto &arc =
 			registry.getComponent<components::Arc>(fill->getIdentifier());
-		EXPECT_NEAR(arc.getSweepAngle(), 3.14159265358979323846f, 1e-3f);
+		// Clockwise from the top: a negative sweep (y points up).
+		EXPECT_NEAR(arc.getSweepAngle(), -3.14159265358979323846f, 1e-3f);
 	}
 
 	TEST_F(TestProgressIndicator, IndeterminateBuildsAnimatedFill)
@@ -164,9 +156,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(
 			registry, ProgressIndicator::Variant::CircularIndeterminate, 0.0f);
-
-		progress->initialize();
-		progress->update();
 
 		auto fill = findChildWithArc(progress, registry);
 		ASSERT_NE(fill, nullptr);
@@ -212,7 +201,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-		progress->initialize();
 		EXPECT_FLOAT_EQ(progress->getDisplayedValue(), 0.5f);
 
 		progress->setValue(1.0f);
@@ -231,7 +219,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-		progress->initialize();
 
 		const auto &accessibility =
 			registry.getComponent<components::Accessibility>(
@@ -247,7 +234,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto progress = makeProgressIndicator(registry);
-		progress->initialize();
 
 		progress->setVisible(false);
 		registry.getComponent<components::Animation>(progress->getIdentifier())
@@ -259,6 +245,25 @@ namespace guillaume::entities::tests
 		progress->setIndicatorColor(tertiary);
 		EXPECT_EQ(progress->getIndicatorColor(), tertiary);
 		EXPECT_FLOAT_EQ(ProgressIndicator::IndeterminateSegment, 0.6f);
+	}
+
+	TEST_F(TestProgressIndicator, ChangingVariantRemovesThePreviousChildren)
+	{
+		ecs::ComponentRegistry registry;
+		auto progress = makeProgressIndicator(registry);
+		const auto &state =
+			registry.getComponent<components::ProgressIndicator>(
+				progress->getIdentifier());
+		const auto track = state.getTrack();
+		const auto fill	 = state.getFill();
+		ASSERT_TRUE(registry.hasComponent<components::Transform>(track));
+
+		progress->setVariant(ProgressIndicator::Variant::CircularDeterminate);
+
+		EXPECT_FALSE(registry.hasComponent<components::Transform>(track));
+		EXPECT_FALSE(registry.hasComponent<components::Transform>(fill));
+		EXPECT_TRUE(
+			registry.hasComponent<components::Transform>(state.getFill()));
 	}
 
 }	 // namespace guillaume::entities::tests

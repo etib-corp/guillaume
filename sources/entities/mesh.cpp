@@ -37,8 +37,7 @@ namespace guillaume::entities
 
 	std::shared_ptr<Mesh> Mesh::Builder::buildEntity(void)
 	{
-		auto entity =
-			std::make_shared<Mesh>(this->getComponentRegistry(), _meshPath);
+		auto entity = Mesh::create(this->getComponentRegistry(), _meshPath);
 		entity->setMeshPath(_meshPath);
 		entity->setTexturePath(_texturePath);
 		return entity;
@@ -99,6 +98,14 @@ namespace guillaume::entities
 			.getComponent<components::Mesh>(getIdentifier())
 			.setTexturePath(texturePath);
 
+		return *this;
+	}
+
+	Mesh &Mesh::setFitSize(std::optional<float> size)
+	{
+		getComponentRegistry()
+			.getComponent<components::Mesh>(getIdentifier())
+			.setFitSize(size);
 		return *this;
 	}
 

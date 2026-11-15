@@ -27,6 +27,7 @@
 #include <utility>
 
 #include "guillaume/components/hierarchy.hpp"
+#include "guillaume/components/layout_extent.hpp"
 #include "guillaume/ecs/entity.hpp"
 
 namespace guillaume::systems
@@ -79,21 +80,24 @@ namespace guillaume::systems
 
 		const auto &layout = getComponent<components::Layout>(entityIdentifier);
 
-		// The layer comes from the Hierarchy component, so the system needs
-		// no entity object.
-		std::uint32_t layer = 0;
-		if (getComponentRegistry().hasComponent<components::Hierarchy>(
-				entityIdentifier)) {
-			layer = static_cast<std::uint32_t>(
-				getComponent<components::Hierarchy>(entityIdentifier)
-					.getLayer());
-		}
-
 		// Only the container's registered layout children are arranged; any
 		// child the container positions manually (a switch thumb, a slider
 		// fill, ...) is deliberately absent from the list and keeps its pose.
 		apply(getComponentRegistry(), entityIdentifier, layout.getChildren(),
-			  layer);
+			  layerOf(getComponentRegistry(), entityIdentifier));
+	}
+
+	std::uint32_t Layout::layerOf(const ecs::ComponentRegistry &registry,
+								  const ecs::Entity::Identifier &identifier)
+	{
+		// The layer comes from the Hierarchy component, so systems need no
+		// entity object.
+		if (!registry.hasComponent<components::Hierarchy>(identifier)) {
+			return 0;
+		}
+		return static_cast<std::uint32_t>(
+			registry.getComponent<components::Hierarchy>(identifier)
+				.getLayer());
 	}
 
 	const utility::graphic::PoseF Layout::applyLayerToPosition(
@@ -154,9 +158,17 @@ namespace guillaume::systems
 
 			const auto &childBound =
 				registry.getComponent<components::Bound>(childIdentifier);
+			// A child may reserve room beyond what it draws (a checkbox and
+			// its label).
+			const float trailing =
+				registry.hasComponent<components::LayoutExtent>(childIdentifier)
+				? registry
+					  .getComponent<components::LayoutExtent>(childIdentifier)
+					  .getTrailingWidth()
+				: 0.0f;
 			children.push_back(LayoutChild {
 				.identifier = childIdentifier,
-				.width		= childBound.getWidth(),
+				.width		= childBound.getWidth() + trailing,
 				.height		= childBound.getHeight(),
 			});
 		}
@@ -231,10 +243,10 @@ namespace guillaume::systems
 
 			if (horizontal) {
 				childX = originX + cursor;
-				childY = originY + crossPosition;
+				childY = originY - crossPosition;
 			} else {
 				childX = originX + crossPosition;
-				childY = originY + cursor;
+				childY = originY - cursor;
 			}
 
 			auto &childTransform =

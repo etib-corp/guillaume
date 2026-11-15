@@ -44,14 +44,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestExtendedFloatingActionButton, CreatesLabelChild)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<ExtendedFloatingActionButton>(
+		auto fab = ExtendedFloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Edit",
 			ExtendedFloatingActionButton::Variant::Primary,
 			ExtendedFloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-
-		fab->initialize();
-		fab->update();
 
 		EXPECT_NE(fab->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
 		EXPECT_NE(fab->getLabelIdentifier(), ecs::Entity::InvalidIdentifier);
@@ -60,14 +57,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestExtendedFloatingActionButton, SetLabelContentRoundTrip)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<ExtendedFloatingActionButton>(
+		auto fab = ExtendedFloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Edit",
 			ExtendedFloatingActionButton::Variant::Surface,
 			ExtendedFloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-
-		fab->initialize();
-		fab->update();
 
 		fab->setLabelContent("Compose");
 
@@ -97,13 +91,11 @@ namespace guillaume::entities::tests
 	TEST_F(TestExtendedFloatingActionButton, RadiusLabelAndCollapse)
 	{
 		ecs::ComponentRegistry registry;
-		auto fab = std::make_shared<ExtendedFloatingActionButton>(
+		auto fab = ExtendedFloatingActionButton::create(
 			registry, "edit", components::Glyph::Style::Outlined, "Compose",
 			ExtendedFloatingActionButton::Variant::Primary,
 			ExtendedFloatingActionButton::Size::Medium, false, false, "",
 			std::function<void(void)>());
-		fab->initialize();
-		fab->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Borders>(fab->getIdentifier())

@@ -32,135 +32,114 @@
 namespace guillaume::event
 {
 	/**
-	 * @brief Base class providing typed event subscription and last-event
-	 * storage.
+	 * @brief Base class that gives a system the input events of one type,
+	 * one event per frame.
 	 *
-	 * EventManager manages one event subscription and stores the last received
-	 * event for that type. Systems that need to respond to events can inherit
-	 * from EventManager to automatically register a subscriber for a specific
-	 * event type.
-	 *
-	 * @tparam EventType The event type to subscribe to. Must satisfy
-	 * utility::event::InheritFromEvent constraint.
-	 *
-	 * @note This is a header-only template class. No instantiation of
-	 * subscribers occurs until EventManager is instantiated by a derived class.
-	 *
-	 * @see EventSubscriber
-	 * @see EventBus
-	 * @see MouseMotion
-	 * @see MouseButton
-	 * @see HandMotion
-	 * @see HandButton
-	 * @see HandPinch
-	 * @see HandPoke
+	 * The input systems (systems::MouseButton, systems::MouseMotion, the
+	 * hand systems, ...) derive from both ecs::SystemFiller and
+	 * EventManager. The manager subscribes to the bus and queues the events
+	 * as the engine polls them. The system then:
+	 * - calls consumeNextEvent() once in ecs::System::prepare, which moves
+	 *   the oldest queued event into the "last event" slot;
+	 * - reads that event with getLastEvent() in ecs::System::update, for
+	 *   each entity it visits.
 	 *
 	 * @code
-	 * class MySystem : public EventManager<MouseButtonEvent>
+	 * class Clicks:
+	 * 	public ecs::SystemFiller<components::Bound>,
+	 * 	public event::EventManager<utility::event::MouseButtonEvent>
 	 * {
-	 *   public:
-	 *     MySystem(EventBus &eventBus) : EventManager(eventBus) { }
-	 *     void processEvents()
-	 *     {
-	 *         consumeNextEvent<MouseButtonEvent>();
-	 *         auto *lastButtonEvent = getLastEvent<MouseButtonEvent>();
-	 *         if (lastButtonEvent) {
-	 *             // Process the last button event...
-	 *         }
-	 *     }
+	 * 	public:
+	 * 	Clicks(event::EventBus &eventBus)
+	 * 		: ecs::SystemFiller<components::Bound>(ecs::Phase::Event)
+	 * 		, event::EventManager<utility::event::MouseButtonEvent>(
+	 * 			  eventBus)
+	 * 	{
+	 * 	}
+	 *
+	 * 	void prepare(void) override
+	 * 	{
+	 * 		consumeNextEvent();
+	 * 	}
+	 *
+	 * 	void update(const ecs::Entity::Identifier &identifier) override
+	 * 	{
+	 * 		auto event = getLastEvent();
+	 * 		if (!event) {
+	 * 			return;
+	 * 		}
+	 * 		// test the event against the entity
+	 * 	}
 	 * };
 	 * @endcode
+	 *
+	 * Things to watch out for:
+	 * - One call to consumeNextEvent() takes one event. When several events
+	 *   of the type arrive in the same frame, the others wait for the next
+	 *   frames.
+	 * - The last event is kept when the queue is empty: getLastEvent()
+	 *   returns the same event again on the following frames, until a new
+	 *   one arrives.
+	 * - To listen to several event types, derive from several EventManager
+	 *   instantiations.
+	 *
+	 * @tparam EventType The exact event type to receive.
+	 * @see EventSubscriber
+	 * @see EventBus
 	 */
 	template<utility::event::InheritFromEvent EventType> class EventManager
 	{
 		private:
-		EventBus &_eventBus;	///< Reference to the event bus for managing
-								///< event subscriptions and dispatching
+		EventBus &_eventBus;	///< The bus the manager is subscribed to
 
-		std::shared_ptr<EventSubscriber<EventType>> _subscriber;
+		std::shared_ptr<EventSubscriber<EventType>>
+			_subscriber;	///< Queue of the events received and not
+							///< consumed yet
 
 		std::shared_ptr<EventType>
-			_lastEvent;	   ///< Stores the most recent event for the subscribed
-						   ///< type
+			_lastEvent;	   ///< The event taken by the last successful
+						   ///< consumeNextEvent(); nullptr before the first
 
 		protected:
 		/**
-		 * @brief Consume the next pending event of a given type and store it.
+		 * @brief Take the oldest queued event and make it the last event.
 		 *
-		 * This method processes only the next event in the queue for the
-		 * specified type and stores it for retrieval. If no pending events
-		 * exist, the previously stored event remains unchanged.
-		 *
-
-		 * @code
-		 * void update()
-		 * {
-		 *     consumeNextEvent<MouseButtonEvent>();
-		 *     auto *lastButton = getLastEvent();
-		 *     if (lastButton) {
-		 *         // Process button event...
-		 *     }
-		 * }
-		 * @endcode
+		 * When no event is queued, nothing changes: the last event stays the
+		 * one of a previous call. Call it once per frame, in
+		 * ecs::System::prepare.
 		 */
 		void consumeNextEvent(void);
 
 		/**
-		 * @brief Retrieve the most recent event of a given type, if available.
+		 * @brief Get the event taken by the most recent consumeNextEvent()
+		 * that found one.
 		 *
-		 * Returns a pointer to the last event stored for a type, or nullptr if
-		 * no event has been stored yet. Call consumeNextEvent() only after
-		 * using the event content.
-		 *
-		 * @tparam EventType The event type to retrieve.
-		 * @return Pointer to the last stored event, or nullptr if none exists.
-		 *
-		 * @note The returned pointer remains valid until consumeNextEvent is
-		 * called for the same type, or until EventManager is destroyed.
-		 *
-
-		 * @code
-		 * auto *motionEvent = getLastEvent<MouseMotionEvent>();
-		 * if (motionEvent) {
-		 *     float x = motionEvent->getX();
-		 *     float y = motionEvent->getY();
-		 *     consumeNextEvent<MouseMotionEvent>();
-		 * }
-		 * @endcode
+		 * The event is not removed: every call returns the same event until
+		 * consumeNextEvent() replaces it.
+		 * @return The last event, or nullptr when no event was ever
+		 * consumed.
 		 */
 		std::shared_ptr<EventType> getLastEvent(void);
 
 		public:
 		/**
-		 * @brief Construct the EventManager and register subscribers for all
-		 * event types.
-		 *
-		 * The constructor initializes the subscriber tuple and registers each
-		 * subscriber with the provided event bus. This must be called by
-		 * derived classes in their initializer list.
-		 *
-		 * @param eventBus The event bus to subscribe to.
-		 *
-
-		 * @code
-		 * class MySystem : public EventManager<MouseButtonEvent,
-		 * MouseMotionEvent>
-		 * {
-		 *   public:
-		 *     MySystem(EventBus &bus) : EventManager(bus) { }
-		 * };
-		 * @endcode
+		 * @brief Subscribe to a bus; events of type `EventType` published
+		 * after this call are queued.
+		 * @param eventBus The bus to subscribe to, normally the
+		 * application's. It must outlive the manager's use.
 		 */
 		EventManager(EventBus &eventBus);
 
 		/**
-		 * @brief Virtual destructor for proper cleanup of derived classes.
+		 * @brief Virtual destructor.
 		 */
 		virtual ~EventManager(void) = default;
 
 		/**
-		 * @brief Check if there are pending events.
-		 * @return True if there are pending events, false otherwise.
+		 * @brief Tell whether at least one event is queued, waiting for
+		 * consumeNextEvent().
+		 * @return True when the queue is not empty. The last event does not
+		 * count.
 		 */
 		bool hasPendingEvents(void) const;
 	};

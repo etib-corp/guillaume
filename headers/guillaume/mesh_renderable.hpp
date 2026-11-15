@@ -31,23 +31,37 @@
 namespace guillaume
 {
 	/**
-	 * @brief Renderable wrapper that exposes an explicit material name.
+	 * @brief What a render system hands to the engine to draw geometry: a
+	 * list of meshes and the name of the material to draw them with.
 	 *
-	 * Guillaume builds CPU-space meshes (rectangles, images, models) and needs
-	 * to associate each one with a specific material. The utility renderable
-	 * types hardcode their material name, so this local subclass carries the
-	 * requested material name alongside its meshes.
+	 * The render systems (systems::RectangleRender, systems::ImageRender,
+	 * systems::MeshRender, ...) build the meshes of an entity on the CPU
+	 * with the vertices already in world coordinates, wrap them in a
+	 * MeshRenderable, and pass it to `utility::Engine::createObject` or
+	 * `updateObject`. The material name tells the engine how to shade them:
+	 * `"mesh_material"` for flat colored shapes, `"image_<path>"` for a
+	 * textured one.
+	 *
+	 * The renderable types of the `utility` library each have a fixed
+	 * material name; this class exists to choose it per object.
+	 *
+	 * @note Because the vertices are in world coordinates, the pose of the
+	 * renderable is the identity. Its color is left default-constructed.
+	 * @see TextRenderable
 	 */
 	class MeshRenderable: public utility::graphic::Renderable
 	{
 		private:
-		std::string _materialName;	  ///< Material name used to render the mesh
+		std::string _materialName;	  ///< Name of the material the engine
+									  ///< draws the meshes with
 
 		public:
 		/**
-		 * @brief Construct a mesh renderable with a material name.
-		 * @param meshes The meshes to render.
-		 * @param materialName The name of the material to use.
+		 * @brief Create a renderable from meshes and a material name.
+		 * @param meshes The meshes to draw, with vertices in world
+		 * coordinates. Each one is copied into the renderable.
+		 * @param materialName The name of the material the engine should
+		 * use, for instance `"mesh_material"`.
 		 */
 		MeshRenderable(std::vector<utility::graphic::Mesh> meshes,
 					   std::string materialName);
@@ -58,15 +72,16 @@ namespace guillaume
 		~MeshRenderable(void) override = default;
 
 		/**
-		 * @brief Get the type of this renderable object.
-		 * @return RenderableType::Mesh.
+		 * @brief Tell the engine which kind of renderable this is.
+		 * @return Always `RenderableType::Mesh`.
 		 */
 		utility::graphic::Renderable::RenderableType
 			getRenderableType(void) const override;
 
 		/**
-		 * @brief Get the material name used to render the mesh.
-		 * @return The configured material name.
+		 * @brief Get the name of the material the engine draws the meshes
+		 * with.
+		 * @return The name given to the constructor.
 		 */
 		std::string getMaterialName(void) const override;
 	};

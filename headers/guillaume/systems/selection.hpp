@@ -34,14 +34,26 @@ namespace guillaume::systems
 {
 
 	/**
-	 * @brief System enforcing mutually exclusive selection within a group.
+	 * @brief Keeps at most one child selected in each selection group.
 	 *
-	 * Walks the children of every `components::SelectionGroup` and makes sure
-	 * at most one `components::Selectable` child is selected, keeping the group
-	 * selection identifier in sync.
+	 * Runs in the Event phase on entities that have a
+	 * components::SelectionGroup, a Transform and a Bound. The members of a
+	 * group are its direct children in the tree, read from
+	 * components::Hierarchy (a group without one is skipped); only the
+	 * children with a components::Selectable take part. The system writes
+	 * the `selected` flag of those children and the selected identifier of
+	 * the group.
+	 *
+	 * The rules are in the static functions, so a widget system can apply
+	 * them at once instead of waiting for the frame:
+	 * @code
+	 * // Select `second` among the children of `group`.
+	 * systems::Selection::select(registry, group, children, second);
+	 * @endcode
 	 *
 	 * @see components::Selectable
 	 * @see components::SelectionGroup
+	 * @see systems::RadioGroup
 	 */
 	class Selection:
 		public ecs::SystemFiller<components::SelectionGroup,
@@ -49,7 +61,7 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct a selection system running in the Event phase.
+		 * @brief Create the system, in the Event phase.
 		 */
 		Selection(void);
 
@@ -59,24 +71,39 @@ namespace guillaume::systems
 		~Selection(void) override = default;
 
 		/**
-		 * @brief Update the selection of one group entity.
-		 * @param entityIdentifier The group entity identifier.
+		 * @brief Reconcile one group with the children listed in its
+		 * components::Hierarchy.
+		 * @param entityIdentifier The entity holding the
+		 * components::SelectionGroup.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 
 		/**
-		 * @brief Reconcile the selection of a group with its children.
+		 * @brief Make a group and its children agree on which child is
+		 * selected.
 		 *
-		 * Keeps the first selected child, deselects the other selected
-		 * children, and updates the group identifier to match. When no child is
-		 * selected, either the previous selection is restored (when the child
-		 * is still part of the group) or, if empty selection is not allowed,
-		 * the first selectable child is selected.
+		 * - When one or more children are selected, the first one in
+		 *   `childIdentifiers` wins: the others are deselected and the group
+		 *   records the winner.
+		 * - When none is selected, the child the group last recorded is
+		 *   selected again if it still has a components::Selectable (it is
+		 *   not checked against `childIdentifiers`).
+		 * - Otherwise, a group that does not allow an empty selection
+		 *   selects its first selectable child; a group that allows it has
+		 *   its selection cleared.
 		 *
-		 * @param registry The component registry holding the entities.
-		 * @param groupIdentifier The group entity identifier.
-		 * @param childIdentifiers The group children, in order.
-		 * @return The selected child identifier, or InvalidIdentifier.
+		 * Because of the second rule, deselecting the selected child does
+		 * not empty the group: the child is selected again on the next
+		 * call. To empty a group, call
+		 * components::SelectionGroup::clearSelection as well.
+		 *
+		 * @param registry The registry holding the components.
+		 * @param groupIdentifier The entity holding the
+		 * components::SelectionGroup.
+		 * @param childIdentifiers The children of the group, in order.
+		 * Those without a components::Selectable are ignored.
+		 * @return The selected child, or `ecs::Entity::InvalidIdentifier`
+		 * when the group ends up with no selection.
 		 */
 		static ecs::Entity::Identifier reconcile(
 			ecs::ComponentRegistry &registry,
@@ -84,18 +111,24 @@ namespace guillaume::systems
 			const std::vector<ecs::Entity::Identifier> &childIdentifiers);
 
 		/**
-		 * @brief Select one child of a group and reconcile the group.
+		 * @brief Select one child of a group, at once.
 		 *
-		 * Marks `selectedIdentifier` as selected, deselects the other
-		 * selectable children, then reconciles the group so its selection
-		 * identifier and the children stay consistent.
+		 * Selects `selectedIdentifier`, deselects every other selectable
+		 * child, then calls reconcile() so the group records the result.
+		 * systems::NavigationBar and systems::NavigationDrawer use it to
+		 * change the active destination.
 		 *
-		 * @param registry The component registry holding the entities.
-		 * @param groupIdentifier The group entity identifier.
-		 * @param childIdentifiers The group children, in order.
-		 * @param selectedIdentifier The child to select, or InvalidIdentifier
-		 * to clear the selection.
-		 * @return The resulting selected child identifier.
+		 * @param registry The registry holding the components.
+		 * @param groupIdentifier The entity holding the
+		 * components::SelectionGroup.
+		 * @param childIdentifiers The children of the group, in order.
+		 * @param selectedIdentifier The child to select. With
+		 * `ecs::Entity::InvalidIdentifier`, or an identifier that is not a
+		 * selectable child, every child is deselected and reconcile() then
+		 * applies its "none selected" rules, which select the previously
+		 * recorded child again when it still exists.
+		 * @return The child selected after reconciliation, or
+		 * `ecs::Entity::InvalidIdentifier` when there is none.
 		 */
 		static ecs::Entity::Identifier
 			select(ecs::ComponentRegistry &registry,

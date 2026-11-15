@@ -32,21 +32,44 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component representing a glyph element.
+	 * @brief An icon: one glyph of the Material Symbols font, chosen by
+	 * name, at a given size.
+	 *
+	 * entities::Icon writes it, and the widget systems resize the icons of
+	 * their widgets. systems::MeasureGlyph (Measure phase) looks the name
+	 * up in the font's code point table and writes the size of the glyph
+	 * into the entity's components::Bound; systems::GlyphRender (Render
+	 * phase) draws it at the entity's components::Transform in the
+	 * entity's components::Color.
+	 *
+	 * @code
+	 * registry.getComponent<components::Glyph>(id)
+	 * 	.setName("settings")
+	 * 	.setFontSize(24.0f);
+	 * @endcode
+	 *
+	 * @note The name is what selects the drawn glyph. A name missing from
+	 * the table is drawn as `?`.
+	 * @note The systems of the library always draw with the Outlined
+	 * font: the style is stored (and is part of the measure cache key)
+	 * but does not change the drawing, and the code is not read to choose
+	 * the glyph.
+	 *
+	 * @see systems::MeasureGlyph, systems::GlyphRender, entities::Icon
 	 */
 	class Glyph: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Style of the glyph, which can be Outlined, Rounded, or Sharp.
+		 * @brief Family of the Material Symbols font the icon belongs to.
 		 */
 		enum class Style { Outlined, Rounded, Sharp };
 
 		private:
-		uint32_t _code {};		 ///< Glyph code (e.g., Unicode code point)
-		std::string _name {};	 ///< Glyph name (for font lookup)
-		float _fontSize {};		 ///< Font size of the glyph
-		Style _style {};		 ///< Style of the glyph
+		uint32_t _code {};		 ///< Unicode code point; informative
+		std::string _name {};	 ///< Material Symbols name, e.g. "home"
+		float _fontSize {};		 ///< Font size, in dp
+		Style _style {};		 ///< Font family of the icon
 
 		public:
 		/**
@@ -60,54 +83,70 @@ namespace guillaume::components
 		~Glyph(void) = default;
 
 		/**
-		 * @brief Get the glyph code.
-		 * @return The glyph code.
+		 * @brief Get the stored code point.
+		 * @return The Unicode code point given to setCode(); 0 by default.
 		 */
 		uint32_t getCode(void) const;
 
 		/**
-		 * @brief Set the glyph code.
-		 * @param code The new glyph code.
-		 * @return The Glyph component for chaining.
+		 * @brief Store a code point for the glyph.
+		 *
+		 * The render systems resolve the glyph from its name, not from
+		 * this value. Marks the component changed only when the value
+		 * differs.
+		 *
+		 * @param code The Unicode code point.
+		 * @return This component, for chaining.
 		 */
 		Glyph &setCode(uint32_t code);
 
 		/**
-		 * @brief Get the glyph name.
-		 * @return The glyph name.
+		 * @brief Get the name of the icon.
+		 * @return The Material Symbols name; empty by default.
 		 */
 		const std::string &getName(void) const;
 
 		/**
-		 * @brief Set the glyph name.
-		 * @param name The new glyph name.
-		 * @return The Glyph component for chaining.
+		 * @brief Choose the icon by name.
+		 *
+		 * Marks the component changed only when the name differs.
+		 *
+		 * @param name The Material Symbols name, such as `"home"` or
+		 * `"arrow_back"`.
+		 * @return This component, for chaining.
 		 */
 		Glyph &setName(const std::string &name);
 
 		/**
-		 * @brief Get the font size of the glyph.
-		 * @return The font size.
+		 * @brief Get the size of the icon.
+		 * @return The font size, in dp; 0 by default.
 		 */
 		const float &getFontSize(void) const;
 
 		/**
-		 * @brief Set the font size of the glyph.
-		 * @param fontSize The new font size.
-		 * @return The Glyph component for chaining.
+		 * @brief Set the size of the icon.
+		 *
+		 * Marks the component changed only when the size differs.
+		 *
+		 * @param fontSize The font size, in dp (24 for a standard icon).
+		 * @return This component, for chaining.
 		 */
 		Glyph &setFontSize(const float &fontSize);
 
 		/**
-		 * @brief Get the style of the glyph.
-		 * @return The glyph style.
+		 * @brief Get the font family of the icon.
+		 * @return The style (Outlined by default).
 		 */
 		const Style &getStyle(void) const;
 
 		/**
-		 * @brief Set the style of the glyph.
-		 * @param style The new glyph style.
-		 * @return The Glyph component for chaining.
+		 * @brief Set the font family of the icon.
+		 *
+		 * Marks the component changed only when the style differs.
+		 *
+		 * @param style The style; see the class note on what the systems
+		 * do with it.
+		 * @return This component, for chaining.
 		 */
 		Glyph &setStyle(const Style &style);
 	};

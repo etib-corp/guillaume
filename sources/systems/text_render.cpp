@@ -23,6 +23,8 @@
 #include <memory>
 
 #include "guillaume/systems/text_render.hpp"
+
+#include "guillaume/systems/shape_mesh.hpp"
 #include "guillaume/text_renderable.hpp"
 #include "guillaume/theme/typescale.hpp"
 
@@ -70,6 +72,12 @@ namespace guillaume::systems
 			getComponent<components::Text>(entityIdentifier);
 		const auto &colorComponent =
 			getComponent<components::Color>(entityIdentifier);
+
+		// A fully transparent color is how widgets hide a child; the text
+		// shader ignores vertex alpha, so submit nothing instead.
+		if (shape::isInvisible(colorComponent.getColor())) {
+			return;
+		}
 
 		getLogger().debug()
 			<< "Rendering text for entity " << entityIdentifier

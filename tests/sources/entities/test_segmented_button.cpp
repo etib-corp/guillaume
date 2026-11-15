@@ -49,13 +49,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, CreatesSegments)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "Day", "Week", "Month" },
 			SegmentedButton::SelectionMode::Single,
 			std::function<void(std::size_t)>());
-
-		segmented->initialize();
-		segmented->update();
 
 		EXPECT_EQ(segmented->getSegmentCount(), 3);
 	}
@@ -63,13 +60,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, SegmentsAreLaidOutSideBySide)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "A", "B", "C" },
 			SegmentedButton::SelectionMode::Single,
 			std::function<void(std::size_t)>());
-
-		segmented->initialize();
-		segmented->update();
 
 		const auto firstX = registry
 								.getComponent<components::Transform>(
@@ -97,13 +91,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, ConnectedCornersAppliedToOuterSegments)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "A", "B", "C" },
 			SegmentedButton::SelectionMode::Single,
 			std::function<void(std::size_t)>());
-
-		segmented->initialize();
-		segmented->update();
 
 		const auto &firstBorders = registry.getComponent<components::Borders>(
 			segmented->getSegmentIdentifier(0));
@@ -131,13 +122,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, LayoutAppliedToSegmentedBound)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "A", "B", "C" },
 			SegmentedButton::SelectionMode::Single,
 			std::function<void(std::size_t)>());
-
-		segmented->initialize();
-		segmented->update();
 
 		const auto &bound = registry.getComponent<components::Bound>(
 			segmented->getIdentifier());
@@ -149,13 +137,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, SingleSelectionExclusive)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "Day", "Week", "Month" },
 			SegmentedButton::SelectionMode::Single,
 			std::function<void(std::size_t)>());
-
-		segmented->initialize();
-		segmented->update();
 
 		segmented->select(0);
 		EXPECT_TRUE(segmented->isSelected(0));
@@ -169,13 +154,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, MultiSelectionAllowsMultiple)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "A", "B", "C" },
 			SegmentedButton::SelectionMode::Multi,
 			std::function<void(std::size_t)>());
-
-		segmented->initialize();
-		segmented->update();
 
 		segmented->select(0);
 		segmented->select(2);
@@ -191,13 +173,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, DeselectClearsSelection)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "A", "B" },
 			SegmentedButton::SelectionMode::Multi,
 			std::function<void(std::size_t)>());
-
-		segmented->initialize();
-		segmented->update();
 
 		segmented->select(0);
 		EXPECT_TRUE(segmented->isSelected(0));
@@ -226,12 +205,10 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, SingleSelectCommitsAndShowsCheck)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
+		auto segmented = SegmentedButton::create(
 			registry, std::vector<std::string> { "Day", "Week" },
 			SegmentedButton::SelectionMode::Single,
 			std::function<void(std::size_t)>());
-		segmented->initialize();
-		segmented->update();
 
 		const auto first = segmented->getSegmentIdentifier(0);
 		registry.getComponent<components::MouseButtonInteraction>(first)
@@ -260,17 +237,14 @@ namespace guillaume::entities::tests
 	TEST_F(TestSegmentedButton, SegmentsHaveEqualWidthAndPerSegmentOptions)
 	{
 		ecs::ComponentRegistry registry;
-		auto segmented = std::make_shared<SegmentedButton>(
-			registry,
-			std::vector<SegmentedButton::Segment> {
-				{ "A", "sunny", false, "Sunny" },
-				{ "Longer label", "", true, "" },
-			},
-			SegmentedButton::SelectionMode::Multi,
-			std::function<void(std::size_t)>());
-		segmented->initialize();
-		segmented->update();
-		segmented->update();
+		auto segmented =
+			SegmentedButton::create(registry,
+									std::vector<SegmentedButton::Segment> {
+										{ "A", "sunny", false, "Sunny" },
+										{ "Longer label", "", true, "" },
+									},
+									SegmentedButton::SelectionMode::Multi,
+									std::function<void(std::size_t)>());
 
 		const auto first  = segmented->getSegmentIdentifier(0);
 		const auto second = segmented->getSegmentIdentifier(1);

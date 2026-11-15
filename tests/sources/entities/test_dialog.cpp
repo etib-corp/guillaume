@@ -72,9 +72,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry, Dialog::Variant::Alert);
 
-		dialog->initialize();
-		dialog->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(dialog->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 320.0f);
@@ -90,9 +87,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry, Dialog::Variant::FullScreen);
 
-		dialog->initialize();
-		dialog->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(dialog->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getHeight(), 640.0f);
@@ -107,9 +101,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry, Dialog::Variant::Alert);
 
-		dialog->initialize();
-		dialog->update();
-
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(dialog->getIdentifier());
 		EXPECT_TRUE(overlay.isModal());
@@ -122,9 +113,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry, Dialog::Variant::FullScreen);
 
-		dialog->initialize();
-		dialog->update();
-
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(dialog->getIdentifier());
 		EXPECT_FALSE(overlay.dismissesOnOutsideClick());
@@ -134,8 +122,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry, Dialog::Variant::Alert);
-
-		dialog->initialize();
 
 		EXPECT_FALSE(dialog->isVisible());
 		dialog->show();
@@ -184,8 +170,6 @@ namespace guillaume::entities::tests
 										 ++confirmed;
 									 })
 						  .registerEntity(nullptr);
-		dialog->initialize();
-		dialog->update();
 
 		ASSERT_EQ(dialog->getActionCount(), 2U);
 		const auto &row = registry.getComponent<components::Layout>(
@@ -208,8 +192,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry, Dialog::Variant::Confirmation);
-		dialog->initialize();
-		dialog->update();
 
 		ASSERT_NE(dialog->getIconIdentifier(), ecs::Entity::InvalidIdentifier);
 		EXPECT_EQ(
@@ -227,7 +209,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry);
-		dialog->initialize();
 
 		const auto backdrop = dialog->getBackdropIdentifier();
 		ASSERT_NE(backdrop, ecs::Entity::InvalidIdentifier);
@@ -250,7 +231,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto dialog = makeDialog(registry);
-		dialog->initialize();
 
 		bool dismissed = false;
 		dialog->setOnDismiss([&dismissed]() {

@@ -23,9 +23,21 @@
 #include "guillaume/systems/core_systems.hpp"
 
 #include "guillaume/systems/animation.hpp"
+#include "guillaume/systems/app_bar.hpp"
 #include "guillaume/systems/arc_render.hpp"
 #include "guillaume/systems/backdrop.hpp"
+#include "guillaume/systems/badge.hpp"
+#include "guillaume/systems/button.hpp"
+#include "guillaume/systems/card.hpp"
+#include "guillaume/systems/checkbox.hpp"
+#include "guillaume/systems/chip.hpp"
+#include "guillaume/systems/common_button.hpp"
+#include "guillaume/systems/extended_floating_action_button.hpp"
+#include "guillaume/systems/floating_action_button.hpp"
+#include "guillaume/systems/floating_action_button_menu.hpp"
+#include "guillaume/systems/icon_button.hpp"
 #include "guillaume/systems/clip.hpp"
+#include "guillaume/systems/dialog.hpp"
 #include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/drag.hpp"
 #include "guillaume/systems/elevation_render.hpp"
@@ -45,23 +57,38 @@
 #include "guillaume/systems/keyboard_control.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/systems/line_render.hpp"
+#include "guillaume/systems/list.hpp"
+#include "guillaume/systems/loading_indicator.hpp"
 #include "guillaume/systems/measure_glyph.hpp"
 #include "guillaume/systems/measure_mesh.hpp"
 #include "guillaume/systems/measure_text.hpp"
+#include "guillaume/systems/menu.hpp"
 #include "guillaume/systems/mesh_render.hpp"
 #include "guillaume/systems/mouse_button.hpp"
 #include "guillaume/systems/mouse_motion.hpp"
+#include "guillaume/systems/navigation_bar.hpp"
+#include "guillaume/systems/navigation_bar_destination.hpp"
+#include "guillaume/systems/navigation_drawer.hpp"
+#include "guillaume/systems/navigation_drawer_destination.hpp"
 #include "guillaume/systems/overlay.hpp"
+#include "guillaume/systems/progress_indicator.hpp"
 #include "guillaume/systems/rectangle_render.hpp"
 #include "guillaume/systems/ring_render.hpp"
 #include "guillaume/systems/scrim_render.hpp"
 #include "guillaume/systems/scroll.hpp"
+#include "guillaume/systems/search.hpp"
+#include "guillaume/systems/segmented_button.hpp"
 #include "guillaume/systems/selection.hpp"
+#include "guillaume/systems/radio_button.hpp"
+#include "guillaume/systems/radio_group.hpp"
+#include "guillaume/systems/snackbar.hpp"
 #include "guillaume/systems/style_state.hpp"
 #include "guillaume/systems/surface_tone.hpp"
+#include "guillaume/systems/switch.hpp"
 #include "guillaume/systems/text_field.hpp"
 #include "guillaume/systems/text_input.hpp"
 #include "guillaume/systems/text_render.hpp"
+#include "guillaume/systems/tooltip.hpp"
 #include "guillaume/systems/typography.hpp"
 
 namespace guillaume::systems
@@ -134,18 +161,64 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(std::make_unique<systems::Divider>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Backdrop>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
+		// Widget systems place children the Layout system does not arrange,
+		// from the bounds it has just resolved: keep them after it.
+		systemRegistry.registerNewSystem(std::make_unique<systems::Checkbox>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::RadioButton>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Switch>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::CommonButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::IconButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::FloatingActionButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::ExtendedFloatingActionButton>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Badge>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Chip>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::LoadingIndicator>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::ProgressIndicator>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Tooltip>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Snackbar>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::AppBar>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Card>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::RadioGroup>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::SegmentedButton>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::FloatingActionButtonMenu>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Dialog>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Menu>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::List>());
+		systemRegistry.registerNewSystem(std::make_unique<systems::Search>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::TextField>());
+		// A destination is styled before the bar or drawer that owns it.
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationBarDestination>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationBar>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationDrawerDestination>());
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::NavigationDrawer>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::StyleState>());
+		// Keeps a button's icon glyph and accessibility state in step with
+		// components::Button when the component is written directly.
+		systemRegistry.registerNewSystem(std::make_unique<systems::Button>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Overlay>(eventBus, engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::FocusRingRender>(engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Animation>(engine));
-		systemRegistry.registerNewSystem(
-			std::make_unique<systems::TextField>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::MeasureMesh>(ressourceProvider, engine));
 		systemRegistry.registerNewSystem(

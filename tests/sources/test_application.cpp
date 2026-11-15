@@ -210,9 +210,11 @@ namespace guillaume::tests
 
 		const auto anchor =
 			view.centerRay().origin() + view.centerRay().direction() * 300.0f;
-		// A single 100px-wide entity must sit with its left edge half a width
-		// behind the anchor, not centred on it.
-		const auto expected = anchor + view.getRight() * (-50.0f);
+		// A single 100x50 entity must sit with its left edge half a width
+		// behind the anchor and its top edge half a height above it, so it is
+		// centred on the anchor (its position is its top-left corner).
+		const auto expected =
+			anchor + view.getRight() * (-50.0f) + view.getUp() * 25.0f;
 
 		EXPECT_NEAR(pose.getPosition()[0], expected[0], 1e-3f);
 		EXPECT_NEAR(pose.getPosition()[1], expected[1], 1e-3f);
@@ -246,7 +248,9 @@ namespace guillaume::tests
 		const utility::graphic::ViewF view;
 		const auto anchor =
 			view.centerRay().origin() + view.centerRay().direction() * 300.0f;
-		const auto expected = anchor + view.getRight() * (-50.0f);
+		// Top-left corner of the 100x50 entity centred on the anchor.
+		const auto expected =
+			anchor + view.getRight() * (-50.0f) + view.getUp() * 25.0f;
 
 		// The entity built in onEnter must have been placed, not left at the
 		// default origin.

@@ -47,6 +47,8 @@
 #include <guillaume/components/overlay.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/components/hierarchy.hpp>
+#include <guillaume/components/menu.hpp>
 
 namespace guillaume::entities::tests
 {
@@ -84,9 +86,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
 
-		menu->initialize();
-		menu->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(menu->getIdentifier());
 		EXPECT_GE(bound.getWidth(), Menu::MinWidth);
@@ -110,9 +109,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
 
-		menu->initialize();
-		menu->update();
-
 		const auto first  = menu->getItemIdentifier(0);
 		const auto second = menu->getItemIdentifier(1);
 
@@ -127,9 +123,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
 
-		menu->initialize();
-		menu->update();
-
 		const auto &overlay =
 			registry.getComponent<components::Overlay>(menu->getIdentifier());
 		EXPECT_FALSE(overlay.isModal());
@@ -141,8 +134,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(2));
-
-		menu->initialize();
 
 		EXPECT_FALSE(menu->isOpen());
 		menu->open();
@@ -191,8 +182,8 @@ namespace guillaume::entities::tests
 		};
 		items[1].disabled = true;
 		auto menu		  = makeMenu(registry, items);
-		menu->initialize();
-		menu->update();
+		// A closed menu ignores presses.
+		menu->show();
 
 		registry
 			.getComponent<components::MouseButtonInteraction>(
@@ -234,8 +225,6 @@ namespace guillaume::entities::tests
 		auto items	   = makeItems(2);
 		items[1].dense = true;
 		auto menu	   = makeMenu(registry, items);
-		menu->initialize();
-		menu->update();
 
 		EXPECT_FLOAT_EQ(
 			registry.getComponent<components::Bound>(menu->getItemIdentifier(0))
@@ -263,9 +252,7 @@ namespace guillaume::entities::tests
 			.setHeight(40.0f);
 
 		auto menu = makeMenu(registry, makeItems(1));
-		menu->initialize();
 		menu->setAnchor(anchor.getIdentifier());
-		menu->update();
 
 		auto y = [&]() {
 			return registry
@@ -274,10 +261,12 @@ namespace guillaume::entities::tests
 				.getPosition()
 				.getY();
 		};
-		EXPECT_GT(y(), 140.0f);
+		// Below the anchor: under its bottom edge (100 - 40), y points up.
+		EXPECT_LT(y(), 60.0f);
 
+		// Above the anchor: the menu's top is above the anchor's top.
 		menu->setAnchorPosition(Menu::AnchorPosition::Top);
-		EXPECT_LT(y(), 100.0f);
+		EXPECT_GT(y(), 100.0f);
 		EXPECT_EQ(menu->getAnchor(), anchor.getIdentifier());
 	}
 
@@ -285,10 +274,13 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(1));
-		menu->initialize();
-
 		const auto &elevation =
 			registry.getComponent<components::Elevation>(menu->getIdentifier());
+
+		// A closed menu casts no shadow.
+		EXPECT_FALSE(elevation.hasShadow());
+
+		menu->show();
 		EXPECT_EQ(elevation.getElevationLevel(), theme::ElevationLevel::Level2);
 		EXPECT_TRUE(elevation.hasShadow());
 
@@ -300,7 +292,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto menu = makeMenu(registry, makeItems(1));
-		menu->initialize();
 
 		bool dismissed = false;
 		menu->setOnDismiss([&dismissed]() {
@@ -311,6 +302,71 @@ namespace guillaume::entities::tests
 
 		EXPECT_TRUE(dismissed);
 		EXPECT_FALSE(menu->isVisible());
+	}
+
+	TEST_F(TestMenu, ReplacingItemsRemovesThePreviousRows)
+	{
+		ecs::ComponentRegistry registry;
+		auto menu = makeMenu(registry, makeItems(3));
+		const auto previous =
+			registry.getComponent<components::Menu>(menu->getIdentifier())
+				.getRows();
+		ASSERT_EQ(previous.size(), 3U);
+
+		menu->setItems(makeItems(2));
+
+		for (const auto &row: previous) {
+			EXPECT_FALSE(
+				registry.hasComponent<components::Transform>(row.view));
+			EXPECT_FALSE(
+				registry.hasComponent<components::Hierarchy>(row.view));
+			for (const auto content: row.content) {
+				EXPECT_FALSE(
+					registry.hasComponent<components::Transform>(content));
+			}
+		}
+		// Each row owns a container, an icon and a label.
+		EXPECT_EQ(menu->getEntities().size(), 6U);
+		EXPECT_EQ(
+			registry.getComponent<components::Hierarchy>(menu->getIdentifier())
+				.getChildIdentifiers()
+				.size(),
+			2U);
+	}
+
+	TEST_F(TestMenu, AClosedMenuDrawsNothingAndIgnoresPresses)
+	{
+		ecs::ComponentRegistry registry;
+		int presses		 = 0;
+		auto items		 = makeItems(1);
+		items[0].onPress = [&presses]() {
+			++presses;
+		};
+		auto menu = makeMenu(registry, items);
+
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(menu->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
+		EXPECT_EQ(
+			registry.getComponent<components::Color>(menu->getItemIdentifier(0))
+				.getColor()
+				.getAlpha(),
+			0);
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				menu->getItemIdentifier(0))
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(presses, 0);
+
+		menu->show();
+		EXPECT_GT(
+			registry.getComponent<components::Color>(menu->getIdentifier())
+				.getColor()
+				.getAlpha(),
+			0);
 	}
 
 }	 // namespace guillaume::entities::tests

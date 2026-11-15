@@ -29,21 +29,33 @@ namespace guillaume::systems
 {
 
 	/**
-	 * @brief Derive `components::StyleState` from the interaction components.
+	 * @brief Summarizes the input state of an entity into its
+	 * components::StyleState, the one component widget systems read to
+	 * choose a look.
 	 *
-	 * Every frame, the hover flag mirrors `MouseHoverInteraction` /
-	 * `HandHoverInteraction`, the press flag mirrors the primary mouse button,
-	 * hand button A, pinch and poke, and the drag flag mirrors
-	 * `DragInteraction`. The focus flag is owned by `systems::Focus`. A
-	 * disabled state keeps every transient flag cleared.
+	 * Runs in the Event phase on entities with a components::StyleState.
+	 * Each frame it writes three flags, from the interaction components the
+	 * entity happens to have:
+	 * - hovered: MouseHoverInteraction or HandHoverInteraction is hovered;
+	 * - pressed: the left mouse button or hand button A is pressed, or a
+	 *   pinch or a poke is in progress;
+	 * - dragged: DragInteraction is dragging.
+	 *
+	 * The focused flag is written by systems::Focus, and the enabled flag
+	 * by the widget. components::StyleState refuses to raise a flag while
+	 * it is disabled, so a disabled entity never looks hovered or pressed.
+	 *
+	 * It is registered after the input systems it mirrors, so the flags
+	 * describe the current frame.
 	 *
 	 * @see components::StyleState
+	 * @see systems::interaction::stateLayerColor
 	 */
 	class StyleState: public ecs::SystemFiller<components::StyleState>
 	{
 		public:
 		/**
-		 * @brief Construct the style-state system in the event phase.
+		 * @brief Create the system, in the Event phase.
 		 */
 		StyleState(void);
 
@@ -53,18 +65,20 @@ namespace guillaume::systems
 		~StyleState(void) override = default;
 
 		/**
-		 * @brief Nothing to prepare.
+		 * @brief Does nothing: the system keeps no per-frame state.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Nothing to clean up.
+		 * @brief Does nothing: the system keeps no per-frame state.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Refresh the transient flags of one entity.
-		 * @param entityIdentifier Entity identifier.
+		 * @brief Recompute the hovered, pressed and dragged flags of one
+		 * entity.
+		 * @param entityIdentifier The entity holding the
+		 * components::StyleState.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

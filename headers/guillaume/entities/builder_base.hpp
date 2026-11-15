@@ -32,23 +32,40 @@ namespace guillaume::entities
 {
 
 	/**
-	 * @brief Reusable base for entity builders.
+	 * @brief Base of every widget `Builder`: turns a configuration into a
+	 * widget that is attached to a parent and owned by an entity registry.
 	 *
-	 * `EntityBuilderBase` implements the shared `registerEntity` logic once:
-	 * build the entity through the `buildEntity` hook, attach the parent,
-	 * register it, reset the builder, and return it. Concrete builders only
-	 * declare their configuration fields and implement `buildEntity`.
+	 * A concrete builder (Button::Builder, Checkbox::Builder, ...) stores
+	 * the configuration in its fields, exposes `with...()` setters and
+	 * `make...()` shortcuts, and implements two hooks: buildEntity(), which
+	 * creates the widget from the fields, and `reset()`, which restores the
+	 * default configuration. registerEntity() does the rest.
 	 *
-	 * @tparam EntityType The concrete entity type produced by the builder.
+	 * @code
+	 * Surface::Builder builder(getComponentRegistry(), getEntityRegistry());
+	 * auto surface = builder.withElevation(theme::ElevationLevel::Level2)
+	 * 	.registerEntity(nullptr);
+	 * @endcode
+	 *
+	 * One builder can create several widgets in a row: it is back to its
+	 * defaults after each registerEntity(), so nothing leaks from one widget
+	 * to the next.
+	 *
+	 * @tparam EntityType The widget class the builder creates.
+	 *
+	 * @see ecs::EntityBuilder, ecs::EntityRegistry
 	 */
 	template<typename EntityType> class EntityBuilderBase:
 		public ecs::EntityBuilder
 	{
 		public:
 		/**
-		 * @brief Construct a builder.
-		 * @param componentRegistry The component registry.
-		 * @param entityRegistry The entity registry.
+		 * @brief Construct a builder bound to two registries.
+		 * @param componentRegistry The registry that stores the components
+		 * of the widgets built.
+		 * @param entityRegistry The registry that owns the widgets built: a
+		 * scene's registry for a top-level widget, or a parent widget for
+		 * its own children.
 		 */
 		EntityBuilderBase(ecs::ComponentRegistry &componentRegistry,
 						  ecs::EntityRegistry &entityRegistry);
@@ -59,21 +76,29 @@ namespace guillaume::entities
 		~EntityBuilderBase(void) override = default;
 
 		/**
-		 * @brief Build and register the entity, then reset the builder.
-		 * @param parent The parent entity to attach the new entity to.
-		 * @return The newly created entity.
+		 * @brief Build the widget, attach it to its parent, hand it to the
+		 * entity registry, then reset the builder to its defaults.
+		 *
+		 * The `make...()` methods of the concrete builders end with this
+		 * call.
+		 * @param parent The entity the widget becomes a child of, or nullptr
+		 * for a widget without parent.
+		 * @return The registered widget, or nullptr when buildEntity()
+		 * returned nullptr (nothing is registered then, but the builder is
+		 * still reset).
 		 */
 		std::shared_ptr<EntityType>
 			registerEntity(std::shared_ptr<ecs::Entity> parent);
 
 		protected:
 		/**
-		 * @brief Build the entity from the current configuration.
+		 * @brief Create the widget from the current configuration.
 		 *
-		 * Implemented by concrete builders. Must not attach the parent or
-		 * register the entity; `registerEntity` handles both.
+		 * Implemented by each concrete builder, usually as a call to the
+		 * widget's static `create()`. It must not attach the parent nor
+		 * register the widget: registerEntity() does both.
 		 *
-		 * @return The newly constructed entity.
+		 * @return The new widget, not yet attached nor registered.
 		 */
 		virtual std::shared_ptr<EntityType> buildEntity(void) = 0;
 	};

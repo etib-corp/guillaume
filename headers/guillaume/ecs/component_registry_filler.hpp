@@ -28,9 +28,19 @@ namespace guillaume::ecs
 {
 
 	/**
-	 * @brief Templated registry helper that registers multiple component
-	 * types for an entity.
-	 * @tparam ComponentTypes The component types to register.
+	 * @brief A ComponentRegistry whose storages for a fixed list of component
+	 * types exist from construction.
+	 *
+	 * It behaves exactly like ComponentRegistry afterwards. Preparing the
+	 * storages is optional, since a ComponentRegistry creates the storage of
+	 * a type on its first use; no component is created for any entity.
+	 *
+	 * @code
+	 * ecs::ComponentRegistryFiller<components::Bound, components::Transform>
+	 * 	registry;
+	 * @endcode
+	 *
+	 * @tparam ComponentTypes The component types to prepare storage for.
 	 * @see ComponentRegistry
 	 */
 	template<InheritFromComponent... ComponentTypes>
@@ -38,12 +48,13 @@ namespace guillaume::ecs
 	{
 		public:
 		/**
-		 * @brief Default constructor.
+		 * @brief Create the registry with one empty storage per listed
+		 * component type.
 		 */
 		ComponentRegistryFiller(void);
 
 		/**
-		 * @brief Default destructor for the Component Registry Filler class.
+		 * @brief Destroy the registry and every component it stores.
 		 */
 		virtual ~ComponentRegistryFiller(void) = default;
 	};

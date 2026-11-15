@@ -37,10 +37,25 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling model rendering from ECS components.
-	 * @see components::Transform
-	 * @see components::Mesh
-	 * @see components::Bound
+	 * @brief Draws the 3D model of every entity that has a
+	 * components::Mesh.
+	 *
+	 * Runs in the Render phase on entities with Transform, Bound and Mesh.
+	 * It writes no component: its output is one engine object per entity,
+	 * rebuilt and uploaded every frame.
+	 * - components::Transform gives the pose the model is loaded at.
+	 * - components::Mesh gives the path of the model file and, optionally,
+	 *   the path of a texture applied to it.
+	 * - components::Bound is required but not read here: it is filled by
+	 *   systems::MeasureMesh for the layout.
+	 *
+	 * Each frame the model is requested from the resource provider with the
+	 * current pose. When the provider returns no model (missing or invalid
+	 * file) nothing is drawn and a model drawn on an earlier frame is
+	 * removed.
+	 *
+	 * @see components::Mesh, systems::MeasureMesh
+	 * @see RenderHandleMap
 	 */
 	class MeshRender:
 		public RenderHandleMap,
@@ -49,45 +64,46 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;		 //< Shared resource provider for loading
-									 // fonts and models
-		utility::Engine &_engine;	 ///< utility::Engine instance
+			_ressourceProvider;		 ///< Provider the models are loaded from
+		utility::Engine &_engine;	 ///< Engine the models are uploaded to
 
 		public:
 		/**
-		 * @brief Construct a model rendering system.
-		 * @param ressourceProvider Shared resource provider for loading fonts
-		 * and models.
-		 * @param engine The engine used to draw model.
+		 * @brief Create the system in the Render phase.
+		 * @param ressourceProvider Provider used to load the models. Must
+		 * not be null.
+		 * @param engine The engine the models are uploaded to. It must
+		 * outlive the system.
 		 */
 		MeshRender(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
 			utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Forget the engine objects without removing them from the
+		 * engine.
 		 */
 		~MeshRender(void);
 
 		/**
-		 * @brief Prepare the MeshRender system for rendering.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Mark every model as not drawn yet. Called once per frame
+		 * before the entities are visited.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the MeshRender system after rendering.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Remove the engine objects of the entities that were not
+		 * drawn this frame, including those whose model failed to load.
+		 * Called once per frame after the entities.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the MeshRender system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Load the model of one entity at its current pose and upload
+		 * it, creating the engine object on the first frame.
+		 * @param entityIdentifier The entity to draw. It is skipped when the
+		 * model cannot be loaded, and skipped with a log message when one of
+		 * the three components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

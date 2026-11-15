@@ -29,24 +29,45 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component representing a 2D image attached to an entity.
+	 * @brief A picture drawn in the entity's rectangle: the texture to
+	 * show, a fallback texture, and whether loading succeeded.
+	 *
+	 * entities::Image (or the application) writes the two paths.
+	 * systems::ImageRender (Render phase) loads the texture through the
+	 * resource provider, draws it stretched over the entity's
+	 * components::Bound at its components::Transform, and records the
+	 * outcome with setLoadState().
+	 *
+	 * @code
+	 * registry.getComponent<components::Image>(id)
+	 * 	.setTexturePath("images/avatar.png")
+	 * 	.setFallbackPath("images/placeholder.png");
+	 * @endcode
+	 *
+	 * @note The image has no size of its own: set the Bound, or the image
+	 * is drawn with a size of zero. The aspect ratio of the texture is not
+	 * preserved.
+	 * @note The load state belongs to systems::ImageRender, which rewrites
+	 * it every frame. Read it; do not set it.
+	 *
+	 * @see systems::ImageRender, entities::Image, components::Bound
 	 */
 	class Image: public ecs::Component
 	{
 		public:
 		/**
-		 * @brief Loading state of the texture, maintained by
-		 * `systems::ImageRender`.
+		 * @brief Whether the texture could be loaded, as recorded by
+		 * systems::ImageRender.
 		 */
 		enum class LoadState {
-			Pending,	///< Not attempted yet.
+			Pending,	///< Not attempted since the path was set.
 			Loaded,		///< The texture (or the fallback) is drawn.
-			Failed		///< Neither the texture nor the fallback loaded.
+			Failed		///< Neither loaded; nothing is drawn.
 		};
 
 		private:
-		std::string _texturePath {};	 ///< Path to the image texture file
-		std::string _fallbackPath {};	 ///< Texture drawn when loading fails
+		std::string _texturePath {};	 ///< Texture to draw, resource path
+		std::string _fallbackPath {};	 ///< Texture drawn when the first fails
 		LoadState _loadState { LoadState::Pending };	///< Loading state.
 		bool _usingFallback { false };	  ///< Whether the fallback is drawn.
 
@@ -62,48 +83,68 @@ namespace guillaume::components
 		~Image(void) = default;
 
 		/**
-		 * @brief Set the image texture path.
-		 * @param path The new image texture path.
-		 * @return Reference to this Image component for chaining.
+		 * @brief Choose the texture to draw.
+		 *
+		 * When the path differs from the stored one, the load state goes
+		 * back to Pending, the fallback flag is cleared and the component
+		 * is marked changed. The same path does nothing.
+		 *
+		 * @param path The path of the texture, as understood by the
+		 * application's resource provider.
+		 * @return This component, for chaining.
 		 */
 		Image &setTexturePath(const std::string &path);
 
 		/**
-		 * @brief Get the image texture path.
-		 * @return The image texture path.
+		 * @brief Get the path of the texture to draw.
+		 * @return The path given to setTexturePath(); empty by default.
 		 */
 		const std::string &getTexturePath(void) const;
 
 		/**
 		 * @brief Set the texture drawn when the main texture fails to load.
-		 * @param path Fallback texture path (empty to disable).
-		 * @return Reference to this Image component for chaining.
+		 *
+		 * When the path differs from the stored one, a Failed load state
+		 * goes back to Pending and the component is marked changed.
+		 *
+		 * @param path The path of the fallback texture; empty for no
+		 * fallback.
+		 * @return This component, for chaining.
 		 */
 		Image &setFallbackPath(const std::string &path);
 
 		/**
-		 * @brief Get the fallback texture path.
-		 * @return The fallback path.
+		 * @brief Get the path of the fallback texture.
+		 * @return The path; empty (the default) when there is no fallback.
 		 */
 		const std::string &getFallbackPath(void) const;
 
 		/**
-		 * @brief Get the loading state.
-		 * @return The loading state.
+		 * @brief Get the outcome of the last load attempt.
+		 * @return Pending until systems::ImageRender has processed the
+		 * entity, then Loaded or Failed.
 		 */
 		LoadState getLoadState(void) const;
 
 		/**
-		 * @brief Record the loading outcome (used by systems::ImageRender).
-		 * @param state New state.
-		 * @param usingFallback Whether the fallback texture is drawn.
-		 * @return Reference to this Image component for chaining.
+		 * @brief Record the outcome of a load attempt. Called by
+		 * systems::ImageRender.
+		 *
+		 * Unlike the other setters it never marks the component changed:
+		 * the render system calls it every frame, and flagging a change
+		 * there would keep the entity dirty for ever.
+		 *
+		 * @param state The outcome of the attempt.
+		 * @param usingFallback True when the fallback texture is the one
+		 * drawn.
+		 * @return This component, for chaining.
 		 */
 		Image &setLoadState(LoadState state, bool usingFallback = false);
 
 		/**
 		 * @brief Check whether the fallback texture is drawn.
-		 * @return True when the main texture failed and the fallback loaded.
+		 * @return True when the main texture failed to load and the
+		 * fallback is drawn in its place.
 		 */
 		bool isUsingFallback(void) const;
 	};

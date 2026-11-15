@@ -79,19 +79,18 @@ Guillaume stores state the ECS way and composes UI the widget way:
 - **Systems** own everything that happens every frame for a kind of
   component: input hit-testing, measuring, layout, rendering. Each system
   declares the components it needs and a phase.
-- **Entities are not bare identifiers.** An entity such as `Button` or
-  `NavigationDrawer` is a class that creates its components and child
-  entities and overrides `update()` to restyle and re-arrange itself. When a
-  system visits an entity whose components changed, `ecs::System::routine`
-  calls that entity's `update()`, then its parent's, so a change propagates up
-  the tree within the same system pass.
+- **Entities are thin facades.** An entity class such as `Button` or
+  `NavigationDrawer` holds no state and no rule. It creates its components
+  and child entities, and its setters write components and call the
+  system's static functions so a change is visible at once. The framework
+  never calls back into an entity: `ecs::System::routine` only calls the
+  system's `update(identifier)`.
 
-So most entities still behave like retained widgets that keep part of their
-state in member fields. **That is the legacy shape, and it is being migrated
-away**: the target is a strict ECS in which an entity is only an identifier,
-all state is in components and all behavior is in systems.
+Every widget of the library follows this shape. A system can be driven on a
+bare identifier with the right components, which is how the system tests
+under `tests/sources/systems/` work.
 
-### Target shape and migration recipe
+### Widget shape and how to add one
 
 `Divider` is the reference. It is split in three:
 
@@ -104,7 +103,7 @@ all state is in components and all behavior is in systems.
 `systems/test_divider.cpp` drives the system on a bare identifier with five
 components and no `entities::Divider` object at all.
 
-To migrate another widget:
+To write a widget (this is also how the existing ones were migrated):
 
 1. Move each member field of the entity class into a `components::X`
    configuration component. Setters compare before writing and call
@@ -118,7 +117,8 @@ To migrate another widget:
 4. Reduce the entity class to a facade: add `components::X` to its
    `EntityFiller` list, make each setter write the component and call
    `systems::X::apply` (so the result is visible immediately while a scene is
-   being built), and delete its `initialize()` / `update()` overrides.
+   being built). Its constructors are private; a static `create()` constructs
+   it and calls its private `build()`, which creates the child entities.
 5. Test the system on bare identifiers, without the entity class.
 
 Widgets with children read the tree from `components::Hierarchy` (parent
@@ -130,12 +130,45 @@ entity object. Systems treat it as read-only.
 `entities::SurfaceBase`, the base of 20 widgets, already follows this: it has
 no configuration of its own (Transform, Color, Borders and Layout are the
 state), `systems::Layout` arranges its children, and it overrides neither
-`initialize()` nor `update()`. `entities::Surface` is a facade over
+`initialize()` nor `update()` (neither exists any more). `entities::Surface` is a facade over
 `components::SurfaceTone` / `systems::SurfaceTone`.
 
-When no entity overrides `update()` any more, `ecs::Entity::update()` and the
-calls to it in `ecs::System::routine` are deleted, and the entity classes can
-become plain builder functions.
+`Checkbox`, `RadioButton` and `Switch` are the reference for widgets with
+children and input. On top of the recipe above:
+
+- The component stores child identifiers, never entity pointers.
+- The system has a static `install(registry, identifier)` that adds the
+  interaction components and wires handlers capturing the registry and the
+  identifier (not `this`), and static actions such as `toggle`.
+- The facade's private `build()` only creates the child entities. It needs
+  `shared_from_this()`, so `create()` calls it right after construction; it
+  holds no rule.
+
+The button family shows how a class hierarchy with virtual hooks maps to
+components: `components::Button` + `systems::Button` carry what `ButtonBase`
+shared (input, toggle, callbacks), and each subclass became a variant
+component and system (`CommonButton`, `IconButton`, `FloatingActionButton`,
+`ExtendedFloatingActionButton`). The variant system registers its static
+`apply` in `components::Button` as the restyle function, which replaces the
+virtual `applyStyleState()` / `applyGeometry()` calls.
+
+What remains of the entity classes:
+
+- A static `create()` and a private `build()`, only to create child entities
+  (that needs `shared_from_this()`, and a system cannot create entities).
+  Widgets are never half-built: there is no public constructor and no
+  `initialize()` to remember.
+
+A widget that rebuilds its children removes the previous ones with
+`ecs::EntityRegistry::removeEntity()` / `clearEntities()`, which also deletes
+their components and unlinks them from `components::Hierarchy`.
+
+`tests/sources/test_frame_loop.cpp` runs every widget through the real
+phases on a mock engine and checks that each one settles: after a few frames,
+a frame marks no component as changed.
+
+The next step, when wanted, is to turn the entity classes into plain builder
+functions.
 
 ## Patterns Used
 

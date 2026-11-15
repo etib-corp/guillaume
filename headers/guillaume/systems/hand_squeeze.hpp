@@ -31,7 +31,17 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand squeeze interactions.
+	 * @brief Receives XR hand squeeze events (the grip of a controller).
+	 *
+	 * Runs in the Event phase on entities that have a
+	 * components::HandSqueezeInteraction, a Transform and a Bound, and
+	 * takes one squeeze event per frame. It does not override
+	 * HandEventSystem::update, so it writes no component and calls no
+	 * handler: the squeeze interaction component is not driven by this
+	 * system.
+	 *
+	 * @see components::HandSqueezeInteraction
+	 * @see systems::HandEventSystem
 	 */
 	class HandSqueeze:
 		public HandEventSystem<components::HandSqueezeInteraction,
@@ -39,14 +49,14 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandSqueeze system and subscribe to hand
-		 * squeeze events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand squeeze events.
+		 * @param eventBus The event bus delivering the hand squeeze events.
 		 */
 		explicit HandSqueeze(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandSqueeze system.
+		 * @brief Destructor.
 		 */
 		~HandSqueeze(void) override;
 	};

@@ -28,20 +28,27 @@
 namespace guillaume::components
 {
 	/**
-	 * @brief Component handling hand squeeze interactions.
-	 * @see systems::HandSqueeze
+	 * @brief Marks an entity as a target of XR hand squeeze (grip) input and
+	 * stores the callback for it.
+	 *
+	 * systems::HandSqueeze selects the entities that have this component, a
+	 * Transform and a Bound, and consumes one squeeze event per frame in the
+	 * Event phase. It has no per-entity rule: it neither writes this
+	 * component nor calls the handler set with setOnEventHandler().
+	 *
+	 * @see systems::HandSqueeze, Interaction
 	 */
 	class HandSqueezeInteraction:
 		public Interaction<utility::event::HandSqueezeEvent>
 	{
 		public:
 		/**
-		 * @brief Constructs a new HandSqueezeInteraction instance.
+		 * @brief Construct a component without handler.
 		 */
 		HandSqueezeInteraction(void);
 
 		/**
-		 * @brief Destructor for the HandSqueezeInteraction class.
+		 * @brief Default destructor.
 		 */
 		~HandSqueezeInteraction(void) = default;
 	};

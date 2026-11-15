@@ -36,8 +36,21 @@ namespace guillaume::systems
 {
 
 	/**
-	 * @brief System handling committed text input events for text entities.
+	 * @brief Adds typed text to editable text.
+	 *
+	 * Runs in the Event phase on entities that have a components::Text and
+	 * a components::Focus. It reads the text of the current text input
+	 * event (the characters committed by the keyboard or the input method)
+	 * and appends it to the content of components::Text.
+	 *
+	 * @note The text is appended at the end of the content, whatever the
+	 * cursor position.
+	 * @note The components::Focus is only required to be present: the
+	 * system does not test whether the entity is the focused one, so every
+	 * matching entity receives the text.
+	 *
 	 * @see components::Text
+	 * @see systems::KeyboardControl
 	 */
 	class TextInput:
 		public ecs::SystemFiller<components::Text, components::Focus>,
@@ -45,31 +58,33 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Default constructor for the TextInput system.
-		 * @param eventBus The event bus to subscribe to.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * text input events.
+		 * @param eventBus The event bus delivering the text input events.
 		 */
 		TextInput(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the TextInput system.
+		 * @brief Default destructor.
 		 */
 		~TextInput(void) = default;
 
 		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
+		 * @brief Take the next pending text input event, once per frame.
+		 *
+		 * When none is pending, the previous event stays the current one.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to clean up any state or resources.
+		 * @brief Does nothing.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the TextInput system for the specified entity.
-		 * @param entityIdentifier The identifier of the entity to update.
+		 * @brief Append the text of the current text input event to the
+		 * content of one entity.
+		 * @param entityIdentifier The entity holding the components::Text.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

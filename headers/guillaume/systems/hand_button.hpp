@@ -36,7 +36,28 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand button interactions.
+	 * @brief Tracks which XR controller buttons are held on which entities.
+	 *
+	 * The hand counterpart of systems::MouseButton. Runs in the Event phase
+	 * on entities that have a components::HandButtonInteraction, a
+	 * Transform and a Bound. It casts the forward ray of the aim pose of
+	 * the current hand button event and tests it against the rectangle of
+	 * the entity, grown by its accessibility margin (a disabled entity is
+	 * never hit). Then, for the button of the event:
+	 * - button down on the entity: the button is marked pressed and its
+	 *   press handler is called;
+	 * - button up on the entity while it was pressed there: the button is
+	 *   marked released and its release handler is called. With button A,
+	 *   this is what a widget treats as a click;
+	 * - button up elsewhere: the button is marked released and no handler
+	 *   is called.
+	 *
+	 * systems::Drag, systems::Focus and systems::StyleState read the
+	 * pressed flags later in the same phase.
+	 *
+	 * @see components::HandButtonInteraction
+	 * @see systems::MouseButton
+	 * @see systems::interaction::makeInteractive
 	 */
 	class HandButton:
 
@@ -46,34 +67,34 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandButton system and subscribe to hand button
-		 * events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand button events.
+		 * @param eventBus The event bus delivering the hand button events.
 		 */
 		HandButton(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandButton system.
+		 * @brief Destructor.
 		 */
 		~HandButton(void);
 
 		/**
-		 * @brief This function is called before call update on all entities and
-		 * can be used to set up any necessary state or resources.
+		 * @brief Take the next pending hand button event, once per frame.
+		 *
+		 * When none is pending, the previous event stays the current one.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief This function is called after call update on all entities and
-		 * can be used to release any resources or reset state.
+		 * @brief Does nothing.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update method called for each entity with the relevant
-		 * components. Processes hand button events and updates interaction
-		 * states accordingly.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief Apply the current hand button event to one entity. Events
+		 * with an unknown button are ignored.
+		 * @param entityIdentifier The entity holding the
+		 * components::HandButtonInteraction.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

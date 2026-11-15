@@ -95,19 +95,9 @@ namespace guillaume::ecs
 				continue;
 			}
 
-			const bool entityWasChanged =
-				componentRegistry.hasChanged(entity->getIdentifier());
-			if (entityWasChanged) {
-				entity->update();
-			}
-
+			// Systems are the only place behavior lives: entities are not
+			// called back, whatever changed.
 			update(entity->getIdentifier());
-
-			if ((entityWasChanged
-				 || componentRegistry.hasChanged(entity->getIdentifier()))
-				&& entity->getParent() != nullptr) {
-				entity->getParent()->update();
-			}
 		}
 
 		cleanup();

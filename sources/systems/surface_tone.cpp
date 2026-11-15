@@ -44,13 +44,8 @@ namespace guillaume::systems
 		componentRegistry.getComponent<components::Color>(entityIdentifier)
 			.setColor(getElevatedSurfaceColor(tone.getElevation()));
 
-		// setElevationLevel always marks the component changed, so only
-		// write when the level really differs.
-		auto &elevation = componentRegistry.getComponent<components::Elevation>(
-			entityIdentifier);
-		if (elevation.getElevationLevel() != shadowLevel) {
-			elevation.setElevationLevel(shadowLevel);
-		}
+		componentRegistry.getComponent<components::Elevation>(entityIdentifier)
+			.setElevationLevel(shadowLevel);
 	}
 
 	void SurfaceTone::update(const ecs::Entity::Identifier &entityIdentifier)

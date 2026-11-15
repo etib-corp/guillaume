@@ -66,13 +66,14 @@ namespace guillaume::systems
 		const float z  = pose.getPosition().z;
 
 		// The bound's position is its top-left corner: derive the center by
-		// extending half the size, then rotate the local quad around it. This
+		// going half the width right and half the height down (y is up),
+		// then rotate the local quad around it. This
 		// matches the other shape renderers (rectangle, ellipse, ring, ...).
 		const float halfWidth  = bound.getWidth() / 2.0f;
 		const float halfHeight = bound.getHeight() / 2.0f;
 
 		const utility::graphic::PositionF center(x0 + halfWidth,
-												 y0 + halfHeight, z);
+												 y0 - halfHeight, z);
 
 		const std::vector<utility::math::Vector2F> localVertices {
 			{ -halfWidth, -halfHeight },
@@ -97,6 +98,12 @@ namespace guillaume::systems
 		mesh.addIndex(0);
 		mesh.addIndex(2);
 		mesh.addIndex(3);
+
+		// A transparent shape adds no geometry: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (mesh.getVertices().empty()) {
+			return;
+		}
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");

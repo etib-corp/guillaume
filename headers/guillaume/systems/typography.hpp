@@ -30,43 +30,68 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Resolves typescale roles into text metrics.
+	 * @brief Turns the type-scale role of a text (Body Large, Label
+	 * Medium, ...) into the font metrics of the active theme.
 	 *
-	 * For every entity carrying a components::Typography it looks the role
-	 * up in the active theme and writes the font size, weight, line height
-	 * and letter spacing into the entity's components::Text. An explicit
-	 * font size on the Typography overrides the role size.
+	 * Runs in the Measure phase on entities with Typography and Text.
+	 * - Reads: the role and the optional font size of
+	 *   components::Typography, and the type scale of the active theme.
+	 * - Writes: the font size, font weight, line height and letter spacing
+	 *   of components::Text (components::Text::setTypeToken).
 	 *
-	 * It runs in the Measure phase and is registered before
-	 * systems::MeasureText, so texts are measured with their final metrics.
+	 * A font size set on the Typography replaces the size of the role; the
+	 * other metrics still come from the role.
+	 *
+	 * It is the first system registered, ahead of systems::MeasureText in
+	 * the same phase, so a text is measured with the metrics resolved here.
+	 * Because it runs every frame, a change of theme reaches every text on
+	 * the next frame. Call apply() to resolve a text at once, for example
+	 * right after creating it:
+	 * @code
+	 * registry.getComponent<components::Typography>(label)
+	 * 	.setRole(theme::TypeRole::LabelLarge);
+	 * systems::Typography::apply(registry, label);
+	 * @endcode
+	 *
+	 * The metrics of a Text that has a Typography are overwritten every
+	 * frame: change the role or the Typography font size, not the Text.
+	 *
+	 * @see components::Typography, components::Text
+	 * @see systems::MeasureText
 	 */
 	class Typography:
 		public ecs::SystemFiller<components::Typography, components::Text>
 	{
 		public:
 		/**
-		 * @brief Construct the system.
+		 * @brief Create the system in the Measure phase.
 		 */
 		Typography(void);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system. It owns no resource.
 		 */
 		~Typography(void) override = default;
 
 		/**
-		 * @brief Resolve the typography of one entity right now.
+		 * @brief Resolve the metrics of one text and write them into its
+		 * components::Text.
 		 *
-		 * Writing the same metrics again does not mark the Text as changed.
-		 * @param componentRegistry Registry holding the components.
-		 * @param entityIdentifier Identifier of the text entity.
+		 * The Text is marked changed only when a metric differs from the one
+		 * it already holds.
+		 * @param componentRegistry The registry holding the components.
+		 * @param entityIdentifier The text entity. It must have Typography
+		 * and Text.
+		 * @throws ecs::EntityComponentNotFoundException When one of the two
+		 * components is missing.
 		 */
 		static void apply(ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier);
 
 		/**
-		 * @brief Resolve the typography of one text entity.
-		 * @param entityIdentifier Identifier of the entity being updated.
+		 * @brief Resolve the metrics of one text for this frame.
+		 * @param entityIdentifier The text entity. It is skipped, with a log
+		 * message, when one of the two components is missing.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
 	};

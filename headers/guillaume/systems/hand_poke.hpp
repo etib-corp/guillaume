@@ -31,7 +31,22 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief System handling hand poke interactions.
+	 * @brief Marks the entities an XR hand pokes (a fingertip pushed
+	 * toward them).
+	 *
+	 * Runs in the Event phase on entities that have a
+	 * components::HandPokeInteraction, a Transform and a Bound. The hit
+	 * test and the handler call are those of systems::HandRaySystem; this
+	 * class only says that the result is written to the poking flag of the
+	 * component. An entity is therefore poked while the hand ray of the
+	 * current poke event hits it, and its event handler is called on every
+	 * frame that is true.
+	 *
+	 * systems::Focus and systems::StyleState read the flag later in the
+	 * same phase: a poke focuses an entity and shows it pressed.
+	 *
+	 * @see components::HandPokeInteraction
+	 * @see systems::HandRaySystem
 	 */
 	class HandPoke:
 		public HandRaySystem<components::HandPokeInteraction,
@@ -39,22 +54,23 @@ namespace guillaume::systems
 	{
 		public:
 		/**
-		 * @brief Construct the HandPoke system and subscribe to hand
-		 * poke events.
-		 * @param eventBus Reference to the event bus for subscribing to events.
+		 * @brief Create the system, in the Event phase, and subscribe it to
+		 * hand poke events.
+		 * @param eventBus The event bus delivering the hand poke events.
 		 */
 		explicit HandPoke(event::EventBus &eventBus);
 
 		/**
-		 * @brief Default destructor for the HandPoke system.
+		 * @brief Destructor.
 		 */
 		~HandPoke(void) override;
 
 		protected:
 		/**
-		 * @brief Store the poke state on the interaction component.
-		 * @param interaction Interaction component of the entity.
-		 * @param engaged True when the hand ray hits the entity.
+		 * @brief Write the poking flag of the interaction component.
+		 * @param interaction The poke interaction component of the entity.
+		 * @param engaged True when the hand ray of the current poke event
+		 * hits the entity.
 		 */
 		void setEngaged(components::HandPokeInteraction &interaction,
 						bool engaged) override;

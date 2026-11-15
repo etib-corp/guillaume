@@ -108,8 +108,10 @@ namespace guillaume::systems::tests
 		ASSERT_FALSE(meshes.empty());
 		const auto center = meshes.front()->getVertices().front().getPosition();
 
+		// Half the width right and half the height down from the top-left
+		// corner (y points up).
 		EXPECT_FLOAT_EQ(center.x, 60.0f);
-		EXPECT_FLOAT_EQ(center.y, 45.0f);
+		EXPECT_FLOAT_EQ(center.y, -5.0f);
 		EXPECT_FLOAT_EQ(center.z, 5.0f);
 	}
 

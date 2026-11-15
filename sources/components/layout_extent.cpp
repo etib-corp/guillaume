@@ -19,22 +19,26 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
+#include "guillaume/components/hierarchy.hpp"
+#include "guillaume/components/layout_extent.hpp"
 
-#include "guillaume/components/parent.hpp"
+#include <algorithm>
 
 namespace guillaume::components
 {
-	void Parent::setParentIdentifier(ecs::Entity::Identifier identifier)
+	float LayoutExtent::getTrailingWidth(void) const noexcept
 	{
-		if (_parentIdentifier == identifier) {
-			return;
-		}
-		_parentIdentifier = identifier;
-		setHasChanged(true);
+		return _trailingWidth;
 	}
 
-	ecs::Entity::Identifier Parent::getParentIdentifier(void) const
+	LayoutExtent &LayoutExtent::setTrailingWidth(float width)
 	{
-		return _parentIdentifier;
+		const float clamped = std::max(width, 0.0f);
+
+		if (_trailingWidth != clamped) {
+			_trailingWidth = clamped;
+			setHasChanged(true);
+		}
+		return *this;
 	}
 }	 // namespace guillaume::components

@@ -9,6 +9,110 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+## [2026.6.1] - 2026-11-14
+
+### Added
+
+- `components::LayoutExtent`: a widget can reserve layout room beyond the
+  shape it draws; `systems::Layout` adds it to the child's width.
+- `components::Mesh::setFitSize()` / `entities::Mesh::setFitSize()` scale a
+  3D model so its longest side has a given length in dp.
+- The evan example is a widget gallery on nine pages; `GUILLAUME_GALLERY_PAGE`
+  opens it on a given page.
+
+### Changed
+
+- **Breaking:** an entity's position is its top-left corner and content
+  extends down, with y pointing up. Shapes used to be drawn upward from the
+  position while text and icons were drawn downward, and vertical layouts
+  stacked their first child at the bottom. Code that computes world
+  positions by hand must subtract vertical offsets.
+- `Scene::placeEntitiesInFrontOfView()` centres each root vertically on the
+  view.
+- Circular progress and loading arcs start at the top and run clockwise.
+- An `Image` without a size takes its texture's size.
+- A closed `Menu` draws nothing and ignores presses on its rows.
+- The in-code documentation was rewritten for newcomers: every class says
+  what it is, who writes and reads it and in which phase, with examples.
+  `headers/guillaume/namespaces.hpp` is the map of the modules, and
+  `docs/CODE_CONVENTIONS.md` has the documentation guide.
+- **Breaking:** widgets are created with a static `create()` that returns
+  them fully built; their constructors are private and
+  `ecs::Entity::initialize()` is removed (`EntityRegistry::addEntity()` no
+  longer calls it). Replace `std::make_shared<Widget>(...)` followed by
+  `initialize()` with `Widget::create(...)`. Builders are unchanged.
+
+### Fixed
+
+- Transparent shapes were drawn solid black and translucent colors at full
+  strength: the engine draws shapes with an opaque material. Fully
+  transparent shapes, text and icons are no longer submitted, and
+  translucent colors are composited over the scheme's Surface. Real
+  blending needs an alpha-blended material in the engine.
+- Labels of checkboxes, radio buttons and switches overlapped the next
+  widget in a row.
+- Radio buttons were filled discs, the indeterminate checkbox dash and
+  progress fills were hidden behind their own shapes.
+- 3D models were drawn at the world origin in their file's units, whatever
+  their entity's position.
+- `systems::Button` is registered by `registerCoreSystems()`; its per-frame
+  sync of a button's icon and accessibility state did not run.
+
+## [2026.6.0] - 2026-11-13
+
+### Added
+
+- `ecs::EntityRegistry::removeEntity()` and `clearEntities()` remove an
+  entity with everything it owns, delete its components
+  (`ecs::ComponentRegistry::removeEntity()`) and unlink it from its parent's
+  `components::Hierarchy`. Entities parented to it go with it, wherever they
+  are registered below the registry the removal started in. `List`, `Menu`, `NavigationDrawer` and the
+  indicators use it when they rebuild their children, so replaced children no
+  longer stay registered.
+
+### Changed
+
+- **Breaking:** `ecs::Entity::update()` is removed. `ecs::System::routine` no
+  longer calls back into entities, and no library entity had an `update()`
+  left. See `docs/MIGRATION_GUIDE.md`.
+- **Breaking:** removed the unused `components::Parent`; use
+  `components::Hierarchy`.
+
+### Fixed
+
+- `LocalStorage` waits for a concurrent writer instead of failing when
+  several processes open the same storage file for the first time.
+- An extended FAB with a hidden label no longer has its label color
+  rewritten twice per frame.
+
+## [2026.5.0] - 2026-11-13
+
+### Added
+
+- `List`, `Search`, `TextField`, `NavigationBar` and `NavigationDrawer`
+  (with their destinations) follow the strict ECS. `TextField`'s
+  configuration is `components::TextFieldConfiguration`; the existing
+  `systems::TextField` holds its rules and moved to the Layout phase.
+
+### Changed
+
+- **Breaking:** `ecs::System::routine` no longer calls `Entity::update()` on
+  a changed entity or on its parent. No library entity overrides `update()`
+  any more; it remains as a deprecated no-op. See `docs/MIGRATION_GUIDE.md`.
+- `entities::List`, `Search`, `TextField`, `NavigationBar` and
+  `NavigationDrawer` are facades without fields. Visible differences:
+  - Setters apply immediately instead of on the next update, and build a
+    missing child at once.
+  - A disabled accordion child of a `List` stays disabled when its parent
+    expands; rows nested deeper than one accordion level are hidden.
+  - `List::setVariant()` and `NavigationBar::addDestination()` no longer
+    rebuild existing rows or destinations, so their identifiers are stable.
+  - `Search::setTrailingIcon("")` hides the icon.
+  - A `TextField` rewrites its accessibility label and hint every frame from
+    `components::TextField`.
+
+## [2026.4.0] - 2026-11-13
+
 ### Added
 
 - `components::Hierarchy` holds an entity's parent identifier, child
@@ -20,8 +124,83 @@ Versions follow the calendar scheme described in
   shadow mode of `entities::Surface` live in the component, and the system
   resolves the tonal color and the shadow from it each frame.
 
+- `Checkbox`, `RadioButton` and `Switch` follow the strict ECS: their state
+  lives in `components::Checkbox` / `RadioButton` / `Switch` (children are
+  referenced by identifier) and `systems::Checkbox` / `RadioButton` / `Switch`
+  style them and place their children each frame. The systems expose the
+  actions as static functions (`toggle`, `press`, `setState`, `setChecked`)
+  that work on an identifier.
+- The button family follows the strict ECS. `components::Button` holds the
+  state every button shares (content, toggle, callbacks, loading, visibility,
+  color overrides, child identifiers) and `systems::Button` turns input into
+  it. Each variant has a configuration component and a Layout-phase system
+  that styles and lays it out: `CommonButton` (for `entities::Button`),
+  `IconButton`, `FloatingActionButton`, `ExtendedFloatingActionButton`.
+- `Badge`, `Chip`, `Tooltip`, `Snackbar`, `LoadingIndicator` and
+  `ProgressIndicator` follow the strict ECS: each has a configuration
+  component (including its transient state: fades, timers, animation
+  progress) and a Layout-phase system of the same name whose static functions
+  hold the rules and the actions (`show`, `hide`, `advance`, `start`,
+  `stop`, ...).
+- `AppBar`, `Card`, `Dialog`, `Menu`, `RadioGroup`, `SegmentedButton` and
+  `FloatingActionButtonMenu` follow the strict ECS, each with a configuration
+  component and a Layout-phase system of the same name.
+- `components::CommonButton::setCorners()` overrides the radius of each
+  corner; `systems::SegmentedButton` uses it to join its segments.
+- `systems::Layout::layerOf()` returns an entity's tree depth from its
+  `components::Hierarchy`.
+
 ### Changed
 
+- `entities::Checkbox`, `RadioButton` and `Switch` are facades without fields
+  and no longer override `update()`; `initialize()` only builds their child
+  entities. Their `State` / `Variant` enums are now aliases of the component
+  enums, so existing spellings keep compiling.
+- `entities::ButtonBase`, `Button`, `IconButton`, `FloatingActionButton` and
+  `ExtendedFloatingActionButton` are facades without fields. `ButtonBase` no
+  longer overrides `update()` and its `applyStyleState()` / `applyGeometry()`
+  virtuals are gone: subclasses outside the library must provide a variant
+  system and register it with `components::Button::setRestyle()`. Enums such
+  as `Button::Color` are aliases of the component enums.
+- `entities::Badge`, `Chip`, `Tooltip`, `Snackbar`, `LoadingIndicator` and
+  `ProgressIndicator` are facades without fields and no longer override
+  `update()`. Visible differences:
+  - `Chip::getChildren()` returns every child the chip owns; the system
+    decides which are laid out, so an unselected filter chip reports its
+    hidden check icon too.
+  - The chip's accessibility label follows `setLabel()`.
+  - An indicator's shape (fixed size, padding, radius, transparent container)
+    is enforced every frame; a later `setColor()` or size set through
+    `setSurfaceConfig()` on an indicator is overwritten.
+  - An indeterminate `ProgressIndicator` is drawn before its first animation
+    tick, and rebuilding an indicator's children stops the old animation.
+  - `Tooltip` and `Snackbar` build a missing child as soon as a setter needs
+    it, not on the next update.
+- `entities::AppBar`, `Card`, `Dialog`, `Menu`, `RadioGroup`,
+  `SegmentedButton` and `FloatingActionButtonMenu` are facades without fields
+  and no longer override `update()`. Visible differences:
+  - **Breaking:** `Card::getActions()` returns the vector by value instead of
+    by `const` reference.
+  - A dialog keeps the pose it was given; before, its Transform was reset to
+    the default pose on every update, discarding `Builder::withPose()`.
+  - Menu rows are an internal entity instead of `entities::View`, and
+    `Menu::setVariant()` no longer rebuilds them.
+  - Setters that need a new child (`AppBar::setTitle()`, the `Card` content
+    setters, `Dialog::setTitle()` / `setMessage()`, `Menu::setItems()`) build
+    it immediately, not on the next update.
+  - Accessibility labels of the app bar, card and dialog titles follow later
+    title changes.
+  - `SegmentedButton::setSegmentDisabled()` keeps the connected corners.
+- `entities::View` is a facade without fields and no longer overrides
+  `update()`; no new component was needed, its state was already in
+  Transform, Color, Borders and Layout. Visible differences:
+  - Values written to a view's components by identifier are no longer
+    overwritten by the view.
+  - **Breaking:** a view no longer keeps the entities passed to
+    `setEntities()` alive; they must be owned by an entity registry (which is
+    what the builders do) or by the caller.
+- `components::Elevation::setElevationLevel()` only marks the component
+  changed when the resolved shadow differs.
 - `entities::SurfaceBase` keeps no copy of its configuration and no longer
   overrides `initialize()` / `update()`: the Transform, Color, Borders and
   Layout components are the state and `systems::Layout` arranges the children.
@@ -35,6 +214,13 @@ Versions follow the calendar scheme described in
 - `ecs::Entity::setParent()` now updates the layer of every descendant when a
   subtree is attached, and throws `std::invalid_argument` when the new parent
   is the entity itself or one of its descendants.
+### Fixed
+
+- Releases are cut again. The version bump runs on the push to `main`
+  instead of on the pull request event, which only had a read-only token for
+  pull requests opened from a fork, and it calls the release workflow
+  directly, since a tag pushed by a workflow does not start other workflows.
+
 
 ## [2026.3.3] - 2026-11-11
 

@@ -43,21 +43,27 @@
 namespace guillaume::systems
 {
 	/**
-	 * @brief Structure representing a cache key for measuring glyphs.
+	 * @brief Key of the size cache of MeasureGlyph: everything a measured
+	 * icon size is looked up by.
+	 *
+	 * Two icons with equal keys share one measurement. The ordering
+	 * operator exists so the key can be used in the ordered map of
+	 * utility::Cache.
+	 * @see MeasureGlyph
 	 */
 	struct MeasureGlyphCacheKey {
-		std::string glyphName;	  ///< The name of the glyph to be measured
-		float fontSize;	   ///< The font size used for measuring the glyph
+		std::string glyphName;	  ///< Name of the icon, such as "home"
+		float fontSize;			  ///< Font size the icon was measured at
 		components::Glyph::Style
-			glyphStyle;	   ///< The style of the glyph (e.g., filled, outlined)
+			glyphStyle;	   ///< Style of the icon (outlined, rounded, sharp)
 		utility::graphic::Color32Bit
-			color;	  ///< The color of the glyph, which may affect its
-					  ///< rendering and measurement
+			color;	  ///< Color of the icon. It does not change the size,
+					  ///< but two colors give two cache entries
 
 		/**
-		 * @brief Equality operator for MeasureGlyphCacheKey.
-		 * @param other The other MeasureGlyphCacheKey to compare with.
-		 * @return True if the keys are equal, false otherwise.
+		 * @brief Compare two keys field by field.
+		 * @param other The key to compare with.
+		 * @return True when name, font size, style and color are all equal.
 		 */
 		bool operator==(const MeasureGlyphCacheKey &other) const
 		{
@@ -77,9 +83,9 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Inequality operator for MeasureGlyphCacheKey.
-		 * @param other The other MeasureGlyphCacheKey to compare with.
-		 * @return True if the keys are not equal, false otherwise.
+		 * @brief Negation of operator==.
+		 * @param other The key to compare with.
+		 * @return True when at least one field differs.
 		 */
 		bool operator!=(const MeasureGlyphCacheKey &other) const
 		{
@@ -87,9 +93,10 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Less-than operator for MeasureGlyphCacheKey.
-		 * @param other The other MeasureGlyphCacheKey to compare with.
-		 * @return True if this key is less than the other, false otherwise.
+		 * @brief Order two keys by name, then font size, then style, then
+		 * color.
+		 * @param other The key to compare with.
+		 * @return True when this key sorts before @p other.
 		 */
 		bool operator<(const MeasureGlyphCacheKey &other) const
 		{
@@ -110,10 +117,32 @@ namespace guillaume::systems
 	};
 
 	/**
-	 * @brief System measuring glyphs and synchronizing them to bound sizes.
-	 * @see components::Glyph
-	 * @see components::Bound
-	 * @see components::Transform
+	 * @brief Computes the size of every icon and writes it into its Bound,
+	 * so the layout knows how much room the icon takes.
+	 *
+	 * An icon is a components::Glyph: a name looked up in the Material
+	 * Symbols icon font. This system runs in the Measure phase on entities
+	 * with Glyph, Bound, Transform and Color.
+	 * - Reads: the name, font size and style of components::Glyph.
+	 * - Writes: the width and height of components::Bound.
+	 *
+	 * The measurement is asked to the engine
+	 * (utility::Engine::measureText) once per distinct
+	 * MeasureGlyphCacheKey and kept for the life of the system; later
+	 * frames only copy the cached size.
+	 *
+	 * Things to know:
+	 * - The Bound of an icon entity is overwritten every frame.
+	 * - A name that is not in the code point table, or a missing table, is
+	 *   measured as the character `?`, which is also what
+	 *   systems::GlyphRender draws.
+	 * - When the icon font cannot be loaded the system does nothing and the
+	 *   Bound keeps its value.
+	 * - Every style is measured with the same font file (the outlined
+	 *   one).
+	 *
+	 * @see components::Glyph, systems::GlyphRender
+	 * @see MeasureGlyphCacheKey
 	 */
 	class MeasureGlyph:
 		public utility::Cache<MeasureGlyphCacheKey, utility::graphic::SizeF>,
@@ -122,51 +151,53 @@ namespace guillaume::systems
 	{
 		private:
 		std::shared_ptr<utility::RessourceProvider>
-			_ressourceProvider;	   ///< Shared resource provider for loading
-								   ///< fonts and glyphs
-		utility::Engine
-			&_engine;	 ///< utility::Engine instance for text measurement
-		std::string
-			_defaultFontPath;	 ///< Default font used for text measurement
-		std::string _glyphCodePath;	   ///< Path to glyph code mapping file
-		std::shared_ptr<utility::graphic::CodePoints> _codePoints;
+			_ressourceProvider;		 ///< Provider the icon font and the code
+									 ///< point table are loaded from
+		utility::Engine &_engine;	 ///< Engine asked to measure the icons
+		std::string _defaultFontPath;	 ///< Path of the icon font file
+		std::string _glyphCodePath;	   ///< Path of the file mapping icon names
+									   ///< to code points
+		std::shared_ptr<utility::graphic::CodePoints>
+			_codePoints;	///< Icon name to code point table, or nullptr
+							///< when the file could not be loaded
 		bool _hasFont { false };	///< Whether the icon font could be loaded
 
 		public:
 		/**
-		 * @brief Construct a glyph measuring system.
-		 * @param ressourceProvider Shared resource provider for loading fonts
-		 * and glyphs.
-		 * @param engine The engine used to measure text.
+		 * @brief Create the system in the Measure phase and load the icon
+		 * font and its code point table.
+		 *
+		 * A missing font or table is logged and does not throw.
+		 * @param ressourceProvider Provider used to load the font and the
+		 * table. Must not be null.
+		 * @param engine The engine asked to measure the icons. It must
+		 * outlive the system.
 		 */
 		MeasureGlyph(
 			std::shared_ptr<utility::RessourceProvider> ressourceProvider,
 			utility::Engine &engine);
 
 		/**
-		 * @brief Default destructor.
+		 * @brief Destroy the system and its cache.
 		 */
 		~MeasureGlyph(void);
 
 		/**
-		 * @brief Prepare the MeasureGlyph system before measurement.
-		 *
-		 * This function is called before call update on all entities and can be
-		 * used to set up any necessary state or resources.
+		 * @brief Does nothing: the system needs no per-frame setup.
 		 */
 		void prepare(void) override;
 
 		/**
-		 * @brief Clean up the MeasureGlyph system after measurement.
-		 *
-		 * This function is called after call update on all entities and can be
-		 * used to release any resources or reset state.
+		 * @brief Does nothing: the cache is kept from one frame to the next.
 		 */
 		void cleanup(void) override;
 
 		/**
-		 * @brief Update the MeasureGlyph system for one entity.
-		 * @param entityIdentifier The target entity identifier.
+		 * @brief Write the size of one icon into its components::Bound,
+		 * measuring it with the engine when it is not in the cache yet.
+		 * @param entityIdentifier The icon entity. It is skipped when the
+		 * icon font is missing, and skipped with a log message when one of
+		 * the four components is missing.
 		 */
 		virtual void
 			update(const ecs::Entity::Identifier &entityIdentifier) override;

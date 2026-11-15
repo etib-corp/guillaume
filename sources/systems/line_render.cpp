@@ -72,17 +72,15 @@ namespace guillaume::systems
 			centerY = bound.getHeight() - line.getThickness() / 2.0f;
 		}
 
-		// Edge-placed strokes share their container's plane; lift them half a
-		// layer so they draw over the container fill without z-fighting.
-		utility::graphic::PositionF lift(0.0f, 0.0f, 0.0f);
-		if (line.getPlacement() != components::Line::Placement::Center) {
-			lift = utility::graphic::PositionF(
-				-pose.getOrientation().getForward() * StrokeLift);
-		}
+		// A line shares its entity's plane, and the entity may also be
+		// filled (a checkbox draws its indeterminate dash over its box):
+		// lift it half a layer so it draws over the fill.
+		const utility::graphic::PositionF lift(
+			-pose.getOrientation().getForward() * StrokeLift);
 
 		const utility::graphic::PositionF center(
 			pose.getPosition().x + bound.getWidth() / 2.0f + lift[0],
-			pose.getPosition().y + centerY + lift[1],
+			pose.getPosition().y - centerY + lift[1],
 			pose.getPosition().z + lift[2]);
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
@@ -92,6 +90,12 @@ namespace guillaume::systems
 							 bound.getWidth() / 2.0f,
 							 line.getThickness() / 2.0f, line.isDashed(),
 							 line.getDashLength(), line.getGapLength(), color);
+
+		// A transparent shape adds no geometry: submit nothing, so the
+		// object is removed at the end of the frame.
+		if (mesh.getVertices().empty()) {
+			return;
+		}
 
 		auto renderable = std::make_shared<MeshRenderable>(
 			std::vector<utility::graphic::Mesh> { mesh }, "mesh_material");

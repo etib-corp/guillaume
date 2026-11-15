@@ -39,9 +39,10 @@ namespace guillaume::systems::tests
 		bound.setWidth(32.0f).setHeight(32.0f);
 		const utility::graphic::PoseF pose;
 
-		// A ray 4 dp left of the control, vertically centred.
+		// A ray 4 dp left of the control, vertically centred: the control
+		// extends down from its top-left corner (y points up).
 		const utility::graphic::RayF ray(
-			utility::math::Vector<float, 3>({ -4.0f, 16.0f, -10.0f }),
+			utility::math::Vector<float, 3>({ -4.0f, -16.0f, -10.0f }),
 			utility::math::Vector<float, 3>({ 0.0f, 0.0f, 1.0f }));
 
 		EXPECT_FALSE(

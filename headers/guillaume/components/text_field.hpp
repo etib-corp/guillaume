@@ -30,14 +30,24 @@ namespace guillaume::components
 {
 
 	/**
-	 * @brief Component holding the input-container state of a text field.
+	 * @brief The texts around the input of a text field, and its error
+	 * state: placeholder, label, supporting text, prefix, suffix and error
+	 * text.
 	 *
-	 * Carries the placeholder/label, supporting text, prefix/suffix and error
-	 * state so `entities::TextField` and `entities::Search` can be thin
-	 * composites over `components::Text`, `systems::TextInput` and
-	 * `systems::KeyboardControl`.
+	 * It is shared by the two widgets that contain an input:
+	 * entities::TextField (together with
+	 * components::TextFieldConfiguration) and entities::Search. The widget
+	 * writes the texts and the error flag. systems::TextField reads them in
+	 * the Layout phase to fill and color the label, affix and supporting
+	 * text children.
 	 *
-	 * @see systems::TextField
+	 * Two members are derived, not chosen: systems::TextField and
+	 * systems::Search overwrite the label with the placeholder, and the
+	 * label-floating flag with the state of the field, every frame. The
+	 * text the user types is not stored here; it is the components::Text of
+	 * the input.
+	 *
+	 * @see systems::TextField, components::TextFieldConfiguration
 	 */
 	class TextField: public ecs::Component
 	{
@@ -55,116 +65,152 @@ namespace guillaume::components
 
 		public:
 		/**
-		 * @brief Default constructor for the TextField component.
+		 * @brief Create a field with no text and no error.
 		 */
 		TextField(void) = default;
 
 		/**
-		 * @brief Default destructor for the TextField component.
+		 * @brief Default destructor.
 		 */
 		~TextField(void) = default;
 
 		/**
-		 * @brief Get the placeholder text.
-		 * @return The placeholder.
+		 * @brief Get the placeholder: the text that names the field.
+		 * @return The placeholder; it is also the field's accessible name.
 		 */
 		const std::string &getPlaceholder(void) const;
 
 		/**
-		 * @brief Set the placeholder text.
+		 * @brief Set the placeholder: the text that names the field, such
+		 * as "Email".
+		 *
+		 * It is drawn by the label child, inside the field while it is
+		 * empty and above the input once it floats. Marks the component
+		 * changed only when the text differs.
 		 * @param placeholder The new placeholder.
-		 * @return Reference to this TextField for chaining.
+		 * @return This component, for chaining.
 		 */
 		TextField &setPlaceholder(const std::string &placeholder);
 
 		/**
-		 * @brief Get the floating label.
-		 * @return The label.
+		 * @brief Get the label.
+		 * @return The label, which the systems keep equal to the
+		 * placeholder.
 		 */
 		const std::string &getLabel(void) const;
 
 		/**
-		 * @brief Set the floating label.
+		 * @brief Store the label.
+		 *
+		 * systems::TextField and systems::Search overwrite it with the
+		 * placeholder every frame, so set the placeholder instead. Marks
+		 * the component changed only when the text differs.
 		 * @param label The new label.
-		 * @return Reference to this TextField for chaining.
+		 * @return This component, for chaining.
 		 */
 		TextField &setLabel(const std::string &label);
 
 		/**
-		 * @brief Get the supporting text.
-		 * @return The supporting text.
+		 * @brief Get the helper text shown under the field.
+		 * @return The supporting text; empty for none.
 		 */
 		const std::string &getSupportingText(void) const;
 
 		/**
-		 * @brief Set the supporting text.
+		 * @brief Set the helper text shown under the field, such as "At
+		 * least 8 characters".
+		 *
+		 * While the field is in error and has an error text, the error
+		 * text is shown in its place. Marks the component changed only
+		 * when the text differs.
 		 * @param supportingText The new supporting text.
-		 * @return Reference to this TextField for chaining.
+		 * @return This component, for chaining.
 		 */
 		TextField &setSupportingText(const std::string &supportingText);
 
 		/**
-		 * @brief Get the leading affix text.
-		 * @return The prefix.
+		 * @brief Get the fixed text shown before the input.
+		 * @return The prefix; empty for none.
 		 */
 		const std::string &getPrefix(void) const;
 
 		/**
-		 * @brief Set the leading affix text.
+		 * @brief Set the fixed text shown before the input, such as "$".
+		 *
+		 * Marks the component changed only when the text differs.
 		 * @param prefix The new prefix.
-		 * @return Reference to this TextField for chaining.
+		 * @return This component, for chaining.
 		 */
 		TextField &setPrefix(const std::string &prefix);
 
 		/**
-		 * @brief Get the trailing affix text.
-		 * @return The suffix.
+		 * @brief Get the fixed text shown after the input.
+		 * @return The suffix; empty for none.
 		 */
 		const std::string &getSuffix(void) const;
 
 		/**
-		 * @brief Set the trailing affix text.
+		 * @brief Set the fixed text shown after the input, such as "kg".
+		 *
+		 * Marks the component changed only when the text differs.
 		 * @param suffix The new suffix.
-		 * @return Reference to this TextField for chaining.
+		 * @return This component, for chaining.
 		 */
 		TextField &setSuffix(const std::string &suffix);
 
 		/**
-		 * @brief Get the error text.
-		 * @return The error text.
+		 * @brief Get the message shown under the field while it is in
+		 * error.
+		 * @return The error text; empty for none.
 		 */
 		const std::string &getErrorText(void) const;
 
 		/**
-		 * @brief Set the error text.
+		 * @brief Set the message shown under the field while it is in
+		 * error.
+		 *
+		 * It replaces the supporting text only while isError() is true.
+		 * Marks the component changed only when the text differs.
 		 * @param errorText The new error text.
-		 * @return Reference to this TextField for chaining.
+		 * @return This component, for chaining.
 		 */
 		TextField &setErrorText(const std::string &errorText);
 
 		/**
-		 * @brief Check whether the field is in an error state.
+		 * @brief Tell whether the field is in error.
 		 * @return True when in error.
 		 */
 		bool isError(void) const;
 
 		/**
-		 * @brief Set the error state.
-		 * @param error The new error state.
-		 * @return Reference to this TextField for chaining.
+		 * @brief Put the field in error or clear the error.
+		 *
+		 * A field in error is drawn with the error colors, shows its error
+		 * icon in place of the trailing icon and its error text in place
+		 * of the supporting text. Marks the component changed only when
+		 * the flag differs.
+		 * @param error True when the content is invalid.
+		 * @return This component, for chaining.
 		 */
 		TextField &setError(bool error);
 
 		/**
-		 * @brief Check whether the label is floated.
-		 * @return True when the label is floated.
+		 * @brief Tell whether the label is drawn small, above the input.
+		 * @return True when the label floats; false when it rests in the
+		 * place of the input.
 		 */
 		bool isLabelFloating(void) const;
 
 		/**
-		 * @brief Set whether the label is floated.
-		 * @param floating Whether the label is floated.
-		 * @return Reference to this TextField for chaining.
+		 * @brief Store whether the label floats above the input.
+		 *
+		 * The systems overwrite it every frame: the label of a text field
+		 * widget floats while the field is focused or has content; the
+		 * label of any other entity with this component floats while it
+		 * has content or is in error. Marks the component changed only
+		 * when the flag differs.
+		 * @param floating True when the label floats.
+		 * @return This component, for chaining.
 		 */
 		TextField &setLabelFloating(bool floating);
 	};

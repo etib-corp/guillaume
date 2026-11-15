@@ -35,10 +35,20 @@ namespace guillaume::components
 	Elevation &Elevation::setElevationLevel(theme::ElevationLevel level)
 	{
 		const auto &token = getElevationToken(level);
-		_elevationLevel	  = level;
-		_level	= (level == theme::ElevationLevel::Level0) ? 0.0f : 1.0f;
-		_spread = token.shadowSpread;
-		_color	= utility::graphic::Color32Bit(0, 0, 0, token.shadowAlpha);
+		const float resolvedLevel =
+			(level == theme::ElevationLevel::Level0) ? 0.0f : 1.0f;
+		const utility::graphic::Color32Bit color(0, 0, 0, token.shadowAlpha);
+
+		// Compare the resolved values, not just the level: the same level
+		// resolves differently after a theme change.
+		if (_elevationLevel == level && _level == resolvedLevel
+			&& _spread == token.shadowSpread && _color == color) {
+			return *this;
+		}
+		_elevationLevel = level;
+		_level			= resolvedLevel;
+		_spread			= token.shadowSpread;
+		_color			= color;
 		setHasChanged(true);
 		return *this;
 	}

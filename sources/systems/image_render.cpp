@@ -65,8 +65,6 @@ namespace guillaume::systems
 
 		const auto &transformComponent =
 			getComponent<components::Transform>(entityIdentifier);
-		const auto &boundComponent =
-			getComponent<components::Bound>(entityIdentifier);
 		auto &imageComponent =
 			getComponent<components::Image>(entityIdentifier);
 
@@ -92,12 +90,36 @@ namespace guillaume::systems
 		imageComponent.setLoadState(components::Image::LoadState::Loaded,
 									usingFallback);
 
-		const float halfWidth  = boundComponent.getWidth() / 2.0f;
-		const float halfHeight = boundComponent.getHeight() / 2.0f;
+		// An image built without a size takes its texture's size, in dp, so
+		// it is not an invisible 0 x 0 quad. With only one dimension set, the
+		// other one follows the texture's aspect ratio.
+		auto &bound = getComponent<components::Bound>(entityIdentifier);
+		if (bound.getWidth() <= 0.0f || bound.getHeight() <= 0.0f) {
+			const auto texture = _ressourceProvider->loadTexture(texturePath);
+			if (texture != nullptr && texture->width() > 0
+				&& texture->height() > 0) {
+				const float textureWidth = static_cast<float>(texture->width());
+				const float textureHeight =
+					static_cast<float>(texture->height());
+				if (bound.getWidth() > 0.0f) {
+					bound.setHeight(bound.getWidth() * textureHeight
+									/ textureWidth);
+				} else if (bound.getHeight() > 0.0f) {
+					bound.setWidth(bound.getHeight() * textureWidth
+								   / textureHeight);
+				} else {
+					bound.setWidth(textureWidth).setHeight(textureHeight);
+				}
+			}
+		}
+
+		const auto &boundComponent = bound;
+		const float halfWidth	   = boundComponent.getWidth() / 2.0f;
+		const float halfHeight	   = boundComponent.getHeight() / 2.0f;
 
 		const utility::graphic::PositionF center(
 			transformComponent.getPose().getPosition().x + halfWidth,
-			transformComponent.getPose().getPosition().y + halfHeight,
+			transformComponent.getPose().getPosition().y - halfHeight,
 			transformComponent.getPose().getPosition().z);
 
 		const utility::graphic::Color32Bit white(255, 255, 255, 255);

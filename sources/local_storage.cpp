@@ -28,6 +28,11 @@
 
 namespace guillaume
 {
+	namespace
+	{
+		/// How long a statement waits for another process's lock.
+		constexpr int BusyTimeoutMilliseconds = 5000;
+	}	 // namespace
 
 	LocalStorage::LocalStorage(const std::filesystem::path &storageFilePath)
 		: _storageFilePath(storageFilePath)
@@ -70,6 +75,11 @@ namespace guillaume
 						   : std::string("database not available")));
 			}
 		}
+
+		// Several processes may open the same file at once (an app started
+		// twice, tests run in parallel): wait for the other writer instead of
+		// failing with SQLITE_BUSY.
+		sqlite3_busy_timeout(_database, BusyTimeoutMilliseconds);
 
 		initializeSchema();
 	}

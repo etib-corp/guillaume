@@ -59,9 +59,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto loading = makeLoadingIndicator(registry);
 
-		loading->initialize();
-		loading->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(loading->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 200.0f);
@@ -74,9 +71,6 @@ namespace guillaume::entities::tests
 		auto loading =
 			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
 
-		loading->initialize();
-		loading->update();
-
 		const auto &bound =
 			registry.getComponent<components::Bound>(loading->getIdentifier());
 		EXPECT_FLOAT_EQ(bound.getWidth(), 48.0f);
@@ -87,8 +81,6 @@ namespace guillaume::entities::tests
 	{
 		ecs::ComponentRegistry registry;
 		auto loading = makeLoadingIndicator(registry);
-
-		loading->update();
 
 		const float baseZ =
 			registry
@@ -112,8 +104,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto loading = makeLoadingIndicator(registry);
 
-		loading->initialize();
-
 		EXPECT_TRUE(loading->isRunning());
 	}
 
@@ -122,7 +112,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto loading = makeLoadingIndicator(registry);
 
-		loading->initialize();
 		EXPECT_TRUE(loading->isRunning());
 
 		loading->stop();
@@ -137,9 +126,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto loading =
 			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
-
-		loading->initialize();
-		loading->update();
 
 		ASSERT_FALSE(loading->getEntities().empty());
 		const auto &child = loading->getEntities().front();
@@ -182,7 +168,6 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
 		LoadingIndicator::Builder builder(registry, entityRegistry);
 		auto loading = builder.registerEntity(nullptr);
-		loading->initialize();
 
 		EXPECT_EQ(loading->getVariant(), LoadingIndicator::Variant::Circular);
 		EXPECT_FLOAT_EQ(loading->getSize(), 48.0f);
@@ -203,7 +188,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto loading =
 			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
-		loading->initialize();
 		EXPECT_TRUE(loading->hidesWhenStopped());
 
 		loading->stop();
@@ -230,7 +214,6 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		auto loading =
 			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
-		loading->initialize();
 		EXPECT_EQ(
 			loading->getIndicatorColor(),
 			getActiveScheme().getColor(SchemeColorRole::Primary).getColor());

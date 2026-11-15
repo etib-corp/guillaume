@@ -7,7 +7,9 @@ This document describes how Guillaume is versioned and supported.
 Guillaume uses calendar versioning: `YEAR.MINOR.PATCH` (for example
 `2026.3.1`). The version is bumped automatically when a pull request is merged
 into `main`, from the pull request title
-(see [Commit Conventions](COMMIT_CONVENTIONS.md)):
+(see [Commit Conventions](COMMIT_CONVENTIONS.md)). Pull requests are
+squash-merged, so the title becomes the subject of the commit pushed to
+`main`, and that subject is what `.github/workflows/version-bump.yml` reads:
 
 | PR title starts with | Effect |
 |---|---|
@@ -20,6 +22,18 @@ before applying the bump.
 
 The current version is declared in `CMakeLists.txt`; every version is tagged
 `vYEAR.MINOR.PATCH` and listed in `CHANGELOG.md`.
+
+What happens on a release-worthy merge:
+
+1. The bump writes the new version in `CMakeLists.txt`.
+2. In `CHANGELOG.md` it inserts the version heading under `## [Unreleased]`,
+   so the entries collected there become that version's entries.
+3. It commits both files to `main` and pushes the tag.
+4. It calls `.github/workflows/release.yml`, which builds Linux, macOS and
+   Windows packages and publishes a GitHub release for the tag.
+
+A tag pushed by hand also starts the release, and the release workflow can
+be run by hand on an existing tag from the Actions tab.
 
 ## Compatibility
 
