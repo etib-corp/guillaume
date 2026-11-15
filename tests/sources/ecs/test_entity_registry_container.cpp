@@ -264,4 +264,10 @@ namespace guillaume::ecs::tests
 		EXPECT_EQ(secondTraversal[1]->getIdentifier(), childIdentifier);
 	}
 
+	TEST_F(TestEntityRegistry, AddEntityRejectsNull)
+	{
+		TestEntityRegistryContainer registry;
+
+		EXPECT_THROW(registry.addEntity(nullptr), std::invalid_argument);
+	}
 }	 // namespace guillaume::ecs::tests
