@@ -44,8 +44,8 @@ namespace guillaume::systems
 				entityIdentifier);
 		const auto backdrop = getActiveColor(SchemeColorRole::Backdrop);
 		const float alpha	= state.isVisible()
-			  ? static_cast<float>(backdrop.getAlpha()) * state.getProgress()
-			  : 0.0f;
+			? static_cast<float>(backdrop.getAlpha()) * state.getProgress()
+			: 0.0f;
 
 		componentRegistry.getComponent<components::Scrim>(entityIdentifier)
 			.setColor(backdrop.withAlpha(

@@ -329,7 +329,7 @@ namespace guillaume::entities
 	{
 		auto &registry = getComponentRegistry();
 		auto &state	   = registry.getComponent<components::ProgressIndicator>(
-			   getIdentifier());
+			getIdentifier());
 
 		if (state.isBuilt()) {
 			return;

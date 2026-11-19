@@ -280,8 +280,8 @@ namespace guillaume::systems
 			container = schemeColor(SchemeColorRole::SecondaryContainer);
 		}
 		auto content   = (outlined && !selected)
-			  ? schemeColor(SchemeColorRole::OnSurfaceVariant)
-			  : schemeColor(SchemeColorRole::OnSecondaryContainer);
+			? schemeColor(SchemeColorRole::OnSurfaceVariant)
+			: schemeColor(SchemeColorRole::OnSecondaryContainer);
 		auto iconColor = selected
 			? schemeColor(SchemeColorRole::OnSecondaryContainer)
 			: schemeColor(SchemeColorRole::Primary);

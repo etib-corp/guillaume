@@ -196,12 +196,12 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		int clicks = 0;
 		auto fab   = FloatingActionButton::create(
-			  registry, "add", components::Glyph::Style::Outlined, "",
-			  FloatingActionButton::Variant::Surface,
-			  FloatingActionButton::Size::Medium, false, false, "Add",
-			  [&clicks]() {
-				  ++clicks;
-			  });
+			registry, "add", components::Glyph::Style::Outlined, "",
+			FloatingActionButton::Variant::Surface,
+			FloatingActionButton::Size::Medium, false, false, "Add",
+			[&clicks]() {
+				++clicks;
+			});
 
 		EXPECT_EQ(registry.getComponent<components::Color>(fab->getIdentifier())
 					  .getColor(),

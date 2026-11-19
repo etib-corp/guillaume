@@ -178,8 +178,8 @@ namespace guillaume::systems
 		const bool uppercase	= config.isUppercase();
 		const float iconSize	= iconFontSize(registry, identifier);
 		const float radius		= button_style::getBorderRadius(
-			 size, button_style::getRestingShape(shape, toggle, selected, morph),
-			 pressed);
+			size, button_style::getRestingShape(shape, toggle, selected, morph),
+			pressed);
 
 		// A button joined to its neighbours keeps the corners its group gave
 		// it; writing the uniform radius first would flip Borders each frame.
@@ -223,34 +223,34 @@ namespace guillaume::systems
 		const bool hasLabel = static_cast<bool>(label);
 
 		const float iconWidth	= hasIcon
-			  ? registry.getComponent<components::Bound>(icon.getIdentifier())
-					.getWidth()
-			  : 0.0f;
+			? registry.getComponent<components::Bound>(icon.getIdentifier())
+				  .getWidth()
+			: 0.0f;
 		const float iconHeight	= hasIcon
-			 ? registry.getComponent<components::Bound>(icon.getIdentifier())
-				   .getHeight()
-			 : 0.0f;
+			? registry.getComponent<components::Bound>(icon.getIdentifier())
+				  .getHeight()
+			: 0.0f;
 		const float labelWidth	= hasLabel
-			 ? registry.getComponent<components::Bound>(label.getIdentifier())
-				   .getWidth()
-			 : 0.0f;
+			? registry.getComponent<components::Bound>(label.getIdentifier())
+				  .getWidth()
+			: 0.0f;
 		const float labelHeight = hasLabel
 			? registry.getComponent<components::Bound>(label.getIdentifier())
 				  .getHeight()
 			: 0.0f;
 
 		const float gap			  = (!button.getIconGlyphName().empty()
-							 && !button.getLabelContent().empty())
-					  ? button_style::getSpaceBetweenIconAndLabel(size)
-					  : 0.0f;
+									 && !button.getLabelContent().empty())
+			? button_style::getSpaceBetweenIconAndLabel(size)
+			: 0.0f;
 		const float contentWidth  = iconWidth + gap + labelWidth;
 		const float contentHeight = std::max(iconHeight, labelHeight);
 
 		// The label typography (labelLarge) is independent of the icon size;
 		// the container grows to the larger child and to the M3 minimums.
 		const float minHeight	= (size == Size::ExtraSmall)
-			  ? 0.0f
-			  : components::CommonButton::MinHeight;
+			? 0.0f
+			: components::CommonButton::MinHeight;
 		const float buttonWidth = std::max(
 			{ contentWidth
 				  + button_style::getWidthPadding(size, compact) * 2.0f,

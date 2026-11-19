@@ -129,26 +129,26 @@ namespace guillaume::systems::tests
 			inbox.leadingIcon  = "inbox";
 			inbox.trailingIcon = "more_vert";
 			inbox.onPress	   = [this]() {
-				 ++_inboxPresses;
+				++_inboxPresses;
 			};
 
 			components::List::Item work;
 			work.headline = "Work";
 			work.onPress  = [this]() {
-				 ++_workPresses;
+				++_workPresses;
 			};
 			components::List::Item home;
 			home.headline = "Home";
 			home.disabled = true;
 			home.onPress  = [this]() {
-				 ++_homePresses;
+				++_homePresses;
 			};
 
 			components::List::Item folders;
 			folders.headline = "Folders";
 			folders.children = { work, home };
 			folders.onPress	 = [this]() {
-				 ++_foldersPresses;
+				++_foldersPresses;
 			};
 
 			components::List::Item more;

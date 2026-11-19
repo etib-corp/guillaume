@@ -163,13 +163,13 @@ namespace guillaume::entities::tests
 		Dialog::Builder builder(registry, entityRegistry);
 		int confirmed = 0;
 		auto dialog	  = builder.withTitle("Title")
-						  .withMessage("Message")
-						  .addAction("Cancel")
-						  .addAction("OK",
-									 [&confirmed]() {
+							.withMessage("Message")
+							.addAction("Cancel")
+							.addAction("OK",
+									   [&confirmed]() {
 										 ++confirmed;
-									 })
-						  .registerEntity(nullptr);
+									   })
+							.registerEntity(nullptr);
 
 		ASSERT_EQ(dialog->getActionCount(), 2U);
 		const auto &row = registry.getComponent<components::Layout>(

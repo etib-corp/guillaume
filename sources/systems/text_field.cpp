@@ -172,14 +172,14 @@ namespace guillaume::systems
 				TextField::isLabelFloating(registry, identifier);
 			const bool error		= field.isError();
 			const auto content		= disabled
-					 ? disabledContentColor()
-					 : schemeColor(SchemeColorRole::OnSurface);
+				? disabledContentColor()
+				: schemeColor(SchemeColorRole::OnSurface);
 			const auto variantColor = disabled
 				? disabledContentColor()
 				: schemeColor(SchemeColorRole::OnSurfaceVariant);
 			const auto errorColor	= (error && !disabled)
-				  ? schemeColor(SchemeColorRole::Error)
-				  : transparentColor();
+				? schemeColor(SchemeColorRole::Error)
+				: transparentColor();
 			const auto label		= configuration.getLabelEntity();
 
 			writeChild(registry, label, field.getPlaceholder());

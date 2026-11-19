@@ -30,8 +30,8 @@ namespace guillaume::ecs
 	void SystemRegistry::registerNewSystem(std::unique_ptr<System> system)
 	{
 		if (!system) {
-			throw std::invalid_argument(
-				"SystemRegistry::registerNewSystem: pointer must not be nullptr");
+			throw std::invalid_argument("SystemRegistry::registerNewSystem: "
+										"pointer must not be nullptr");
 		}
 		const auto index = static_cast<std::size_t>(system->getPhase());
 		if (index >= _systems.size()) {

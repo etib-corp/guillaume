@@ -109,7 +109,7 @@ namespace guillaume::systems
 		ecs::ComponentRegistry *storage	 = &registry;
 		const ecs::Entity::Identifier id = identifier;
 		const auto pressed				 = [storage, id]() {
-			  press(*storage, id);
+			press(*storage, id);
 		};
 		const auto released = [storage, id]() {
 			release(*storage, id);

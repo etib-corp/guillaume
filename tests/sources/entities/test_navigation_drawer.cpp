@@ -194,7 +194,7 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
 		NavigationDrawer::Builder builder(registry, entityRegistry);
 		std::size_t reported = 99;
-		auto drawer			 = builder.addSection("Mail")
+		auto drawer = builder.addSection("Mail")
 						  .addDestination("inbox", "Inbox", "24")
 						  .addDestination("send", "Sent")
 						  .addDivider()

@@ -136,8 +136,8 @@ namespace guillaume::systems
 		{
 			const Palette &entry = palette(variant);
 			const auto role		 = isActive(entry, isToggle, isSelected)
-					 ? entry.activeContainer
-					 : entry.idleContainer;
+				? entry.activeContainer
+				: entry.idleContainer;
 
 			return role ? getActiveColor(*role)
 						: utility::graphic::Color32Bit(0, 0, 0, 0);
