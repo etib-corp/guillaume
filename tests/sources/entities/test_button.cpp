@@ -272,11 +272,11 @@ namespace guillaume::entities::tests
 		ecs::ComponentRegistry registry;
 		bool clicked = false;
 		auto button	 = Button::create(
-			 registry, "", components::Glyph::Style::Outlined, "Save", true,
-			 Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
-			 false, false, false, "", [&clicked]() {
-				 clicked = true;
-			 });
+			registry, "", components::Glyph::Style::Outlined, "Save", true,
+			Button::Color::Filled, Button::Shape::Round, Button::Size::Medium,
+			false, false, false, "", [&clicked]() {
+				clicked = true;
+			});
 
 		button->setDisabled(true);
 		EXPECT_TRUE(button->isDisabled());
@@ -321,12 +321,12 @@ namespace guillaume::entities::tests
 
 		button->setTrailingIcon(true);
 
-		const auto iconX = registry
-							   .getComponent<components::Transform>(
-								   button->getIconIdentifier())
-							   .getPose()
-							   .getPosition()
-							   .getX();
+		const auto iconX  = registry
+								.getComponent<components::Transform>(
+									button->getIconIdentifier())
+								.getPose()
+								.getPosition()
+								.getX();
 		const auto labelX = registry
 								.getComponent<components::Transform>(
 									button->getLabelIdentifier())

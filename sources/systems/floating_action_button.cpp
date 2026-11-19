@@ -236,17 +236,17 @@ namespace guillaume::systems
 			registry.getComponent<components::Transform>(identifier).getPose();
 
 		const float iconWidth	= icon
-			  ? registry.getComponent<components::Bound>(icon.getIdentifier())
-					.getWidth()
-			  : 0.0f;
+			? registry.getComponent<components::Bound>(icon.getIdentifier())
+				  .getWidth()
+			: 0.0f;
 		const float iconHeight	= icon
-			 ? registry.getComponent<components::Bound>(icon.getIdentifier())
-				   .getHeight()
-			 : 0.0f;
+			? registry.getComponent<components::Bound>(icon.getIdentifier())
+				  .getHeight()
+			: 0.0f;
 		const float labelWidth	= label
-			 ? registry.getComponent<components::Bound>(label.getIdentifier())
-				   .getWidth()
-			 : 0.0f;
+			? registry.getComponent<components::Bound>(label.getIdentifier())
+				  .getWidth()
+			: 0.0f;
 		const float labelHeight = label
 			? registry.getComponent<components::Bound>(label.getIdentifier())
 				  .getHeight()

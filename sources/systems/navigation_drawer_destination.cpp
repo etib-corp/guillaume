@@ -211,12 +211,12 @@ namespace guillaume::systems
 		const bool selected	 = isSelected(componentRegistry, entityIdentifier);
 		const bool disabled	 = isDisabled(componentRegistry, entityIdentifier);
 		const auto pill		 = selected && !disabled
-				 ? schemeColor(SchemeColorRole::SecondaryContainer)
-				 : transparentColor();
+			? schemeColor(SchemeColorRole::SecondaryContainer)
+			: transparentColor();
 		const auto content	 = disabled
-			  ? disabledContentColor()
-			  : (selected ? schemeColor(SchemeColorRole::OnSecondaryContainer)
-						  : schemeColor(SchemeColorRole::OnSurfaceVariant));
+			? disabledContentColor()
+			: (selected ? schemeColor(SchemeColorRole::OnSecondaryContainer)
+						: schemeColor(SchemeColorRole::OnSurfaceVariant));
 		const auto pillColor = interaction::stateLayerColor(
 			componentRegistry, entityIdentifier, pill, content);
 

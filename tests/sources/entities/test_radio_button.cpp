@@ -253,7 +253,7 @@ namespace guillaume::entities::tests
 		ecs::EntityRegistryContainer entityRegistry;
 		RadioGroup::Builder builder(registry, entityRegistry);
 		std::size_t reported = 99;
-		auto group			 = builder.addOption("A")
+		auto group = builder.addOption("A")
 						 .addOption("B")
 						 .addOption("C")
 						 .withValue(0)

@@ -285,8 +285,8 @@ namespace guillaume::entities
 		// destination entity can build.
 		const auto &destinations = bar.getDestinationEntities();
 		const auto destination	 = index < destinations.size()
-			  ? getEntity<BarDestination>(destinations[index])
-			  : nullptr;
+			? getEntity<BarDestination>(destinations[index])
+			: nullptr;
 		if (destination != nullptr) {
 			destination->setBadge(badge);
 		}

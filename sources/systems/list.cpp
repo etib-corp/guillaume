@@ -183,15 +183,15 @@ namespace guillaume::systems
 
 			const bool enabled	 = interaction::isEnabled(registry, row.view);
 			auto headlineColor	 = enabled
-				  ? schemeColor(SchemeColorRole::OnSurface)
-				  : disabledContentColor();
+				? schemeColor(SchemeColorRole::OnSurface)
+				: disabledContentColor();
 			auto supportingColor = enabled
 				? schemeColor(SchemeColorRole::OnSurfaceVariant)
 				: disabledContentColor();
 			auto iconColor		 = supportingColor;
 			auto rowColor		 = interaction::stateLayerColor(
-				   registry, row.view, transparentColor(),
-				   schemeColor(SchemeColorRole::OnSurface));
+				registry, row.view, transparentColor(),
+				schemeColor(SchemeColorRole::OnSurface));
 
 			if (hidden) {
 				headlineColor	= transparentColor();

@@ -65,24 +65,24 @@ namespace guillaume::entities::tests
 			SegmentedButton::SelectionMode::Single,
 			std::function<void(std::size_t)>());
 
-		const auto firstX = registry
-								.getComponent<components::Transform>(
-									segmented->getSegmentIdentifier(0))
-								.getPose()
-								.getPosition()
-								.getX();
+		const auto firstX  = registry
+								 .getComponent<components::Transform>(
+									 segmented->getSegmentIdentifier(0))
+								 .getPose()
+								 .getPosition()
+								 .getX();
 		const auto secondX = registry
 								 .getComponent<components::Transform>(
 									 segmented->getSegmentIdentifier(1))
 								 .getPose()
 								 .getPosition()
 								 .getX();
-		const auto thirdX = registry
-								.getComponent<components::Transform>(
-									segmented->getSegmentIdentifier(2))
-								.getPose()
-								.getPosition()
-								.getX();
+		const auto thirdX  = registry
+								 .getComponent<components::Transform>(
+									 segmented->getSegmentIdentifier(2))
+								 .getPose()
+								 .getPosition()
+								 .getX();
 
 		EXPECT_GT(secondX, firstX);
 		EXPECT_GT(thirdX, secondX);

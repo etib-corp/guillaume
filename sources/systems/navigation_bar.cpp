@@ -231,10 +231,10 @@ namespace guillaume::systems
 			entityIdentifier);
 		const float padding			 = layout.getPadding();
 		const float width			 = layout.hasFixedWidth()
-					   ? layout.getFixedWidth()
-					   : componentRegistry
-					 .getComponent<components::Bound>(entityIdentifier)
-					 .getWidth();
+			? layout.getFixedWidth()
+			: componentRegistry
+				  .getComponent<components::Bound>(entityIdentifier)
+				  .getWidth();
 		const float destinationWidth = destinations.empty()
 			? 0.0f
 			: std::max(0.0f,

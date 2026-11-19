@@ -76,7 +76,7 @@ namespace guillaume::systems::tests
 			paste.trailingIcon = "content_paste";
 			paste.dense		   = true;
 			paste.onPress	   = [this]() {
-				 ++_pastes;
+				++_pastes;
 			};
 
 			components::Menu::Row copyRow;

@@ -24,4 +24,9 @@
 
 namespace guillaume::ecs::tests
 {
+	TEST(TestSystemReqistry, RegisterNullThrow)
+	{
+		SystemRegistry systems;
+		EXPECT_THROW(systems.registerNewSystem(nullptr), std::invalid_argument);
+	}
 }	 // namespace guillaume::ecs::tests

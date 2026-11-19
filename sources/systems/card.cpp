@@ -171,8 +171,8 @@ namespace guillaume::systems
 						t);
 
 					const auto level   = t >= 0.5f
-						  ? theme::ElevationLevel::Level2
-						  : theme::ElevationLevel::Level1;
+						? theme::ElevationLevel::Level2
+						: theme::ElevationLevel::Level1;
 					const float spread = rest.shadowSpread
 						+ (raised.shadowSpread - rest.shadowSpread) * t;
 					const utility::graphic::Color32Bit shadow(

@@ -199,11 +199,11 @@ namespace guillaume::systems
 			.setColor(transparentColor());
 
 		const auto pillColor  = selected
-			 ? schemeColor(SchemeColorRole::SecondaryContainer)
-			 : transparentColor();
+			? schemeColor(SchemeColorRole::SecondaryContainer)
+			: transparentColor();
 		const auto iconColor  = selected
-			 ? schemeColor(SchemeColorRole::OnSecondaryContainer)
-			 : schemeColor(SchemeColorRole::OnSurfaceVariant);
+			? schemeColor(SchemeColorRole::OnSecondaryContainer)
+			: schemeColor(SchemeColorRole::OnSurfaceVariant);
 		const auto labelColor = selected
 			? schemeColor(SchemeColorRole::OnSurface)
 			: schemeColor(SchemeColorRole::OnSurfaceVariant);

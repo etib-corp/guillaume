@@ -274,7 +274,7 @@ namespace guillaume::entities
 	{
 		auto &registry = getComponentRegistry();
 		auto &state	   = registry.getComponent<components::LoadingIndicator>(
-			   getIdentifier());
+			getIdentifier());
 
 		if (state.isBuilt()) {
 			return;

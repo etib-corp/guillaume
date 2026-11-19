@@ -50,6 +50,10 @@ namespace guillaume::ecs
 
 	void EntityRegistry::addEntity(std::shared_ptr<Entity> entity)
 	{
+		if (!entity) {
+			throw std::invalid_argument(
+				"EntityRegistry::addEntity: pointer must not be nullptr");
+		}
 		accessDirectEntities().push_back(entity);
 		++getTreeVersion();
 	}

@@ -243,17 +243,17 @@ namespace guillaume::entities::tests
 		int searches   = 0;
 		int navigation = 0;
 		auto appBar	   = builder.withTitle("Inbox")
-						  .withNavigationIcon("arrow_back")
-						  .withOnNavigation([&navigation]() {
+							 .withNavigationIcon("arrow_back")
+							 .withOnNavigation([&navigation]() {
 							  ++navigation;
-						  })
-						  .addAction(
-							  "search",
-							  [&searches]() {
+							 })
+							 .addAction(
+								 "search",
+								 [&searches]() {
 								  ++searches;
-							  },
-							  "Search")
-						  .registerEntity(nullptr);
+								 },
+								 "Search")
+							 .registerEntity(nullptr);
 
 		auto action = appBar->getActionButton(0);
 		ASSERT_NE(action, nullptr);
