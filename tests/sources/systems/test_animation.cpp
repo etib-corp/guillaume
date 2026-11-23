@@ -124,6 +124,40 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(animation.getElapsed(), 0.0f);
 	}
 
+	TEST_F(TestAnimation, ZeroDurationProgressDoesNotDependOnPlaying)
+	{
+		components::Animation animation;
+
+		animation.setDuration(0.0f);
+		EXPECT_FLOAT_EQ(animation.getProgress(), 1.0f);
+
+		animation.play();
+		EXPECT_TRUE(animation.isPlaying());
+		EXPECT_FLOAT_EQ(animation.getProgress(), 1.0f);
+
+		animation.advance(0.1f);
+		EXPECT_FALSE(animation.isPlaying());
+		EXPECT_FLOAT_EQ(animation.getProgress(), 1.0f);
+
+		animation.setLooping(true);
+		animation.play();
+		animation.advance(0.1f);
+		EXPECT_TRUE(animation.isPlaying());
+		EXPECT_FLOAT_EQ(animation.getProgress(), 1.0f);
+
+		animation.stop();
+		EXPECT_FLOAT_EQ(animation.getProgress(), 1.0f);
+	}
+
+	TEST_F(TestAnimation, NegativeDurationProgressIsComplete)
+	{
+		components::Animation animation;
+
+		animation.setDuration(-1.0f);
+		animation.play();
+		EXPECT_FLOAT_EQ(animation.getProgress(), 1.0f);
+	}
+
 	TEST_F(TestAnimation, SystemUsesEngineDeltaTime)
 	{
 		ecs::Entity entity;

@@ -66,7 +66,8 @@ namespace guillaume::components
 	float Animation::getProgress(void) const
 	{
 		if (_duration <= 0.0f) {
-			return _playing ? 0.0f : 1.0f;
+			// A run without duration is complete as soon as it exists.
+			return 1.0f;
 		}
 		return std::clamp(_elapsed / _duration, 0.0f, 1.0f);
 	}
