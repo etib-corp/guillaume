@@ -178,6 +178,29 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(presses, 2);
 	}
 
+	TEST_F(TestNavigationBarSystem, FirstPressOnDestinationZeroIsReported)
+	{
+		std::size_t reported = 99;
+		int changes			 = 0;
+		_registry.getComponent<components::NavigationBar>(_entity)
+			.setOnIndexChange([&reported, &changes](std::size_t index) {
+				reported = index;
+				++changes;
+			});
+		// Nothing is selected yet.
+		ASSERT_FALSE(isSelected(0));
+
+		TestNavigationBarDestinationSystem::click(_registry, _destinations[0]);
+
+		EXPECT_TRUE(isSelected(0));
+		EXPECT_EQ(reported, 0U);
+		EXPECT_EQ(changes, 1);
+
+		TestNavigationBarDestinationSystem::click(_registry, _destinations[0]);
+
+		EXPECT_EQ(changes, 1);
+	}
+
 	TEST_F(TestNavigationBarSystem, SelectingADestinationDeselectsTheOthers)
 	{
 		guillaume::systems::NavigationBar::select(_registry, _entity, 0);

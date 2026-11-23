@@ -231,8 +231,10 @@ namespace guillaume::systems
 			return;
 		}
 
-		const bool changed =
-			selectedIndex(componentRegistry, entityIdentifier) != index;
+		// selectedIndex() is 0 both for destination 0 and for no selection:
+		// ask the pressed destination itself.
+		const bool changed = !NavigationDrawerDestination::isSelected(
+			componentRegistry, destinations[index]);
 		select(componentRegistry, entityIdentifier, index);
 
 		// Copy: the callback may replace itself.

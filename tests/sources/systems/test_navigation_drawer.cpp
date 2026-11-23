@@ -202,6 +202,35 @@ namespace guillaume::systems::tests
 				.isEnabled());
 	}
 
+	TEST_F(TestNavigationDrawerSystem, FirstPressOnDestinationZeroIsReported)
+	{
+		std::size_t reported = 99;
+		int changes			 = 0;
+		drawer().setOnIndexChange([&reported, &changes](std::size_t index) {
+			reported = index;
+			++changes;
+		});
+		// Nothing is selected yet.
+		ASSERT_FALSE(
+			_registry.getComponent<components::Selectable>(_destinations[0])
+				.isSelected());
+
+		TestNavigationDrawerDestinationSystem::click(_registry,
+													 _destinations[0]);
+
+		EXPECT_EQ(selected(), 0U);
+		EXPECT_TRUE(
+			_registry.getComponent<components::Selectable>(_destinations[0])
+				.isSelected());
+		EXPECT_EQ(reported, 0U);
+		EXPECT_EQ(changes, 1);
+
+		TestNavigationDrawerDestinationSystem::click(_registry,
+													 _destinations[0]);
+
+		EXPECT_EQ(changes, 1);
+	}
+
 	TEST_F(TestNavigationDrawerSystem, SelectingADestinationDeselectsTheOthers)
 	{
 		guillaume::systems::NavigationDrawer::select(_registry, _entity, 0);
