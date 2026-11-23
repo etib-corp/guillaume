@@ -365,4 +365,34 @@ namespace guillaume::systems::tests
 		EXPECT_FALSE(_focusSystem->getFocusedEntity().has_value());
 	}
 
+	TEST_F(TestFocusSystem, ChangingTheRegistryForgetsTheFocusedEntities)
+	{
+		const auto first  = createFocusableEntity();
+		const auto second = createFocusableEntity();
+		bool focusLost	  = false;
+
+		_componentRegistry.getComponent<components::Focus>(second)
+			.setOnFocusLostHandler([&focusLost]() {
+				focusLost = true;
+			});
+
+		_focusSystem->prepare();
+		_focusSystem->setFocus(first);
+		_focusSystem->setFocus(second);
+		_focusSystem->prepare();
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), second);
+		EXPECT_EQ(_focusSystem->getLastFocusedEntity(), first);
+
+		// Another scene: another registry is bound to the same system.
+		ecs::ComponentRegistry otherRegistry;
+		_focusSystem->bindComponentRegistry(otherRegistry);
+		_focusSystem->prepare();
+
+		EXPECT_FALSE(_focusSystem->getFocusedEntity().has_value());
+		EXPECT_FALSE(_focusSystem->getLastFocusedEntity().has_value());
+		EXPECT_FALSE(focusLost);
+
+		_focusSystem->bindComponentRegistry(_componentRegistry);
+	}
+
 }	 // namespace guillaume::systems::tests

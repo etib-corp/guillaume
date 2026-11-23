@@ -301,6 +301,21 @@ namespace guillaume::systems
 
 	void Focus::prepare(void)
 	{
+		// The remembered identifiers belong to the scene they were set in:
+		// forget them when another scene's registry is bound. No handler is
+		// called and no flag is written, the bound registry is not theirs.
+		const ecs::ComponentRegistry *registry = &this->getComponentRegistry();
+		if (registry != _lastRegistry) {
+			if (_lastRegistry != nullptr) {
+				if (_focusedEntity.has_value()) {
+					_engine.setShouldCaptureViewportInput(true);
+				}
+				_focusedEntity	   = std::nullopt;
+				_lastFocusedEntity = std::nullopt;
+			}
+			_lastRegistry = registry;
+		}
+
 		_focusables.clear();
 		consumeNextEvent();
 	}
