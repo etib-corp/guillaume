@@ -103,6 +103,7 @@ set(TEST_SOURCES
     sources/test_engine.cpp
     sources/test_environment.cpp
     sources/test_metadata.cpp
+    sources/test_scene.cpp
     sources/test_storage.cpp
     sources/test_theme.cpp
 )
