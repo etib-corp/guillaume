@@ -114,8 +114,7 @@ namespace guillaume::components
 		/**
 		 * @brief Set the font size.
 		 *
-		 * Always marks the component changed, even when the size is the
-		 * same.
+		 * Marks the component changed only when the size differs.
 		 *
 		 * @param fontSize The font size, in dp.
 		 * @return This component, for chaining.
@@ -201,7 +200,7 @@ namespace guillaume::components
 		/**
 		 * @brief Move the editing cursor.
 		 *
-		 * Always marks the component changed.
+		 * Marks the component changed only when the cursor moves.
 		 *
 		 * @param position A byte offset into the content; a value beyond
 		 * the end is clamped to the content size. It is not checked

@@ -315,7 +315,8 @@ namespace guillaume::components
 		 *
 		 * systems::NavigationDrawer raises it while it selects a
 		 * destination, so the selection change the destination reports back
-		 * is ignored. Marks the component changed when the flag differs.
+		 * is ignored. The guard is transient: it does not mark the
+		 * component changed.
 		 * @param updating True while the system changes the selection.
 		 * @return This component, for chaining.
 		 */

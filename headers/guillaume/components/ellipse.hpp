@@ -77,8 +77,8 @@ namespace guillaume::components
 		/**
 		 * @brief Set how many straight segments approximate the outline.
 		 *
-		 * More segments give a smoother curve for more triangles. Always
-		 * marks the component changed, even when the count is the same.
+		 * More segments give a smoother curve for more triangles. Marks
+		 * the component changed only when the stored count differs.
 		 *
 		 * @param segments The segment count; a value below 1 is stored as
 		 * 1.

@@ -69,8 +69,8 @@ namespace guillaume::components
 		/**
 		 * @brief Record whether a hand pokes the entity.
 		 *
-		 * Called by systems::HandPoke; it calls no handler. Always marks the
-		 * component changed, even when the flag is the same.
+		 * Called by systems::HandPoke; it calls no handler. Marks the
+		 * component changed only when the flag differs.
 		 *
 		 * @param poking True when the ray of the poke event hits the entity.
 		 */

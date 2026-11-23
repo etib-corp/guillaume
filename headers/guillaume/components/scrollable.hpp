@@ -49,8 +49,8 @@ namespace guillaume::components
 	 * This component only holds the offset: no system of the library moves
 	 * the children by it, the code that places the content reads
 	 * getContentOffset(). Sizes and offsets are in dp, like Bound. The
-	 * setters store what they are given and always mark the component
-	 * changed; only clampOffset() keeps the offset in range.
+	 * setters store what they are given and mark the component changed
+	 * when the value differs; only clampOffset() keeps the offset in range.
 	 *
 	 * @see systems::Scroll, Bound
 	 */
@@ -90,7 +90,8 @@ namespace guillaume::components
 		 * @brief Scroll the content to an offset.
 		 *
 		 * The value is stored as given: call clampOffset() afterwards to keep
-		 * it in range. Always marks the component changed.
+		 * it in range. Marks the component changed only when the offset
+		 * differs.
 		 *
 		 * @param offset The offset from the top-left of the content, in dp.
 		 * @return This component, to chain calls.
@@ -106,8 +107,8 @@ namespace guillaume::components
 		/**
 		 * @brief Set the full size of the scrollable content.
 		 *
-		 * The offset is not clamped again. Always marks the component
-		 * changed.
+		 * The offset is not clamped again. Marks the component changed only
+		 * when the size differs.
 		 *
 		 * @param size The content size, in dp. A content smaller than the
 		 * viewport cannot scroll.
@@ -124,7 +125,7 @@ namespace guillaume::components
 		/**
 		 * @brief Set how much one unit of wheel movement scrolls.
 		 *
-		 * Always marks the component changed.
+		 * Marks the component changed only when the step differs.
 		 *
 		 * @param step The factor applied to the wheel offset, per axis: 0
 		 * locks an axis, a negative value reverses it.
@@ -146,8 +147,8 @@ namespace guillaume::components
 		/**
 		 * @brief Bring the offset back between 0 and getMaxOffset().
 		 *
-		 * Always marks the component changed, even when the offset was
-		 * already in range.
+		 * Marks the component changed only when the offset was out of range
+		 * and had to move.
 		 *
 		 * @param viewport The size of the visible window, in dp; usually the
 		 * entity's Bound.

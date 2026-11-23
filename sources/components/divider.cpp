@@ -91,6 +91,9 @@ namespace guillaume::components
 
 	Divider &Divider::setColor(const utility::graphic::Color32Bit &value)
 	{
+		if (_color == value) {
+			return *this;
+		}
 		_color = value;
 		setHasChanged(true);
 		return *this;

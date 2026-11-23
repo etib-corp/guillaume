@@ -34,6 +34,9 @@ namespace guillaume::components
 	Scrollable &
 		Scrollable::setContentOffset(const utility::math::Vector2F &offset)
 	{
+		if (_contentOffset == offset) {
+			return *this;
+		}
 		_contentOffset = offset;
 		setHasChanged(true);
 		return *this;
@@ -46,6 +49,9 @@ namespace guillaume::components
 
 	Scrollable &Scrollable::setContentSize(const utility::math::Vector2F &size)
 	{
+		if (_contentSize == size) {
+			return *this;
+		}
 		_contentSize = size;
 		setHasChanged(true);
 		return *this;
@@ -58,6 +64,9 @@ namespace guillaume::components
 
 	Scrollable &Scrollable::setScrollStep(const utility::math::Vector2F &step)
 	{
+		if (_scrollStep == step) {
+			return *this;
+		}
 		_scrollStep = step;
 		setHasChanged(true);
 		return *this;
@@ -74,9 +83,8 @@ namespace guillaume::components
 	Scrollable &Scrollable::clampOffset(const utility::graphic::SizeF &viewport)
 	{
 		const auto maxOffset = getMaxOffset(viewport);
-		_contentOffset.x	 = std::clamp(_contentOffset.x, 0.0f, maxOffset.x);
-		_contentOffset.y	 = std::clamp(_contentOffset.y, 0.0f, maxOffset.y);
-		setHasChanged(true);
-		return *this;
+		return setContentOffset(utility::math::Vector2F(
+			{ std::clamp(_contentOffset.x, 0.0f, maxOffset.x),
+			  std::clamp(_contentOffset.y, 0.0f, maxOffset.y) }));
 	}
 }	 // namespace guillaume::components

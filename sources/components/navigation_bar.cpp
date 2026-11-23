@@ -121,10 +121,8 @@ namespace guillaume::components
 
 	NavigationBar &NavigationBar::setUpdatingSelection(bool updating)
 	{
-		if (_updatingSelection != updating) {
-			_updatingSelection = updating;
-			setHasChanged(true);
-		}
+		// A transient guard, not a value of the component: it is not marked.
+		_updatingSelection = updating;
 		return *this;
 	}
 }	 // namespace guillaume::components
