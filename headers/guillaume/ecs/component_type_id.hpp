@@ -67,6 +67,10 @@ namespace guillaume::ecs
 	 * starting at 0, and stay the same for the rest of the program. They are
 	 * not stable from one run to the next, so never store them.
 	 *
+	 * get() can be called from several threads, including for types that
+	 * were never asked for before: each type still gets one number, and no
+	 * two types share one.
+	 *
 	 * @code
 	 * Entity::Signature signature;
 	 * signature.set(ComponentTypeId::get<components::Bound>());

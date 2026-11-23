@@ -22,7 +22,11 @@
 
 #include "test_ecs.hpp"
 
+#include <array>
+#include <atomic>
 #include <memory>
+#include <set>
+#include <thread>
 
 #include <guillaume/ecs/component_storage.hpp>
 #include <guillaume/ecs/component_type_id.hpp>
@@ -52,6 +56,14 @@ namespace guillaume::tests
 			OtherComponent(void)		   = default;
 			~OtherComponent(void) override = default;
 		};
+
+		template<std::size_t Index> class ConcurrentComponent:
+			public ecs::Component
+		{
+			public:
+			ConcurrentComponent(void)			= default;
+			~ConcurrentComponent(void) override = default;
+		};
 	}	 // namespace
 
 	TEST_F(Test, ComponentTypeIdsAreStablePerType)
@@ -69,6 +81,50 @@ namespace guillaume::tests
 	{
 		EXPECT_NE(ecs::ComponentTypeId::get<DummyComponent>(),
 				  ecs::ComponentTypeId::get<OtherComponent>());
+	}
+
+	TEST_F(Test, ComponentTypeIdsAreUniqueWhenFirstUsedFromSeveralThreads)
+	{
+		std::array<std::size_t, 4> identifiers {};
+		std::array<std::thread, 4> threads;
+		std::atomic<bool> start { false };
+
+		const auto wait = [&start]() {
+			while (!start.load()) {
+				std::this_thread::yield();
+			}
+		};
+		threads[0] = std::thread([&]() {
+			wait();
+			identifiers[0] =
+				ecs::ComponentTypeId::get<ConcurrentComponent<0>>();
+		});
+		threads[1] = std::thread([&]() {
+			wait();
+			identifiers[1] =
+				ecs::ComponentTypeId::get<ConcurrentComponent<1>>();
+		});
+		threads[2] = std::thread([&]() {
+			wait();
+			identifiers[2] =
+				ecs::ComponentTypeId::get<ConcurrentComponent<2>>();
+		});
+		threads[3] = std::thread([&]() {
+			wait();
+			identifiers[3] =
+				ecs::ComponentTypeId::get<ConcurrentComponent<3>>();
+		});
+		start.store(true);
+		for (auto &thread: threads) {
+			thread.join();
+		}
+
+		const std::set<std::size_t> unique(identifiers.begin(),
+										   identifiers.end());
+		EXPECT_EQ(unique.size(), identifiers.size());
+		for (const auto identifier: identifiers) {
+			EXPECT_LT(identifier, ecs::MaxComponentTypes);
+		}
 	}
 
 	TEST_F(Test, StorageStartsEmpty)

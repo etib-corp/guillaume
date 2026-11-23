@@ -22,7 +22,10 @@
 
 #include "ecs/test_entity_registry.hpp"
 
+#include <array>
+#include <atomic>
 #include <memory>
+#include <thread>
 
 #include "guillaume/ecs/level_order_traveler.hpp"
 #include "guillaume/ecs/parent_entity.hpp"
@@ -252,4 +255,43 @@ namespace guillaume::ecs::tests
 		EXPECT_EQ(secondTraversal[1]->getIdentifier(), childIdentifier);
 	}
 
+	TEST_F(TestEntityRegistry, SeparateTreesCanBeMutatedFromSeparateThreads)
+	{
+		constexpr std::size_t iterations = 20000;
+		std::array<std::thread, 4> threads;
+		std::array<std::size_t, 4> staleTraversals {};
+		std::atomic<bool> start { false };
+
+		for (std::size_t index = 0; index < threads.size(); ++index) {
+			threads[index] = std::thread([&start, &staleTraversals, index]() {
+				// Each thread owns its tree; only the tree version is shared.
+				TestEntityRegistryContainer registry;
+
+				while (!start.load()) {
+					std::this_thread::yield();
+				}
+				for (std::size_t iteration = 0; iteration < iterations;
+					 ++iteration) {
+					auto entity = std::make_shared<DummyEntity>();
+
+					registry.addEntity(entity);
+					if (registry.getEntitiesBreadthFirst().size() != 1U) {
+						++staleTraversals[index];
+					}
+					registry.removeEntity(entity->getIdentifier());
+					if (!registry.getEntitiesBreadthFirst().empty()) {
+						++staleTraversals[index];
+					}
+				}
+			});
+		}
+		start.store(true);
+		for (auto &thread: threads) {
+			thread.join();
+		}
+
+		for (const auto stale: staleTraversals) {
+			EXPECT_EQ(stale, 0U);
+		}
+	}
 }	 // namespace guillaume::ecs::tests
