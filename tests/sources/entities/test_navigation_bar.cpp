@@ -107,6 +107,38 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(bar->getSelectedIndex(), 2U);
 	}
 
+	TEST_F(TestNavigationBar, AddDestinationKeepsTheSelection)
+	{
+		ecs::ComponentRegistry registry;
+		auto bar = makeNavigationBar(registry, makeDestinations(3));
+		const auto second = bar->getDestinationIdentifier(1);
+
+		bar->select(2);
+		bar->addDestination("home", "Dest 3");
+
+		EXPECT_EQ(bar->getDestinationCount(), 4U);
+		EXPECT_EQ(bar->getSelectedIndex(), 2U);
+		EXPECT_EQ(bar->getDestinationIdentifier(1), second);
+		EXPECT_FALSE(registry
+						 .getComponent<components::Selectable>(
+							 bar->getDestinationIdentifier(3))
+						 .isSelected());
+	}
+
+	TEST_F(TestNavigationBar, FirstDestinationOfAnEmptyBarIsSelected)
+	{
+		ecs::ComponentRegistry registry;
+		auto bar = makeNavigationBar(registry);
+
+		bar->addDestination("home", "Dest 0");
+
+		EXPECT_EQ(bar->getSelectedIndex(), 0U);
+		EXPECT_TRUE(registry
+						.getComponent<components::Selectable>(
+							bar->getDestinationIdentifier(0))
+						.isSelected());
+	}
+
 	TEST_F(TestNavigationBar, SelectionIsExclusive)
 	{
 		ecs::ComponentRegistry registry;
