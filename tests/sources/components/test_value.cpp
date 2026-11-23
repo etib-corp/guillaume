@@ -134,4 +134,73 @@ namespace guillaume::components::tests
 		EXPECT_EQ(calls, 1);
 	}
 
+	TEST_F(TestValue, ValueSetMinAboveMaxRaisesMax)
+	{
+		Value value;
+
+		value.setMin(10.0f);
+		EXPECT_FLOAT_EQ(value.getMin(), 10.0f);
+		EXPECT_FLOAT_EQ(value.getMax(), 10.0f);
+		EXPECT_FLOAT_EQ(value.getValue(), 10.0f);
+
+		value.setMax(20.0f);
+		EXPECT_FLOAT_EQ(value.getMin(), 10.0f);
+		EXPECT_FLOAT_EQ(value.getMax(), 20.0f);
+		EXPECT_FLOAT_EQ(value.getValue(), 10.0f);
+	}
+
+	TEST_F(TestValue, ValueSetMaxBelowMinLowersMin)
+	{
+		Value value;
+
+		value.setMax(-5.0f);
+		EXPECT_FLOAT_EQ(value.getMin(), -5.0f);
+		EXPECT_FLOAT_EQ(value.getMax(), -5.0f);
+		EXPECT_FLOAT_EQ(value.getValue(), -5.0f);
+	}
+
+	TEST_F(TestValue, ValueHandlerFiresOnceWhenABoundMovesTheOther)
+	{
+		Value value;
+		int calls  = 0;
+		float last = -1.0f;
+
+		value.setOnChangedHandler([&calls, &last](float changed) {
+			++calls;
+			last = changed;
+		});
+
+		value.setMin(10.0f);
+		EXPECT_EQ(calls, 1);
+		EXPECT_FLOAT_EQ(last, 10.0f);
+	}
+
+	TEST_F(TestValue, RangeSetMinAboveMaxRaisesMax)
+	{
+		Range range;
+
+		range.setMin(10.0f);
+		EXPECT_FLOAT_EQ(range.getMin(), 10.0f);
+		EXPECT_FLOAT_EQ(range.getMax(), 10.0f);
+		EXPECT_FLOAT_EQ(range.getLow(), 10.0f);
+		EXPECT_FLOAT_EQ(range.getHigh(), 10.0f);
+
+		range.setMax(20.0f);
+		EXPECT_FLOAT_EQ(range.getMin(), 10.0f);
+		EXPECT_FLOAT_EQ(range.getMax(), 20.0f);
+		EXPECT_FLOAT_EQ(range.getLow(), 10.0f);
+		EXPECT_FLOAT_EQ(range.getHigh(), 10.0f);
+	}
+
+	TEST_F(TestValue, RangeSetMaxBelowMinLowersMin)
+	{
+		Range range;
+
+		range.setMax(-5.0f);
+		EXPECT_FLOAT_EQ(range.getMin(), -5.0f);
+		EXPECT_FLOAT_EQ(range.getMax(), -5.0f);
+		EXPECT_FLOAT_EQ(range.getLow(), -5.0f);
+		EXPECT_FLOAT_EQ(range.getHigh(), -5.0f);
+	}
+
 }	 // namespace guillaume::components::tests
