@@ -22,6 +22,8 @@
 
 #include "guillaume/local_storage.hpp"
 
+#include <cstdlib>
+#include <stdexcept>
 #include <system_error>
 
 #include <sqlite3.h>
@@ -32,6 +34,43 @@ namespace guillaume
 	{
 		/// How long a statement waits for another process's lock.
 		constexpr int BusyTimeoutMilliseconds = 5000;
+
+		/// The platform this library is compiled for.
+		LocalStorage::Platform currentPlatform(void) noexcept
+		{
+#if defined(_WIN32)
+			return LocalStorage::Platform::Windows;
+#elif defined(__APPLE__)
+			return LocalStorage::Platform::MacOS;
+#else
+			return LocalStorage::Platform::Linux;
+#endif
+		}
+
+		/// Read a variable of the process environment.
+		std::optional<std::string> readEnvironment(const std::string &name)
+		{
+			const char *value = std::getenv(name.c_str());
+
+			if (value == nullptr) {
+				return std::nullopt;
+			}
+			return std::string(value);
+		}
+
+		/// Reset a statement whose step failed and build the exception
+		/// that reports it. The reason is read before the reset.
+		std::runtime_error
+			stepFailure(const std::string &action,
+						const std::filesystem::path &storageFilePath,
+						sqlite3 *database, sqlite3_stmt *query)
+		{
+			const std::string reason = sqlite3_errmsg(database);
+
+			sqlite3_reset(query);
+			return std::runtime_error(action + ": " + storageFilePath.string()
+									  + " - reason: " + reason);
+		}
 	}	 // namespace
 
 	LocalStorage::LocalStorage(const std::filesystem::path &storageFilePath)
@@ -129,9 +168,58 @@ namespace guillaume
 		return _persistent;
 	}
 
+	std::filesystem::path
+		LocalStorage::userDataDirectory(Platform platform,
+										const EnvironmentReader &environment,
+										const std::filesystem::path &fallback)
+	{
+		// An unset variable and an empty one are handled alike.
+		const auto read =
+			[&environment](
+				const char *name) -> std::optional<std::filesystem::path> {
+			if (!environment) {
+				return std::nullopt;
+			}
+			const auto value = environment(name);
+			if (!value.has_value() || value->empty()) {
+				return std::nullopt;
+			}
+			return std::filesystem::path(*value);
+		};
+
+		switch (platform) {
+			case Platform::Windows:
+				if (const auto localAppData = read("LOCALAPPDATA")) {
+					return *localAppData;
+				}
+				break;
+			case Platform::Linux:
+				// The XDG specification asks to ignore a relative path.
+				if (const auto dataHome = read("XDG_DATA_HOME");
+					dataHome.has_value() && dataHome->has_root_directory()) {
+					return *dataHome;
+				}
+				if (const auto home = read("HOME")) {
+					return *home / ".local" / "share";
+				}
+				break;
+			case Platform::MacOS:
+				if (const auto home = read("HOME")) {
+					return *home / "Library" / "Application Support";
+				}
+				break;
+		}
+		return fallback;
+	}
+
 	std::filesystem::path LocalStorage::defaultStoragePath(void)
 	{
-		return std::filesystem::current_path() / ".guillaume-local-storage.db";
+		// An empty fallback gives a path relative to the working directory.
+		std::error_code ignored;
+		const auto fallback = std::filesystem::temp_directory_path(ignored);
+
+		return userDataDirectory(currentPlatform(), readEnvironment, fallback)
+			/ "guillaume" / "local-storage.db";
 	}
 
 	void LocalStorage::setItem(const std::string &key, const std::string &value)
@@ -153,7 +241,11 @@ namespace guillaume
 
 		sqlite3_bind_text(query, 1, key.c_str(), -1, SQLITE_TRANSIENT);
 		sqlite3_bind_text(query, 2, value.c_str(), -1, SQLITE_TRANSIENT);
-		sqlite3_step(query);
+		if (sqlite3_step(query) != SQLITE_DONE) {
+			throw stepFailure("Failed to set item in local storage",
+							  _storageFilePath, _database, query);
+		}
+		sqlite3_reset(query);
 	}
 
 	std::optional<std::string> LocalStorage::getItem(const std::string &key)
@@ -175,12 +267,18 @@ namespace guillaume
 		sqlite3_bind_text(query, 1, key.c_str(), -1, SQLITE_TRANSIENT);
 
 		std::optional<std::string> result = std::nullopt;
-		if (sqlite3_step(query) == SQLITE_ROW) {
+		const int code					  = sqlite3_step(query);
+		if (code == SQLITE_ROW) {
 			const auto *value = sqlite3_column_text(query, 0);
 			if (value) {
 				result = reinterpret_cast<const char *>(value);
 			}
+		} else if (code != SQLITE_DONE) {
+			throw stepFailure("Failed to get item from local storage",
+							  _storageFilePath, _database, query);
 		}
+		// A statement left on its row keeps a read lock on the file.
+		sqlite3_reset(query);
 
 		return result;
 	}
@@ -203,7 +301,11 @@ namespace guillaume
 		sqlite3_clear_bindings(query);
 
 		sqlite3_bind_text(query, 1, key.c_str(), -1, SQLITE_TRANSIENT);
-		sqlite3_step(query);
+		if (sqlite3_step(query) != SQLITE_DONE) {
+			throw stepFailure("Failed to remove item from local storage",
+							  _storageFilePath, _database, query);
+		}
+		sqlite3_reset(query);
 	}
 
 	void LocalStorage::clear(void)

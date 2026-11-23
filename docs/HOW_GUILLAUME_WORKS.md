@@ -20,6 +20,8 @@ example an XR runtime that drives frames).
 - `Scene` instances describe one screen or mode of the application. A scene
   requests a change with `goToScene<Next>()`; the switch happens at the end of
   the frame and calls `onExit()` then `onEnter()`.
-- `LocalStorage` stores persistent application state.
+- `LocalStorage` stores persistent application state, by default in
+  `guillaume/local-storage.db` under the per-user data directory of the
+  platform (`LocalStorage::defaultStoragePath()`).
 - `SessionStorage` stores state for the current session.
 - The event system keeps input handling separate from rendering.

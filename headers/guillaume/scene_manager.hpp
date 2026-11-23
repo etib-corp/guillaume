@@ -65,7 +65,8 @@ namespace guillaume
 	 * The manager also owns the LocalStorage and the SessionStorage handed
 	 * to every scene. The LocalStorage uses its default path, so
 	 * constructing a manager opens (and creates if needed) the file given
-	 * by LocalStorage::defaultStoragePath.
+	 * by LocalStorage::defaultStoragePath, in the per-user data directory
+	 * of the platform.
 	 *
 	 * @note Application code normally switches scenes with
 	 * Scene::goToScene and does not use this class directly.

@@ -17,9 +17,10 @@ model, scene management, event dispatching, and storage helpers.
 - **Events** — an `EventBus` routes typed events to subscribed listeners and
   systems.
 - **Storage** — `LocalStorage` (SQLite-backed, persistent) and
-  `SessionStorage` (in-memory) key-value helpers. If the storage file cannot
-  be opened, `LocalStorage` keeps working in memory and
-  `isPersistent()` returns `false`.
+  `SessionStorage` (in-memory) key-value helpers. `LocalStorage` defaults to
+  `guillaume/local-storage.db` in the per-user data directory of the platform
+  and accepts any other path. If the storage file cannot be opened,
+  `LocalStorage` keeps working in memory and `isPersistent()` returns `false`.
 - **Theme & metadata** — component metadata and theming support.
 
 ## Quickstart

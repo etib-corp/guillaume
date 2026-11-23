@@ -23,6 +23,7 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -43,7 +44,10 @@ namespace guillaume
 	 * be found again at the next start (preferences, a saved session).
 	 *
 	 * The items live in an SQLite database file, by default
-	 * `.guillaume-local-storage.db` in the current working directory. Two
+	 * `guillaume/local-storage.db` in the per-user data directory of the
+	 * platform (see defaultStoragePath()). That default is shared by every
+	 * guillaume application of the user: give the constructor a path of
+	 * your own to keep the items of one application apart. Two
 	 * LocalStorage objects opened on the same path see the same items. The
 	 * typed overloads of Storage (numbers, booleans, getItemAs) are
 	 * available.
@@ -127,6 +131,24 @@ namespace guillaume
 		bool executeStatement(const std::string &sql) const noexcept(false);
 
 		public:
+		/**
+		 * @brief The platforms whose per-user data directory is known to
+		 * userDataDirectory().
+		 */
+		enum class Platform {
+			Windows,	///< `%LOCALAPPDATA%`
+			Linux,		///< `$XDG_DATA_HOME`, or `$HOME/.local/share`; also
+						///< used for the other Unix systems
+			MacOS		///< `$HOME/Library/Application Support`
+		};
+
+		/**
+		 * @brief Function that reads an environment variable: given its
+		 * name, returns its value, or `std::nullopt` when it is not set.
+		 */
+		using EnvironmentReader =
+			std::function<std::optional<std::string>(const std::string &)>;
+
 		using Storage::setItem;
 
 		/**
@@ -157,7 +179,9 @@ namespace guillaume
 		 * @param key The name of the item.
 		 * @param value The text to store. Text after an embedded null
 		 * character is not stored.
-		 * @throws std::runtime_error When the statement cannot be prepared.
+		 * @throws std::runtime_error When the statement cannot be prepared,
+		 * or when SQLite cannot write the item (file locked by another
+		 * process for more than five seconds, disk full, read-only file).
 		 */
 		void setItem(const std::string &key,
 					 const std::string &value) noexcept(false) override;
@@ -167,7 +191,9 @@ namespace guillaume
 		 * @param key The name of the item.
 		 * @return The stored text, or `std::nullopt` when no item has that
 		 * key.
-		 * @throws std::runtime_error When the statement cannot be prepared.
+		 * @throws std::runtime_error When the statement cannot be prepared,
+		 * or when SQLite cannot read the file: an error is not reported as
+		 * a missing item.
 		 */
 		std::optional<std::string>
 			getItem(const std::string &key) noexcept(false) override;
@@ -176,7 +202,8 @@ namespace guillaume
 		 * @brief Delete the item stored under a key. Does nothing when there
 		 * is none.
 		 * @param key The name of the item.
-		 * @throws std::runtime_error When the statement cannot be prepared.
+		 * @throws std::runtime_error When the statement cannot be prepared,
+		 * or when SQLite cannot delete the item.
 		 */
 		void removeItem(const std::string &key) noexcept(false) override;
 
@@ -188,12 +215,56 @@ namespace guillaume
 
 		/**
 		 * @brief Get the path used when the constructor is given none.
-		 * @return `.guillaume-local-storage.db` in the current working
-		 * directory.
-		 * @throws std::filesystem::filesystem_error When the current
-		 * working directory cannot be determined.
+		 *
+		 * The file is `guillaume/local-storage.db` in the per-user data
+		 * directory of the platform the library is compiled for:
+		 * - Windows: `%LOCALAPPDATA%`;
+		 * - Linux and the other Unix systems: `$XDG_DATA_HOME`, or
+		 *   `$HOME/.local/share`;
+		 * - macOS: `$HOME/Library/Application Support`.
+		 *
+		 * When the variable is not set, the system temporary directory
+		 * takes the place of the data directory. Nothing is created by
+		 * this function: the constructor creates the directories.
+		 *
+		 * @note The framework knows no application name, so every
+		 * guillaume application of a user gets this same file. Pass a path
+		 * of your own to the constructor to keep them apart.
+		 * @return The path of the default database file.
+		 * @see userDataDirectory
 		 */
 		static std::filesystem::path defaultStoragePath(void) noexcept(false);
+
+		/**
+		 * @brief Work out the per-user data directory of a platform from
+		 * environment variables. Reads nothing but `environment` and
+		 * touches no file, so every platform can be asked for anywhere.
+		 *
+		 * @code
+		 * const auto directory = guillaume::LocalStorage::userDataDirectory(
+		 * 	guillaume::LocalStorage::Platform::Linux,
+		 * 	[](const std::string &name) -> std::optional<std::string> {
+		 * 		if (name == "HOME") {
+		 * 			return "/home/ada";
+		 * 		}
+		 * 		return std::nullopt;
+		 * 	},
+		 * 	"/tmp");	// "/home/ada/.local/share"
+		 * @endcode
+		 *
+		 * @param platform The platform whose rules apply.
+		 * @param environment Reads an environment variable. A variable that
+		 * is set to an empty string counts as not set, and so does a
+		 * relative `XDG_DATA_HOME`.
+		 * @param fallback The directory returned when the variables the
+		 * platform needs are not set.
+		 * @return The data directory, without any application
+		 * subdirectory.
+		 */
+		static std::filesystem::path
+			userDataDirectory(Platform platform,
+							  const EnvironmentReader &environment,
+							  const std::filesystem::path &fallback);
 
 		/**
 		 * @brief Tell whether the items are written to the storage file.

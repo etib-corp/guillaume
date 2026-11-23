@@ -24,9 +24,15 @@
 
 #include <chrono>
 #include <filesystem>
+#include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
+
+#include <sqlite3.h>
+
+#include "test_environment.hpp"
 
 #if !defined(_WIN32)
 	#include <sys/wait.h>
@@ -35,6 +41,25 @@
 
 namespace guillaume::tests
 {
+
+	namespace
+	{
+		/// An environment made of the given variables only.
+		LocalStorage::EnvironmentReader
+			environmentOf(std::map<std::string, std::string> variables)
+		{
+			return [variables = std::move(variables)](const std::string &name)
+					   -> std::optional<std::string> {
+				const auto found = variables.find(name);
+				if (found == variables.end()) {
+					return std::nullopt;
+				}
+				return found->second;
+			};
+		}
+
+		const std::filesystem::path fallbackDirectory = "fallback";
+	}	 // namespace
 
 	void TestStorage::SetUp(void)
 	{
@@ -240,6 +265,186 @@ namespace guillaume::tests
 							blocker / "nested" / "storage.db"));
 
 		EXPECT_FALSE(localStorage->isPersistent());
+	}
+
+	TEST_F(TestStorage, UserDataDirectoryOnWindowsIsLocalAppData)
+	{
+		const std::string localAppData = "C:\\Users\\ada\\AppData\\Local";
+
+		EXPECT_EQ(LocalStorage::userDataDirectory(
+					  LocalStorage::Platform::Windows,
+					  environmentOf({ { "LOCALAPPDATA", localAppData },
+									  { "HOME", "/home/ada" } }),
+					  fallbackDirectory),
+				  std::filesystem::path(localAppData));
+	}
+
+	TEST_F(TestStorage, UserDataDirectoryOnLinuxPrefersXdgDataHome)
+	{
+		EXPECT_EQ(LocalStorage::userDataDirectory(
+					  LocalStorage::Platform::Linux,
+					  environmentOf({ { "XDG_DATA_HOME", "/data/ada" },
+									  { "HOME", "/home/ada" } }),
+					  fallbackDirectory),
+				  std::filesystem::path("/data/ada"));
+	}
+
+	TEST_F(TestStorage, UserDataDirectoryOnLinuxDefaultsToLocalShare)
+	{
+		const auto expected =
+			std::filesystem::path("/home/ada") / ".local" / "share";
+
+		EXPECT_EQ(LocalStorage::userDataDirectory(
+					  LocalStorage::Platform::Linux,
+					  environmentOf({ { "HOME", "/home/ada" } }),
+					  fallbackDirectory),
+				  expected);
+		// An empty or relative XDG_DATA_HOME is ignored.
+		EXPECT_EQ(LocalStorage::userDataDirectory(
+					  LocalStorage::Platform::Linux,
+					  environmentOf(
+						  { { "XDG_DATA_HOME", "" }, { "HOME", "/home/ada" } }),
+					  fallbackDirectory),
+				  expected);
+		EXPECT_EQ(LocalStorage::userDataDirectory(
+					  LocalStorage::Platform::Linux,
+					  environmentOf({ { "XDG_DATA_HOME", "relative/data" },
+									  { "HOME", "/home/ada" } }),
+					  fallbackDirectory),
+				  expected);
+	}
+
+	TEST_F(TestStorage, UserDataDirectoryOnMacOsIsApplicationSupport)
+	{
+		EXPECT_EQ(LocalStorage::userDataDirectory(
+					  LocalStorage::Platform::MacOS,
+					  environmentOf({ { "HOME", "/Users/ada" },
+									  { "XDG_DATA_HOME", "/data/ada" } }),
+					  fallbackDirectory),
+				  std::filesystem::path("/Users/ada") / "Library"
+					  / "Application Support");
+	}
+
+	TEST_F(TestStorage, UserDataDirectoryFallsBackWithoutTheVariables)
+	{
+		for (const auto platform:
+			 { LocalStorage::Platform::Windows, LocalStorage::Platform::Linux,
+			   LocalStorage::Platform::MacOS }) {
+			EXPECT_EQ(LocalStorage::userDataDirectory(platform,
+													  environmentOf({}),
+													  fallbackDirectory),
+					  fallbackDirectory);
+			EXPECT_EQ(LocalStorage::userDataDirectory(
+						  platform,
+						  environmentOf(
+							  { { "LOCALAPPDATA", "" }, { "HOME", "" } }),
+						  fallbackDirectory),
+					  fallbackDirectory);
+			EXPECT_EQ(LocalStorage::userDataDirectory(platform, nullptr,
+													  fallbackDirectory),
+					  fallbackDirectory);
+		}
+	}
+
+	TEST_F(TestStorage, DefaultStoragePathIsNotInTheWorkingDirectory)
+	{
+		const auto path = LocalStorage::defaultStoragePath();
+
+		EXPECT_TRUE(path.is_absolute());
+		EXPECT_NE(path.parent_path(), std::filesystem::current_path());
+		EXPECT_EQ(path.filename(), "local-storage.db");
+		EXPECT_EQ(path.parent_path().filename(), "guillaume");
+	}
+
+	TEST_F(TestStorage, DefaultStoragePathStaysInTheTestDataDirectory)
+	{
+		// The test program redirects the per-user data directory (see
+		// TestEnvironment): a default storage must land inside it.
+		const auto path = LocalStorage::defaultStoragePath();
+		const auto relative =
+			path.lexically_relative(TestEnvironment::getDataDirectory());
+
+		ASSERT_FALSE(relative.empty());
+		EXPECT_NE(*relative.begin(), "..");
+	}
+
+	TEST_F(TestStorage, DefaultLocalStorageCreatesItsDirectory)
+	{
+		const auto path = LocalStorage::defaultStoragePath();
+
+		LocalStorage localStorage;
+
+		EXPECT_TRUE(localStorage.isPersistent());
+		EXPECT_TRUE(std::filesystem::is_regular_file(path));
+	}
+
+	TEST_F(TestStorage, LocalStorageReportsAFailedStatement)
+	{
+		LocalStorage localStorage(_localStoragePath);
+
+		// Run each statement once so that it is prepared and cached: the
+		// failure below then comes from the step, not from the preparation.
+		localStorage.setItem("key", "value");
+		ASSERT_TRUE(localStorage.getItem("key").has_value());
+		localStorage.removeItem("key");
+
+		// Another connection removes the table from under the storage.
+		sqlite3 *other = nullptr;
+		ASSERT_EQ(sqlite3_open(_localStoragePath.string().c_str(), &other),
+				  SQLITE_OK);
+		ASSERT_EQ(sqlite3_exec(other, "DROP TABLE local_storage;", nullptr,
+							   nullptr, nullptr),
+				  SQLITE_OK);
+		sqlite3_close(other);
+
+		EXPECT_THROW(localStorage.setItem("key", "value"), std::runtime_error);
+		EXPECT_THROW(localStorage.getItem("key"), std::runtime_error);
+		EXPECT_THROW(localStorage.removeItem("key"), std::runtime_error);
+	}
+
+	TEST_F(TestStorage, LocalStorageWorksAgainAfterAFailedStatement)
+	{
+		LocalStorage localStorage(_localStoragePath);
+		localStorage.setItem("key", "value");
+
+		sqlite3 *other = nullptr;
+		ASSERT_EQ(sqlite3_open(_localStoragePath.string().c_str(), &other),
+				  SQLITE_OK);
+		ASSERT_EQ(sqlite3_exec(other, "DROP TABLE local_storage;", nullptr,
+							   nullptr, nullptr),
+				  SQLITE_OK);
+		EXPECT_THROW(localStorage.setItem("key", "value"), std::runtime_error);
+
+		ASSERT_EQ(sqlite3_exec(other,
+							   "CREATE TABLE local_storage ("
+							   "key TEXT PRIMARY KEY, value TEXT NOT NULL);",
+							   nullptr, nullptr, nullptr),
+				  SQLITE_OK);
+		sqlite3_close(other);
+
+		EXPECT_NO_THROW(localStorage.setItem("key", "again"));
+		ASSERT_TRUE(localStorage.getItem("key").has_value());
+		EXPECT_EQ(*localStorage.getItem("key"), "again");
+	}
+
+	TEST_F(TestStorage, LocalStorageReadDoesNotKeepTheFileLocked)
+	{
+		LocalStorage reader(_localStoragePath);
+		LocalStorage writer(_localStoragePath);
+
+		reader.setItem("key", "value");
+		ASSERT_TRUE(reader.getItem("key").has_value());
+
+		// A read that found a row used to leave its statement active, and
+		// with it a read lock that made the other connection's write fail
+		// once the busy timeout had run out.
+		const auto start = std::chrono::steady_clock::now();
+		EXPECT_NO_THROW(writer.setItem("other", "written"));
+		const auto elapsed = std::chrono::steady_clock::now() - start;
+
+		EXPECT_LT(elapsed, std::chrono::seconds(2));
+		ASSERT_TRUE(writer.getItem("other").has_value());
+		EXPECT_EQ(*writer.getItem("other"), "written");
 	}
 
 #if !defined(_WIN32)
