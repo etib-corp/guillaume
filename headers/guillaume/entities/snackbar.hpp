@@ -89,8 +89,9 @@ namespace guillaume::entities
 	 *   painted transparent.
 	 * - systems::Snackbar overwrites the bar's layout settings, height,
 	 *   color, corner radius and elevation every frame.
-	 * - systems::Overlay only counts down, and only applies Escape to, the
-	 *   topmost visible overlay: a snackbar under a dialog waits.
+	 * - systems::Overlay counts down every visible overlay, so a snackbar
+	 *   under a dialog still times out, but only applies Escape to the
+	 *   topmost one.
 	 * - The action label is fixed at creation.
 	 *
 	 * @see components::Snackbar, systems::Snackbar, systems::Overlay

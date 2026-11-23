@@ -23,6 +23,9 @@
 #include "guillaume/systems/overlay.hpp"
 
 #include <algorithm>
+#include <stdexcept>
+
+#include "guillaume/systems/hit_test.hpp"
 
 namespace guillaume::systems
 {
@@ -30,27 +33,34 @@ namespace guillaume::systems
 		: ecs::SystemFiller<components::Overlay, components::Transform,
 							components::Bound>(ecs::Phase::Event)
 		, event::EventManager<utility::event::KeyboardEvent>(eventBus)
+		, event::EventManager<utility::event::MouseButtonEvent>(eventBus)
 		, _engine(engine)
 		, _stack()
 		, _lastTime(std::chrono::steady_clock::now())
+		, _lastClick(nullptr)
 	{
 	}
 
 	void Overlay::prepare(void)
 	{
-		consumeNextEvent();
+		resetOnRegistryChange();
+
+		event::EventManager<utility::event::KeyboardEvent>::consumeNextEvent();
 
 		const auto now = std::chrono::steady_clock::now();
 		const std::chrono::duration<float> elapsed = now - _lastTime;
 		_lastTime								   = now;
 		advance(elapsed.count());
 
-		const auto key = getLastEvent();
+		const auto key =
+			event::EventManager<utility::event::KeyboardEvent>::getLastEvent();
 		if (key && key->getIsDownEvent()
 			&& key->getScancode()
 				== utility::event::KeyboardEvent::ScanCode::Escape) {
 			handleEscape();
 		}
+
+		handleMouseButton();
 	}
 
 	void Overlay::update(const ecs::Entity::Identifier &entityIdentifier)
@@ -65,7 +75,9 @@ namespace guillaume::systems
 			_stack.push_back(entityIdentifier);
 			_engine.setShouldCaptureViewportInput(false);
 		} else if (!overlay.isVisible() && isOpen(entityIdentifier)) {
-			dismiss(entityIdentifier);
+			// Hidden by its owner: leave the stack without reporting a
+			// dismissal the owner already knows about.
+			remove(entityIdentifier);
 		}
 	}
 
@@ -91,43 +103,91 @@ namespace guillaume::systems
 			return;
 		}
 
+		// Copy: dismiss() erases the element a reference would point to.
 		const auto top = _stack.back();
-		_stack.pop_back();
-
-		if (hasComponent<components::Overlay>(top)) {
-			auto &overlay = getComponent<components::Overlay>(top);
-			overlay.setVisible(false);
-			overlay.setElapsed(0.0f);
-			if (const auto handler = overlay.getOnDismissHandler()) {
-				handler();
-			}
-		}
-
-		if (_stack.empty()) {
-			_engine.setShouldCaptureViewportInput(true);
-		}
+		dismiss(top);
 	}
 
 	void Overlay::dismiss(const ecs::Entity::Identifier &entityIdentifier)
 	{
-		const auto iterator =
-			std::find(_stack.begin(), _stack.end(), entityIdentifier);
-		if (iterator == _stack.end()) {
+		if (!remove(entityIdentifier)) {
 			return;
 		}
-		_stack.erase(iterator);
 
 		if (hasComponent<components::Overlay>(entityIdentifier)) {
 			auto &overlay = getComponent<components::Overlay>(entityIdentifier);
 			overlay.setVisible(false);
-			overlay.setElapsed(0.0f);
 			if (const auto handler = overlay.getOnDismissHandler()) {
 				handler();
 			}
 		}
+	}
+
+	bool Overlay::remove(const ecs::Entity::Identifier &entityIdentifier)
+	{
+		const auto iterator =
+			std::find(_stack.begin(), _stack.end(), entityIdentifier);
+		if (iterator == _stack.end()) {
+			return false;
+		}
+		_stack.erase(iterator);
+
+		if (hasComponent<components::Overlay>(entityIdentifier)) {
+			getComponent<components::Overlay>(entityIdentifier)
+				.setElapsed(0.0f);
+		}
 
 		if (_stack.empty()) {
 			_engine.setShouldCaptureViewportInput(true);
+		}
+		return true;
+	}
+
+	void Overlay::resetOnRegistryChange(void)
+	{
+		const ecs::ComponentRegistry *registry = &getComponentRegistry();
+
+		if (registry == _lastRegistry) {
+			return;
+		}
+		// The identifiers in the stack belong to the previous scene. They
+		// are dropped without touching components or calling handlers: the
+		// bound registry is not theirs.
+		if (_lastRegistry != nullptr && !_stack.empty()) {
+			_stack.clear();
+			_engine.setShouldCaptureViewportInput(true);
+		}
+		_lastRegistry = registry;
+	}
+
+	void Overlay::handleMouseButton(void)
+	{
+		event::EventManager<
+			utility::event::MouseButtonEvent>::consumeNextEvent();
+
+		const auto click = event::EventManager<
+			utility::event::MouseButtonEvent>::getLastEvent();
+		// The last event stays readable on the following frames: test each
+		// event once, also when no overlay is open, so an old press never
+		// closes an overlay opened after it.
+		if (!click || click == _lastClick) {
+			return;
+		}
+		_lastClick = click;
+
+		if (!click->isButtonPressed()
+			|| click->getButton()
+				== utility::event::MouseButtonEvent::Button::Unknown
+			|| _stack.empty()) {
+			return;
+		}
+
+		try {
+			handleOutsideClick(
+				_engine.getView().viewPointToRay(click->getPosition()));
+		} catch (const std::out_of_range &exception) {
+			this->getLogger().warning()
+				<< "Overlay::handleMouseButton: " << exception.what();
 		}
 	}
 
@@ -196,25 +256,54 @@ namespace guillaume::systems
 		}
 	}
 
-	void Overlay::advance(float deltaTime)
+	void Overlay::handleOutsideClick(const utility::graphic::RayF &ray)
 	{
 		if (_stack.empty()) {
 			return;
 		}
 
 		const auto top = _stack.back();
-		if (!hasComponent<components::Overlay>(top)) {
+		if (!hasComponent<components::Overlay>(top)
+			|| !hasComponent<components::Transform>(top)
+			|| !hasComponent<components::Bound>(top)) {
 			return;
 		}
 
-		auto &overlay = getComponent<components::Overlay>(top);
-		if (!overlay.hasAutoDismiss()) {
+		if (!getComponent<components::Overlay>(top).dismissesOnOutsideClick()) {
 			return;
 		}
 
-		overlay.setElapsed(overlay.getElapsed() + deltaTime);
-		if (overlay.getElapsed() >= overlay.getAutoDismiss()) {
+		const bool inside =
+			hitTest(ray, getComponent<components::Transform>(top).getPose(),
+					getComponent<components::Bound>(top),
+					hitMargin(getComponentRegistry(), top));
+
+		if (!inside) {
 			dismiss();
+		}
+	}
+
+	void Overlay::advance(float deltaTime)
+	{
+		// Copy: dismiss() erases from the stack, and a dismiss handler may
+		// open or close other overlays.
+		const auto open = _stack;
+
+		for (const auto &entityIdentifier: open) {
+			if (!isOpen(entityIdentifier)
+				|| !hasComponent<components::Overlay>(entityIdentifier)) {
+				continue;
+			}
+
+			auto &overlay = getComponent<components::Overlay>(entityIdentifier);
+			if (!overlay.hasAutoDismiss()) {
+				continue;
+			}
+
+			overlay.setElapsed(overlay.getElapsed() + deltaTime);
+			if (overlay.getElapsed() >= overlay.getAutoDismiss()) {
+				dismiss(entityIdentifier);
+			}
 		}
 	}
 

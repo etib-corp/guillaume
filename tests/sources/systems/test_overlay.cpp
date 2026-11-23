@@ -125,6 +125,172 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(_overlaySystem->getDepth(), 0u);
 	}
 
+	TEST_F(TestOverlay, MousePressOutsideDismissesTheTopOverlayOnce)
+	{
+		setUpView();
+		const auto entity = createCenteredOverlayEntity();
+		int dismissals	  = 0;
+		countDismissals(entity, dismissals);
+		_overlaySystem->show(entity);
+
+		publishMouseButton(10.0f, 10.0f);
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 0u);
+		EXPECT_EQ(dismissals, 1);
+
+		// The press stays the last event: it must not close the overlay
+		// again once it is reopened.
+		_overlaySystem->show(entity);
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
+		EXPECT_EQ(dismissals, 1);
+	}
+
+	TEST_F(TestOverlay, MousePressInsideDoesNotDismiss)
+	{
+		setUpView();
+		const auto entity = createCenteredOverlayEntity();
+		_overlaySystem->show(entity);
+
+		publishMouseButton(400.0f, 300.0f);
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
+	}
+
+	TEST_F(TestOverlay, MouseReleaseOutsideDoesNotDismiss)
+	{
+		setUpView();
+		const auto entity = createCenteredOverlayEntity();
+		_overlaySystem->show(entity);
+
+		publishMouseButton(10.0f, 10.0f, false);
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
+	}
+
+	TEST_F(TestOverlay, MousePressOutsideRespectsTheOverlayFlag)
+	{
+		setUpView();
+		const auto entity = createCenteredOverlayEntity();
+		_componentRegistry.getComponent<components::Overlay>(entity)
+			.setDismissOnOutsideClick(false);
+		_overlaySystem->show(entity);
+
+		publishMouseButton(10.0f, 10.0f);
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
+	}
+
+	TEST_F(TestOverlay, MousePressBeforeOpeningDoesNotDismiss)
+	{
+		setUpView();
+		const auto entity = createCenteredOverlayEntity();
+
+		publishMouseButton(10.0f, 10.0f);
+		_overlaySystem->prepare();
+
+		_overlaySystem->show(entity);
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
+	}
+
+	TEST_F(TestOverlay, HidingAnOpenOverlayDoesNotCallTheDismissHandler)
+	{
+		const auto entity = createOverlayEntity();
+		int dismissals	  = 0;
+		countDismissals(entity, dismissals);
+		_overlaySystem->show(entity);
+
+		// What Dialog::hide and Menu::hide do.
+		_componentRegistry.getComponent<components::Overlay>(entity).setVisible(
+			false);
+		_overlaySystem->update(entity);
+
+		EXPECT_EQ(dismissals, 0);
+		EXPECT_FALSE(_overlaySystem->isOpen(entity));
+		EXPECT_TRUE(_engine->shouldCaptureViewportInput());
+	}
+
+	TEST_F(TestOverlay, AnExplicitDismissIsReportedOnce)
+	{
+		const auto entity = createOverlayEntity();
+		int dismissals	  = 0;
+		countDismissals(entity, dismissals);
+		_overlaySystem->show(entity);
+
+		// What Dialog::dismiss and Menu::dismiss do: hide, then report.
+		auto &overlay =
+			_componentRegistry.getComponent<components::Overlay>(entity);
+		overlay.setVisible(false);
+		overlay.getOnDismissHandler()();
+		_overlaySystem->update(entity);
+
+		EXPECT_EQ(dismissals, 1);
+		EXPECT_FALSE(_overlaySystem->isOpen(entity));
+	}
+
+	TEST_F(TestOverlay, AutoDismissAdvancesUnderAnotherOverlay)
+	{
+		const auto snackbar = createOverlayEntity();
+		const auto dialog	= createOverlayEntity();
+		int dismissals		= 0;
+		countDismissals(snackbar, dismissals);
+
+		_componentRegistry.getComponent<components::Overlay>(snackbar)
+			.setAutoDismiss(1.0f);
+
+		_overlaySystem->show(snackbar);
+		_overlaySystem->show(dialog);
+
+		_overlaySystem->advance(0.5f);
+		EXPECT_EQ(_overlaySystem->getDepth(), 2u);
+
+		_overlaySystem->advance(0.6f);
+		EXPECT_FALSE(_overlaySystem->isOpen(snackbar));
+		EXPECT_TRUE(_overlaySystem->isOpen(dialog));
+		EXPECT_EQ(dismissals, 1);
+		EXPECT_FALSE(
+			_componentRegistry.getComponent<components::Overlay>(snackbar)
+				.isVisible());
+		EXPECT_FALSE(_engine->shouldCaptureViewportInput());
+	}
+
+	TEST_F(TestOverlay, ChangingTheRegistryForgetsTheStack)
+	{
+		const auto entity = createOverlayEntity();
+		int dismissals	  = 0;
+		countDismissals(entity, dismissals);
+
+		_overlaySystem->prepare();
+		_overlaySystem->show(entity);
+		_overlaySystem->prepare();
+		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
+
+		// Another scene: another registry is bound to the same system.
+		ecs::ComponentRegistry otherRegistry;
+		_overlaySystem->bindComponentRegistry(otherRegistry);
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 0u);
+		EXPECT_FALSE(_overlaySystem->isOpen(entity));
+		EXPECT_TRUE(_engine->shouldCaptureViewportInput());
+		EXPECT_EQ(dismissals, 0);
+
+		// Back in the first scene, the overlay is still visible there and
+		// is pushed again when it is visited.
+		_overlaySystem->bindComponentRegistry(_componentRegistry);
+		_overlaySystem->prepare();
+		_overlaySystem->update(entity);
+
+		EXPECT_EQ(_overlaySystem->getTop(), entity);
+	}
+
 	TEST_F(TestOverlay, TextFieldErrorAndContentFloatLabel)
 	{
 		components::TextField textField;

@@ -52,6 +52,9 @@
 #include <guillaume/entities/tooltip.hpp>
 #include <guillaume/entities/view.hpp>
 
+#include <utility/event/mouse_button_event.hpp>
+#include <utility/graphic/pose.hpp>
+
 namespace guillaume::tests
 {
 	namespace
@@ -191,6 +194,61 @@ namespace guillaume::tests
 		EXPECT_TRUE(changedEntities().empty())
 			<< changedEntities().size()
 			<< " entities still change on every frame";
+	}
+
+	TEST_F(TestFrameLoop, AMousePressOutsideADialogDismissesItOnce)
+	{
+		// An 800 x 600 view, 500 units in front of the plane of the
+		// widgets: the center of the viewport looks at the origin, which is
+		// the top-left corner of the dialog.
+		_engine.view.setViewportSize(
+			utility::math::Vector2F({ 800.0f, 600.0f }));
+		_engine.view.setPerspective(1.0f, 800.0f / 600.0f);
+		_engine.view.setPose(utility::graphic::PoseF(
+			utility::graphic::PositionF(0.0f, 0.0f, 500.0f),
+			utility::graphic::OrientationF()));
+
+		const auto press = [this](float x, float y) {
+			auto event = std::make_shared<utility::event::MouseButtonEvent>();
+
+			event->setPosition(utility::math::Vector2F({ x, y }))
+				.setButton(utility::event::MouseButtonEvent::Button::Left)
+				.setPressed(true);
+			_eventBus.publish(event);
+		};
+
+		auto dialog	   = build<entities::Dialog>();
+		int dismissals = 0;
+		dialog->setOnDismiss([&dismissals]() {
+			++dismissals;
+		});
+		dialog->show();
+		runFrame();
+
+		// Just right of and below the top-left corner: inside the dialog.
+		press(420.0f, 320.0f);
+		runFrame();
+		EXPECT_TRUE(dialog->isVisible());
+		EXPECT_EQ(dismissals, 0);
+
+		// The top-left corner of the viewport: outside the dialog.
+		press(10.0f, 10.0f);
+		runFrame();
+		EXPECT_FALSE(dialog->isVisible());
+		EXPECT_EQ(dismissals, 1);
+
+		// The press is not applied again to the reopened dialog.
+		dialog->show();
+		runFrame();
+		runFrame();
+		EXPECT_TRUE(dialog->isVisible());
+		EXPECT_EQ(dismissals, 1);
+
+		// Hiding it by hand reports nothing.
+		dialog->hide();
+		runFrame();
+		runFrame();
+		EXPECT_EQ(dismissals, 1);
 	}
 
 }	 // namespace guillaume::tests
