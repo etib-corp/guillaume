@@ -104,8 +104,13 @@ namespace guillaume::ecs
 	 *   registry getters throw `std::runtime_error`.
 	 * - The list of entities is taken before the first update(): an entity
 	 *   added during the pass is visited from the next system on; one
-	 *   removed during the pass is still in the list, and getComponent() on
-	 *   it throws because its components are gone.
+	 *   removed during the pass (EntityRegistry::removeEntity or
+	 *   clearEntities, from update()) is skipped, since its components are
+	 *   gone. The entity being updated may remove itself; its components
+	 *   must not be used afterwards.
+	 * - When prepare(), update() or cleanup() throws, the pass stops there
+	 *   (cleanup() is not called), the registries are unbound and the
+	 *   exception goes to the caller of routine().
 	 * - One system instance serves every scene; do not cache references to
 	 *   components between frames.
 	 *
@@ -273,8 +278,8 @@ namespace guillaume::ecs
 		 *
 		 * Called by Application::routine for every system, phase after
 		 * phase. The registries are bound for the duration of the call and
-		 * unbound when it returns normally. See the class description for
-		 * the exact steps.
+		 * unbound when it ends, by a return or by an exception. See the
+		 * class description for the exact steps.
 		 * @param componentRegistry The component registry of the scene; the
 		 * one getComponent() reads during the call.
 		 * @param entityRegistry The entity registry of the scene; its

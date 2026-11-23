@@ -124,6 +124,11 @@ namespace guillaume::ecs
 		return true;
 	}
 
+	std::size_t EntityRegistry::currentTreeVersion(void) noexcept
+	{
+		return getTreeVersion().load(std::memory_order_relaxed);
+	}
+
 	void EntityRegistry::clearEntities(void)
 	{
 		std::vector<Entity::Identifier> orphans;

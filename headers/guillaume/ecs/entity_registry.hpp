@@ -33,6 +33,7 @@
 namespace guillaume::ecs
 {
 	class EntityTreeTraveler;
+	class System;
 
 	/**
 	 * @brief Owns entities and gives the systems the list of entities to
@@ -73,6 +74,10 @@ namespace guillaume::ecs
 	 */
 	class EntityRegistry
 	{
+		// A system pass compares tree versions to notice that an update()
+		// added or removed entities.
+		friend class System;
+
 		private:
 		/**
 		 * @brief Result of the last breadth-first walk of this registry and
@@ -111,6 +116,16 @@ namespace guillaume::ecs
 		 * parented to the removed entities.
 		 */
 		void clearOwned(std::vector<Entity::Identifier> &orphans);
+
+		/**
+		 * @brief Get the program-wide tree version: a counter incremented
+		 * each time an entity is added to or removed from any registry.
+		 *
+		 * Two equal values mean no tree changed in between. The counter is
+		 * atomic, so registries owned by different threads can share it.
+		 * @return The current value of the counter.
+		 */
+		static std::size_t currentTreeVersion(void) noexcept;
 
 		protected:
 		/**
