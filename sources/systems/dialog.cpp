@@ -178,10 +178,16 @@ namespace guillaume::systems
 		const auto message	  = dialog.getMessageEntity();
 		const bool hasIcon	  = icon != ecs::Entity::InvalidIdentifier;
 
+		// A title or a message emptied after it was built keeps its child,
+		// but the child leaves the layout: it would take a row and its
+		// spacing for nothing.
+		const auto invalid = ecs::Entity::InvalidIdentifier;
 		std::vector<ecs::Entity::Identifier> children;
 		for (const auto child:
-			 { icon, title, message, dialog.getActionRow() }) {
-			if (child != ecs::Entity::InvalidIdentifier) {
+			 { icon, dialog.getTitle().empty() ? invalid : title,
+			   dialog.getMessage().empty() ? invalid : message,
+			   dialog.getActionRow() }) {
+			if (child != invalid) {
 				children.push_back(child);
 			}
 		}
