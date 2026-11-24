@@ -22,6 +22,8 @@
 
 #include "guillaume/ecs/component_type_id.hpp"
 
+#include <atomic>
+
 namespace guillaume::ecs
 {
 	ComponentTypeLimitExceededException::ComponentTypeLimitExceededException(
@@ -37,10 +39,17 @@ namespace guillaume::ecs
 
 	std::size_t ComponentTypeId::nextId(void)
 	{
-		static std::size_t currentId = 0;
-		if (currentId >= MaxComponentTypes) {
-			throw ComponentTypeLimitExceededException();
-		}
-		return currentId++;
+		static std::atomic<std::size_t> currentId { 0 };
+		std::size_t id = currentId.load(std::memory_order_relaxed);
+
+		// Claim the identifier only when it is in range, so the counter
+		// never goes past the limit, whatever the number of threads.
+		do {
+			if (id >= MaxComponentTypes) {
+				throw ComponentTypeLimitExceededException();
+			}
+		} while (!currentId.compare_exchange_weak(id, id + 1,
+												  std::memory_order_relaxed));
+		return id;
 	}
 }	 // namespace guillaume::ecs

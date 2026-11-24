@@ -22,8 +22,46 @@
 
 #include "guillaume/ecs/system.hpp"
 
+#include <optional>
+#include <unordered_set>
+
 namespace guillaume::ecs
 {
+	namespace
+	{
+		/**
+		 * @brief Binds the registries of a pass to a system and unbinds
+		 * them when the pass ends, including when it ends by an exception.
+		 */
+		class RegistryBinding
+		{
+			public:
+			RegistryBinding(ComponentRegistry *&componentSlot,
+							EntityRegistry *&entitySlot,
+							ComponentRegistry &componentRegistry,
+							EntityRegistry &entityRegistry) noexcept
+				: _componentSlot(componentSlot)
+				, _entitySlot(entitySlot)
+			{
+				_componentSlot = &componentRegistry;
+				_entitySlot	   = &entityRegistry;
+			}
+
+			~RegistryBinding(void)
+			{
+				_componentSlot = nullptr;
+				_entitySlot	   = nullptr;
+			}
+
+			RegistryBinding(const RegistryBinding &)			= delete;
+			RegistryBinding &operator=(const RegistryBinding &) = delete;
+
+			private:
+			ComponentRegistry *&_componentSlot;	   ///< Pointer of the system
+			EntityRegistry *&_entitySlot;		   ///< Pointer of the system
+		};
+	}	 // namespace
+
 	System::System(Phase phase)
 		: _phase(phase)
 		, _signature()
@@ -82,16 +120,37 @@ namespace guillaume::ecs
 						 ecs::EntityRegistry &entityRegistry,
 						 const ecs::EntityTreeTraveler &traveler)
 	{
-		_activeComponentRegistry = &componentRegistry;
-		_activeEntityRegistry	 = &entityRegistry;
+		const RegistryBinding binding(_activeComponentRegistry,
+									  _activeEntityRegistry, componentRegistry,
+									  entityRegistry);
 		getLogger().debug() << "System routine started";
 
 		prepare();
 
-		auto traversedEntities = traveler.travel(entityRegistry);
+		auto traversedEntities	= traveler.travel(entityRegistry);
+		std::size_t treeVersion = EntityRegistry::currentTreeVersion();
+		// Entities still in the tree; filled only once the tree has changed
+		// during the pass, so a pass that removes nothing pays nothing.
+		std::optional<std::unordered_set<const Entity *>> liveEntities;
 
 		for (const auto &entity: traversedEntities) {
 			if ((entity->getSignature() & getSignature()) != getSignature()) {
+				continue;
+			}
+
+			// An update() may have removed entities that are still in the
+			// list taken above: their components are gone, skip them.
+			if (EntityRegistry::currentTreeVersion() != treeVersion) {
+				const EntityRegistry &registry = entityRegistry;
+
+				liveEntities.emplace();
+				for (const auto &live: registry.getEntitiesBreadthFirst()) {
+					liveEntities->insert(live.get());
+				}
+				treeVersion = EntityRegistry::currentTreeVersion();
+			}
+			if (liveEntities.has_value()
+				&& !liveEntities->contains(entity.get())) {
 				continue;
 			}
 
@@ -104,9 +163,6 @@ namespace guillaume::ecs
 
 		getLogger().debug() << "System routine finished. Visited entities: "
 							<< traversedEntities.size();
-
-		_activeComponentRegistry = nullptr;
-		_activeEntityRegistry	 = nullptr;
 	}
 
 	void

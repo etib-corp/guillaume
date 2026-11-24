@@ -23,6 +23,7 @@
 #include "guillaume/ecs/entity_registry.hpp"
 
 #include <algorithm>
+#include <atomic>
 
 #include "guillaume/ecs/level_order_traveler.hpp"
 
@@ -39,11 +40,12 @@ namespace guillaume::ecs
 		 * cached its breadth-first walk to know whether the cache is stale.
 		 * One counter serves all registries because a change in a nested
 		 * registry must also invalidate the caches of the registries above.
+		 * It is atomic because trees owned by different threads share it.
 		 * @return Reference to the counter.
 		 */
-		std::size_t &getTreeVersion(void)
+		std::atomic<std::size_t> &getTreeVersion(void)
 		{
-			static std::size_t version = 0;
+			static std::atomic<std::size_t> version { 0 };
 			return version;
 		}
 	}	 // namespace
@@ -120,6 +122,11 @@ namespace guillaume::ecs
 			removeOne(orphan, orphans);
 		}
 		return true;
+	}
+
+	std::size_t EntityRegistry::currentTreeVersion(void) noexcept
+	{
+		return getTreeVersion().load(std::memory_order_relaxed);
 	}
 
 	void EntityRegistry::clearEntities(void)

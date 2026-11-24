@@ -37,8 +37,24 @@ I/O):
 
 Do not mutate entities, components, or scenes from worker threads.
 
-## Entity Identifiers
+## Program-wide Counters
 
-`Entity::getNextIdentifier` uses an atomic counter, so identifier generation
-is safe even if entities are created from multiple threads. However, the
-registries that own those entities are still single-threaded.
+The ECS keeps three counters that are shared by the whole program rather
+than owned by one registry. All three are atomic, so they are the only parts
+of the ECS that may be reached from several threads at once:
+
+- **Entity identifiers.** `Entity::getNextIdentifier` hands out unique
+  identifiers, so entities may be *created* from multiple threads.
+- **Component type identifiers.** `ComponentTypeId::get<T>()` may be called
+  from multiple threads, including for a type used for the first time: each
+  type gets exactly one identifier and no two types share one. The order in
+  which concurrent first uses are numbered is unspecified.
+- **Entity tree version.** Every `EntityRegistry` shares one version counter
+  to invalidate its cached breadth-first walk. Two threads may therefore
+  each add to and remove from **their own, separate** entity tree without
+  racing on that counter.
+
+This does not make the registries themselves thread-safe. A given
+`EntityRegistry` (and the registries nested in it), `ComponentRegistry`,
+`SystemRegistry` or `System` must still be used by one thread at a time, and
+handing one over to another thread needs external synchronization.
