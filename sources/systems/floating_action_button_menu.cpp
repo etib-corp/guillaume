@@ -186,8 +186,12 @@ namespace guillaume::systems
 			const std::string icon =
 				open ? std::string(CloseGlyph) : menu.getIconGlyphName();
 
-			componentRegistry.getComponent<components::Accessibility>(trigger)
-				.setExpanded(open);
+			if (componentRegistry.hasComponent<components::Accessibility>(
+					trigger)) {
+				componentRegistry
+					.getComponent<components::Accessibility>(trigger)
+					.setExpanded(open);
+			}
 			if (button.getIconGlyphName() != icon) {
 				button.setIconGlyphName(icon);
 				Button::syncContent(componentRegistry, trigger);
