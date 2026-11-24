@@ -96,15 +96,16 @@ namespace guillaume
 	 *   entered twice either removes its entities in onExit(), as above, or
 	 *   builds them only once.
 	 * - Right after onEnter(), the entities the scene owns directly that
-	 *   have a Transform and a Bound are placed side by side in front of
-	 *   the engine's view (placeEntitiesInFrontOfView()).
+	 *   have no parent, a Transform and a Bound are placed side by side in
+	 *   front of the engine's view (placeEntitiesInFrontOfView()).
 	 * - goToScene() only records a request; the switch happens at the end
 	 *   of the frame.
 	 * - A builder registers what it creates in the scene.
 	 *   addRootEntity() only gives an entity a name to find it again with
-	 *   getRootEntity(); it does not register it. A name cannot be taken
-	 *   back or reused, so a scene that names entities in onEnter() must
-	 *   build them only once.
+	 *   getRootEntity(); it does not register it. A name in use is
+	 *   refused, and clearEntities() does not free the names: a scene that
+	 *   names entities in onEnter() frees them in onExit() with
+	 *   removeRootEntity(), or names them only once.
 	 *
 	 * @see Application
 	 * @see SceneManager
@@ -119,9 +120,11 @@ namespace guillaume
 		/**
 		 * @brief Line up the scene's entities in front of a view.
 		 *
-		 * Concerns the entities the scene owns directly that have both a
-		 * components::Transform and a components::Bound. They are put in a
-		 * row, in registration order, 300 units in front of the view,
+		 * Concerns the entities the scene owns directly that have no parent
+		 * and have both a components::Transform and a components::Bound.
+		 * An entity with a parent is skipped, even though a builder also
+		 * registers it in the scene: it is not a root. The roots are put in
+		 * a row, in registration order, 300 units in front of the view,
 		 * centered on its axis, 50 units apart, each one facing the same
 		 * way as the view. The Transform position is the top-left corner of
 		 * the entity. The other entities are not touched.
@@ -244,6 +247,20 @@ namespace guillaume
 		ecs::EntityBuilderManager &getBuilderManager(void);
 
 		/**
+		 * @brief Get the persistent storage given to the constructor.
+		 * @return Reference to the application's LocalStorage, shared by
+		 * every scene and valid as long as the scene.
+		 */
+		LocalStorage &getLocalStorage(void) noexcept;
+
+		/**
+		 * @brief Get the session storage given to the constructor.
+		 * @return Reference to the application's SessionStorage, shared by
+		 * every scene and valid as long as the scene.
+		 */
+		SessionStorage &getSessionStorage(void) noexcept;
+
+		/**
 		 * @brief Give an entity a name, to find it again with
 		 * getRootEntity().
 		 *
@@ -251,14 +268,26 @@ namespace guillaume
 		 * registered in the scene by this call: an entity that does not
 		 * come from a builder must also be passed to addEntity() to be
 		 * processed by the systems. Removing the entity from the scene does
-		 * not remove its name.
+		 * not remove its name; removeRootEntity() does.
 		 * @param name The name to file the entity under, unique in the
 		 * scene.
 		 * @param entity The entity to name.
-		 * @throws std::runtime_error When the name is already used.
+		 * @throws std::runtime_error When the name is already used. The
+		 * entity filed under it is kept.
 		 */
 		void addRootEntity(const std::string &name,
 						   std::shared_ptr<ecs::Entity> entity);
+
+		/**
+		 * @brief Take back a name given with addRootEntity().
+		 *
+		 * The name table stops keeping the entity alive and the name can
+		 * be given again. The entity is not removed from the scene: use
+		 * removeEntity() or clearEntities() for that.
+		 * @param name The name to free.
+		 * @return True when the name was in use, false when it was unknown.
+		 */
+		bool removeRootEntity(const std::string &name);
 
 		/**
 		 * @brief Find an entity by the name given to addRootEntity().

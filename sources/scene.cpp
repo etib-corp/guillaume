@@ -99,6 +99,16 @@ namespace guillaume
 		return *_entityBuilderManager;
 	}
 
+	LocalStorage &Scene::getLocalStorage(void) noexcept
+	{
+		return _localStorage;
+	}
+
+	SessionStorage &Scene::getSessionStorage(void) noexcept
+	{
+		return _sessionStorage;
+	}
+
 	ecs::ComponentRegistry &Scene::getComponentRegistry(void)
 	{
 		return _componentRegistry;
@@ -110,11 +120,16 @@ namespace guillaume
 		if (_rootEntities.find(name) != _rootEntities.end()) {
 			getLogger().warning()
 				<< "Root entity with name '" << name
-				<< "' already exists. Overwriting the existing entity.";
+				<< "' already exists. Keeping the existing entity.";
 			throw std::runtime_error("Root entity with name '" + name
 									 + "' already exists.");
 		}
 		_rootEntities[name] = entity;
+	}
+
+	bool Scene::removeRootEntity(const std::string &name)
+	{
+		return _rootEntities.erase(name) > 0;
 	}
 
 	ecs::EntityRegistry &Scene::getEntityRegistry(void)
@@ -158,6 +173,12 @@ namespace guillaume
 
 		for (const auto &entity: directEntities) {
 			const auto id = entity->getIdentifier();
+
+			// A builder registers children in the scene too: an entity
+			// with a parent is not a root and is left where it is.
+			if (entity->getParent() != nullptr) {
+				continue;
+			}
 
 			if (!_componentRegistry.hasComponent<components::Bound>(id)
 				|| !_componentRegistry.hasComponent<components::Transform>(
