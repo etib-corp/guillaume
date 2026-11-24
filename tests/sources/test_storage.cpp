@@ -48,8 +48,8 @@ namespace guillaume::tests
 		LocalStorage::EnvironmentReader
 			environmentOf(std::map<std::string, std::string> variables)
 		{
-			return [variables = std::move(variables)](const std::string &name)
-					   -> std::optional<std::string> {
+			return [variables = std::move(variables)](
+					   const std::string &name) -> std::optional<std::string> {
 				const auto found = variables.find(name);
 				if (found == variables.end()) {
 					return std::nullopt;
@@ -330,16 +330,15 @@ namespace guillaume::tests
 		for (const auto platform:
 			 { LocalStorage::Platform::Windows, LocalStorage::Platform::Linux,
 			   LocalStorage::Platform::MacOS }) {
-			EXPECT_EQ(LocalStorage::userDataDirectory(platform,
-													  environmentOf({}),
-													  fallbackDirectory),
-					  fallbackDirectory);
 			EXPECT_EQ(LocalStorage::userDataDirectory(
-						  platform,
-						  environmentOf(
-							  { { "LOCALAPPDATA", "" }, { "HOME", "" } }),
-						  fallbackDirectory),
+						  platform, environmentOf({}), fallbackDirectory),
 					  fallbackDirectory);
+			EXPECT_EQ(
+				LocalStorage::userDataDirectory(
+					platform,
+					environmentOf({ { "LOCALAPPDATA", "" }, { "HOME", "" } }),
+					fallbackDirectory),
+				fallbackDirectory);
 			EXPECT_EQ(LocalStorage::userDataDirectory(platform, nullptr,
 													  fallbackDirectory),
 					  fallbackDirectory);
