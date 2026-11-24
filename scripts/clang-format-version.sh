@@ -44,6 +44,8 @@ This repository is formatted with clang-format $REQUIRED_CLANG_FORMAT_MAJOR.x. I
   Debian/Ubuntu: sudo apt-get install clang-format-$REQUIRED_CLANG_FORMAT_MAJOR
   macOS:         brew install llvm@$REQUIRED_CLANG_FORMAT_MAJOR
                  (or the Xcode Command Line Tools, when they ship version $REQUIRED_CLANG_FORMAT_MAJOR)
+                 The Command Line Tools copy is not on PATH by default:
+                 CLANG_FORMAT=/Library/Developer/CommandLineTools/usr/bin/clang-format
   pip:           pip install 'clang-format==$REQUIRED_CLANG_FORMAT_MAJOR.*'
 
 If it is installed outside PATH, point CLANG_FORMAT at it:

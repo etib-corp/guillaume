@@ -10,7 +10,7 @@ GUILLAUME is a C++ UI framework designed for modern desktop and extended reality
 - **Build system**: CMake 3.10+ (no presets)
 - **Dependency strategy**: vendored under `third_party/` and consumed through FetchContent with a local `SOURCE_DIR` (sqlite3, GoogleTest, Google Benchmark, doxygen-awesome-css); `utility` (and `evan`, for the example) are fetched from Git
 - **Test framework**: GoogleTest via `gtest_discover_tests()`
-- **Formatter**: clang-format (LLVM-based, 80-column, tabs, 4-space indent)
+- **Formatter**: clang-format 21 (pinned in `scripts/clang-format-version.sh`; LLVM-based, 80-column, tabs, 4-space indent), applied to `*.cpp`, `*.hpp` and `*.tpp`
 - **CI**: GitHub Actions (Linux/macOS/Windows runners)
 - **Documentation**: Doxygen with doxygen-awesome-css theme
 
@@ -47,7 +47,7 @@ ctest --test-dir build --output-on-failure
 ### Other useful commands
 
 ```bash
-# Format all C++ files
+# Format all C++ files (*.cpp, *.hpp, *.tpp; requires clang-format 21)
 ./scripts/run-clang-format.sh
 
 # Build with tests enabled
