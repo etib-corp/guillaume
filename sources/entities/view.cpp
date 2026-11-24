@@ -20,7 +20,6 @@
  SOFTWARE.
  */
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -156,14 +155,33 @@ namespace guillaume::entities
 			.registerEntity(parent);
 	}
 
+	std::shared_ptr<View> View::create(
+		ecs::ComponentRegistry &registry, const utility::graphic::PoseF &pose,
+		const utility::graphic::Color32Bit &color, float borderRadius,
+		Axis axis, MainAxisAlignment mainAxisAlignment,
+		CrossAxisAlignment crossAxisAlignment, float spacing, float padding,
+		bool hasFixedWidth, float fixedWidth, bool hasFixedHeight,
+		float fixedHeight,
+		const std::vector<std::shared_ptr<ecs::Entity>> &entities)
+	{
+		std::shared_ptr<View> entity(
+			new View(registry, pose, color, borderRadius, axis,
+					 mainAxisAlignment, crossAxisAlignment, spacing, padding,
+					 hasFixedWidth, fixedWidth, hasFixedHeight, fixedHeight));
+
+		// The view is now held by a shared pointer, so it can be given as
+		// parent: setEntities() parents the entities and arranges them.
+		entity->setEntities(entities);
+		return entity;
+	}
+
 	View::View(ecs::ComponentRegistry &registry,
 			   const utility::graphic::PoseF &pose,
 			   const utility::graphic::Color32Bit &color, float borderRadius,
 			   Axis axis, MainAxisAlignment mainAxisAlignment,
 			   CrossAxisAlignment crossAxisAlignment, float spacing,
 			   float padding, bool hasFixedWidth, float fixedWidth,
-			   bool hasFixedHeight, float fixedHeight,
-			   const std::vector<std::shared_ptr<ecs::Entity>> &entities)
+			   bool hasFixedHeight, float fixedHeight)
 		: ecs::ParentEntityFiller<components::Layout, components::Transform,
 								  components::Bound, components::Color,
 								  components::Borders>(registry)
@@ -188,22 +206,6 @@ namespace guillaume::entities
 		if (hasFixedHeight) {
 			layout.setFixedHeight(fixedHeight);
 		}
-
-		// Parenting needs shared_from_this(), so it waits for build().
-		// Until then the handles are parked among the direct entities, and
-		// the identifiers are already the layout children.
-		std::vector<ecs::Entity::Identifier> childIdentifiers;
-		childIdentifiers.reserve(entities.size());
-
-		for (const auto &entity: entities) {
-			if (entity != nullptr
-				&& entity->getIdentifier() != ecs::Entity::InvalidIdentifier) {
-				accessDirectEntities().push_back(entity);
-				childIdentifiers.push_back(entity->getIdentifier());
-			}
-		}
-
-		layout.setChildren(childIdentifiers);
 	}
 
 	View::~View()
@@ -359,42 +361,6 @@ namespace guillaume::entities
 		applyGeometry();
 
 		return *this;
-	}
-
-	void View::build(void)
-	{
-		const auto self = shared_from_this();
-		const auto &children =
-			getComponentRegistry()
-				.getComponent<components::Layout>(getIdentifier())
-				.getChildren();
-		auto &direct = accessDirectEntities();
-
-		// The entities given to the constructor are layout children that
-		// are not parented yet. They leave the direct entities once
-		// attached: the view does not own what is attached to it, exactly
-		// as with setEntities().
-		std::vector<std::shared_ptr<ecs::Entity>> pending;
-
-		for (auto iterator = direct.begin(); iterator != direct.end();) {
-			const bool isLayoutChild =
-				std::find(children.begin(), children.end(),
-						  (*iterator)->getIdentifier())
-				!= children.end();
-
-			if (isLayoutChild && (*iterator)->getParent() != self) {
-				pending.push_back(std::move(*iterator));
-				iterator = direct.erase(iterator);
-			} else {
-				++iterator;
-			}
-		}
-
-		for (const auto &entity: pending) {
-			entity->setParent(self);
-		}
-
-		applyGeometry();
 	}
 
 	void View::applyGeometry(void)

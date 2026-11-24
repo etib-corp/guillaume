@@ -113,9 +113,7 @@ namespace guillaume::entities
 			private:
 			SurfaceConfig _config;						 ///< Surface config.
 			Variant _variant { Variant::WithLabels };	 ///< Bar variant.
-			std::vector<std::pair<std::string, std::string>>
-				_destinations {};	 ///< Destination (icon, label) pairs.
-			std::vector<Destination> _specs {};	   ///< Full destinations.
+			std::vector<Destination> _specs {};			 ///< Full destinations.
 			std::function<void(std::size_t)>
 				_onIndexChange {};	  ///< Index change handler.
 

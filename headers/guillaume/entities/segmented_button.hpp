@@ -114,8 +114,6 @@ namespace guillaume::entities
 		class Builder: public EntityBuilderBase<SegmentedButton>
 		{
 			private:
-			std::shared_ptr<SegmentedButton>
-				_segmentedButton;	 ///< Not used by the builder
 			std::vector<std::string>
 				_labels;	///< Labels of the segments, used when
 							///< _segmentConfigs is empty

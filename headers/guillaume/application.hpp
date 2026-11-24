@@ -48,7 +48,6 @@
 #include "guillaume/ecs/system_phase.hpp"
 #include "guillaume/ecs/system_registry.hpp"
 
-#include "guillaume/metadata.hpp"
 #include "guillaume/scene_manager.hpp"
 
 #include "guillaume/event/event_bus.hpp"

@@ -27,7 +27,7 @@
 #include <memory>
 #include <vector>
 
-#include <guillaume/component_registry.hpp>
+#include <guillaume/ecs/component_registry.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
 
 #include <guillaume/components/transform.hpp>

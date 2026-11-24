@@ -36,7 +36,6 @@
 #include "guillaume/components/elevation.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/systems/button_style.hpp"
-#include "guillaume/systems/fab_style.hpp"
 #include "guillaume/systems/style_helpers.hpp"
 #include "guillaume/systems/button.hpp"
 #include "guillaume/systems/layout.hpp"
