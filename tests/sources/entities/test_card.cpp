@@ -284,4 +284,44 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(actionPresses, 1);
 	}
 
+	TEST_F(TestCard, ASubtitleAddedLaterGetsItsTextChild)
+	{
+		ecs::ComponentRegistry registry;
+		auto card		  = makeCard(registry);
+		const auto config = [&registry, &card]() -> const components::Card & {
+			return registry.getComponent<components::Card>(
+				card->getIdentifier());
+		};
+
+		card->setTitle("Title");
+
+		const auto section = card->getTitleSection()->getIdentifier();
+		const auto title   = config().getTitleText();
+		ASSERT_NE(title, ecs::Entity::InvalidIdentifier);
+		ASSERT_EQ(config().getSubtitleText(), ecs::Entity::InvalidIdentifier);
+
+		card->setTitle("Title", "Subtitle");
+
+		// The section and the title child are kept; the subtitle is built
+		// under the title.
+		const auto subtitle = config().getSubtitleText();
+		ASSERT_NE(subtitle, ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(card->getTitleSection()->getIdentifier(), section);
+		EXPECT_EQ(config().getTitleText(), title);
+		EXPECT_EQ(
+			registry.getComponent<components::Text>(subtitle).getContent(),
+			"Subtitle");
+		EXPECT_EQ(
+			registry.getComponent<components::Layout>(section).getChildren(),
+			(std::vector<ecs::Entity::Identifier> { title, subtitle }));
+
+		// Later calls change its text.
+		card->setTitle("Title", "Other");
+
+		EXPECT_EQ(config().getSubtitleText(), subtitle);
+		EXPECT_EQ(
+			registry.getComponent<components::Text>(subtitle).getContent(),
+			"Other");
+	}
+
 }	 // namespace guillaume::entities::tests

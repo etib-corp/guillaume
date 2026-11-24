@@ -327,9 +327,9 @@ namespace guillaume::entities
 		 * `Card.Title`).
 		 *
 		 * The first call with a non-empty title creates the title section
-		 * (`TitleMinHeight` high) and its Text children; the subtitle child
-		 * is created only when @p subtitle is not empty in that call. Later
-		 * calls change the text of the existing children.
+		 * (`TitleMinHeight` high) and its title Text child; the subtitle
+		 * child is created by the first call with a non-empty @p subtitle.
+		 * Later calls change the text of the existing children.
 		 * @param title The title, drawn with the BodyLarge role. It is also
 		 * the accessibility label of the section.
 		 * @param subtitle The subtitle, drawn with the BodyMedium role.
