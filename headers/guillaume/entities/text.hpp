@@ -208,8 +208,8 @@ namespace guillaume::entities
 		 * The arguments are forwarded to a private constructor:
 		 * `(registry, content, role, color)`, optionally followed by an
 		 * explicit font size, or `(registry, content, fontSize, color)`,
-		 * which uses the role `theme::TypeRole::Default`. A text has no
-		 * children to build.
+		 * which uses the role `theme::TypeRole::BodyMedium`, like the
+		 * builder. A text has no children to build.
 		 * @tparam Arguments The constructor argument types.
 		 * @param arguments The constructor arguments, as listed above.
 		 * @return The new text. The caller owns it.
@@ -295,7 +295,7 @@ namespace guillaume::entities
 		private:
 		/**
 		 * @brief Construct a text with an explicit font size and the role
-		 * `theme::TypeRole::Default`.
+		 * `theme::TypeRole::BodyMedium`.
 		 * @param registry The registry the components are stored in.
 		 * @param content The characters to draw.
 		 * @param fontSize The font size, in dp.

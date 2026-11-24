@@ -100,7 +100,7 @@ namespace guillaume::entities
 
 	Text::Text(ecs::ComponentRegistry &registry, const std::string &content,
 			   const float &fontSize, const utility::graphic::Color32Bit &color)
-		: Text(registry, content, theme::TypeRole::Default, color, fontSize)
+		: Text(registry, content, theme::TypeRole::BodyMedium, color, fontSize)
 	{
 	}
 
