@@ -225,4 +225,30 @@ namespace guillaume::entities::tests
 				  64.0f);
 	}
 
+	TEST_F(TestText, FontSizeCreateAndBuilderUseTheSameRole)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		const utility::graphic::Color32Bit color(0, 0, 0, 255);
+
+		entities::Text::Builder builder(registry, entityRegistry);
+		auto built	 = builder.makeText(nullptr, "Hi", 18.0f, color);
+		auto created = entities::Text::create(registry, "Hi", 18.0f, color);
+
+		const auto &token = getTypeToken(theme::TypeRole::BodyMedium);
+		const auto &builtText =
+			registry.getComponent<components::Text>(built->getIdentifier());
+		const auto &createdText =
+			registry.getComponent<components::Text>(created->getIdentifier());
+
+		EXPECT_EQ(built->getTypeRole(), theme::TypeRole::BodyMedium);
+		EXPECT_EQ(created->getTypeRole(), theme::TypeRole::BodyMedium);
+		EXPECT_FLOAT_EQ(createdText.getFontSize(), 18.0f);
+		EXPECT_FLOAT_EQ(createdText.getLineHeight(), token.lineHeight);
+		EXPECT_FLOAT_EQ(createdText.getLetterSpacing(), token.letterSpacing);
+		EXPECT_EQ(createdText.getFontWeight(), builtText.getFontWeight());
+		EXPECT_FLOAT_EQ(createdText.getLetterSpacing(),
+						builtText.getLetterSpacing());
+	}
+
 }	 // namespace guillaume::entities::tests

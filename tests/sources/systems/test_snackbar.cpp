@@ -266,4 +266,19 @@ namespace guillaume::systems::tests
 		EXPECT_FALSE(_registry.hasChanged(_action));
 	}
 
+	TEST_F(TestSnackbarSystem, ActionLabelIsMirroredOnTheChild)
+	{
+		_registry.addComponent<components::Text>(_action);
+		snackbar().setAction("Retry");
+
+		_system.update(_entity);
+
+		EXPECT_EQ(
+			_registry.getComponent<components::Text>(_action).getContent(),
+			"Retry");
+		EXPECT_EQ(_registry.getComponent<components::Accessibility>(_action)
+					  .getLabel(),
+				  "Retry");
+	}
+
 }	 // namespace guillaume::systems::tests

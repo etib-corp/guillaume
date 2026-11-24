@@ -26,6 +26,7 @@
 #include <vector>
 
 #include <guillaume/entities/style_helpers.hpp>
+#include <guillaume/motion/easing.hpp>
 #include <guillaume/theme.hpp>
 
 namespace guillaume::systems::tests
@@ -51,8 +52,8 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(accessibility.getRole(), components::AccessibilityRole::Text);
 		EXPECT_EQ(accessibility.getLiveRegion(),
 				  components::LiveRegion::Polite);
-		EXPECT_TRUE(ticker.isLooping());
-		EXPECT_FLOAT_EQ(ticker.getDuration(), 1.0f);
+		EXPECT_EQ(ticker.getEasing(), motion::Easing::Linear);
+		EXPECT_GT(ticker.getDuration(), 3600.0f);
 		EXPECT_FALSE(ticker.isPlaying());
 	}
 
@@ -196,26 +197,49 @@ namespace guillaume::systems::tests
 		EXPECT_TRUE(tooltip().isVisible());
 	}
 
-	TEST_F(TestTooltipSystem, TickerProgressAdvancesTheDelays)
+	TEST_F(TestTooltipSystem, TickerAdvancesTheDelaysByEachFrame)
 	{
+		auto &ticker = _registry.getComponent<components::Animation>(_entity);
 		TooltipSystem::setAnchor(_registry, _entity, _anchor);
 		hoverAnchor(true);
-		const auto sample =
-			_registry.getComponent<components::Animation>(_entity)
-				.getOnSampleHandler();
-		ASSERT_TRUE(sample);
 
-		sample(0.4f);
-		EXPECT_FLOAT_EQ(tooltip().getHoverTime(), 0.4f);
+		ticker.advance(0.2f);
+		EXPECT_FLOAT_EQ(tooltip().getHoverTime(), 0.2f);
 		EXPECT_FALSE(tooltip().isVisible());
 
-		sample(0.9f);
+		ticker.advance(0.3f);
+		EXPECT_FLOAT_EQ(tooltip().getHoverTime(), 0.5f);
 		EXPECT_TRUE(tooltip().isVisible());
+		EXPECT_TRUE(ticker.isPlaying());
+	}
 
-		// The looping ticker wraps around: 0.9 -> 0.1 is 0.2 s.
-		sample(0.1f);
-		EXPECT_FLOAT_EQ(tooltip().getLastProgress(), 0.1f);
-		EXPECT_NEAR(tooltip().getHoverTime(), 1.1f, 1e-5f);
+	TEST_F(TestTooltipSystem, TickerCountsAFrameLongerThanOneSecond)
+	{
+		auto &ticker = _registry.getComponent<components::Animation>(_entity);
+		tooltip().setEnterDelay(2.0f);
+		TooltipSystem::setAnchor(_registry, _entity, _anchor);
+		hoverAnchor(true);
+
+		ticker.advance(0.5f);
+		ticker.advance(2.5f);
+
+		EXPECT_FLOAT_EQ(tooltip().getHoverTime(), 3.0f);
+		EXPECT_TRUE(tooltip().isVisible());
+		EXPECT_TRUE(ticker.isPlaying());
+	}
+
+	TEST_F(TestTooltipSystem, DetachingHidesAVisibleTooltip)
+	{
+		TooltipSystem::setAnchor(_registry, _entity, _anchor);
+		TooltipSystem::show(_registry, _entity);
+		ASSERT_TRUE(tooltip().isVisible());
+
+		TooltipSystem::setAnchor(_registry, _entity,
+								 ecs::Entity::InvalidIdentifier);
+
+		EXPECT_FALSE(tooltip().isVisible());
+		EXPECT_FALSE(
+			_registry.getComponent<components::Overlay>(_entity).isVisible());
 	}
 
 	TEST_F(TestTooltipSystem, AGoneAnchorIsIgnored)
@@ -338,6 +362,33 @@ namespace guillaume::systems::tests
 		EXPECT_FALSE(_registry.hasChanged(_entity));
 		EXPECT_FALSE(_registry.hasChanged(_title));
 		EXPECT_FALSE(_registry.hasChanged(_text));
+	}
+
+	TEST_F(TestTooltipSystem, ATitleLeftByASwitchToPlainPaintsNothing)
+	{
+		tooltip().setVariant(Variant::Rich);
+		TooltipSystem::show(_registry, _entity);
+		ASSERT_EQ(_registry.getComponent<components::Color>(_title).getColor(),
+				  getActiveColor(SchemeColorRole::OnSurface));
+
+		tooltip().setVariant(Variant::Plain);
+		_system.update(_entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Color>(_title).getColor(),
+				  entities::transparentColor());
+		EXPECT_EQ(_registry.getComponent<components::Color>(_text).getColor(),
+				  getActiveColor(SchemeColorRole::InverseOnSurface));
+	}
+
+	TEST_F(TestTooltipSystem, TitleIsMirroredOnTheChild)
+	{
+		_registry.addComponent<components::Text>(_title);
+		tooltip().setVariant(Variant::Rich).setTitle("Updated title");
+
+		_system.update(_entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Text>(_title).getContent(),
+				  "Updated title");
 	}
 
 }	 // namespace guillaume::systems::tests

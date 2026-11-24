@@ -224,4 +224,53 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(loading->getIndicatorColor(), tertiary);
 	}
 
+	TEST_F(TestLoadingIndicator, RebuildingAStoppedIndicatorKeepsItStopped)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading =
+			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
+
+		loading->stop();
+		registry.getComponent<components::Animation>(loading->getIdentifier())
+			.advance(1.0f);
+		ASSERT_FLOAT_EQ(loading->getOpacity(), 0.0f);
+
+		// The child is rebuilt: it must not spin while faded out.
+		loading->setSize(24.0f);
+		EXPECT_FALSE(loading->isRunning());
+		loading->setVariant(LoadingIndicator::Variant::Linear);
+		EXPECT_FALSE(loading->isRunning());
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 0.0f);
+
+		loading->start();
+		EXPECT_TRUE(loading->isRunning());
+	}
+
+	TEST_F(TestLoadingIndicator, RebuildingARunningIndicatorKeepsItRunning)
+	{
+		ecs::ComponentRegistry registry;
+		auto loading =
+			makeLoadingIndicator(registry, LoadingIndicator::Variant::Circular);
+
+		loading->setSize(24.0f);
+		EXPECT_TRUE(loading->isRunning());
+		loading->setVariant(LoadingIndicator::Variant::Linear);
+		EXPECT_TRUE(loading->isRunning());
+		EXPECT_FLOAT_EQ(loading->getOpacity(), 1.0f);
+	}
+
+	TEST_F(TestLoadingIndicator, BuilderRejectsANonPositiveSize)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		LoadingIndicator::Builder builder(registry, entityRegistry);
+
+		EXPECT_THROW(builder.withSize(0.0f), std::invalid_argument);
+		EXPECT_THROW(builder.withSize(-8.0f), std::invalid_argument);
+
+		auto loading = builder.withSize(24.0f).makeLoadingIndicator(
+			nullptr, LoadingIndicator::Variant::Circular);
+		EXPECT_FLOAT_EQ(loading->getSize(), 24.0f);
+	}
+
 }	 // namespace guillaume::entities::tests

@@ -44,18 +44,18 @@ namespace guillaume::systems
 	 *   components::Overlay, the label of components::Accessibility, the
 	 *   hover timers of components::Tooltip and, when it is shown,
 	 *   components::Transform.
-	 * - **Writes** on the children: the Text of the body and the Color of
-	 *   the title and body.
+	 * - **Writes** on the children: the Text and the Color of the title and
+	 *   body.
 	 *
 	 * The `visible` flag of components::Tooltip is the source of truth:
 	 * apply() copies it to the tooltip's components::Overlay. A hidden
 	 * tooltip is not removed, it is painted transparent with no elevation.
 	 *
 	 * The hover delays are counted by the tooltip's own
-	 * components::Animation, which install() turns into a looping
-	 * one-second ticker: each sample is converted back into elapsed seconds
-	 * and passed to advance(). The ticker runs only while the tooltip has
-	 * an anchor.
+	 * components::Animation, which install() turns into a ticker that never
+	 * completes: each sample passes the time elapsed since the previous one
+	 * to advance(), however long the frame. The ticker runs only while the
+	 * tooltip has an anchor.
 	 *
 	 * The tooltip is placed when it is shown and when the viewport changes.
 	 * It does not follow an anchor that moves while it is visible.
@@ -88,9 +88,9 @@ namespace guillaume::systems
 		 * its dismissal.
 		 *
 		 * Sets the role of its components::Accessibility to Text with a
-		 * polite live region; makes its components::Animation a linear,
-		 * looping, one-second ticker whose samples call advance() with the
-		 * time elapsed since the previous sample; and makes the dismiss
+		 * polite live region; makes its components::Animation a linear
+		 * ticker with an endless duration whose samples call advance() with
+		 * the time elapsed since the previous sample; and makes the dismiss
 		 * handler of its components::Overlay (Escape) call hide(). The
 		 * ticker is not started here, see setAnchor(). Call it once, after
 		 * the entity has its components::Tooltip, Overlay, Elevation,
@@ -130,8 +130,8 @@ namespace guillaume::systems
 		 *
 		 * Records the anchor, resets the hover timers and starts the
 		 * ticker. Passing ecs::Entity::InvalidIdentifier detaches the
-		 * tooltip and stops the ticker; a tooltip that is visible at that
-		 * moment stays visible until hide() is called.
+		 * tooltip, stops the ticker and hides a visible tooltip, since
+		 * nothing would hide it any more.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The tooltip entity.
 		 * @param anchorIdentifier The entity to watch, or

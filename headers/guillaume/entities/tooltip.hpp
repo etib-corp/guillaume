@@ -76,8 +76,8 @@ namespace guillaume::entities
 	 * callback.
 	 *
 	 * The delays are counted by the tooltip's own components::Animation, a
-	 * looping one-second animation that systems::Animation samples every
-	 * frame, in the Event phase, and that setAnchor() starts.
+	 * ticker that systems::Animation samples every frame, in the Event
+	 * phase, and that setAnchor() starts.
 	 *
 	 * The variants are:
 	 * - `Plain`: one text, in a 32 dp high label on the inverse surface
@@ -284,8 +284,7 @@ namespace guillaume::entities
 		 * a components::HandHoverInteraction. Only its identifier is
 		 * stored.
 		 * @param anchor The entity to watch. `nullptr` detaches the
-		 * tooltip and stops the animation; a tooltip that is shown stays
-		 * shown until hide() is called.
+		 * tooltip, stops the animation and hides a shown tooltip.
 		 * @return This tooltip, for chaining.
 		 */
 		Tooltip &setAnchor(std::shared_ptr<ecs::Entity> anchor);
