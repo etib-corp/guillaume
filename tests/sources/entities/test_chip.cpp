@@ -38,7 +38,9 @@
 
 #include <guillaume/components/borders.hpp>
 #include <guillaume/components/bound.hpp>
+#include <guillaume/components/chip.hpp>
 #include <guillaume/components/color.hpp>
+#include <guillaume/components/glyph.hpp>
 #include <guillaume/components/layout.hpp>
 #include <guillaume/components/selection.hpp>
 #include <guillaume/ecs/entity.hpp>
@@ -122,6 +124,87 @@ namespace guillaume::entities::tests
 		auto chip = makeChip(registry, Chip::Variant::Input, "Email");
 
 		EXPECT_EQ(chip->getChildren().size(), 2U);
+	}
+
+	TEST_F(TestChip, SetVariantBuildsAndRemovesTheIconChildren)
+	{
+		ecs::ComponentRegistry registry;
+		auto chip		  = makeChip(registry, Chip::Variant::Assist, "Email");
+		const auto config = [&registry, &chip]() -> const components::Chip & {
+			return registry.getComponent<components::Chip>(
+				chip->getIdentifier());
+		};
+		const auto invalid = ecs::Entity::InvalidIdentifier;
+		const auto label   = config().getLabelEntity();
+		const auto leading = config().getLeadingIcon();
+
+		// An Assist chip shows its default icon and no close icon.
+		ASSERT_NE(label, invalid);
+		ASSERT_NE(leading, invalid);
+		ASSERT_EQ(chip->getCloseIconIdentifier(), invalid);
+
+		chip->setVariant(Chip::Variant::Input);
+
+		// An Input chip has a trailing close icon and no default icon.
+		const auto close = chip->getCloseIconIdentifier();
+		ASSERT_NE(close, invalid);
+		EXPECT_EQ(
+			registry.getComponent<components::Accessibility>(close).getLabel(),
+			"Close");
+		EXPECT_EQ(config().getLabelEntity(), label);
+		EXPECT_EQ(config().getLeadingIcon(), invalid);
+		EXPECT_FALSE(registry.hasComponent<components::Color>(leading));
+		EXPECT_EQ(chip->getChildren(),
+				  (std::vector<ecs::Entity::Identifier> { label, close }));
+		int closes = 0;
+		chip->setOnClose([&closes]() {
+			++closes;
+		});
+		registry.getComponent<components::MouseButtonInteraction>(close)
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(closes, 1);
+		chip->setOnClose({});
+
+		chip->setVariant(Chip::Variant::Filter);
+
+		// A Filter chip has a check and no close icon.
+		const auto check = config().getCheckIcon();
+		EXPECT_NE(check, invalid);
+		EXPECT_EQ(chip->getCloseIconIdentifier(), invalid);
+		EXPECT_FALSE(registry.hasComponent<components::Color>(close));
+		EXPECT_EQ(config().getLabelEntity(), label);
+		EXPECT_EQ(chip->getChildren(),
+				  (std::vector<ecs::Entity::Identifier> { label }));
+		chip->setSelected(true);
+		EXPECT_EQ(chip->getChildren(),
+				  (std::vector<ecs::Entity::Identifier> { check, label }));
+
+		chip->setVariant(Chip::Variant::Assist);
+
+		EXPECT_EQ(config().getCheckIcon(), invalid);
+		EXPECT_FALSE(registry.hasComponent<components::Color>(check));
+		EXPECT_NE(config().getLeadingIcon(), invalid);
+		EXPECT_EQ(config().getLabelEntity(), label);
+	}
+
+	TEST_F(TestChip, AnIconGivenAtCreationIsKeptAcrossVariants)
+	{
+		ecs::ComponentRegistry registry;
+		auto chip = makeChip(registry, Chip::Variant::Assist, "Email", "mail");
+		const auto leading =
+			registry.getComponent<components::Chip>(chip->getIdentifier())
+				.getLeadingIcon();
+		ASSERT_NE(leading, ecs::Entity::InvalidIdentifier);
+
+		chip->setVariant(Chip::Variant::Suggestion);
+		chip->setVariant(Chip::Variant::Input);
+
+		EXPECT_EQ(registry.getComponent<components::Chip>(chip->getIdentifier())
+					  .getLeadingIcon(),
+				  leading);
+		EXPECT_EQ(registry.getComponent<components::Glyph>(leading).getName(),
+				  "mail");
 	}
 
 	TEST_F(TestChip, BuilderPresetBuildsAndRegisters)

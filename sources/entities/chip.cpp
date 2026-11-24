@@ -23,8 +23,11 @@
 #include "guillaume/entities/chip.hpp"
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "guillaume/components/glyph.hpp"
 #include "guillaume/entities/content_helpers.hpp"
 #include "guillaume/entities/builder_base.hpp"
 #include "guillaume/entities/interaction_helpers.hpp"
@@ -224,7 +227,8 @@ namespace guillaume::entities
 		getComponentRegistry()
 			.getComponent<components::Chip>(getIdentifier())
 			.setVariant(variant);
-		systems::Chip::apply(getComponentRegistry(), getIdentifier());
+		// Another variant shows other icons; build() also restyles.
+		build();
 		return *this;
 	}
 
@@ -261,55 +265,88 @@ namespace guillaume::entities
 	{
 		auto &registry = getComponentRegistry();
 		auto &chip = registry.getComponent<components::Chip>(getIdentifier());
+		const auto invalid = ecs::Entity::InvalidIdentifier;
 		const auto contentColor =
 			schemeColor(SchemeColorRole::OnSecondaryContainer);
-		std::vector<std::shared_ptr<ecs::Entity>> children;
+		bool removed = false;
 
 		// Which children exist is decided by systems::Chip; they are only
-		// built here because that needs shared_from_this().
-		const auto leadingIcon =
-			buildIcon(registry, *this, shared_from_this(),
-					  systems::Chip::leadingGlyph(registry, getIdentifier()),
-					  components::Chip::IconSize, contentColor);
-		if (leadingIcon != nullptr) {
-			chip.setLeadingIcon(leadingIcon->getIdentifier());
-			children.push_back(leadingIcon);
+		// built here because that needs shared_from_this(). This runs again
+		// when the variant changes: a child the variant still shows is
+		// kept, a missing one is built and one it no longer shows is
+		// removed.
+		const std::string glyph =
+			systems::Chip::leadingGlyph(registry, getIdentifier());
+		if (chip.getLeadingIcon() == invalid) {
+			const auto leadingIcon =
+				buildIcon(registry, *this, shared_from_this(), glyph,
+						  components::Chip::IconSize, contentColor);
+			if (leadingIcon != nullptr) {
+				chip.setLeadingIcon(leadingIcon->getIdentifier());
+			}
+		} else if (glyph.empty()) {
+			removeEntity(chip.getLeadingIcon());
+			chip.setLeadingIcon(invalid);
+			removed = true;
+		} else if (registry.hasComponent<components::Glyph>(
+					   chip.getLeadingIcon())) {
+			registry.getComponent<components::Glyph>(chip.getLeadingIcon())
+				.setName(glyph);
 		}
 
-		if (systems::Chip::needsCheckIcon(registry, getIdentifier())) {
+		const bool needsCheck =
+			systems::Chip::needsCheckIcon(registry, getIdentifier());
+		if (needsCheck && chip.getCheckIcon() == invalid) {
 			const auto checkIcon =
 				buildIcon(registry, *this, shared_from_this(),
 						  components::Chip::CheckGlyph,
 						  components::Chip::IconSize, contentColor);
 			if (checkIcon != nullptr) {
 				chip.setCheckIcon(checkIcon->getIdentifier());
-				children.push_back(checkIcon);
+			}
+		} else if (!needsCheck && chip.getCheckIcon() != invalid) {
+			removeEntity(chip.getCheckIcon());
+			chip.setCheckIcon(invalid);
+			removed = true;
+		}
+
+		if (chip.getLabelEntity() == invalid) {
+			const auto label =
+				buildText(registry, *this, shared_from_this(), chip.getLabel(),
+						  theme::TypeRole::LabelLarge, contentColor);
+			if (label != nullptr) {
+				chip.setLabelEntity(label->getIdentifier());
 			}
 		}
 
-		const auto label =
-			buildText(registry, *this, shared_from_this(), chip.getLabel(),
-					  theme::TypeRole::LabelLarge, contentColor);
-		if (label != nullptr) {
-			chip.setLabelEntity(label->getIdentifier());
-			children.push_back(label);
-		}
-
-		if (systems::Chip::needsCloseIcon(registry, getIdentifier())) {
+		const bool needsClose =
+			systems::Chip::needsCloseIcon(registry, getIdentifier());
+		if (needsClose && chip.getTrailingIcon() == invalid) {
 			const auto closeIcon =
 				buildIcon(registry, *this, shared_from_this(),
 						  components::Chip::CloseGlyph,
 						  components::Chip::IconSize, contentColor);
 			if (closeIcon != nullptr) {
 				chip.setTrailingIcon(closeIcon->getIdentifier());
-				children.push_back(closeIcon);
 				systems::Chip::installCloseIcon(registry, getIdentifier());
 			}
+		} else if (!needsClose && chip.getTrailingIcon() != invalid) {
+			removeEntity(chip.getTrailingIcon());
+			chip.setTrailingIcon(invalid);
+			removed = true;
 		}
 
 		// Every child is attached; systems::Chip then narrows the layout
 		// children to the ones currently shown.
-		if (!children.empty()) {
+		std::vector<std::shared_ptr<ecs::Entity>> children;
+		for (const auto identifier:
+			 { chip.getLeadingIcon(), chip.getCheckIcon(),
+			   chip.getLabelEntity(), chip.getTrailingIcon() }) {
+			if (auto child = getEntity<ecs::Entity>(identifier)) {
+				children.push_back(std::move(child));
+			}
+		}
+		if (!children.empty() || removed) {
 			setChildren(children);
 		}
 		systems::Chip::apply(registry, getIdentifier());
