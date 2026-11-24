@@ -326,9 +326,11 @@ namespace guillaume::systems
 			componentRegistry.getComponent<components::Text>(text).setContent(
 				tooltip.getText());
 		}
+		// The title only shows on a rich tooltip: after a switch to Plain
+		// the child stays but must paint nothing.
 		colorChild(componentRegistry, title,
-				   visible ? schemeColor(SchemeColorRole::OnSurface)
-						   : transparentColor());
+				   visible && rich ? schemeColor(SchemeColorRole::OnSurface)
+								   : transparentColor());
 		colorChild(componentRegistry, text,
 				   visible
 					   ? schemeColor(rich ? SchemeColorRole::OnSurfaceVariant

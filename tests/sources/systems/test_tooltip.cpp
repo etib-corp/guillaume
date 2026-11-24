@@ -340,4 +340,20 @@ namespace guillaume::systems::tests
 		EXPECT_FALSE(_registry.hasChanged(_text));
 	}
 
+	TEST_F(TestTooltipSystem, ATitleLeftByASwitchToPlainPaintsNothing)
+	{
+		tooltip().setVariant(Variant::Rich);
+		TooltipSystem::show(_registry, _entity);
+		ASSERT_EQ(_registry.getComponent<components::Color>(_title).getColor(),
+				  getActiveColor(SchemeColorRole::OnSurface));
+
+		tooltip().setVariant(Variant::Plain);
+		_system.update(_entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Color>(_title).getColor(),
+				  entities::transparentColor());
+		EXPECT_EQ(_registry.getComponent<components::Color>(_text).getColor(),
+				  getActiveColor(SchemeColorRole::InverseOnSurface));
+	}
+
 }	 // namespace guillaume::systems::tests
