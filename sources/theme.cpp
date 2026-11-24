@@ -23,6 +23,9 @@
 #include "guillaume/theme.hpp"
 #include "guillaume/theme/default_theme.hpp"
 
+#include <stdexcept>
+#include <string>
+
 namespace guillaume
 {
 	ExtendedColor::ExtendedColor(void)
@@ -84,9 +87,46 @@ namespace guillaume
 		_harmonized = harmonized;
 	}
 
+	namespace
+	{
+		/// Index of a scheme in Theme::_schemes; throws for a value that is
+		/// not a scheme.
+		std::size_t schemeIndex(ThemeSchemeRole role)
+		{
+			const auto index = static_cast<std::size_t>(role);
+			if (index >= static_cast<std::size_t>(
+					ThemeSchemeRole::ThemeSchemeCount)) {
+				throw std::out_of_range("Theme: scheme role "
+										+ std::to_string(index)
+										+ " is not one of the theme's schemes");
+			}
+			return index;
+		}
+
+		/// Index of a palette in Theme::_palettes; throws for a value that
+		/// is not a palette.
+		std::size_t paletteIndex(ThemePaletteRole role)
+		{
+			const auto index = static_cast<std::size_t>(role);
+			if (index >= static_cast<std::size_t>(
+					ThemePaletteRole::ThemePaletteCount)) {
+				throw std::out_of_range(
+					"Theme: palette role " + std::to_string(index)
+					+ " is not one of the theme's palettes");
+			}
+			return index;
+		}
+	}	 // namespace
+
 	constexpr std::size_t Scheme::toIndex(SchemeColorRole role)
 	{
-		return static_cast<std::size_t>(role);
+		const auto index = static_cast<std::size_t>(role);
+		if (index >= static_cast<std::size_t>(SchemeColorRole::Count)) {
+			throw std::out_of_range("Scheme: color role "
+									+ std::to_string(index)
+									+ " is not one of the scheme's roles");
+		}
+		return index;
 	}
 
 	Scheme::Scheme(
@@ -121,7 +161,9 @@ namespace guillaume
 			ExtendedColor(color, name, description, harmonized);
 	}
 
-	const auto &Scheme::getColors(void) const
+	const std::array<ExtendedColor,
+					 static_cast<std::size_t>(SchemeColorRole::Count)> &
+		Scheme::getColors(void) const
 	{
 		return _colors;
 	}
@@ -235,32 +277,32 @@ namespace guillaume
 
 	const Scheme &Theme::getScheme(ThemeSchemeRole role) const
 	{
-		return _schemes[role];
+		return _schemes[schemeIndex(role)];
 	}
 
 	Scheme &Theme::getScheme(ThemeSchemeRole role)
 	{
-		return _schemes[role];
+		return _schemes[schemeIndex(role)];
 	}
 
 	const Palette &Theme::getPalette(ThemePaletteRole role) const
 	{
-		return _palettes[role];
+		return _palettes[paletteIndex(role)];
 	}
 
 	Palette &Theme::getPalette(ThemePaletteRole role)
 	{
-		return _palettes[role];
+		return _palettes[paletteIndex(role)];
 	}
 
 	void Theme::setScheme(ThemeSchemeRole role, const Scheme &scheme)
 	{
-		_schemes[role] = scheme;
+		_schemes[schemeIndex(role)] = scheme;
 	}
 
 	void Theme::setPalette(ThemePaletteRole role, const Palette &palette)
 	{
-		_palettes[role] = palette;
+		_palettes[paletteIndex(role)] = palette;
 	}
 
 	const theme::Typescale &Theme::getTypescale(void) const
@@ -350,6 +392,7 @@ namespace guillaume
 
 	void setActiveScheme(ThemeSchemeRole role)
 	{
+		schemeIndex(role);	  // throws for a value that is not a scheme
 		activeSchemeRole = role;
 	}
 
