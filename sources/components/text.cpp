@@ -22,6 +22,7 @@
 
 #include "guillaume/components/text.hpp"
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace guillaume::components
