@@ -126,10 +126,9 @@ namespace guillaume::systems
 			<< boundComponent.getHeight() << ", segments: " << segments
 			<< ", color: " << color;
 
-		const utility::graphic::PositionF center(
-			pose.getPosition().x + boundComponent.getWidth() / 2.0f,
-			pose.getPosition().y - boundComponent.getHeight() / 2.0f,
-			pose.getPosition().z);
+		const utility::graphic::PositionF center =
+			shape::pointInPlane(pose, boundComponent.getWidth() / 2.0f,
+								-boundComponent.getHeight() / 2.0f);
 
 		const auto ellipseVertices = buildEllipseVertices(
 			center, pose.getOrientation(),

@@ -24,6 +24,7 @@
 
 #include "guillaume/systems/image_render.hpp"
 #include "guillaume/mesh_renderable.hpp"
+#include "guillaume/systems/shape_mesh.hpp"
 
 namespace guillaume::systems
 {
@@ -117,10 +118,11 @@ namespace guillaume::systems
 		const float halfWidth	   = boundComponent.getWidth() / 2.0f;
 		const float halfHeight	   = boundComponent.getHeight() / 2.0f;
 
-		const utility::graphic::PositionF center(
-			transformComponent.getPose().getPosition().x + halfWidth,
-			transformComponent.getPose().getPosition().y - halfHeight,
-			transformComponent.getPose().getPosition().z);
+		// The quad lies in the plane of the entity: its center and its
+		// corners follow the orientation of the Transform.
+		const auto &pose = transformComponent.getPose();
+		const utility::graphic::PositionF center =
+			shape::pointInPlane(pose, halfWidth, -halfHeight);
 
 		const utility::graphic::Color32Bit white(255, 255, 255, 255);
 
@@ -129,8 +131,10 @@ namespace guillaume::systems
 
 		const auto addVertex = [&](float x, float y, float u, float v) {
 			utility::graphic::VertexF vertex;
-			vertex.setPosition(utility::graphic::PositionF(
-				center[0] + x, center[1] + y, center[2]));
+			vertex.setPosition(
+				center.translated(shape::rotatePositionByQuaternion(
+					utility::graphic::PositionF(x, y, 0.0f),
+					pose.getOrientation())));
 			vertex.setColor(white);
 			vertex.setTextureCoordinates(utility::math::Vector2F({ u, v }));
 			mesh.addVertex(vertex);

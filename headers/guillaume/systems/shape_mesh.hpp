@@ -29,14 +29,16 @@
  * The functions of guillaume::systems::shape turn a center, an orientation
  * and a few lengths into the vertices and triangle indices of a flat shape:
  * a filled outline, a ring or arc, a straight stroke, a rounded-rectangle
- * border. They read no component and keep no state.
+ * border. They keep no state, and read no component except
+ * cornerRadiiOf(), which copies the radii of a components::Borders.
  *
  * Used by RectangleRender, EllipseRender, RingRender, ArcRender, LineRender,
- * ScrimRender and FocusRingRender.
+ * ScrimRender, ElevationRender and FocusRingRender.
  *
- * Shapes are described in their own plane (X to the right, Y along the
- * height) around a center, then rotated by the orientation and moved to the
- * center. Lengths are in the unit of components::Bound (dp).
+ * Shapes are described in their own plane (X to the right, Y up, so the
+ * top edge of a rectangle is at +halfHeight) around a center, then rotated by
+ * the orientation and moved to the center. Lengths are in the unit of
+ * components::Bound (dp).
  *
  * Every builder writes indices counted from the first vertex of the mesh:
  * pass an empty mesh, one per shape.
@@ -50,8 +52,25 @@
 #include <utility/graphic/pose.hpp>
 #include <utility/math/vector.hpp>
 
+#include "guillaume/components/borders.hpp"
+
 namespace guillaume::systems::shape
 {
+	/**
+	 * @brief Move from the origin of a pose within its own plane.
+	 *
+	 * Used to find the center of a bound from its top-left corner:
+	 * `pointInPlane(pose, width / 2, -height / 2)`. The offset follows the
+	 * right (X+) and up (Y+) axes of the orientation, so a rotated entity
+	 * is drawn around its own center.
+	 * @param pose Pose whose position is the origin of the plane.
+	 * @param x Offset along the right axis of the orientation, in dp.
+	 * @param y Offset along the up axis of the orientation, in dp.
+	 * @return The world position.
+	 */
+	utility::graphic::PositionF
+		pointInPlane(const utility::graphic::PoseF &pose, float x, float y);
+
 	/**
 	 * @brief Rotate a 3D point around the origin by a quaternion.
 	 * @param position The point to rotate.
@@ -192,6 +211,51 @@ namespace guillaume::systems::shape
 					   const utility::graphic::Color32Bit &color);
 
 	/**
+	 * @brief The four corner radii of a rounded rectangle, in dp.
+	 *
+	 * Corners are named as they are seen on screen, like the radii of
+	 * components::Borders.
+	 */
+	struct CornerRadii {
+		float topLeft { 0.0f };		   ///< Top-left corner radius
+		float topRight { 0.0f };	   ///< Top-right corner radius
+		float bottomRight { 0.0f };	   ///< Bottom-right corner radius
+		float bottomLeft { 0.0f };	   ///< Bottom-left corner radius
+	};
+
+	/**
+	 * @brief Copy the four corner radii of a Borders component.
+	 * @param borders The component to read.
+	 * @return The radii, corner for corner.
+	 */
+	CornerRadii cornerRadiiOf(const components::Borders &borders);
+
+	/**
+	 * @brief Build the outline of a rectangle whose four corners each have
+	 * their own radius.
+	 *
+	 * The outline is in the plane of the shape, around its center, and goes
+	 * counter-clockwise from the bottom-right corner: bottom-right,
+	 * top-right, top-left, bottom-left. A rounded corner is sampled with
+	 * @p arcSegments + 1 points; a corner whose radius is not larger than
+	 * @p epsilon is a single point. Pass the result to
+	 * transformToWorldVertices() and buildTriangleFanVertices() to fill it.
+	 *
+	 * @param halfWidth Half width of the rectangle, in dp.
+	 * @param halfHeight Half height of the rectangle, in dp.
+	 * @param radii Corner radii, in dp. Each one is clamped between zero and
+	 * the smaller half extent.
+	 * @param arcSegments Number of segments per rounded corner. A value of
+	 * zero or less is treated as 1.
+	 * @param epsilon Radius at or under which a corner is drawn square.
+	 * @return The outline points, at least four.
+	 */
+	std::vector<utility::math::Vector2F>
+		buildRoundedRectOutline(float halfWidth, float halfHeight,
+								const CornerRadii &radii, int arcSegments,
+								float epsilon = 0.0f);
+
+	/**
 	 * @brief Build the border of a rounded rectangle as a band of constant
 	 * width.
 	 *
@@ -219,5 +283,32 @@ namespace guillaume::systems::shape
 		const utility::graphic::OrientationF &orientation, float halfWidth,
 		float halfHeight, float radius, float width, int arcSegments,
 		const utility::graphic::Color32Bit &color);
+
+	/**
+	 * @brief Build the border of a rounded rectangle whose four corners each
+	 * have their own radius, as a band of constant width.
+	 *
+	 * Same band as the single-radius overload: it grows inwards, and the
+	 * radius of each inner corner is the outer one reduced by @p width
+	 * (never below zero).
+	 *
+	 * @param mesh The mesh to fill. It must be empty: indices start at 0.
+	 * @param center World position of the center of the rectangle.
+	 * @param orientation World orientation of the rectangle.
+	 * @param halfWidth Outer half width, in dp.
+	 * @param halfHeight Outer half height, in dp.
+	 * @param radii Outer corner radii, in dp. Each one is clamped between
+	 * zero and the smaller half extent.
+	 * @param width Width of the band, in dp. It is clamped to the smaller
+	 * half extent.
+	 * @param arcSegments Number of segments per corner. A value of zero or
+	 * less is treated as 1.
+	 * @param color Color given to every vertex.
+	 */
+	void buildRoundedStrokeMesh(
+		utility::graphic::Mesh &mesh, const utility::graphic::PositionF &center,
+		const utility::graphic::OrientationF &orientation, float halfWidth,
+		float halfHeight, const CornerRadii &radii, float width,
+		int arcSegments, const utility::graphic::Color32Bit &color);
 
 }	 // namespace guillaume::systems::shape

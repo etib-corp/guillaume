@@ -28,6 +28,7 @@
 
 #include <stdexcept>
 
+#include <cmath>
 #include <memory>
 #include <string>
 
@@ -35,6 +36,7 @@
 
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/image.hpp"
+#include "guillaume/components/transform.hpp"
 #include "guillaume/ecs/component_registry.hpp"
 #include "guillaume/ecs/entity_registry_container.hpp"
 #include "guillaume/entities/image.hpp"
@@ -142,6 +144,52 @@ namespace guillaume::entities::tests
 
 		EXPECT_EQ(enginePtr->createObjectCallCount, 1);
 		EXPECT_EQ(enginePtr->countCreated<guillaume::MeshRenderable>(), 1);
+	}
+
+	TEST_F(TestImage, ImageRenderQuadFollowsTheOrientation)
+	{
+		auto engineMock = std::make_unique<guillaume::tests::EngineMock>();
+		guillaume::tests::EngineMock *enginePtr = engineMock.get();
+		std::unique_ptr<utility::Engine> engine = std::move(engineMock);
+
+		guillaume::tests::FakeSystemIO systemIo;
+		systemIo.addFileFromDisk("texture.png", DEFAULT_TEXTURE_ASSET);
+		auto ressourceProvider =
+			std::make_shared<utility::RessourceProvider>(systemIo);
+
+		guillaume::systems::ImageRender imageRender(ressourceProvider, *engine);
+
+		ecs::ComponentRegistry registry;
+		auto image			 = entities::Image::create(registry, "texture.png");
+		const float halfTurn = std::sqrt(0.5f);
+		// A quarter turn around the view axis: right becomes up.
+		registry.getComponent<components::Transform>(image->getIdentifier())
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(10.0f, 20.0f, 0.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, halfTurn,
+											   halfTurn)));
+		registry.getComponent<components::Bound>(image->getIdentifier())
+			.setWidth(64)
+			.setHeight(32);
+
+		imageRender.bindComponentRegistry(registry);
+		imageRender.update(image->getIdentifier());
+		imageRender.unbindComponentRegistry();
+
+		const auto renderable =
+			std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+				enginePtr->lastCreated());
+		ASSERT_NE(renderable, nullptr);
+		const auto vertices = renderable->getMeshes().front()->getVertices();
+		ASSERT_EQ(vertices.size(), 4u);
+		// The top-left corner stays at the position, and the 64 dp width
+		// runs along world +Y.
+		const auto topLeft	= vertices[3].getPosition();
+		const auto topRight = vertices[2].getPosition();
+		EXPECT_NEAR(topLeft[0], 10.0f, 1e-3f);
+		EXPECT_NEAR(topLeft[1], 20.0f, 1e-3f);
+		EXPECT_NEAR(topRight[0], 10.0f, 1e-3f);
+		EXPECT_NEAR(topRight[1], 84.0f, 1e-3f);
 	}
 
 	TEST_F(TestImage, ImageRenderSkipsWhenTextureCannotBeLoaded)

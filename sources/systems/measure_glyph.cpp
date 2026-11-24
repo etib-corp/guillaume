@@ -99,8 +99,7 @@ namespace guillaume::systems
 
 		MeasureGlyphCacheKey cacheKey { glyphComponent.getName(),
 										glyphComponent.getFontSize(),
-										glyphComponent.getStyle(),
-										colorComponent.getColor() };
+										glyphComponent.getStyle() };
 
 		getLogger().debug() << "Measuring glyph '" << cacheKey.glyphName
 							<< "' for entity " << entityIdentifier;
@@ -138,6 +137,10 @@ namespace guillaume::systems
 			.setWidth(textSize.getWidth())
 			.setHeight(textSize.getHeight());
 
+		// Bound the cache, like systems::MeasureText does.
+		if (size() >= MaxCacheEntries) {
+			clear();
+		}
 		put(cacheKey, textSize);
 	}
 

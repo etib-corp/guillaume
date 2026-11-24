@@ -21,6 +21,8 @@
  */
 #include "systems/test_view.hpp"
 
+#include <cmath>
+
 #include <guillaume/components/layout_extent.hpp>
 namespace guillaume::systems::tests
 {
@@ -152,6 +154,57 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(position(_first).getY(), 0.0f);
 		EXPECT_FLOAT_EQ(offsetX(_second), 16.0f);
 		EXPECT_FLOAT_EQ(bound().getWidth(), 52.0f);
+	}
+
+	TEST_F(TestViewSystem, ANestedSizeChangeReachesTheRootInOneFrame)
+	{
+		// _second becomes a container around a deeper container, which
+		// holds a leaf: three levels below the view.
+		const ecs::Entity::Identifier middle { 5 };
+		const ecs::Entity::Identifier leaf { 6 };
+		_registry.addComponent<components::Layout>(_second).setChildren(
+			{ middle });
+		_registry.addComponent<components::Layout>(middle).setChildren(
+			{ leaf });
+		_registry.addComponent<components::Transform>(middle);
+		_registry.addComponent<components::Bound>(middle);
+		_registry.addComponent<components::Transform>(leaf);
+		_registry.addComponent<components::Bound>(leaf)
+			.setWidth(40.0f)
+			.setHeight(60.0f);
+
+		_system.update(_view);
+
+		// Width: 50 + 40 + spacing(8) + 2 * padding(16) = 130, without
+		// waiting one frame per level.
+		EXPECT_FLOAT_EQ(bound().getWidth(), 130.0f);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_second).getWidth(),
+			40.0f);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(middle).getWidth(),
+			40.0f);
+	}
+
+	TEST_F(TestViewSystem, ARotatedViewLaysOutInItsOwnPlane)
+	{
+		const float halfTurn = std::sqrt(0.5f);
+		// A quarter turn around the view axis: right is world +Y and up is
+		// world -X.
+		_registry.getComponent<components::Transform>(_view).setPose(
+			utility::graphic::PoseF(
+				utility::graphic::PositionF(100.0f, 200.0f, -300.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, halfTurn,
+											   halfTurn)));
+
+		_system.update(_view);
+
+		// Same offsets as RowPlacesChildrenWithPaddingAndSpacing (16 along
+		// the row, 31 down), now along the axes of the view.
+		EXPECT_NEAR(offsetX(_first), 31.0f, 1e-3f);
+		EXPECT_NEAR(offsetY(_first), 16.0f, 1e-3f);
+		EXPECT_NEAR(offsetX(_second), 16.0f, 1e-3f);
+		EXPECT_NEAR(offsetY(_second), 74.0f, 1e-3f);
 	}
 
 	TEST_F(TestViewSystem, AChildWithoutGeometryIsSkipped)

@@ -54,9 +54,11 @@ namespace guillaume::systems
 	 * - Nothing is drawn while components::Elevation::hasShadow is false
 	 *   (level 0 or a fully transparent color); a shadow drawn on an earlier
 	 *   frame is then removed.
-	 * - The corners of the shadow are always fully rounded (the radius is
-	 *   half the smaller side of the bound): components::Borders is not
-	 *   read.
+	 * - The corners of the shadow follow the corners of the entity: when it
+	 *   has a components::Borders, each corner of a layer has the radius of
+	 *   that corner (clamped to half the smaller side of the bound) plus
+	 *   the layer's expansion; without one the corners are square, rounded
+	 *   only by the expansion.
 	 * - The shadow is drawn at the depth of the entity itself.
 	 *
 	 * @see RenderHandleMap, components::Elevation

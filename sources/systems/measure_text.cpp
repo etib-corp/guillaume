@@ -75,7 +75,6 @@ namespace guillaume::systems
 
 		MeasureTextCacheKey cacheKey { textComponent.getContent(),
 									   textComponent.getFontSize(),
-									   colorComponent.getColor(),
 									   textComponent.getFontWeight() };
 		const float lineHeight = textComponent.getLineHeight();
 
@@ -106,6 +105,11 @@ namespace guillaume::systems
 			.setWidth(textSize.getWidth())
 			.setHeight(std::max(textSize.getHeight(), lineHeight));
 
+		// Bound the cache: a text that changes every frame would otherwise
+		// add one entry per distinct string for the life of the system.
+		if (size() >= MaxCacheEntries) {
+			clear();
+		}
 		put(cacheKey, textSize);
 	}
 

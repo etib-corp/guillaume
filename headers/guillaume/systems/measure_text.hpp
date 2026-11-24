@@ -23,6 +23,7 @@
 #pragma once
 
 #include "guillaume/theme/typescale.hpp"
+#include <cstddef>
 #include <string>
 
 #include <utility/cache.hpp>
@@ -42,17 +43,15 @@ namespace guillaume::systems
 	 * @brief Key of the size cache of MeasureText: everything a measured
 	 * size is looked up by.
 	 *
-	 * Two texts with equal keys share one measurement. The ordering
-	 * operator exists so the key can be used in the ordered map of
+	 * Two texts with equal keys share one measurement. The color of a text
+	 * is not part of the key: it does not change the measured size. The
+	 * ordering operator exists so the key can be used in the ordered map of
 	 * utility::Cache.
 	 * @see MeasureText
 	 */
 	struct MeasureTextCacheKey {
 		std::string content;	///< The string that was measured
 		float fontSize;			///< Font size the string was measured at
-		utility::graphic::Color32Bit
-			color;	  ///< Color of the text. It does not change the size,
-					  ///< but two colors give two cache entries
 		theme::FontWeight fontWeight {
 			theme::FontWeight::Regular
 		};	  ///< Font weight, which selects the font file measured with
@@ -60,8 +59,8 @@ namespace guillaume::systems
 		/**
 		 * @brief Compare two keys field by field.
 		 * @param other The key to compare with.
-		 * @return True when content, font size, color and font weight are
-		 * all equal.
+		 * @return True when content, font size and font weight are all
+		 * equal.
 		 */
 		bool operator==(const MeasureTextCacheKey &other) const
 		{
@@ -69,9 +68,6 @@ namespace guillaume::systems
 				return false;
 			}
 			if (fontSize != other.fontSize) {
-				return false;
-			}
-			if (color != other.color) {
 				return false;
 			}
 			if (fontWeight != other.fontWeight) {
@@ -91,8 +87,8 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Order two keys by content, then font size, then color,
-		 * then font weight.
+		 * @brief Order two keys by content, then font size, then font
+		 * weight.
 		 * @param other The key to compare with.
 		 * @return True when this key sorts before @p other.
 		 */
@@ -103,9 +99,6 @@ namespace guillaume::systems
 			}
 			if (fontSize != other.fontSize) {
 				return fontSize < other.fontSize;
-			}
-			if (color != other.color) {
-				return color < other.color;
 			}
 			return fontWeight < other.fontWeight;
 		}
@@ -125,8 +118,8 @@ namespace guillaume::systems
 	 *
 	 * The measurement is asked to the engine
 	 * (utility::Engine::measureText) once per distinct
-	 * MeasureTextCacheKey and kept for the life of the system; later frames
-	 * only copy the cached size.
+	 * MeasureTextCacheKey and kept in a cache of at most MaxCacheEntries
+	 * sizes; later frames only copy the cached size.
 	 *
 	 * Things to know:
 	 * - The Bound of a text entity is overwritten every frame: a size set by
@@ -134,8 +127,11 @@ namespace guillaume::systems
 	 * - systems::Typography is registered before this system, in the same
 	 *   phase, so a text styled by a type-scale role is measured with the
 	 *   font size and weight of that role.
-	 * - The cache is never emptied. A text whose content changes every
-	 *   frame (a counter, a clock) adds one entry per distinct string.
+	 * - A text whose content changes every frame (a counter, a clock) adds
+	 *   one entry per distinct string. When the cache holds
+	 *   MaxCacheEntries sizes it is emptied before the next one is stored,
+	 *   so it cannot grow without bound; the texts still shown are measured
+	 *   again once.
 	 *
 	 * @see components::Text, systems::Typography, systems::TextRender
 	 * @see MeasureTextCacheKey
@@ -155,6 +151,12 @@ namespace guillaume::systems
 										 ///< theme::fontPath
 
 		public:
+		/**
+		 * @brief Largest number of measured sizes kept. Storing one more
+		 * empties the cache first.
+		 */
+		static constexpr std::size_t MaxCacheEntries = 1024;
+
 		/**
 		 * @brief Create the system in the Measure phase, with an empty
 		 * cache.

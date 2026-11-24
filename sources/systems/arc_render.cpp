@@ -64,10 +64,8 @@ namespace guillaume::systems
 			getComponent<components::Color>(entityIdentifier).getColor();
 		const auto &arc = getComponent<components::Arc>(entityIdentifier);
 
-		const utility::graphic::PositionF center(
-			pose.getPosition().x + bound.getWidth() / 2.0f,
-			pose.getPosition().y - bound.getHeight() / 2.0f,
-			pose.getPosition().z);
+		const utility::graphic::PositionF center = shape::pointInPlane(
+			pose, bound.getWidth() / 2.0f, -bound.getHeight() / 2.0f);
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});

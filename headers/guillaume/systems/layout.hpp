@@ -63,15 +63,22 @@ namespace guillaume::systems
 	 * Things to know:
 	 * - Children are never resized. Their Bound comes from the Measure phase
 	 *   (text, icons) or from their own layout.
-	 * - The Layout phase visits parents before children. A container
-	 *   therefore reads the Bound a nested container computed on the
-	 *   previous frame, and a change of size deep in the tree reaches the
-	 *   root one level per frame.
+	 * - The Layout phase visits parents before children, so update() first
+	 *   sizes the nested containers among the children (deepest first)
+	 *   and a change of size deep in the tree reaches the root in the same
+	 *   frame. A container whose parent arranges it skips this step: the
+	 *   parent already did it. Each nested container still places its own
+	 *   children when the phase reaches it. apply() alone does not size
+	 *   nested containers.
+	 * - A size written in the Layout phase by a widget system registered
+	 *   after this one is still read by the parent container on the next
+	 *   frame.
 	 * - The container's Bound is overwritten every frame: set a fixed width
 	 *   or height on components::Layout to impose a size.
-	 * - Children are offset along the world X and Y axes from the
-	 *   container's position; only the depth lift follows the container's
-	 *   orientation.
+	 * - Children are offset along the right and up axes of the container's
+	 *   orientation, and lifted along its forward axis, so a rotated
+	 *   container lays its children out in its own plane. The orientation
+	 *   of each child is left as it is.
 	 * - The widget systems are registered after this one because they place
 	 *   their own children from the bounds resolved here.
 	 *

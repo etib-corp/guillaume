@@ -53,8 +53,9 @@ namespace guillaume::systems
 	 *   border drawn inside the rectangle.
 	 *
 	 * Things to know:
-	 * - The four corners share one radius, the average of the four radii of
-	 *   components::Borders. The radius is clamped to half the smaller side.
+	 * - Each corner is drawn with its own radius from components::Borders,
+	 *   for the fill and for the border. Each radius is clamped to half the
+	 *   smaller side.
 	 * - The border is a second mesh lifted by StrokeLift towards the viewer
 	 *   so it is not hidden by the fill.
 	 * - An entity is drawn even when its color is fully transparent.
@@ -70,85 +71,6 @@ namespace guillaume::systems
 		private:
 		utility::Engine &_engine;	 ///< Engine the rectangles are uploaded to
 
-		private:
-		/**
-		 * @brief Reduce the four corner radii of a Borders component to the
-		 * single radius this system draws with.
-		 * @param borders The component to read.
-		 * @return The mean of the four corner radii, in dp.
-		 */
-		float extractAverageRadius(const components::Borders &borders) const;
-
-		/**
-		 * @brief Build the four corners of a rectangle with square corners,
-		 * centered on the origin.
-		 * @param halfWidth Half the width, in dp.
-		 * @param halfHeight Half the height, in dp.
-		 * @return The corners, starting at (-halfWidth, -halfHeight) and
-		 * going through (+halfWidth, -halfHeight).
-		 */
-		std::vector<utility::math::Vector2F>
-			buildAxisAlignedRectVertices(float halfWidth,
-										 float halfHeight) const;
-
-		/**
-		 * @brief Append the points of one corner arc to an outline.
-		 *
-		 * Adds `arcSegments + 1` points, the first at @p startAngle and the
-		 * last at @p endAngle.
-		 * @param localVertices The outline to append to.
-		 * @param arcCenter Center of the arc, relative to the center of the
-		 * rectangle.
-		 * @param startAngle Angle of the first point, in radians.
-		 * @param endAngle Angle of the last point, in radians.
-		 * @param radius Radius of the arc, in dp.
-		 * @param arcSegments Number of segments of the arc. Must be at least
-		 * 1.
-		 */
-		void appendRoundedCornerArc(
-			std::vector<utility::math::Vector2F> &localVertices,
-			const utility::math::Vector2F &arcCenter, float startAngle,
-			float endAngle, float radius, int arcSegments) const;
-
-		/**
-		 * @brief Build the outline of a rounded rectangle centered on the
-		 * origin.
-		 * @param halfWidth Half the width, in dp.
-		 * @param halfHeight Half the height, in dp.
-		 * @param radius Corner radius, in dp. It is clamped between zero and
-		 * the smaller half extent.
-		 * @param arcSegments Number of segments per corner. A value of zero
-		 * or less is treated as 1.
-		 * @param epsilon Radius, in dp, at or below which the corners are
-		 * drawn square (four points only).
-		 * @return The outline points in drawing order.
-		 */
-		std::vector<utility::math::Vector2F>
-			buildLocalRoundedRectVertices(float halfWidth, float halfHeight,
-										  float radius, int arcSegments,
-										  float epsilon) const;
-
-		/**
-		 * @brief Build the outline of a rounded rectangle in world space.
-		 * @param center World position of the center of the rectangle.
-		 * @param orientation World orientation of the rectangle.
-		 * @param scale Factors applied to the width and to the height. Their
-		 * sign is ignored.
-		 * @param size Width and height before scaling, in dp.
-		 * @param radius Corner radius, in dp. It is clamped between zero and
-		 * the smaller scaled half extent.
-		 * @param arcSegments Number of segments per corner.
-		 * @param epsilon Radius, in dp, at or below which the corners are
-		 * drawn square.
-		 * @return The outline points in drawing order.
-		 */
-		std::vector<utility::graphic::PositionF> buildRoundedRectVertices(
-			const utility::graphic::PositionF &center,
-			const utility::graphic::OrientationF &orientation,
-			const utility::math::Vector2F &scale,
-			const utility::graphic::SizeF &size, float radius,
-			int arcSegments = 16, float epsilon = 0.001f);
-
 		public:
 		/**
 		 * @brief Distance the border is moved towards the viewer, along the
@@ -156,6 +78,12 @@ namespace guillaume::systems
 		 * depth of one layer.
 		 */
 		static constexpr float StrokeLift = 0.5f;
+
+		/**
+		 * @brief Number of segments of each rounded corner, for the fill and
+		 * for the border.
+		 */
+		static constexpr int ArcSegments = 16;
 
 		/**
 		 * @brief Create the system in the Render phase.
