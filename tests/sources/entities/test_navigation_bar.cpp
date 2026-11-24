@@ -110,7 +110,7 @@ namespace guillaume::entities::tests
 	TEST_F(TestNavigationBar, AddDestinationKeepsTheSelection)
 	{
 		ecs::ComponentRegistry registry;
-		auto bar = makeNavigationBar(registry, makeDestinations(3));
+		auto bar		  = makeNavigationBar(registry, makeDestinations(3));
 		const auto second = bar->getDestinationIdentifier(1);
 
 		bar->select(2);

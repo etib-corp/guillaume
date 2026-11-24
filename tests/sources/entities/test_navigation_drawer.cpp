@@ -52,7 +52,9 @@
 #include <guillaume/components/selection.hpp>
 #include <guillaume/ecs/entity.hpp>
 #include <guillaume/ecs/entity_registry_container.hpp>
+#include <guillaume/components/divider.hpp>
 #include <guillaume/components/navigation_drawer.hpp>
+#include <guillaume/systems/navigation_drawer.hpp>
 #include <guillaume/components/transform.hpp>
 
 namespace guillaume::entities::tests
@@ -299,6 +301,49 @@ namespace guillaume::entities::tests
 					  .getEntryEntities()
 					  .size(),
 				  3U);
+	}
+
+	TEST_F(TestNavigationDrawer, SetVariantRebuildsSectionsAndDividersAlone)
+	{
+		ecs::ComponentRegistry registry;
+		NavigationDrawer::Builder builder(registry, scratchEntityRegistry());
+		auto drawer =
+			builder.addSection("Mail").addDivider().registerEntity(nullptr);
+		const auto divider = [&registry, &drawer]() {
+			return registry
+				.getComponent<components::NavigationDrawer>(
+					drawer->getIdentifier())
+				.getDividerEntities()
+				.at(0);
+		};
+
+		ASSERT_EQ(drawer->getDestinationCount(), 0U);
+		ASSERT_EQ(drawer->getSectionCount(), 1U);
+		ASSERT_EQ(drawer->getDividerCount(), 1U);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Divider>(divider()).getLength(),
+			components::NavigationDrawer::Width
+				- 2.0f * systems::NavigationDrawer::Padding);
+
+		drawer->setVariant(NavigationDrawer::Variant::Collapsed);
+
+		// A rail has no section title, and its divider is as wide as a
+		// rail entry.
+		EXPECT_EQ(drawer->getSectionCount(), 0U);
+		ASSERT_EQ(drawer->getDividerCount(), 1U);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Divider>(divider()).getLength(),
+			components::NavigationDrawer::CollapsedWidth
+				- 2.0f * systems::NavigationDrawer::Padding);
+
+		drawer->setVariant(NavigationDrawer::Variant::Standard);
+
+		EXPECT_EQ(drawer->getSectionCount(), 1U);
+		ASSERT_EQ(drawer->getDividerCount(), 1U);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Divider>(divider()).getLength(),
+			components::NavigationDrawer::Width
+				- 2.0f * systems::NavigationDrawer::Padding);
 	}
 
 }	 // namespace guillaume::entities::tests
