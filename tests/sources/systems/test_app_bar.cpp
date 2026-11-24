@@ -199,6 +199,26 @@ namespace guillaume::systems::tests
 			guillaume::systems::AppBar::needsActionButtons(_registry, _entity));
 	}
 
+	TEST_F(TestAppBarSystem, OtherActionsOfTheSameNumberNeedNewButtons)
+	{
+		ASSERT_FALSE(
+			guillaume::systems::AppBar::needsActionButtons(_registry, _entity));
+
+		// Only the callback changed: the buttons still match.
+		appBar().setActions({ { "search",
+								[]() {
+								},
+								"Search", false },
+							  { "more_vert", {}, "More", false } });
+		EXPECT_FALSE(
+			guillaume::systems::AppBar::needsActionButtons(_registry, _entity));
+
+		appBar().setActions({ { "share", {}, "Share", false },
+							  { "more_vert", {}, "More", false } });
+		EXPECT_TRUE(
+			guillaume::systems::AppBar::needsActionButtons(_registry, _entity));
+	}
+
 	TEST_F(TestAppBarSystem, AnUnchangedAppBarIsNotMarkedChanged)
 	{
 		_system.update(_entity);

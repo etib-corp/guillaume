@@ -83,6 +83,11 @@ namespace guillaume::systems::tests
 					.setHeight(48.0f);
 				_registry.addComponent<components::Button>(child);
 			}
+			// Each action button shows the icon of its action.
+			_registry.getComponent<components::Button>(_search)
+				.setIconGlyphName("search");
+			_registry.getComponent<components::Button>(_more).setIconGlyphName(
+				"more_vert");
 			_registry.addComponent<components::Transform>(_title);
 			_registry.addComponent<components::Bound>(_title)
 				.setWidth(60.0f)
