@@ -368,6 +368,30 @@ namespace guillaume::systems
 				.setLabel(card.getTitle());
 		}
 
+		// The cover and the sections are as wide as the inside of the card,
+		// also after the card width changed. A card without a fixed width
+		// leaves them as they are.
+		const float inner = contentWidth(componentRegistry, entityIdentifier);
+		if (inner > 0.0f) {
+			if (componentRegistry.hasComponent<components::Image>(cover)
+				&& componentRegistry.hasComponent<components::Bound>(cover)) {
+				auto &bound =
+					componentRegistry.getComponent<components::Bound>(cover);
+				bound.setWidth(inner);
+				// A cover built before the card had a width has no size.
+				if (bound.getHeight() <= 0.0f) {
+					bound.setHeight(components::Card::CoverHeight);
+				}
+			}
+			for (const auto section: { titleSection, actionsSection }) {
+				if (componentRegistry.hasComponent<components::Layout>(
+						section)) {
+					componentRegistry.getComponent<components::Layout>(section)
+						.setFixedWidth(inner);
+				}
+			}
+		}
+
 		// The sections are sized first, so the card arranges them with their
 		// final bounds.
 		arrangeSections(componentRegistry, card);

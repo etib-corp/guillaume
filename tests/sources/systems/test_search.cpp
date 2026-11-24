@@ -226,6 +226,26 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(laidOut(), (Ids { _icon, _placeholder, _clear }));
 	}
 
+	TEST_F(TestSearchSystem, TrailingIconLabelFollowsItsGlyph)
+	{
+		search().setTrailingGlyph("mic");
+		guillaume::systems::Search::installTrailingIcon(_registry, _entity);
+		_system.update(_entity);
+		ASSERT_EQ(_registry.getComponent<components::Accessibility>(_trailing)
+					  .getLabel(),
+				  "mic");
+
+		search().setTrailingGlyph("tune");
+		_system.update(_entity);
+
+		EXPECT_EQ(
+			_registry.getComponent<components::Glyph>(_trailing).getName(),
+			"tune");
+		EXPECT_EQ(_registry.getComponent<components::Accessibility>(_trailing)
+					  .getLabel(),
+				  "tune");
+	}
+
 	TEST_F(TestSearchSystem, ElevationTintsTheSurface)
 	{
 		_registry.getComponent<components::Elevation>(_entity)

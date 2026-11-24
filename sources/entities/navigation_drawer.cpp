@@ -315,11 +315,13 @@ namespace guillaume::entities
 
 		registry.getComponent<components::NavigationDrawer>(getIdentifier())
 			.setVariant(variant);
-		// A rail and a sheet are made of different children.
+		// A rail and a sheet are made of different children: destinations,
+		// but also section titles (a rail has none) and dividers (as wide
+		// as the entries).
 		if (rebuild
 			&& !registry
 					.getComponent<components::NavigationDrawer>(getIdentifier())
-					.getDestinationEntities()
+					.getEntries()
 					.empty()) {
 			buildDestinations();
 			systems::NavigationDrawer::select(registry, getIdentifier(),

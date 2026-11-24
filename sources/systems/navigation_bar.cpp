@@ -184,8 +184,15 @@ namespace guillaume::systems
 			onTabPress(index);
 		}
 
-		const bool changed =
-			selectedIndex(componentRegistry, entityIdentifier) != index;
+		// selectedIndex() is 0 both for destination 0 and for no selection:
+		// ask the pressed destination itself.
+		const auto &destinations =
+			componentRegistry
+				.getComponent<components::NavigationBar>(entityIdentifier)
+				.getDestinationEntities();
+		const bool changed = index < destinations.size()
+			&& !NavigationBarDestination::isSelected(componentRegistry,
+													 destinations[index]);
 		select(componentRegistry, entityIdentifier, index);
 
 		const auto onIndexChange =

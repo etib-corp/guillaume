@@ -45,6 +45,7 @@
 #include <guillaume/components/transform.hpp>
 #include <guillaume/ecs/component_registry.hpp>
 #include <guillaume/systems/button.hpp>
+#include <guillaume/systems/button_style.hpp>
 #include <guillaume/systems/common_button.hpp>
 #include <guillaume/systems/segmented_button.hpp>
 
@@ -158,6 +159,16 @@ namespace guillaume::systems::tests
 		{
 			return _registry.getComponent<components::Glyph>(_icons[index])
 				.getName();
+		}
+
+		/**
+		 * @brief Horizontal padding of a segment, on each side.
+		 * @return The padding of a Medium button, in dp.
+		 */
+		static float widthPadding(void)
+		{
+			return guillaume::systems::button_style::getWidthPadding(
+				components::CommonButton::Size::Medium, false);
 		}
 
 		/**

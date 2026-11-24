@@ -44,7 +44,9 @@
 #include <guillaume/ecs/entity_registry_container.hpp>
 #include <guillaume/entities/style_helpers.hpp>
 #include <guillaume/theme.hpp>
+#include <guillaume/components/divider.hpp>
 #include <guillaume/components/hierarchy.hpp>
+#include <guillaume/systems/list.hpp>
 #include <guillaume/components/list.hpp>
 #include <guillaume/components/transform.hpp>
 
@@ -251,6 +253,35 @@ namespace guillaume::entities::tests
 		EXPECT_NE(list->getItemIdentifier(2), ecs::Entity::InvalidIdentifier);
 		EXPECT_FALSE(registry.hasComponent<components::Accessibility>(
 			list->getItemIdentifier(2)));
+	}
+
+	TEST_F(TestList, DividerRowsFollowALaterWidthChange)
+	{
+		ecs::ComponentRegistry registry;
+		auto items = makeItems(1);
+		items.push_back(List::divider());
+		auto list = makeList(registry, List::Variant::SingleLine, items);
+		const auto divider = list->getItemIdentifier(1);
+
+		ASSERT_TRUE(registry.hasComponent<components::Divider>(divider));
+		ASSERT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(divider).getWidth(),
+			360.0f);
+
+		registry.getComponent<components::Layout>(list->getIdentifier())
+			.setFixedWidth(480.0f);
+		systems::List::apply(registry, list->getIdentifier());
+
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Divider>(divider).getLength(),
+			480.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(divider).getWidth(),
+			480.0f);
+		EXPECT_FLOAT_EQ(
+			registry.getComponent<components::Bound>(list->getItemIdentifier(0))
+				.getWidth(),
+			480.0f);
 	}
 
 	TEST_F(TestList, AccordionTogglesItsChildren)

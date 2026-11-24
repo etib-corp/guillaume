@@ -22,6 +22,7 @@
 
 #include "guillaume/systems/app_bar.hpp"
 
+#include <cstddef>
 #include <optional>
 #include <vector>
 
@@ -190,7 +191,26 @@ namespace guillaume::systems
 		const auto &appBar = componentRegistry.getComponent<components::AppBar>(
 			entityIdentifier);
 
-		return appBar.getActionButtons().size() != appBar.getActions().size();
+		const auto &buttons = appBar.getActionButtons();
+		const auto &actions = appBar.getActions();
+
+		if (buttons.size() != actions.size()) {
+			return true;
+		}
+		// The same number of actions may be other actions: a button that
+		// shows another icon than its action is stale. The callback of an
+		// action cannot be compared.
+		for (std::size_t index = 0; index < buttons.size(); ++index) {
+			if (componentRegistry.hasComponent<components::Button>(
+					buttons[index])
+				&& componentRegistry
+						.getComponent<components::Button>(buttons[index])
+						.getIconGlyphName()
+					!= actions[index].icon) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void AppBar::apply(ecs::ComponentRegistry &componentRegistry,

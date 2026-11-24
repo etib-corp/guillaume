@@ -59,9 +59,9 @@ namespace guillaume::systems::tests
 
 	TEST_F(TestSegmentedButtonSystem, SegmentsShareTheWidestWidthInARow)
 	{
-		_registry.getComponent<components::CommonButton>(_buttons[1])
-			.setMinWidth(120.0f);
-		SharedButton::restyle(_registry, _buttons[1]);
+		// The content of the second segment makes it 120 dp wide.
+		_registry.getComponent<components::Bound>(_icons[1]).setWidth(
+			120.0f - 2.0f * widthPadding());
 
 		_system.update(_entity);
 
@@ -78,6 +78,39 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(
 			_registry.getComponent<components::Bound>(_entity).getWidth(),
 			360.0f);
+	}
+
+	TEST_F(TestSegmentedButtonSystem, TheSharedWidthShrinksWithTheContent)
+	{
+		auto &icon = _registry.getComponent<components::Bound>(_icons[1]);
+		icon.setWidth(120.0f - 2.0f * widthPadding());
+		_system.update(_entity);
+		ASSERT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_buttons[0]).getWidth(),
+			120.0f);
+
+		// The widest segment becomes narrower: the row follows.
+		icon.setWidth(96.0f - 2.0f * widthPadding());
+		_system.update(_entity);
+
+		for (const auto segment: _buttons) {
+			EXPECT_FLOAT_EQ(
+				_registry.getComponent<components::Bound>(segment).getWidth(),
+				96.0f);
+		}
+		EXPECT_FLOAT_EQ(positionX(2) - positionX(1), 96.0f);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_entity).getWidth(),
+			288.0f);
+
+		icon.setWidth(18.0f);
+		_system.update(_entity);
+
+		for (const auto segment: _buttons) {
+			EXPECT_FLOAT_EQ(
+				_registry.getComponent<components::Bound>(segment).getWidth(),
+				components::SegmentedButton::MinSegmentWidth);
+		}
 	}
 
 	TEST_F(TestSegmentedButtonSystem, SegmentsAreAtLeastTheMinimumWidth)

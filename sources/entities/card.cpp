@@ -389,6 +389,30 @@ namespace guillaume::entities
 				.setLabel(card.getTitle());
 		}
 
+		// A subtitle given after the title section was built needs its text
+		// child, under the title.
+		if (card.getTitleSection() != ecs::Entity::InvalidIdentifier
+			&& card.getSubtitleText() == ecs::Entity::InvalidIdentifier
+			&& !card.getSubtitle().empty()) {
+			const auto section = getEntity<CardSection>(card.getTitleSection());
+			const auto subtitleText = section != nullptr
+				? buildText(registry, *section, section, card.getSubtitle(),
+							theme::TypeRole::BodyMedium,
+							schemeColor(SchemeColorRole::OnSurfaceVariant))
+				: nullptr;
+
+			if (subtitleText != nullptr) {
+				std::vector<std::shared_ptr<ecs::Entity>> texts;
+				if (auto titleText =
+						section->getEntity<Text>(card.getTitleText())) {
+					texts.push_back(std::move(titleText));
+				}
+				card.setSubtitleText(subtitleText->getIdentifier());
+				texts.push_back(subtitleText);
+				section->setChildren(texts);
+			}
+		}
+
 		if (card.getContentEntity() == ecs::Entity::InvalidIdentifier
 			&& !card.getContentText().empty()) {
 			const auto content =

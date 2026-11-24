@@ -135,6 +135,44 @@ namespace guillaume::systems::tests
 				  (std::vector<ecs::Entity::Identifier> { _title, _message }));
 	}
 
+	TEST_F(TestDialogSystem, AnEmptiedTitleOrMessageLeavesTheLayout)
+	{
+		_system.update(_entity);
+		const float full =
+			_registry.getComponent<components::Bound>(_entity).getHeight();
+
+		dialog().setTitle("");
+		_system.update(_entity);
+
+		// The child is kept, without its row and spacing.
+		EXPECT_EQ(dialog().getTitleEntity(), _title);
+		EXPECT_EQ(layout().getChildren(),
+				  (std::vector<ecs::Entity::Identifier> { _icon, _message,
+														  _actionRow }));
+		EXPECT_EQ(_registry.getComponent<components::Text>(_title).getContent(),
+				  "");
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_entity).getHeight(),
+			full - 32.0f - DialogSystem::Spacing);
+
+		dialog().setMessage("");
+		_system.update(_entity);
+
+		EXPECT_EQ(layout().getChildren(),
+				  (std::vector<ecs::Entity::Identifier> { _icon, _actionRow }));
+
+		// A text given again takes its place back.
+		dialog().setTitle("Title").setMessage("Message");
+		_system.update(_entity);
+
+		EXPECT_EQ(layout().getChildren(),
+				  (std::vector<ecs::Entity::Identifier> {
+					  _icon, _title, _message, _actionRow }));
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_entity).getHeight(),
+			full);
+	}
+
 	TEST_F(TestDialogSystem, AHeroIconCentersTheContent)
 	{
 		_system.update(_entity);

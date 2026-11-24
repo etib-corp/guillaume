@@ -81,9 +81,9 @@ namespace guillaume::entities
 	 * `config` is the SurfaceConfig of the pill (pose, padding, height).
 	 *
 	 * The chip owns its icon and label children: it is the entity registry
-	 * they are registered in. The children are built once, from the variant
-	 * given at creation: setVariant() changes the behavior and the colors
-	 * but adds no icon. The chip's Color, Borders, Elevation and layout
+	 * they are registered in. The children are built from the variant:
+	 * setVariant() also builds the icons the new variant shows and removes
+	 * the ones it does not. The chip's Color, Borders, Elevation and layout
 	 * padding are written each frame, so values set by hand on them are
 	 * overwritten. setSelected() does not call the press handler; only a
 	 * user press does. getChildren() returns the children currently laid
@@ -240,9 +240,12 @@ namespace guillaume::entities
 		/**
 		 * @brief Set the variant. Restyles at once.
 		 *
-		 * Only the behavior follows (a Filter chip toggles its selection on
-		 * a press): the icon children were built for the variant given at
-		 * creation and none is added or removed.
+		 * The behavior follows (a Filter chip toggles its selection on a
+		 * press), and so do the icon children: the icons the new variant
+		 * shows are built (the check of a Filter chip, the close icon of an
+		 * Input chip, the default icon of an Assist chip) and the ones it
+		 * does not show are removed. The label and the icons both variants
+		 * show keep their identifier.
 		 * @param variant The new variant.
 		 * @return Reference to this chip for chaining.
 		 */
@@ -399,8 +402,10 @@ namespace guillaume::entities
 		 * @brief Create the icon and label children the variant needs and
 		 * record their identifiers in components::Chip.
 		 *
-		 * Called once by create(), when the chip is held by a
-		 * `std::shared_ptr` and can be given as parent to its children.
+		 * Called by create(), when the chip is held by a `std::shared_ptr`
+		 * and can be given as parent to its children, and again by
+		 * setVariant(): children the variant still shows are kept, missing
+		 * ones are built and the others are removed.
 		 */
 		void build(void);
 	};

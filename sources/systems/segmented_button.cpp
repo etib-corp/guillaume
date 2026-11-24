@@ -33,6 +33,7 @@
 #include "guillaume/components/layout.hpp"
 #include "guillaume/components/style_state.hpp"
 #include "guillaume/systems/button.hpp"
+#include "guillaume/systems/button_style.hpp"
 #include "guillaume/systems/common_button.hpp"
 #include "guillaume/systems/layout.hpp"
 
@@ -52,6 +53,61 @@ namespace guillaume::systems
 					  ecs::Entity::Identifier button)
 		{
 			return registry.hasComponent<components::Button>(button);
+		}
+
+		/**
+		 * @brief Width a segment takes on its own, without the width it
+		 * shares with the other segments.
+		 *
+		 * The bound of a segment already holds the shared width, so the
+		 * maximum of the bounds can only grow. This is the width
+		 * systems::CommonButton gives a button with no requested minimum.
+		 * @param registry The registry holding the components.
+		 * @param button The segment identifier.
+		 * @return Its own width, in dp.
+		 */
+		float ownWidth(ecs::ComponentRegistry &registry,
+					   ecs::Entity::Identifier button)
+		{
+			const float current =
+				registry.getComponent<components::Bound>(button).getWidth();
+
+			if (!isButton(registry, button)
+				|| !registry.hasComponent<components::CommonButton>(button)) {
+				return current;
+			}
+
+			const auto &state =
+				registry.getComponent<components::Button>(button);
+			const auto &common =
+				registry.getComponent<components::CommonButton>(button);
+			const Button::Child icon(registry, state.getIcon());
+			const Button::Child label(registry, state.getLabel());
+
+			// systems::CommonButton does not size a button without content.
+			if (!icon && !label) {
+				return current;
+			}
+
+			const float iconWidth  = icon
+				 ? registry.getComponent<components::Bound>(icon.getIdentifier())
+					   .getWidth()
+				 : 0.0f;
+			const float labelWidth = label
+				? registry
+					  .getComponent<components::Bound>(label.getIdentifier())
+					  .getWidth()
+				: 0.0f;
+			const float gap		   = (!state.getIconGlyphName().empty()
+								  && !state.getLabelContent().empty())
+					   ? button_style::getSpaceBetweenIconAndLabel(common.getSize())
+					   : 0.0f;
+
+			return std::max(iconWidth + gap + labelWidth
+								+ button_style::getWidthPadding(
+									  common.getSize(), common.isCompact())
+									* 2.0f,
+							components::CommonButton::MinWidth);
 		}
 	}	 // namespace
 
@@ -289,14 +345,12 @@ namespace guillaume::systems
 			}
 		}
 
-		// Equalize the segment widths (at least MinSegmentWidth).
+		// Equalize the segment widths (at least MinSegmentWidth) on the
+		// widest segment taken on its own, so the row also shrinks.
 		float width = components::SegmentedButton::MinSegmentWidth;
 		for (const auto button: buttons) {
 			if (componentRegistry.hasComponent<components::Bound>(button)) {
-				width = std::max(
-					width,
-					componentRegistry.getComponent<components::Bound>(button)
-						.getWidth());
+				width = std::max(width, ownWidth(componentRegistry, button));
 			}
 		}
 		for (const auto button: buttons) {

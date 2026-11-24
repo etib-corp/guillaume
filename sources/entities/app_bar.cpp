@@ -230,6 +230,16 @@ namespace guillaume::entities
 		}
 
 		if (systems::AppBar::needsActionButtons(registry, getIdentifier())) {
+			// The buttons are rebuilt from the actions: remove the previous
+			// ones with their components.
+			const components::AppBar::Identifiers previous =
+				appBar.getActionButtons();
+			for (const auto identifier: previous) {
+				if (identifier != ecs::Entity::InvalidIdentifier) {
+					removeEntity(identifier);
+				}
+			}
+
 			components::AppBar::Identifiers identifiers;
 			for (const auto &action: appBar.getActions()) {
 				const auto button = buildAction(action);

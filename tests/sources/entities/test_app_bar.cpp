@@ -35,7 +35,9 @@
 
 #include <utility/graphic/color.hpp>
 
+#include <guillaume/components/app_bar.hpp>
 #include <guillaume/components/bound.hpp>
+#include <guillaume/components/button.hpp>
 #include <guillaume/components/color.hpp>
 #include <guillaume/components/layout.hpp>
 #include <guillaume/ecs/entity.hpp>
@@ -287,6 +289,61 @@ namespace guillaume::entities::tests
 			registry.getComponent<components::Color>(back->getIconIdentifier())
 				.getColor(),
 			schemeColor(SchemeColorRole::OnSurface));
+	}
+
+	TEST_F(TestAppBar, ReplacedActionsOfTheSameNumberRebuildTheButtons)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		AppBar::Builder builder(registry, entityRegistry);
+		int shares	= 0;
+		auto appBar = builder.withTitle("Inbox")
+						  .addAction(
+							  "search",
+							  [] {
+							  },
+							  "Search")
+						  .addAction(
+							  "more_vert",
+							  [] {
+							  },
+							  "More")
+						  .registerEntity(nullptr);
+		const auto previous = appBar->getActionButton(0)->getIdentifier();
+
+		// There is no entity setter for the actions: they are replaced on
+		// the component, and the next content build follows them.
+		registry.getComponent<components::AppBar>(appBar->getIdentifier())
+			.setActions({ { "share",
+							[&shares]() {
+								++shares;
+							},
+							"Share", false },
+						  { "more_vert", {}, "More", false } });
+		appBar->setTitle("Sent");
+
+		const auto action = appBar->getActionButton(0);
+		ASSERT_NE(action, nullptr);
+		EXPECT_EQ(
+			registry.getComponent<components::Button>(action->getIdentifier())
+				.getIconGlyphName(),
+			"share");
+		EXPECT_EQ(action->getAccessibilityLabel(), "Share");
+		registry
+			.getComponent<components::MouseButtonInteraction>(
+				action->getIdentifier())
+			.getOnButtonReleaseHandler(
+				utility::event::MouseButtonEvent::Button::Left)();
+		EXPECT_EQ(shares, 1);
+		ASSERT_NE(appBar->getActionButton(1), nullptr);
+
+		// The stale button is gone, not left behind the new one.
+		EXPECT_NE(action->getIdentifier(), previous);
+		EXPECT_FALSE(registry.hasComponent<components::Button>(previous));
+		const auto &children =
+			registry.getComponent<components::Layout>(appBar->getIdentifier())
+				.getChildren();
+		EXPECT_EQ(children.size(), 3U);
 	}
 
 	TEST_F(TestAppBar, ElevatedUsesLevelTwoSurface)

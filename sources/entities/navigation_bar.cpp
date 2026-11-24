@@ -262,10 +262,13 @@ namespace guillaume::entities
 		getComponentRegistry()
 			.getComponent<components::NavigationBar>(getIdentifier())
 			.addDestination(destination);
+		// The selection is kept; the first destination of an empty bar
+		// becomes the selected one.
+		const std::size_t selected = getSelectedIndex();
 		// A new destination needs its child entity.
 		buildDestinations();
 		systems::NavigationBar::select(getComponentRegistry(), getIdentifier(),
-									   0);
+									   selected);
 		systems::NavigationBar::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
