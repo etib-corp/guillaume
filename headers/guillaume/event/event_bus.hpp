@@ -58,7 +58,8 @@ namespace guillaume::event
 	 * - The match is on the exact type of the event object: a listener
 	 *   subscribed to a base event type does not receive derived events.
 	 * - A listener cannot be removed. Whatever it captures must stay alive
-	 *   as long as events are published.
+	 *   as long as events are published. EventSubscriber copes with it by
+	 *   leaving a listener that does nothing once the subscriber is gone.
 	 *
 	 * @see EventSubscriber
 	 * @see EventManager
