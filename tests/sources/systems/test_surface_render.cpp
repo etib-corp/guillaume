@@ -22,6 +22,11 @@
 
 #include "systems/test_surface_render.hpp"
 
+#include <algorithm>
+#include <cmath>
+
+#include "guillaume/components/borders.hpp"
+
 namespace guillaume::systems::tests
 {
 
@@ -40,6 +45,77 @@ namespace guillaume::systems::tests
 		// fully transparent and adds no geometry, so 2 layers produce one
 		// fan of 1 + 36 vertices.
 		EXPECT_EQ(lastMeshVertexCount(), static_cast<std::size_t>(1 + 36));
+	}
+
+	TEST_F(TestSurfaceRender, ElevationShadowOfSquareSurfaceIsSquare)
+	{
+		const auto entity =
+			createEntity<components::Elevation, components::Borders>();
+
+		_componentRegistry.getComponent<components::Elevation>(entity)
+			.setLayers(2)
+			.setSpread(0.0f);
+
+		_elevationSystem->update(entity);
+
+		// Square corners and no spread: the shadow is the bound itself, a
+		// fan of 1 center + 4 corners, not a pill.
+		ASSERT_EQ(lastMeshVertexCount(), static_cast<std::size_t>(1 + 4));
+		const auto renderable =
+			std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+				_engineMock->lastCreated());
+		bool hasBottomRightCorner = false;
+		for (const auto &vertex:
+			 renderable->getMeshes().front()->getVertices()) {
+			const auto position = vertex.getPosition();
+			if (std::abs(position[0] - 100.0f) < 1e-4f
+				&& std::abs(position[1] + 50.0f) < 1e-4f) {
+				hasBottomRightCorner = true;
+			}
+		}
+		EXPECT_TRUE(hasBottomRightCorner);
+	}
+
+	TEST_F(TestSurfaceRender, ElevationShadowFollowsEachCornerRadius)
+	{
+		const auto entity =
+			createEntity<components::Elevation, components::Borders>();
+
+		_componentRegistry.getComponent<components::Elevation>(entity)
+			.setLayers(2)
+			.setSpread(0.0f);
+		_componentRegistry.getComponent<components::Borders>(entity)
+			.setTopLeftRadius(12.0f);
+
+		_elevationSystem->update(entity);
+
+		// One rounded corner (8 + 1 samples) and three square ones.
+		EXPECT_EQ(lastMeshVertexCount(), static_cast<std::size_t>(1 + 9 + 3));
+	}
+
+	TEST_F(TestSurfaceRender, ElevationSpreadRoundsSquareCorners)
+	{
+		const auto entity = createEntity<components::Elevation>();
+
+		_componentRegistry.getComponent<components::Elevation>(entity)
+			.setLayers(2)
+			.setSpread(4.0f);
+
+		_elevationSystem->update(entity);
+
+		// Without Borders the corners are square, rounded only by the
+		// expansion of the layer: four arcs of 8 + 1 samples.
+		EXPECT_EQ(lastMeshVertexCount(), static_cast<std::size_t>(1 + 36));
+		const auto renderable =
+			std::dynamic_pointer_cast<guillaume::MeshRenderable>(
+				_engineMock->lastCreated());
+		// The first layer grows by spread * level * 1/2 = 2 dp.
+		float maxX = -1.0e9f;
+		for (const auto &vertex:
+			 renderable->getMeshes().front()->getVertices()) {
+			maxX = std::max(maxX, vertex.getPosition()[0]);
+		}
+		EXPECT_NEAR(maxX, 102.0f, 1e-4f);
 	}
 
 	TEST_F(TestSurfaceRender, ElevationSecondUpdateReusesObject)

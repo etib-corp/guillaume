@@ -30,6 +30,96 @@
 
 namespace guillaume::systems::shape
 {
+	namespace
+	{
+		/**
+		 * @brief Clamp the four radii between zero and the smaller half
+		 * extent.
+		 */
+		CornerRadii clampRadii(const CornerRadii &radii, float halfWidth,
+							   float halfHeight)
+		{
+			const float limit =
+				std::max(0.0f, (std::min)(halfWidth, halfHeight));
+			const auto clamp = [limit](float radius) {
+				return std::clamp(radius, 0.0f, limit);
+			};
+			return CornerRadii { clamp(radii.topLeft), clamp(radii.topRight),
+								 clamp(radii.bottomRight),
+								 clamp(radii.bottomLeft) };
+		}
+
+		/**
+		 * @brief Sample the outline of a rectangle with four corner radii,
+		 * counter-clockwise from the bottom-right corner (Y points up).
+		 *
+		 * @param radii Radii already clamped to the half extents.
+		 * @param collapseSquareCorners When true, a corner whose radius is
+		 * not larger than @p epsilon is one point; when false every corner
+		 * has @p arcSegments + 1 points, so two outlines pair up 1:1.
+		 */
+		std::vector<utility::math::Vector2F>
+			sampleRoundedRect(float halfWidth, float halfHeight,
+							  const CornerRadii &radii, int arcSegments,
+							  bool collapseSquareCorners, float epsilon)
+		{
+			const float pi = std::acos(-1.0f);
+
+			std::vector<utility::math::Vector2F> outline;
+			outline.reserve(static_cast<std::size_t>(4 * (arcSegments + 1)));
+
+			const auto appendCorner = [&](float cornerX, float cornerY,
+										  float radius, float startAngle) {
+				if (collapseSquareCorners && radius <= epsilon) {
+					outline.push_back(
+						utility::math::Vector2F({ cornerX, cornerY }));
+					return;
+				}
+				// The arc center is one radius inside the corner on both
+				// axes.
+				const float centerX =
+					cornerX > 0.0f ? cornerX - radius : cornerX + radius;
+				const float centerY =
+					cornerY > 0.0f ? cornerY - radius : cornerY + radius;
+				for (int i = 0; i <= arcSegments; ++i) {
+					const float t =
+						static_cast<float>(i) / static_cast<float>(arcSegments);
+					const float angle = startAngle + (pi / 2.0f) * t;
+					outline.push_back(utility::math::Vector2F(
+						{ centerX + std::cos(angle) * radius,
+						  centerY + std::sin(angle) * radius }));
+				}
+			};
+
+			appendCorner(halfWidth, -halfHeight, radii.bottomRight, -pi / 2.0f);
+			appendCorner(halfWidth, halfHeight, radii.topRight, 0.0f);
+			appendCorner(-halfWidth, halfHeight, radii.topLeft, pi / 2.0f);
+			appendCorner(-halfWidth, -halfHeight, radii.bottomLeft, pi);
+			return outline;
+		}
+	}	 // namespace
+
+	CornerRadii cornerRadiiOf(const components::Borders &borders)
+	{
+		return CornerRadii { borders.getTopLeftRadius(),
+							 borders.getTopRightRadius(),
+							 borders.getBottomRightRadius(),
+							 borders.getBottomLeftRadius() };
+	}
+
+	std::vector<utility::math::Vector2F>
+		buildRoundedRectOutline(const float halfWidth, const float halfHeight,
+								const CornerRadii &radii, int arcSegments,
+								const float epsilon)
+	{
+		if (arcSegments <= 0) {
+			arcSegments = 1;
+		}
+		return sampleRoundedRect(halfWidth, halfHeight,
+								 clampRadii(radii, halfWidth, halfHeight),
+								 arcSegments, true, epsilon);
+	}
+
 	utility::graphic::PositionF rotatePositionByQuaternion(
 		const utility::graphic::PositionF &position,
 		const utility::graphic::OrientationF &orientation)

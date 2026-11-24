@@ -30,6 +30,7 @@
 #include <memory>
 #include <vector>
 
+#include "guillaume/components/borders.hpp"
 #include "guillaume/mesh_renderable.hpp"
 
 namespace guillaume::systems
@@ -67,75 +68,18 @@ namespace guillaume::systems
 											   positionZ + (qw * tZ) + crossTZ);
 		}
 
-		std::vector<utility::math::Vector2F>
-			buildRoundedRectOutline(float halfWidth, float halfHeight,
-									float radius, int arcSegments)
-		{
-			const float pi = std::acos(-1.0f);
-
-			if (arcSegments <= 0) {
-				arcSegments = 1;
-			}
-
-			const float cornerRadius =
-				std::max(0.0f, (std::min)({ radius, halfWidth, halfHeight }));
-
-			std::vector<utility::math::Vector2F> localVertices;
-
-			if (cornerRadius <= 0.0f) {
-				localVertices = {
-					utility::math::Vector2F({ -halfWidth, -halfHeight }),
-					utility::math::Vector2F({ halfWidth, -halfHeight }),
-					utility::math::Vector2F({ halfWidth, halfHeight }),
-					utility::math::Vector2F({ -halfWidth, halfHeight }),
-				};
-				return localVertices;
-			}
-
-			auto appendArc = [&localVertices, arcSegments](
-								 const utility::math::Vector2F &center,
-								 float startAngle, float endAngle,
-								 float arcRadius) {
-				for (int i = 0; i <= arcSegments; ++i) {
-					const float t =
-						static_cast<float>(i) / static_cast<float>(arcSegments);
-					const float angle =
-						startAngle + (endAngle - startAngle) * t;
-					localVertices.push_back(
-						center
-						+ utility::math::Vector2F(
-							{ std::cos(angle) * arcRadius,
-							  std::sin(angle) * arcRadius }));
-				}
-			};
-
-			appendArc(utility::math::Vector2F({ halfWidth - cornerRadius,
-												-halfHeight + cornerRadius }),
-					  -pi / 2.0f, 0.0f, cornerRadius);
-			appendArc(utility::math::Vector2F({ halfWidth - cornerRadius,
-												halfHeight - cornerRadius }),
-					  0.0f, pi / 2.0f, cornerRadius);
-			appendArc(utility::math::Vector2F({ -halfWidth + cornerRadius,
-												halfHeight - cornerRadius }),
-					  pi / 2.0f, pi, cornerRadius);
-			appendArc(utility::math::Vector2F({ -halfWidth + cornerRadius,
-												-halfHeight + cornerRadius }),
-					  pi, 3.0f * pi / 2.0f, cornerRadius);
-
-			return localVertices;
-		}
-
 		void appendLayer(utility::graphic::Mesh &mesh,
 						 const utility::graphic::PositionF &center,
 						 const utility::graphic::OrientationF &orientation,
-						 float halfWidth, float halfHeight, float radius,
+						 float halfWidth, float halfHeight,
+						 const shape::CornerRadii &radii,
 						 const utility::graphic::Color32Bit &color)
 		{
 			if (shape::isInvisible(color)) {
 				return;
 			}
-			const auto outline =
-				buildRoundedRectOutline(halfWidth, halfHeight, radius, 8);
+			const auto outline = shape::buildRoundedRectOutline(
+				halfWidth, halfHeight, radii, 8, 0.001f);
 
 			const uint32_t base =
 				static_cast<uint32_t>(mesh.getVertices().size());
@@ -220,6 +164,23 @@ namespace guillaume::systems
 		const auto &orientation = pose.getOrientation();
 		const auto &color		= elevation.getColor();
 
+		// The shadow follows the corners of the surface: the radii of its
+		// Borders, square when it has none.
+		shape::CornerRadii baseRadii;
+		if (getComponentRegistry().hasComponent<components::Borders>(
+				entityIdentifier)) {
+			baseRadii = shape::cornerRadiiOf(
+				getComponent<components::Borders>(entityIdentifier));
+		}
+		const float radiusLimit = (std::min)(halfWidth, halfHeight);
+		const auto clampRadius	= [radiusLimit](float radius) {
+			 return std::clamp(radius, 0.0f, std::max(0.0f, radiusLimit));
+		};
+		baseRadii = shape::CornerRadii { clampRadius(baseRadii.topLeft),
+										 clampRadius(baseRadii.topRight),
+										 clampRadius(baseRadii.bottomRight),
+										 clampRadius(baseRadii.bottomLeft) };
+
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
 
@@ -231,9 +192,14 @@ namespace guillaume::systems
 			const float alpha =
 				static_cast<float>(color.getAlpha()) * (1.0f - t);
 
+			// Growing a rectangle by `expansion` on every side grows each
+			// corner radius by the same amount.
+			const shape::CornerRadii radii { baseRadii.topLeft + expansion,
+											 baseRadii.topRight + expansion,
+											 baseRadii.bottomRight + expansion,
+											 baseRadii.bottomLeft + expansion };
 			appendLayer(mesh, center, orientation, halfWidth + expansion,
-						halfHeight + expansion,
-						(std::min)(halfWidth, halfHeight) + expansion,
+						halfHeight + expansion, radii,
 						color.withAlpha(static_cast<std::uint8_t>(alpha)));
 		}
 

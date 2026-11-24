@@ -29,14 +29,16 @@
  * The functions of guillaume::systems::shape turn a center, an orientation
  * and a few lengths into the vertices and triangle indices of a flat shape:
  * a filled outline, a ring or arc, a straight stroke, a rounded-rectangle
- * border. They read no component and keep no state.
+ * border. They keep no state, and read no component except
+ * cornerRadiiOf(), which copies the radii of a components::Borders.
  *
  * Used by RectangleRender, EllipseRender, RingRender, ArcRender, LineRender,
- * ScrimRender and FocusRingRender.
+ * ScrimRender, ElevationRender and FocusRingRender.
  *
- * Shapes are described in their own plane (X to the right, Y along the
- * height) around a center, then rotated by the orientation and moved to the
- * center. Lengths are in the unit of components::Bound (dp).
+ * Shapes are described in their own plane (X to the right, Y up, so the
+ * top edge of a rectangle is at +halfHeight) around a center, then rotated by
+ * the orientation and moved to the center. Lengths are in the unit of
+ * components::Bound (dp).
  *
  * Every builder writes indices counted from the first vertex of the mesh:
  * pass an empty mesh, one per shape.
@@ -49,6 +51,8 @@
 #include <utility/graphic/orientation.hpp>
 #include <utility/graphic/pose.hpp>
 #include <utility/math/vector.hpp>
+
+#include "guillaume/components/borders.hpp"
 
 namespace guillaume::systems::shape
 {
@@ -190,6 +194,51 @@ namespace guillaume::systems::shape
 					   float halfLength, float halfThickness, bool dashed,
 					   float dashLength, float gapLength,
 					   const utility::graphic::Color32Bit &color);
+
+	/**
+	 * @brief The four corner radii of a rounded rectangle, in dp.
+	 *
+	 * Corners are named as they are seen on screen, like the radii of
+	 * components::Borders.
+	 */
+	struct CornerRadii {
+		float topLeft { 0.0f };		   ///< Top-left corner radius
+		float topRight { 0.0f };	   ///< Top-right corner radius
+		float bottomRight { 0.0f };	   ///< Bottom-right corner radius
+		float bottomLeft { 0.0f };	   ///< Bottom-left corner radius
+	};
+
+	/**
+	 * @brief Copy the four corner radii of a Borders component.
+	 * @param borders The component to read.
+	 * @return The radii, corner for corner.
+	 */
+	CornerRadii cornerRadiiOf(const components::Borders &borders);
+
+	/**
+	 * @brief Build the outline of a rectangle whose four corners each have
+	 * their own radius.
+	 *
+	 * The outline is in the plane of the shape, around its center, and goes
+	 * counter-clockwise from the bottom-right corner: bottom-right,
+	 * top-right, top-left, bottom-left. A rounded corner is sampled with
+	 * @p arcSegments + 1 points; a corner whose radius is not larger than
+	 * @p epsilon is a single point. Pass the result to
+	 * transformToWorldVertices() and buildTriangleFanVertices() to fill it.
+	 *
+	 * @param halfWidth Half width of the rectangle, in dp.
+	 * @param halfHeight Half height of the rectangle, in dp.
+	 * @param radii Corner radii, in dp. Each one is clamped between zero and
+	 * the smaller half extent.
+	 * @param arcSegments Number of segments per rounded corner. A value of
+	 * zero or less is treated as 1.
+	 * @param epsilon Radius at or under which a corner is drawn square.
+	 * @return The outline points, at least four.
+	 */
+	std::vector<utility::math::Vector2F>
+		buildRoundedRectOutline(float halfWidth, float halfHeight,
+								const CornerRadii &radii, int arcSegments,
+								float epsilon = 0.0f);
 
 	/**
 	 * @brief Build the border of a rounded rectangle as a band of constant
