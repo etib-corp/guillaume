@@ -252,4 +252,17 @@ namespace guillaume::systems::tests
 		}
 	}
 
+	TEST_F(TestProgressIndicatorSystem, LinearTrackAndFillAreFullyRounded)
+	{
+		_system.update(_entity);
+
+		const float full = getShapeRadius(theme::ShapeRole::Full);
+		EXPECT_FLOAT_EQ(_registry.getComponent<components::Borders>(_track)
+							.getTopLeftRadius(),
+						full);
+		EXPECT_FLOAT_EQ(_registry.getComponent<components::Borders>(_fill)
+							.getTopLeftRadius(),
+						full);
+	}
+
 }	 // namespace guillaume::systems::tests

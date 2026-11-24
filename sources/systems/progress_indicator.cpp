@@ -292,6 +292,10 @@ namespace guillaume::systems
 		componentRegistry.getComponent<components::Bound>(track)
 			.setWidth(length)
 			.setHeight(height);
+		if (componentRegistry.hasComponent<components::Borders>(track)) {
+			componentRegistry.getComponent<components::Borders>(track)
+				.setBorderRadius(full);
+		}
 		if (componentRegistry.hasComponent<components::Borders>(fill)) {
 			componentRegistry.getComponent<components::Borders>(fill)
 				.setBorderRadius(full);
