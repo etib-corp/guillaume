@@ -25,7 +25,11 @@
 #include <cstddef>
 
 #include <guillaume/entities/style_helpers.hpp>
+#include <guillaume/components/color.hpp>
+#include <guillaume/components/divider.hpp>
+#include <guillaume/components/line.hpp>
 #include <guillaume/systems/backdrop.hpp>
+#include <guillaume/systems/divider.hpp>
 #include <guillaume/theme.hpp>
 
 namespace guillaume::systems::tests
@@ -308,6 +312,51 @@ namespace guillaume::systems::tests
 						-(guillaume::systems::Backdrop::Extent
 						  - components::NavigationDrawer::Height)
 							/ 2.0f);
+	}
+
+	TEST_F(TestNavigationDrawerSystem, DividerSystemKeepsThePoseOfTheLayout)
+	{
+		// The divider is a real one: systems::Divider (Measure phase) runs
+		// before the drawer (Layout phase) every frame.
+		guillaume::systems::Divider dividerSystem;
+		_registry.addComponent<components::Divider>(_divider).setLength(296.0f);
+		_registry.addComponent<components::Color>(_divider);
+		_registry.addComponent<components::Line>(_divider);
+		dividerSystem.bindComponentRegistry(_registry);
+
+		const auto frame = [this, &dividerSystem]() {
+			dividerSystem.update(_divider);
+			_system.update(_entity);
+		};
+		const auto pose = [this]() {
+			return _registry.getComponent<components::Transform>(_divider)
+				.getPose();
+		};
+
+		frame();
+		const auto placed = pose();
+		// The drawer placed it: under the entries before it, inside the
+		// padding.
+		EXPECT_FLOAT_EQ(placed.getPosition().getX(),
+						guillaume::systems::NavigationDrawer::Padding);
+		EXPECT_NE(placed.getPosition().getY(), 0.0f);
+
+		// systems::Divider adopts that pose instead of writing its own
+		// back, so the two systems do not fight.
+		dividerSystem.update(_divider);
+		EXPECT_EQ(pose(), placed);
+
+		_registry.resetChangedFlags();
+		frame();
+		frame();
+
+		EXPECT_EQ(pose(), placed);
+		EXPECT_FALSE(_registry.hasChanged(_divider));
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_divider).getWidth(),
+			296.0f);
+
+		dividerSystem.unbindComponentRegistry();
 	}
 
 	TEST_F(TestNavigationDrawerSystem, AnUnchangedDrawerIsNotMarkedChanged)
