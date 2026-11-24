@@ -3,6 +3,34 @@
 This guide documents breaking API changes and how to update existing code,
 newest first. The first group is unreleased; the rest shipped up to 2026.3.1.
 
+## `RadioGroup` rejects an index that names no option everywhere
+
+**Before:** only `RadioGroup::setValue()` / `systems::RadioGroup::select()`
+threw `std::out_of_range`. `RadioGroup::Builder::withValue()` accepted any
+index and the group then showed no selection; `systems::RadioGroup::press()`
+ignored an unknown index.
+
+**After:** one rule: an index is valid when it is smaller than the number of
+options. Building a group with another initial value, and `press()` with
+another index, throw `std::out_of_range`.
+
+**Update:** Pass `withValue()` an index of an option given to the builder, or
+do not call it to start with no selection.
+
+## A selection group that allows an empty selection can be emptied
+
+**Before:** `systems::Selection::reconcile()` selected the last recorded child
+again when no child was selected, even in a group that allows an empty
+selection; emptying it also took `SelectionGroup::clearSelection()`.
+
+**After:** deselecting the selected child, or
+`systems::Selection::select(..., ecs::Entity::InvalidIdentifier)`, empties a
+group whose `isEmptyAllowed()` is true. A group that does not allow it still
+restores its previous child, when that child is still one of its children.
+
+**Update:** Call `setAllowEmpty(false)` on a group that must always keep a
+selection, as the navigation bar and drawer do.
+
 ## `LocalStorage` defaults to the per-user data directory
 
 **Before:** a `LocalStorage` built without a path, such as the one every
