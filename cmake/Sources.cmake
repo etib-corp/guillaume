@@ -134,9 +134,7 @@ set(GUILLAUME_SOURCES
     sources/event/event_bus.cpp
     sources/event/event_manager.cpp
     sources/event/event_subscriber.cpp
-    sources/event_handler.cpp
     sources/local_storage.cpp
-    sources/metadata.cpp
     sources/mesh_renderable.cpp
     sources/motion/easing.cpp
     sources/scene.cpp
