@@ -3,7 +3,9 @@ set(TEST_HEADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/headers")
 
 # Explicit test source list (no file(GLOB)) for reproducible builds.
 set(TEST_SOURCES
+    sources/components/test_borders.cpp
     sources/components/test_bound.cpp
+    sources/components/test_changed_flags.cpp
     sources/components/test_focus.cpp
     sources/components/test_hierarchy.cpp
     sources/components/test_mesh_fit.cpp

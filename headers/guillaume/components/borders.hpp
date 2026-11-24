@@ -231,9 +231,9 @@ namespace guillaume::components
 		 * container.
 		 *
 		 * Compares, in this order, the top-left, top-right, bottom-right
-		 * and bottom-left radii, then the stroke color. The stroke width is
-		 * not compared: two borders that differ only by their width are
-		 * unequal for operator== but neither is less than the other.
+		 * and bottom-left radii, then the stroke color, then the stroke
+		 * width: the same values as operator==, so two borders are equal
+		 * exactly when neither is less than the other.
 		 *
 		 * @param other The borders to compare with.
 		 * @return True when this one sorts before @p other.

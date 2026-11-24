@@ -38,6 +38,9 @@ namespace guillaume::components
 
 	void HandPinchInteraction::setPinching(bool pinching)
 	{
+		if (_isPinching == pinching) {
+			return;
+		}
 		_isPinching = pinching;
 		setHasChanged(true);
 	}

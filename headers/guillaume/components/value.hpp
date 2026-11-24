@@ -48,7 +48,9 @@ namespace guillaume::components
 	 * Watch out:
 	 * - The handler runs inside the setter, synchronously, each time the
 	 *   stored value really changes, including when a new bound clamps it.
-	 * - Keep `min <= max`: when raising both bounds, set the maximum first.
+	 * - `min <= max` always holds: a minimum set above the maximum raises
+	 *   the maximum to it, and a maximum set below the minimum lowers the
+	 *   minimum to it. The bounds can therefore be set in any order.
 	 *
 	 * @see components::Range, systems::Switch, systems::ProgressIndicator
 	 */
@@ -88,7 +90,8 @@ namespace guillaume::components
 		 * When the bound differs, marks the component changed, then clamps
 		 * and snaps the current value again, which runs the handler if the
 		 * value moves.
-		 * @param min The new minimum; it must not exceed the maximum.
+		 * @param min The new minimum; when it exceeds the maximum, the
+		 * maximum is raised to it, so the range becomes empty at `min`.
 		 * @return This component, for chaining.
 		 */
 		Value &setMin(float min);
@@ -105,7 +108,8 @@ namespace guillaume::components
 		 * When the bound differs, marks the component changed, then clamps
 		 * and snaps the current value again, which runs the handler if the
 		 * value moves.
-		 * @param max The new maximum; it must not be below the minimum.
+		 * @param max The new maximum; when it is below the minimum, the
+		 * minimum is lowered to it, so the range becomes empty at `max`.
 		 * @return This component, for chaining.
 		 */
 		Value &setMax(float max);

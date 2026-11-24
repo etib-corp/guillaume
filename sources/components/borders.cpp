@@ -187,7 +187,7 @@ namespace guillaume::components
 		if (_color != other._color) {
 			return _color < other._color;
 		}
-		return false;
+		return _width < other._width;
 	}
 
 	std::ostream &operator<<(std::ostream &stream, const Borders &borders)

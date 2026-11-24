@@ -126,7 +126,8 @@ namespace guillaume::components
 		/**
 		 * @brief Get how far the current run is, before easing.
 		 * @return The elapsed time divided by the duration, clamped to 0 to
-		 * 1. With a duration of 0 or less: 0 while playing, 1 otherwise.
+		 * 1. With a duration of 0 or less the run is complete as soon as it
+		 * exists: always 1, playing or not.
 		 */
 		float getProgress(void) const;
 

@@ -38,6 +38,8 @@ namespace guillaume::components
 			return *this;
 		}
 		_min = min;
+		// Keep min <= max: std::clamp is undefined otherwise.
+		_max = std::max(_max, _min);
 		setHasChanged(true);
 		apply(_low, _high);
 		return *this;
@@ -54,6 +56,8 @@ namespace guillaume::components
 			return *this;
 		}
 		_max = max;
+		// Keep min <= max: std::clamp is undefined otherwise.
+		_min = std::min(_min, _max);
 		setHasChanged(true);
 		apply(_low, _high);
 		return *this;

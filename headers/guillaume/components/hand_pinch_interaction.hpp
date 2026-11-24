@@ -71,8 +71,8 @@ namespace guillaume::components
 		/**
 		 * @brief Record whether a hand pinches the entity.
 		 *
-		 * Called by systems::HandPinch; it calls no handler. Always marks the
-		 * component changed, even when the flag is the same.
+		 * Called by systems::HandPinch; it calls no handler. Marks the
+		 * component changed only when the flag differs.
 		 *
 		 * @param pinching True when the ray of the pinch event hits the
 		 * entity.

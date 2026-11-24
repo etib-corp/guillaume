@@ -37,6 +37,9 @@ namespace guillaume::components
 
 	void HandPokeInteraction::setPoking(bool poking)
 	{
+		if (_isPoking == poking) {
+			return;
+		}
 		_isPoking = poking;
 		setHasChanged(true);
 	}

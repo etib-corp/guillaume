@@ -52,6 +52,9 @@ namespace guillaume::components
 
 	Text &Text::setFontSize(float fontSize)
 	{
+		if (_fontSize == fontSize) {
+			return *this;
+		}
 		_fontSize = fontSize;
 		setHasChanged(true);
 		return *this;
@@ -107,9 +110,7 @@ namespace guillaume::components
 
 	Text &Text::setTypeToken(const theme::TypeToken &token)
 	{
-		if (_fontSize != token.fontSize) {
-			setFontSize(token.fontSize);
-		}
+		setFontSize(token.fontSize);
 		setFontWeight(token.fontWeight);
 		setLineHeight(token.lineHeight);
 		setLetterSpacing(token.letterSpacing);
@@ -123,7 +124,11 @@ namespace guillaume::components
 
 	Text &Text::setCursorPosition(std::size_t position)
 	{
-		_cursorPosition = std::min(position, _content.size());
+		const std::size_t clamped = std::min(position, _content.size());
+		if (_cursorPosition == clamped) {
+			return *this;
+		}
+		_cursorPosition = clamped;
 		setHasChanged(true);
 		return *this;
 	}

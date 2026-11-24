@@ -156,8 +156,7 @@ namespace guillaume::components
 		/**
 		 * @brief Set the stroke color.
 		 *
-		 * Unlike the other setters, it marks the component changed on every
-		 * call, even when the color is the same.
+		 * Marks the component changed when the color differs.
 		 * @param color The stroke color.
 		 * @return This component, for chaining.
 		 */

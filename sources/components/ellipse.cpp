@@ -39,6 +39,9 @@ namespace guillaume::components
 		if (segments < 1) {
 			segments = 1;
 		}
+		if (_segments == segments) {
+			return *this;
+		}
 		_segments = segments;
 		setHasChanged(true);
 		return *this;
