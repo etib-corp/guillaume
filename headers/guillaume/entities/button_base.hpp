@@ -606,9 +606,6 @@ namespace guillaume::entities
 		 */
 		utility::graphic::Color32Bit resolveContentColor(
 			const utility::graphic::Color32Bit &color) const;
-		static constexpr float _layerDepthStep {
-			1.0f
-		};	  ///< Depth between two layers, toward the viewer.
 	};
 
 }	 // namespace guillaume::entities

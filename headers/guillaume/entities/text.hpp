@@ -85,12 +85,6 @@ namespace guillaume::entities
 	{
 		public:
 		/**
-		 * @brief Font family kinds. No function of the library reads this
-		 * enumeration.
-		 */
-		enum class Type { Normal, Condensed, Monospace, Serif, Slab };
-
-		/**
 		 * @brief Configures Text widgets and registers them in the scene's
 		 * entity registry.
 		 */

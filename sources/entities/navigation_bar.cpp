@@ -105,7 +105,6 @@ namespace guillaume::entities
 	{
 		_config	 = SurfaceConfig();
 		_variant = Variant::WithLabels;
-		_destinations.clear();
 		_specs.clear();
 		_onIndexChange = {};
 
@@ -137,7 +136,6 @@ namespace guillaume::entities
 		const std::string &iconGlyph, const std::string &label,
 		const std::string &focusedIconGlyph, const std::string &badge)
 	{
-		_destinations.emplace_back(iconGlyph, label);
 		_specs.push_back(
 			Destination { iconGlyph, label, focusedIconGlyph, badge });
 		return *this;
