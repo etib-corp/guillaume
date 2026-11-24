@@ -48,6 +48,11 @@ namespace guillaume::systems
 		if (!keyboardEvent)
 			return;
 
+		// Only the entity that owns the focus is edited.
+		if (!getComponent<components::Focus>(entityIdentifier).isFocused()) {
+			return;
+		}
+
 		auto &text = getComponent<components::Text>(entityIdentifier);
 
 		if (!keyboardEvent->getIsDownEvent()) {

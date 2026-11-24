@@ -29,18 +29,22 @@ namespace guillaume::event
 	template<utility::event::InheritFromEvent EventType>
 	void EventManager<EventType>::consumeNextEvent(void)
 	{
-		if (_subscriber->hasPendingEvents()) {
-			_lastEvent = _subscriber->getNextEvent();
+		_lastEvent = _subscriber->getNextEvent();
+		if (_lastEvent) {
+			_retainedEvent = _lastEvent;
 		}
 	}
 
 	template<utility::event::InheritFromEvent EventType>
 	std::shared_ptr<EventType> EventManager<EventType>::getLastEvent(void)
 	{
-		if (!_lastEvent) {
-			return nullptr;
-		}
 		return _lastEvent;
+	}
+
+	template<utility::event::InheritFromEvent EventType>
+	std::shared_ptr<EventType> EventManager<EventType>::getRetainedEvent(void)
+	{
+		return _retainedEvent;
 	}
 
 	template<utility::event::InheritFromEvent EventType>

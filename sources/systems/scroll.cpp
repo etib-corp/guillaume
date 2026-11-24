@@ -22,6 +22,10 @@
 
 #include "guillaume/systems/scroll.hpp"
 
+#include "guillaume/components/hand_hover_interaction.hpp"
+#include "guillaume/components/mouse_hover_interaction.hpp"
+#include "guillaume/systems/interaction_helpers.hpp"
+
 namespace guillaume::systems
 {
 	Scroll::Scroll(event::EventBus &eventBus)
@@ -44,6 +48,18 @@ namespace guillaume::systems
 	{
 		const auto wheelEvent = getLastEvent();
 		if (!wheelEvent) {
+			return;
+		}
+
+		// An entity that tracks hovering only scrolls while the pointer is
+		// over it. One without a hover component cannot tell: it still
+		// receives every wheel event.
+		const bool tracksHover =
+			hasComponent<components::MouseHoverInteraction>(entityIdentifier)
+			|| hasComponent<components::HandHoverInteraction>(entityIdentifier);
+		if (tracksHover
+			&& !interaction::isHovered(getComponentRegistry(),
+									   entityIdentifier)) {
 			return;
 		}
 

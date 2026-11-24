@@ -34,11 +34,7 @@ namespace guillaume::systems
 
 	Focus::Focus(event::EventBus &eventBus, utility::Engine &engine)
 		: ecs::SystemFiller<components::Focus, components::Transform,
-							components::Bound,
-							components::MouseButtonInteraction,
-							components::HandButtonInteraction,
-							components::HandPinchInteraction,
-							components::HandPokeInteraction>(ecs::Phase::Event)
+							components::Bound>(ecs::Phase::Event)
 		, event::EventManager<utility::event::KeyboardEvent>(eventBus)
 		, _engine(engine)
 		, _focusedEntity(std::nullopt)
@@ -49,6 +45,14 @@ namespace guillaume::systems
 
 	void Focus::setFocus(const ecs::Entity::Identifier &entityIdentifier)
 	{
+		// Nothing changes for the entity that already owns the focus: its
+		// focus-gained handler must not run again (a held press calls this
+		// on every frame).
+		if (_focusedEntity.has_value()
+			&& _focusedEntity.value() == entityIdentifier) {
+			return;
+		}
+
 		// Save the current focused entity as last focused before changing
 		if (_focusedEntity.has_value()
 			&& _focusedEntity.value() != entityIdentifier) {

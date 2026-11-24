@@ -59,8 +59,9 @@ namespace
 
 			componentRegistry.addComponent<guillaume::components::Text>(
 				entityIdentifier);
-			componentRegistry.addComponent<guillaume::components::Focus>(
-				entityIdentifier);
+			componentRegistry
+				.addComponent<guillaume::components::Focus>(entityIdentifier)
+				.setFocused(true);
 		}
 
 		void setText(const std::string &content)
@@ -120,6 +121,31 @@ TEST_F(KeyboardControlFixture, IgnoresNonBackspaceAndKeyUpEvents)
 						  false);
 
 	EXPECT_EQ(getContent(), "seed");
+}
+
+// #176: a key-down is applied once, not on every frame until the key-up.
+TEST_F(KeyboardControlFixture, KeyDownIsNotAppliedAgainOnFramesWithoutEvent)
+{
+	setText("abc");
+
+	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
+	keyboardControl.routine(componentRegistry, entityRegistry, traveler);
+	keyboardControl.routine(componentRegistry, entityRegistry, traveler);
+
+	EXPECT_EQ(getContent(), "ab");
+}
+
+// #177: an entity that does not own the focus ignores the keys.
+TEST_F(KeyboardControlFixture, UnfocusedEntityIgnoresKeys)
+{
+	setText("abc");
+	componentRegistry
+		.getComponent<guillaume::components::Focus>(entityIdentifier)
+		.setFocused(false);
+
+	dispatchKeyboardEvent(utility::event::KeyboardEvent::KeyCode::Backspace);
+
+	EXPECT_EQ(getContent(), "abc");
 }
 
 namespace guillaume::systems::tests

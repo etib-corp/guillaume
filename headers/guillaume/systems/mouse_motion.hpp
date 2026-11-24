@@ -42,7 +42,7 @@ namespace guillaume::systems
 	 *
 	 * Runs in the Event phase on entities that have a
 	 * components::MouseHoverInteraction, a Transform and a Bound. It turns
-	 * the position of the current mouse motion event into a world ray
+	 * the position of the last mouse motion event received into a world ray
 	 * (through the engine's view) and tests it against the rectangle of the
 	 * entity, grown by its accessibility margin. It writes the hovered flag
 	 * of components::MouseHoverInteraction and calls its hover handler when
@@ -84,7 +84,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending mouse motion event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, the pointer keeps its last known position.
 		 */
 		void prepare(void) override;
 

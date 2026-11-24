@@ -40,8 +40,9 @@ namespace guillaume::systems
 	 * editable text.
 	 *
 	 * Runs in the Event phase on entities that have a components::Text and
-	 * a components::Focus. On a key-down event it writes the Text
-	 * component:
+	 * a components::Focus. On the frame a key-down event is taken, it
+	 * writes the Text component of the entity whose components::Focus is
+	 * focused:
 	 * - Left / Right move the cursor by one character;
 	 * - Home / End move it to the start / end of the content;
 	 * - Delete / Backspace remove the character after / before the cursor.
@@ -49,9 +50,9 @@ namespace guillaume::systems
 	 * Other keys and key-up events are ignored; characters are inserted by
 	 * systems::TextInput.
 	 *
-	 * @note The components::Focus is only required to be present: the
-	 * system does not test whether the entity is the focused one, so every
-	 * matching entity receives the key.
+	 * @note An entity whose components::Focus is not focused is left
+	 * untouched. A key is applied once per key-down event: a held key
+	 * repeats only as far as the engine sends repeated key-down events.
 	 *
 	 * @see components::Text
 	 * @see systems::TextInput
@@ -76,7 +77,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending keyboard event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, there is no current event this frame.
 		 */
 		void prepare(void) override;
 

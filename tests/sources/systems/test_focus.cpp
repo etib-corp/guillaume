@@ -31,6 +31,7 @@
 #include <guillaume/components/style_state.hpp>
 
 #include <guillaume/components/accessibility.hpp>
+#include <guillaume/ecs/level_order_traveler.hpp>
 
 namespace guillaume::systems::tests
 {
@@ -249,9 +250,6 @@ namespace guillaume::systems::tests
 									utility::graphic::OrientationF()),
 			100, 50);
 
-		_focusSystem->setFocus(entity1);
-		EXPECT_EQ(_focusSystem->getFocusedEntity().value(), entity1);
-
 		// Setting focus to same entity again should not trigger handler twice
 		int focusCount = 0;
 		auto &focus1 =
@@ -261,7 +259,84 @@ namespace guillaume::systems::tests
 		});
 
 		_focusSystem->setFocus(entity1);
+		EXPECT_EQ(_focusSystem->getFocusedEntity().value(), entity1);
+
+		_focusSystem->setFocus(entity1);
 		EXPECT_EQ(focusCount, 1);
+	}
+
+	// #179: a press held over an entity gives it the focus once.
+	TEST_F(TestFocusSystem, HeldPressCallsFocusGainedOnce)
+	{
+		const auto entity = createFocusableEntity();
+
+		int gained = 0;
+		_componentRegistry.getComponent<components::Focus>(entity)
+			.setOnFocusGainedHandler([&gained]() {
+				++gained;
+			});
+		_componentRegistry
+			.getComponent<components::MouseButtonInteraction>(entity)
+			.setButtonPressed(utility::event::MouseButtonEvent::Button::Left,
+							  true);
+
+		_focusSystem->update(entity);
+		_focusSystem->update(entity);
+		_focusSystem->update(entity);
+
+		EXPECT_EQ(gained, 1);
+	}
+
+	// #180: an entity needs no hand interaction component to be visited.
+	TEST_F(TestFocusSystem, VisitsEntityWithMouseInteractionOnly)
+	{
+		auto entity	  = std::make_unique<ecs::Entity>();
+		const auto id = entity->getIdentifier();
+		entity->setSignature(
+			ecs::Entity::getSignatureFromTypes<
+				components::Focus, components::Transform, components::Bound,
+				components::MouseButtonInteraction>());
+		_entityRegistry.addEntity(std::move(entity));
+
+		_componentRegistry.addComponent<components::Focus>(id);
+		_componentRegistry.addComponent<components::Transform>(id);
+		_componentRegistry.addComponent<components::Bound>(id);
+		_componentRegistry.addComponent<components::MouseButtonInteraction>(id)
+			.setButtonPressed(utility::event::MouseButtonEvent::Button::Left,
+							  true);
+
+		const ecs::LevelOrderTraveler traveler;
+		_focusSystem->routine(_componentRegistry, _entityRegistry, traveler);
+		// routine() unbinds the registry the fixture bound.
+		_focusSystem->bindComponentRegistry(_componentRegistry);
+
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), id);
+	}
+
+	// #180: such an entity is also collected for Tab traversal.
+	TEST_F(TestFocusSystem, TabReachesEntityWithoutHandInteraction)
+	{
+		auto entity	  = std::make_unique<ecs::Entity>();
+		const auto id = entity->getIdentifier();
+		entity->setSignature(
+			ecs::Entity::getSignatureFromTypes<
+				components::Focus, components::Transform, components::Bound>());
+		_entityRegistry.addEntity(std::move(entity));
+
+		_componentRegistry.addComponent<components::Focus>(id);
+		_componentRegistry.addComponent<components::Transform>(id);
+		_componentRegistry.addComponent<components::Bound>(id);
+
+		auto event = std::make_shared<utility::event::KeyboardEvent>();
+		event->setKeycode(utility::event::KeyboardEvent::KeyCode::Tab);
+		event->setIsDownEvent(true);
+		_eventBus->publish(std::move(event));
+
+		const ecs::LevelOrderTraveler traveler;
+		_focusSystem->routine(_componentRegistry, _entityRegistry, traveler);
+		_focusSystem->bindComponentRegistry(_componentRegistry);
+
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), id);
 	}
 
 	namespace
@@ -308,6 +383,30 @@ namespace guillaume::systems::tests
 
 		runFrame(true);
 		EXPECT_EQ(_focusSystem->getFocusedEntity(), second);
+	}
+
+	// #176: one Tab key-down moves the focus once.
+	TEST_F(TestFocusSystem, TabIsNotAppliedAgainOnFramesWithoutEvent)
+	{
+		const auto first  = createFocusableEntity();
+		const auto second = createFocusableEntity();
+		const auto third  = createFocusableEntity();
+
+		const auto runFrame = [&](void) {
+			_focusSystem->prepare();
+			for (const auto id: { first, second, third }) {
+				_focusSystem->update(id);
+			}
+			_focusSystem->cleanup();
+		};
+
+		pressTab(*_eventBus);
+		runFrame();
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), first);
+
+		runFrame();
+		runFrame();
+		EXPECT_EQ(_focusSystem->getFocusedEntity(), first);
 	}
 
 	TEST_F(TestFocusSystem, TabHonoursFocusOrderAndSkipsDisabled)

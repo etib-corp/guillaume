@@ -81,7 +81,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending hand button event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, there is no current event this frame.
 		 */
 		void prepare(void) override;
 

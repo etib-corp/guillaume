@@ -54,6 +54,9 @@ namespace guillaume::systems
 	 * - button up elsewhere: the button is marked released, no handler is
 	 *   called, so dragging the pointer off a widget cancels the click.
 	 *
+	 * An event is applied once, on the frame it is taken: a held button
+	 * stays marked pressed, but its press handler is not called again.
+	 *
 	 * Every entity is tested on its own: overlapping entities under the
 	 * pointer all receive the press. systems::Drag, systems::Focus and
 	 * systems::StyleState read the pressed flags later in the same phase.
@@ -90,7 +93,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending mouse button event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, there is no current event this frame.
 		 */
 		void prepare(void) override;
 

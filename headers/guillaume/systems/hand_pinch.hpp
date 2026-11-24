@@ -38,9 +38,9 @@ namespace guillaume::systems
 	 * components::HandPinchInteraction, a Transform and a Bound. The hit
 	 * test and the handler call are those of systems::HandRaySystem; this
 	 * class only says that the result is written to the pinching flag of
-	 * the component. An entity is therefore pinching while the hand ray of
-	 * the current pinch event hits it, and its event handler is called on
-	 * every frame that is true.
+	 * the component. An entity is therefore pinching on the frames that
+	 * bring a pinch event whose hand ray hits it, and its event handler is
+	 * called on each of them; a frame without pinch event clears the flag.
 	 *
 	 * systems::Focus and systems::StyleState read the flag later in the
 	 * same phase: a pinch focuses an entity and shows it pressed.

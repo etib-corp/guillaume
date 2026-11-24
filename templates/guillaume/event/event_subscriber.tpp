@@ -28,27 +28,34 @@ namespace guillaume::event
 {
 	template<utility::event::InheritFromEvent EventType>
 	EventSubscriber<EventType>::EventSubscriber(EventBus &eventBus)
+		: _eventQueue(std::make_shared<Queue>())
 	{
+		// The bus cannot drop a listener, so the listener must not reach
+		// the subscriber itself: it only holds the queue, weakly, and does
+		// nothing once the subscriber is gone.
 		eventBus.subscribe<EventType>(
-			[this](std::shared_ptr<utility::event::Event> event) {
-				this->_eventQueue.push(dynamic_pointer_cast<EventType>(event));
+			[queue = std::weak_ptr<Queue>(_eventQueue)](
+				std::shared_ptr<utility::event::Event> event) {
+				if (const auto pending = queue.lock()) {
+					pending->push(dynamic_pointer_cast<EventType>(event));
+				}
 			});
 	}
 
 	template<utility::event::InheritFromEvent EventType>
 	bool EventSubscriber<EventType>::hasPendingEvents(void) const
 	{
-		return !_eventQueue.empty();
+		return !_eventQueue->empty();
 	}
 
 	template<utility::event::InheritFromEvent EventType>
 	std::shared_ptr<EventType> EventSubscriber<EventType>::getNextEvent(void)
 	{
-		if (_eventQueue.empty()) {
+		if (_eventQueue->empty()) {
 			return nullptr;
 		}
-		std::shared_ptr<EventType> event = std::move(_eventQueue.front());
-		_eventQueue.pop();
+		std::shared_ptr<EventType> event = std::move(_eventQueue->front());
+		_eventQueue->pop();
 		return event;
 	}
 }	 // namespace guillaume::event

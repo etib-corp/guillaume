@@ -48,11 +48,9 @@ namespace guillaume::systems
 	/**
 	 * @brief Decides which single entity has the keyboard focus.
 	 *
-	 * Runs in the Event phase on entities that have a components::Focus,
-	 * Transform, Bound, MouseButtonInteraction, HandButtonInteraction,
-	 * HandPinchInteraction and HandPokeInteraction (all seven are required;
-	 * interaction::makeInteractive alone does not add the pinch and poke
-	 * ones).
+	 * Runs in the Event phase on entities that have a components::Focus, a
+	 * Transform and a Bound. The interaction components read below are
+	 * optional: an entity is pressed through the ones it has.
 	 *
 	 * Focus moves in two ways:
 	 * - **Press**: an entity takes the focus while its left mouse button,
@@ -86,11 +84,8 @@ namespace guillaume::systems
 	 * @see systems::FocusRingRender
 	 */
 	class Focus:
-		public ecs::SystemFiller<
-			components::Focus, components::Transform, components::Bound,
-			components::MouseButtonInteraction,
-			components::HandButtonInteraction, components::HandPinchInteraction,
-			components::HandPokeInteraction>,
+		public ecs::SystemFiller<components::Focus, components::Transform,
+								 components::Bound>,
 		public event::EventManager<utility::event::KeyboardEvent>
 	{
 		private:
@@ -144,8 +139,8 @@ namespace guillaume::systems
 		 * When another entity held the focus, it becomes the last focused
 		 * entity, its focus-lost handler is called and its focused flags are
 		 * cleared. The focused flags of the new entity are then set and its
-		 * focus-gained handler is called; that handler is called on every
-		 * call, also when the entity already held the focus.
+		 * focus-gained handler is called. Nothing happens, and no handler is
+		 * called, when the entity already holds the focus.
 		 * @param entityIdentifier The entity to focus. It is not checked
 		 * for being focusable or enabled.
 		 */

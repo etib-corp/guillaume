@@ -40,10 +40,13 @@ namespace guillaume::systems
 	 * A hand input system pairs one hand event type with one interaction
 	 * component. This base runs in the Event phase on entities that have
 	 * that component, a Transform and a Bound, and takes one event of its
-	 * type per frame. What is done with the event is left to update(),
-	 * which does nothing here: systems::HandSqueeze, HandThumbRest,
-	 * HandThumbStick and HandTrigger use the base as is and therefore only
-	 * subscribe to their event.
+	 * type per frame. On the frame an event is taken, update() casts a ray
+	 * from the hand position of the event along the forward axis of the
+	 * hand pose; for the entity it hits (a disabled entity is never hit),
+	 * the state of the event is copied into the interaction component,
+	 * which derives from the event type, and the event handler of the
+	 * component is called. systems::HandSqueeze, HandThumbRest,
+	 * HandThumbStick and HandTrigger use the base as is.
 	 *
 	 * @code
 	 * class HandSqueeze:
@@ -55,8 +58,10 @@ namespace guillaume::systems
 	 * @endcode
 	 *
 	 * @tparam InteractionType The interaction component an entity must have
-	 * to be visited.
-	 * @tparam EventType The hand event the system subscribes to.
+	 * to be visited. It must derive from `EventType` and provide
+	 * `getOnEventHandler()`, as components::Interaction does.
+	 * @tparam EventType The hand event the system subscribes to. It must
+	 * provide the hand pose through `getPose()`.
 	 * @see systems::HandRaySystem
 	 */
 	template<ecs::InheritFromComponent InteractionType,
@@ -82,7 +87,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, there is no current event this frame.
 		 */
 		void prepare(void) override;
 
@@ -92,12 +97,31 @@ namespace guillaume::systems
 		void cleanup(void) override;
 
 		/**
-		 * @brief React to the current event for one entity. Does nothing
-		 * here; a derived system overrides it.
+		 * @brief Give the event of this frame to one entity when the hand
+		 * ray hits it: copy the state of the event into the interaction
+		 * component and call its event handler.
+		 *
+		 * Nothing happens on a frame without event, or for an entity the
+		 * ray misses.
 		 * @param entityIdentifier The entity holding the interaction
 		 * component.
 		 */
 		void update(const ecs::Entity::Identifier &entityIdentifier) override;
+
+		protected:
+		/**
+		 * @brief Tell whether the hand ray of an event hits an entity.
+		 *
+		 * The ray starts at the hand position and follows the forward axis
+		 * of the hand pose. It is tested against the rectangle of the
+		 * entity, grown by its accessibility margin.
+		 * @param handEvent The event giving the hand pose.
+		 * @param entityIdentifier The entity to test. It must have a
+		 * Transform and a Bound.
+		 * @return True on a hit. Always false for a disabled entity.
+		 */
+		bool isHit(const EventType &handEvent,
+				   const ecs::Entity::Identifier &entityIdentifier);
 	};
 
 	/**
@@ -109,8 +133,9 @@ namespace guillaume::systems
 	 * against the rectangle of the entity, grown by its accessibility
 	 * margin (a disabled entity is never hit). The result is stored on the
 	 * interaction component through setEngaged(), and on a hit the
-	 * component's event handler is called. Nothing happens until a first
-	 * event has been received.
+	 * component's event handler is called. A gesture event counts for the
+	 * frame it is taken in: on a frame without event, setEngaged() is
+	 * called with false for every visited entity.
 	 *
 	 * systems::HandPinch and systems::HandPoke derive from it and only say
 	 * which flag setEngaged() writes.
@@ -129,9 +154,10 @@ namespace guillaume::systems
 		using HandEventSystem<InteractionType, EventType>::HandEventSystem;
 
 		/**
-		 * @brief Test the hand ray of the current event against one entity,
-		 * store the result with setEngaged() and call the event handler of
-		 * the interaction component on a hit.
+		 * @brief Test the hand ray of the event of this frame against one
+		 * entity, store the result with setEngaged() and call the event
+		 * handler of the interaction component on a hit. Without event this
+		 * frame, the entity is disengaged.
 		 * @param entityIdentifier The entity holding the interaction
 		 * component.
 		 */
@@ -142,8 +168,8 @@ namespace guillaume::systems
 		 * @brief Write the result of the hit test on the interaction
 		 * component. Called for every visited entity, hit or not.
 		 * @param interaction The interaction component of the entity.
-		 * @param engaged True when the hand ray of the current event hits
-		 * the entity.
+		 * @param engaged True when the hand ray of the event of this frame
+		 * hits the entity; false when it misses or no event arrived.
 		 */
 		virtual void setEngaged(InteractionType &interaction, bool engaged) = 0;
 	};

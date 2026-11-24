@@ -39,17 +39,19 @@ namespace guillaume::systems
 	 * @brief Scrolls content with the mouse wheel.
 	 *
 	 * Runs in the Event phase on entities that have a components::Scrollable
-	 * and a components::Bound. It reads the wheel offset of the current
-	 * mouse wheel event and the scroll step of the component, adds
-	 * `offset * step` (per axis) to the content offset of
+	 * and a components::Bound. On the frame a mouse wheel event is taken,
+	 * it reads the wheel offset of the event and the scroll step of the
+	 * component, adds `offset * step` (per axis) to the content offset of
 	 * components::Scrollable, then clamps the result with the Bound as the
 	 * viewport size.
 	 *
-	 * @note The system does not test where the pointer is: every scrollable
-	 * entity of the scene receives the wheel event.
-	 * @note The current event is the last one received. It is not cleared
-	 * when a frame brings no new wheel event, so its offset is applied
-	 * again on that frame.
+	 * An entity that also has a components::MouseHoverInteraction or a
+	 * components::HandHoverInteraction only scrolls while it is hovered
+	 * (and enabled).
+	 *
+	 * @note An entity without hover component cannot tell where the pointer
+	 * is: it receives every wheel event. Nested scrollable entities that
+	 * are both hovered both scroll.
 	 *
 	 * @see components::Scrollable
 	 */
@@ -73,7 +75,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending mouse wheel event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, there is no current event this frame.
 		 */
 		void prepare(void) override;
 

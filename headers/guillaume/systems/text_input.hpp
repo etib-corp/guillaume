@@ -39,15 +39,15 @@ namespace guillaume::systems
 	 * @brief Adds typed text to editable text.
 	 *
 	 * Runs in the Event phase on entities that have a components::Text and
-	 * a components::Focus. It reads the text of the current text input
-	 * event (the characters committed by the keyboard or the input method)
-	 * and appends it to the content of components::Text.
+	 * a components::Focus. On the frame a text input event is taken, it
+	 * reads the text of the event (the characters committed by the
+	 * keyboard or the input method) and inserts it at the cursor of the
+	 * components::Text whose components::Focus is focused; the cursor ends
+	 * after the inserted text.
 	 *
-	 * @note The text is appended at the end of the content, whatever the
-	 * cursor position.
-	 * @note The components::Focus is only required to be present: the
-	 * system does not test whether the entity is the focused one, so every
-	 * matching entity receives the text.
+	 * @note An entity whose components::Focus is not focused is left
+	 * untouched: the owner of an editable text sets the flag
+	 * (systems::TextField does for its input while the field is edited).
 	 *
 	 * @see components::Text
 	 * @see systems::KeyboardControl
@@ -72,7 +72,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending text input event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, there is no current event this frame.
 		 */
 		void prepare(void) override;
 
@@ -82,8 +82,8 @@ namespace guillaume::systems
 		void cleanup(void) override;
 
 		/**
-		 * @brief Append the text of the current text input event to the
-		 * content of one entity.
+		 * @brief Insert the text of the current text input event at the
+		 * cursor of one entity, when the entity is focused.
 		 * @param entityIdentifier The entity holding the components::Text.
 		 */
 		virtual void

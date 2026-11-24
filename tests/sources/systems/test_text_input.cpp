@@ -61,8 +61,32 @@ namespace
 
 			componentRegistry.addComponent<guillaume::components::Text>(
 				entityIdentifier);
-			componentRegistry.addComponent<guillaume::components::Focus>(
-				entityIdentifier);
+			componentRegistry
+				.addComponent<guillaume::components::Focus>(entityIdentifier)
+				.setFocused(true);
+		}
+
+		void runFrameWithoutEvent(void)
+		{
+			textInputSystem.routine(componentRegistry, entityRegistry,
+									traveler);
+		}
+
+		guillaume::ecs::Entity::Identifier addTextEntity(bool focused)
+		{
+			auto entity			  = std::make_unique<guillaume::ecs::Entity>();
+			const auto identifier = entity->getIdentifier();
+			entity->setSignature(guillaume::ecs::Entity::getSignatureFromTypes<
+								 guillaume::components::Text,
+								 guillaume::components::Focus>());
+			entityRegistry.addEntity(std::move(entity));
+
+			componentRegistry.addComponent<guillaume::components::Text>(
+				identifier);
+			componentRegistry
+				.addComponent<guillaume::components::Focus>(identifier)
+				.setFocused(focused);
+			return identifier;
 		}
 
 		void dispatchTextInputEvent(const std::string &textInput)
@@ -99,6 +123,45 @@ TEST_F(TextInputFixture, AppendsPunctuationAndSymbolsFromTextInput)
 	dispatchTextInputEvent("()[]{}-_+=/\\*@#$%&~^`");
 
 	EXPECT_EQ(getContent(), ".,;:?!'\"()[]{}-_+=/\\*@#$%&~^`");
+}
+
+// #176: an event is applied on the frame it is consumed, not on the next
+// ones.
+TEST_F(TextInputFixture, TextIsNotAppliedAgainOnFramesWithoutEvent)
+{
+	dispatchTextInputEvent("a");
+	runFrameWithoutEvent();
+	runFrameWithoutEvent();
+
+	EXPECT_EQ(getContent(), "a");
+}
+
+// #177: only the focused entity receives the text.
+TEST_F(TextInputFixture, OnlyTheFocusedEntityReceivesText)
+{
+	const auto other = addTextEntity(false);
+
+	dispatchTextInputEvent("a");
+
+	EXPECT_EQ(getContent(), "a");
+	EXPECT_TRUE(
+		componentRegistry.getComponent<guillaume::components::Text>(other)
+			.getContent()
+			.empty());
+}
+
+// #177: the text goes where the cursor is.
+TEST_F(TextInputFixture, InsertsAtTheCursor)
+{
+	auto &text = componentRegistry.getComponent<guillaume::components::Text>(
+		entityIdentifier);
+	text.setContent("ad");
+	text.setCursorPosition(1);
+
+	dispatchTextInputEvent("bc");
+
+	EXPECT_EQ(getContent(), "abcd");
+	EXPECT_EQ(text.getCursorPosition(), 3u);
 }
 
 namespace guillaume::systems::tests

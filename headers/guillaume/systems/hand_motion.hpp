@@ -40,8 +40,9 @@ namespace guillaume::systems
 	 *
 	 * The hand counterpart of systems::MouseMotion. Runs in the Event phase
 	 * on entities that have a components::HandHoverInteraction, a Transform
-	 * and a Bound. It casts the forward ray of the aim pose of the current
-	 * hand motion event and tests it against the rectangle of the entity,
+	 * and a Bound. It casts the forward ray of the aim pose of the last
+	 * hand motion event received (the pose is kept on the frames that bring
+	 * none) and tests it against the rectangle of the entity,
 	 * grown by its accessibility margin. It writes the hovered flag of
 	 * components::HandHoverInteraction and calls its hover handler when the
 	 * ray enters and its unhover handler when it leaves. A disabled entity
@@ -76,7 +77,7 @@ namespace guillaume::systems
 		/**
 		 * @brief Take the next pending hand motion event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, the pointer keeps its last known pose.
 		 */
 		void prepare(void) override;
 

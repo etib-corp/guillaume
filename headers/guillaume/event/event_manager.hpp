@@ -44,6 +44,13 @@ namespace guillaume::event
 	 * - reads that event with getLastEvent() in ecs::System::update, for
 	 *   each entity it visits.
 	 *
+	 * Two readings are offered, because inputs are of two kinds:
+	 * - a one-shot input (a key press, a click, a wheel step, committed
+	 *   text) must be applied once: getLastEvent() returns it only during
+	 *   the frame it was consumed in;
+	 * - a state input (where the pointer is) stays true until the next
+	 *   one: getRetainedEvent() keeps returning the most recent event.
+	 *
 	 * @code
 	 * class Clicks:
 	 * 	public ecs::SystemFiller<components::Bound>,
@@ -77,9 +84,9 @@ namespace guillaume::event
 	 * - One call to consumeNextEvent() takes one event. When several events
 	 *   of the type arrive in the same frame, the others wait for the next
 	 *   frames.
-	 * - The last event is kept when the queue is empty: getLastEvent()
-	 *   returns the same event again on the following frames, until a new
-	 *   one arrives.
+	 * - getLastEvent() returns nullptr on a frame where the queue was
+	 *   empty. A system that needs the latest known state on such a frame
+	 *   (the pointer position, for hover) reads getRetainedEvent().
 	 * - To listen to several event types, derive from several EventManager
 	 *   instantiations.
 	 *
@@ -97,29 +104,44 @@ namespace guillaume::event
 							///< consumed yet
 
 		std::shared_ptr<EventType>
-			_lastEvent;	   ///< The event taken by the last successful
-						   ///< consumeNextEvent(); nullptr before the first
+			_lastEvent;	   ///< The event taken by the last
+						   ///< consumeNextEvent(); nullptr when it found
+						   ///< none
+
+		std::shared_ptr<EventType>
+			_retainedEvent;	   ///< The most recent event ever taken;
+							   ///< nullptr before the first
 
 		protected:
 		/**
 		 * @brief Take the oldest queued event and make it the last event.
 		 *
-		 * When no event is queued, nothing changes: the last event stays the
-		 * one of a previous call. Call it once per frame, in
-		 * ecs::System::prepare.
+		 * When no event is queued, the last event becomes nullptr, so a
+		 * one-shot input is not applied again; the retained event is left
+		 * as it is. Call it once per frame, in ecs::System::prepare.
 		 */
 		void consumeNextEvent(void);
 
 		/**
-		 * @brief Get the event taken by the most recent consumeNextEvent()
-		 * that found one.
+		 * @brief Get the event taken by the latest consumeNextEvent().
 		 *
-		 * The event is not removed: every call returns the same event until
-		 * consumeNextEvent() replaces it.
-		 * @return The last event, or nullptr when no event was ever
-		 * consumed.
+		 * Use it for one-shot inputs. The event is not removed: every call
+		 * returns the same event until the next consumeNextEvent().
+		 * @return The event consumed this frame, or nullptr when the queue
+		 * was empty.
 		 */
 		std::shared_ptr<EventType> getLastEvent(void);
+
+		/**
+		 * @brief Get the most recent event taken by consumeNextEvent(),
+		 * whatever the frame.
+		 *
+		 * Use it for state inputs, such as the pointer position: it keeps
+		 * returning the same event on the frames where nothing arrived.
+		 * @return The most recent event, or nullptr when no event was ever
+		 * consumed.
+		 */
+		std::shared_ptr<EventType> getRetainedEvent(void);
 
 		public:
 		/**

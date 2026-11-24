@@ -49,7 +49,7 @@ namespace guillaume::systems
 
 	void MouseMotion::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
-		auto mouseMotionEvent = getLastEvent();
+		auto mouseMotionEvent = getRetainedEvent();
 		if (!mouseMotionEvent)
 			return;
 

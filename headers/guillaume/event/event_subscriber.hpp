@@ -48,9 +48,11 @@ namespace guillaume::event
 	 * }
 	 * @endcode
 	 *
-	 * @note The bus keeps a pointer to the subscriber and has no way to
-	 * drop it: a subscriber must not be copied or moved, and must live at
-	 * least as long as events are published on the bus.
+	 * @note The bus has no way to drop a listener, so the listener of a
+	 * subscriber does not point to the subscriber: it shares the queue and
+	 * does nothing once the subscriber is destroyed. A subscriber may
+	 * therefore be destroyed before or after the bus. It cannot be copied
+	 * or moved: one subscription fills one queue.
 	 * @tparam EventType The exact event type to queue.
 	 * @see EventBus
 	 * @see EventManager
@@ -58,9 +60,13 @@ namespace guillaume::event
 	template<utility::event::InheritFromEvent EventType> class EventSubscriber
 	{
 		private:
-		std::queue<std::shared_ptr<EventType>>
-			_eventQueue;	///< Events received and not read yet, oldest
-							///< first
+		using Queue =
+			std::queue<std::shared_ptr<EventType>>;	   ///< Events, oldest first
+
+		std::shared_ptr<Queue>
+			_eventQueue;	///< Events received and not read yet; shared
+							///< with the listener registered on the bus,
+							///< which only holds it weakly
 
 		public:
 		/**
@@ -71,10 +77,32 @@ namespace guillaume::event
 		EventSubscriber(EventBus &eventBus);
 
 		/**
-		 * @brief Destroy the queue. The bus is not told: see the note of
-		 * the class.
+		 * @brief Destroy the queue. The listener left on the bus stops
+		 * queuing: see the note of the class.
 		 */
 		~EventSubscriber(void) = default;
+
+		/**
+		 * @brief Not copyable: the copy would share no subscription.
+		 */
+		EventSubscriber(const EventSubscriber &) = delete;
+
+		/**
+		 * @brief Not copy-assignable.
+		 * @return Nothing: the operator is deleted.
+		 */
+		EventSubscriber &operator=(const EventSubscriber &) = delete;
+
+		/**
+		 * @brief Not movable: the queue stays with its subscription.
+		 */
+		EventSubscriber(EventSubscriber &&) = delete;
+
+		/**
+		 * @brief Not move-assignable.
+		 * @return Nothing: the operator is deleted.
+		 */
+		EventSubscriber &operator=(EventSubscriber &&) = delete;
 
 		/**
 		 * @brief Tell whether at least one event is waiting.
