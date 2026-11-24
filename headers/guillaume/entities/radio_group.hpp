@@ -149,9 +149,11 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Choose the option selected when the group is built.
-			 * @param index The index of the option, starting at 0. It is
-			 * not checked: with an index that matches no option, no radio
-			 * button is selected. By default no option is selected.
+			 * @param index The index of the option, starting at 0. By
+			 * default no option is selected. It is checked when the group
+			 * is built: makeRadioGroup() and registerEntity() throw
+			 * std::out_of_range when it matches no option, as setValue()
+			 * does.
 			 * @return Reference to this builder for chaining.
 			 */
 			Builder &withValue(std::size_t index);
@@ -271,6 +273,8 @@ namespace guillaume::entities
 		 * std::nullopt for none.
 		 * @param onValueChange The function called with the new index when
 		 * the user selects another option. May be empty.
+		 * @throws std::out_of_range If @p value is not less than the number
+		 * of options.
 		 */
 		RadioGroup(ecs::ComponentRegistry &registry,
 				   const SurfaceConfig &config,

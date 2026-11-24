@@ -33,6 +33,24 @@
 
 namespace guillaume::systems
 {
+	namespace
+	{
+		/**
+		 * @brief Reject an index that names no option of the group.
+		 * @param group The group state.
+		 * @param index The zero-based option index.
+		 * @throws std::out_of_range If `index` is not smaller than the
+		 * number of option labels.
+		 */
+		void requireOption(const components::RadioGroup &group,
+						   std::size_t index)
+		{
+			if (index >= group.getOptions().size()) {
+				throw std::out_of_range("RadioGroup option index out of range");
+			}
+		}
+	}	 // namespace
+
 	RadioGroup::RadioGroup(void)
 		: ecs::SystemFiller<components::RadioGroup>(ecs::Phase::Layout)
 	{
@@ -76,9 +94,7 @@ namespace guillaume::systems
 		auto &group = componentRegistry.getComponent<components::RadioGroup>(
 			entityIdentifier);
 
-		if (index >= group.getOptions().size()) {
-			throw std::out_of_range("RadioGroup option index out of range");
-		}
+		requireOption(group, index);
 		group.setValue(index);
 		apply(componentRegistry, entityIdentifier);
 	}
@@ -90,9 +106,7 @@ namespace guillaume::systems
 		auto &group = componentRegistry.getComponent<components::RadioGroup>(
 			entityIdentifier);
 
-		if (index >= group.getButtons().size()) {
-			return;
-		}
+		requireOption(group, index);
 
 		const bool changed =
 			!group.getValue().has_value() || *group.getValue() != index;

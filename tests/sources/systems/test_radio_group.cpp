@@ -101,10 +101,26 @@ namespace guillaume::systems::tests
 
 		GroupSystem::press(_registry, _entity, 1);
 		GroupSystem::press(_registry, _entity, 1);
-		GroupSystem::press(_registry, _entity, 7);
 
 		ASSERT_EQ(reported.size(), 1u);
 		EXPECT_EQ(reported[0], 1u);
+		EXPECT_EQ(group().getValue(), 1u);
+	}
+
+	TEST_F(TestRadioGroupSystem, PressRejectsAnUnknownOptionAsSelectDoes)
+	{
+		int calls = 0;
+		group().setOnValueChange([&calls](std::size_t) {
+			++calls;
+		});
+		GroupSystem::press(_registry, _entity, 1);
+
+		EXPECT_THROW(GroupSystem::press(_registry, _entity, 3),
+					 std::out_of_range);
+		EXPECT_THROW(GroupSystem::select(_registry, _entity, 3),
+					 std::out_of_range);
+
+		EXPECT_EQ(calls, 1);
 		EXPECT_EQ(group().getValue(), 1u);
 	}
 

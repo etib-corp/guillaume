@@ -22,6 +22,7 @@
 
 #include "guillaume/entities/radio_group.hpp"
 
+#include <stdexcept>
 #include <utility>
 
 #include "guillaume/systems/radio_group.hpp"
@@ -101,6 +102,10 @@ namespace guillaume::entities
 						   std::function<void(std::size_t)> onValueChange)
 		: SurfaceBase<components::RadioGroup>(registry, config)
 	{
+		// Same rule as setValue(): the value names one of the options.
+		if (value.has_value() && *value >= options.size()) {
+			throw std::out_of_range("RadioGroup option index out of range");
+		}
 		getComponentRegistry()
 			.getComponent<components::RadioGroup>(getIdentifier())
 			.setOptions(options)
