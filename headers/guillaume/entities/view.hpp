@@ -296,24 +296,40 @@ namespace guillaume::entities
 		/**
 		 * @brief Build a view without registering it in an entity registry.
 		 *
-		 * The arguments are forwarded to the private constructor:
-		 * `(registry, pose, color, borderRadius, axis, mainAxisAlignment,
-		 * crossAxisAlignment, spacing, padding, hasFixedWidth, fixedWidth,
-		 * hasFixedHeight, fixedHeight, entities)`. It then calls build(),
-		 * which parents the given entities to the view and arranges them.
-		 * A view creates no child of its own.
-		 * @tparam Arguments The constructor argument types.
-		 * @param arguments The constructor arguments, as listed above.
+		 * Constructs the view, then hands `entities` to setEntities(),
+		 * which parents them to the view and arranges them. A view
+		 * creates no child of its own.
+		 * @param registry The registry the components are stored in.
+		 * @param pose The pose of the top-left corner of the view.
+		 * @param color The background color (RGBA).
+		 * @param borderRadius The corner radius, in dp.
+		 * @param axis The axis along which children are arranged.
+		 * @param mainAxisAlignment How the children are distributed along
+		 * the axis.
+		 * @param crossAxisAlignment How each child is aligned across the
+		 * axis.
+		 * @param spacing The gap between two consecutive children, in dp.
+		 * @param padding The space around the children, in dp.
+		 * @param hasFixedWidth Whether `fixedWidth` is applied.
+		 * @param fixedWidth The forced width, in dp. Ignored when
+		 * `hasFixedWidth` is false.
+		 * @param hasFixedHeight Whether `fixedHeight` is applied.
+		 * @param fixedHeight The forced height, in dp. Ignored when
+		 * `hasFixedHeight` is false.
+		 * @param entities The entities to arrange, in layout order. Null
+		 * entries are skipped.
 		 * @return The new view. The caller owns it.
 		 */
-		template<typename... Arguments>
-		static std::shared_ptr<View> create(Arguments &&...arguments)
-		{
-			std::shared_ptr<View> entity(
-				new View(std::forward<Arguments>(arguments)...));
-			entity->build();
-			return entity;
-		}
+		static std::shared_ptr<View>
+			create(ecs::ComponentRegistry &registry,
+				   const utility::graphic::PoseF &pose,
+				   const utility::graphic::Color32Bit &color,
+				   float borderRadius, Axis axis,
+				   MainAxisAlignment mainAxisAlignment,
+				   CrossAxisAlignment crossAxisAlignment, float spacing,
+				   float padding, bool hasFixedWidth, float fixedWidth,
+				   bool hasFixedHeight, float fixedHeight,
+				   const std::vector<std::shared_ptr<ecs::Entity>> &entities);
 
 		/**
 		 * @brief Destructor.
@@ -461,9 +477,6 @@ namespace guillaume::entities
 		 * @param hasFixedHeight Whether `fixedHeight` is applied.
 		 * @param fixedHeight The forced height, in dp. Ignored when
 		 * `hasFixedHeight` is false.
-		 * @param entities The entities to arrange, in layout order. Their
-		 * identifiers are recorded as layout children at once; they are
-		 * parented to the view by build().
 		 */
 		View(ecs::ComponentRegistry &registry,
 			 const utility::graphic::PoseF &pose,
@@ -471,18 +484,7 @@ namespace guillaume::entities
 			 Axis axis, MainAxisAlignment mainAxisAlignment,
 			 CrossAxisAlignment crossAxisAlignment, float spacing,
 			 float padding, bool hasFixedWidth, float fixedWidth,
-			 bool hasFixedHeight, float fixedHeight,
-			 const std::vector<std::shared_ptr<ecs::Entity>> &entities);
-
-		/**
-		 * @brief Parent the entities given to the constructor to the view,
-		 * then arrange them.
-		 *
-		 * Called once by create(), when the view is held by a shared
-		 * pointer and can be given as parent. The view stops holding the
-		 * entities here: they stay alive through their entity registry.
-		 */
-		void build(void);
+			 bool hasFixedHeight, float fixedHeight);
 	};
 
 }	 // namespace guillaume::entities
