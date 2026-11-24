@@ -283,10 +283,14 @@ namespace guillaume::entities
 		// Remove any child left over from a previous variant with its
 		// components, and silence its animation first so it no longer
 		// drives this indicator.
+		bool stopped = false;
 		if (registry.hasComponent<components::Animation>(
 				state.getIndicator())) {
-			registry.getComponent<components::Animation>(state.getIndicator())
-				.setOnSampleHandler(components::Animation::SampleHandler {})
+			auto &previous = registry.getComponent<components::Animation>(
+				state.getIndicator());
+
+			stopped = !previous.isPlaying();
+			previous.setOnSampleHandler(components::Animation::SampleHandler {})
 				.stop();
 		}
 		this->clearEntities();
@@ -301,6 +305,12 @@ namespace guillaume::entities
 		this->addEntity(child);
 		state.setIndicator(child->getIdentifier()).setBuilt(true);
 		systems::LoadingIndicator::installChildren(registry, getIdentifier());
+		// installChildren() starts the new child: an indicator that was
+		// stopped stays stopped, or it would spin while faded out.
+		if (stopped) {
+			registry.getComponent<components::Animation>(child->getIdentifier())
+				.stop();
+		}
 
 		// The animated child is positioned by systems::LoadingIndicator, so
 		// it is not registered as a layout child of the surface.
