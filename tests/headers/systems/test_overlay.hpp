@@ -39,6 +39,7 @@
 #include "mocks/engine_mock.hpp"
 
 #include <utility/engine.hpp>
+#include <utility/event/mouse_button_event.hpp>
 #include <utility/graphic/pose.hpp>
 
 namespace guillaume::systems::tests
@@ -97,6 +98,65 @@ namespace guillaume::systems::tests
 				.setHeight(height);
 
 			return id;
+		}
+
+		/**
+		 * @brief Give the engine an 800 x 600 view at the origin, looking
+		 * down -z, so mouse positions can be turned into rays.
+		 */
+		void setUpView(void)
+		{
+			auto &view =
+				static_cast<guillaume::tests::EngineMock &>(*_engine).view;
+
+			view.setViewportSize(utility::math::Vector2F({ 800.0f, 600.0f }));
+			view.setPerspective(1.0f, 800.0f / 600.0f);
+		}
+
+		/**
+		 * @brief Create a 100 x 50 overlay centered in front of the view
+		 * set by setUpView(), 500 units away.
+		 * @return The entity identifier.
+		 */
+		ecs::Entity::Identifier createCenteredOverlayEntity(void)
+		{
+			const auto id = createOverlayEntity();
+
+			_componentRegistry.getComponent<components::Transform>(id).setPose(
+				utility::graphic::PoseF(
+					utility::graphic::PositionF(-50.0f, 25.0f, -500.0f),
+					utility::graphic::OrientationF()));
+			return id;
+		}
+
+		/**
+		 * @brief Publish a left mouse button event.
+		 * @param x Horizontal viewport position, in pixels.
+		 * @param y Vertical viewport position, in pixels.
+		 * @param pressed True for a press, false for a release.
+		 */
+		void publishMouseButton(float x, float y, bool pressed = true)
+		{
+			auto event = std::make_shared<utility::event::MouseButtonEvent>();
+
+			event->setPosition(utility::math::Vector2F({ x, y }))
+				.setButton(utility::event::MouseButtonEvent::Button::Left)
+				.setPressed(pressed);
+			_eventBus.publish(event);
+		}
+
+		/**
+		 * @brief Count the calls to the dismiss handler of an overlay.
+		 * @param id The overlay entity.
+		 * @param count The counter incremented by the handler. It must
+		 * outlive the overlay.
+		 */
+		void countDismissals(const ecs::Entity::Identifier &id, int &count)
+		{
+			_componentRegistry.getComponent<components::Overlay>(id)
+				.setOnDismissHandler([&count]() {
+					++count;
+				});
 		}
 	};
 

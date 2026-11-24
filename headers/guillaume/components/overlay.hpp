@@ -37,14 +37,13 @@ namespace guillaume::components
 	 * The widget systems (systems::Dialog, systems::Menu, ...) write the
 	 * flags, and their `show` and `hide` functions write the visibility.
 	 * systems::Overlay reads the component in the Event phase: it keeps the
-	 * visible overlays in a stack and dismisses the top one on Escape or
-	 * when its auto-dismiss delay has elapsed. A click outside the top
-	 * overlay dismisses it only when the application reports the click
-	 * with systems::Overlay::handleOutsideClick; no system calls it.
+	 * visible overlays in a stack, dismisses the top one on Escape or on a
+	 * mouse button press outside it, and dismisses any of them when its
+	 * auto-dismiss delay has elapsed.
 	 *
 	 * Dismissing sets the overlay invisible, resets its elapsed time and
 	 * calls the dismiss handler. Setting a shown overlay invisible by hand
-	 * has the same effect on the next frame, handler included.
+	 * closes it on the next frame without calling the handler.
 	 *
 	 * The component holds no drawing state: it is up to the widget system
 	 * to draw a hidden overlay transparent.
@@ -92,7 +91,8 @@ namespace guillaume::components
 		 *
 		 * Hiding also resets the elapsed time to 0. On its next pass,
 		 * systems::Overlay puts a newly shown overlay on top of its stack,
-		 * and dismisses (handler included) one that was hidden this way.
+		 * and takes one that was hidden this way out of it, without calling
+		 * the dismiss handler.
 		 * Marks the component changed only when the flag differs.
 		 * @param visible True to show the overlay.
 		 * @return This component, for chaining.
@@ -126,7 +126,7 @@ namespace guillaume::components
 		/**
 		 * @brief Choose whether a click outside the overlay dismisses it.
 		 *
-		 * Read by systems::Overlay::handleOutsideClick, for the top
+		 * Read by systems::Overlay on a mouse button press, for the top
 		 * overlay only. Marks the component changed only when the flag
 		 * differs.
 		 * @param dismiss True to dismiss on an outside click.

@@ -36,6 +36,8 @@
 
 #include <utility/engine.hpp>
 #include <utility/event/keyboard_event.hpp>
+#include <utility/event/mouse_button_event.hpp>
+#include <utility/graphic/ray.hpp>
 #include <utility/math/vector.hpp>
 
 namespace guillaume::systems
@@ -43,28 +45,41 @@ namespace guillaume::systems
 
 	/**
 	 * @brief Keeps the stack of open overlays (dialogs, menus, snackbars)
-	 * and closes the top one on Escape or when its delay runs out.
+	 * and closes them on Escape, on an outside click or when their delay
+	 * runs out.
 	 *
 	 * Runs in the Event phase on entities that have a components::Overlay,
 	 * a Transform and a Bound. An overlay is *open* while it is in the
 	 * stack; the last one opened is the *top*. Each frame the system:
-	 * - pushes an overlay whose component became visible, and dismisses one
+	 * - pushes an overlay whose component became visible, and removes one
 	 *   whose component became hidden, so writing
 	 *   components::Overlay::setVisible is enough to open or close one;
-	 * - adds the frame time to the elapsed time of the top overlay and
-	 *   dismisses it once its auto-dismiss delay is reached (only the top
-	 *   overlay counts down);
+	 * - adds the frame time to the elapsed time of every open overlay that
+	 *   has an auto-dismiss delay and dismisses it once the delay is
+	 *   reached, wherever it is in the stack;
 	 * - dismisses the top overlay on an Escape key-down event, if it
-	 *   dismisses on Escape.
+	 *   dismisses on Escape;
+	 * - dismisses the top overlay on a mouse button press that lands
+	 *   outside it, if it dismisses on outside clicks.
 	 *
 	 * Dismissing writes `visible = false` and `elapsed = 0` on the
 	 * component and calls its dismiss handler; widget systems such as
 	 * systems::Snackbar rely on that handler to learn about a timeout.
+	 * An overlay hidden by its owner (its component written invisible) is
+	 * only removed from the stack: the handler is not called, because the
+	 * owner already knows.
 	 * While at least one overlay is open, the engine is told not to
 	 * capture viewport input; capture is given back when the stack empties.
 	 *
-	 * @note Outside clicks are not detected by the system itself: the code
-	 * that owns the pointer position calls handleOutsideClick().
+	 * The stack holds entity identifiers of one scene. When the component
+	 * registry bound to the system changes (the active scene changed), the
+	 * stack is emptied without calling any handler; the visible overlays of
+	 * the new scene are pushed again as they are visited.
+	 *
+	 * @note A mouse button press is tested once, against the overlay that
+	 * is on top when prepare() runs. systems::MouseButton runs earlier in
+	 * the phase and an overlay is pushed after prepare(), so the press that
+	 * opens an overlay is never tested against that overlay.
 	 * @note The modal flag of components::Overlay is not read here.
 	 * @note show(), dismiss(), handleEscape(), handleOutsideClick() and
 	 * advance() read components through the registry bound to the system.
@@ -78,7 +93,8 @@ namespace guillaume::systems
 	class Overlay:
 		public ecs::SystemFiller<components::Overlay, components::Transform,
 								 components::Bound>,
-		public event::EventManager<utility::event::KeyboardEvent>
+		public event::EventManager<utility::event::KeyboardEvent>,
+		public event::EventManager<utility::event::MouseButtonEvent>
 	{
 		private:
 		utility::Engine &_engine;	 ///< Engine told whether the viewport
@@ -88,6 +104,36 @@ namespace guillaume::systems
 		std::chrono::steady_clock::time_point
 			_lastTime;	  ///< When prepare() last ran, to measure the frame
 						  ///< time for auto-dismiss.
+		std::shared_ptr<utility::event::MouseButtonEvent>
+			_lastClick;	   ///< Mouse button event already tested for an
+						   ///< outside click, so it is applied once.
+		const ecs::ComponentRegistry *_lastRegistry {
+			nullptr
+		};	  ///< Registry the stack belongs to; nullptr before the first
+			  ///< prepare().
+
+		/**
+		 * @brief Take an overlay out of the stack without reporting it.
+		 *
+		 * Resets its elapsed time and gives viewport input capture back
+		 * when the stack becomes empty. The visibility is not written and
+		 * the dismiss handler is not called.
+		 * @param entityIdentifier The overlay entity to remove.
+		 * @return True when the overlay was in the stack.
+		 */
+		bool remove(const ecs::Entity::Identifier &entityIdentifier);
+
+		/**
+		 * @brief Empty the stack when the bound component registry is not
+		 * the one of the previous frame, that is, when the scene changed.
+		 */
+		void resetOnRegistryChange(void);
+
+		/**
+		 * @brief Take the next pending mouse button event and, when it is a
+		 * new button press, test it against the top overlay.
+		 */
+		void handleMouseButton(void);
 
 		public:
 		/**
@@ -105,12 +151,16 @@ namespace guillaume::systems
 		~Overlay(void) override = default;
 
 		/**
-		 * @brief Once per frame: take the next pending keyboard event, count
-		 * down the top overlay, and handle Escape.
+		 * @brief Once per frame: forget the stack if the scene changed, take
+		 * the next pending keyboard and mouse button events, count down the
+		 * overlays, and handle Escape and outside clicks.
 		 *
 		 * The time passed to advance() is measured on a steady clock since
 		 * the previous call. Escape is recognized by its scan code, on a
-		 * key-down event.
+		 * key-down event. A mouse button press is turned into a ray with
+		 * the engine view and passed to handleOutsideClick().
+		 *
+		 * A component registry must be bound (the frame loop binds it).
 		 */
 		void prepare(void) override;
 
@@ -119,7 +169,9 @@ namespace guillaume::systems
 		 *
 		 * A visible overlay that is not open is pushed on top and viewport
 		 * input capture is turned off; a hidden overlay that is open is
-		 * dismissed (its dismiss handler is called).
+		 * removed from the stack and its elapsed time reset. Its dismiss
+		 * handler is not called: whoever hid it reports the dismissal
+		 * itself when there is one to report.
 		 * @param entityIdentifier The entity holding the
 		 * components::Overlay.
 		 */
@@ -161,7 +213,7 @@ namespace guillaume::systems
 		bool isOpen(const ecs::Entity::Identifier &entityIdentifier) const;
 
 		/**
-		 * @brief The overlay opened last, the one Escape and the countdown
+		 * @brief The overlay opened last, the one Escape and outside clicks
 		 * apply to.
 		 * @return Its identifier, or `ecs::Entity::InvalidIdentifier` when
 		 * no overlay is open.
@@ -186,19 +238,32 @@ namespace guillaume::systems
 		 *
 		 * "Inside" is the axis-aligned rectangle starting at the x and y of
 		 * the overlay's Transform position, with the size of its Bound.
-		 * The system does not call this itself.
+		 * The orientation and depth of the overlay are ignored; prepare()
+		 * uses the ray overload instead.
 		 * @param point The click position, in the coordinate space of the
 		 * overlay's Transform position.
 		 */
 		void handleOutsideClick(const utility::math::Vector2F &point);
 
 		/**
-		 * @brief Count down the top overlay and close it when its time is
+		 * @brief Close the top overlay if a pointer ray misses it and its
+		 * component says it dismisses on outside clicks.
+		 *
+		 * The ray is tested against the rectangle of the overlay with
+		 * systems::hitTest, like the input systems do. Called by prepare()
+		 * on a mouse button press.
+		 * @param ray The pointer ray, in world space.
+		 */
+		void handleOutsideClick(const utility::graphic::RayF &ray);
+
+		/**
+		 * @brief Count down the open overlays and close those whose time is
 		 * up.
 		 *
-		 * Adds @p deltaTime to the elapsed time of the top overlay when it
-		 * has an auto-dismiss delay, and dismisses it once the elapsed time
-		 * reaches the delay. Called by prepare() each frame.
+		 * Adds @p deltaTime to the elapsed time of every open overlay that
+		 * has an auto-dismiss delay, wherever it is in the stack, and
+		 * dismisses each one whose elapsed time reaches its delay. Called
+		 * by prepare() each frame.
 		 * @param deltaTime The time to add, in seconds.
 		 */
 		void advance(float deltaTime);

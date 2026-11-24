@@ -70,8 +70,12 @@ namespace guillaume::systems
 	 * focus to an entity, again once no entity is focused. A disabled
 	 * entity cannot take the focus and loses it when visited.
 	 *
-	 * @note The system remembers one focused entity across frames and
-	 * scenes; it is not reset when the active scene changes.
+	 * @note The system remembers one focused entity across frames, within
+	 * one scene. When the component registry bound to the system changes
+	 * (the active scene changed), the focused and last focused entities are
+	 * forgotten without calling any handler: their identifiers belong to
+	 * the previous scene. The focused flags that scene's components hold
+	 * are left as they are.
 	 * @note setFocus(), clearFocus() and traverse() read components through
 	 * the registry bound to the system. Outside the frame loop, call
 	 * ecs::System::bindComponentRegistry first; without it the flags and
@@ -101,6 +105,10 @@ namespace guillaume::systems
 			_focusables;	///< Focusable entities met this frame, in visit
 							///< order, each with its accessibility focus
 							///< order (0 when it has none)
+		const ecs::ComponentRegistry *_lastRegistry {
+			nullptr
+		};	  ///< Registry the remembered entities belong to; nullptr
+			  ///< before the first prepare()
 
 		/**
 		 * @brief Whether Tab traversal may stop on an entity.
@@ -189,6 +197,11 @@ namespace guillaume::systems
 		/**
 		 * @brief Empty the list of focusable entities and take the next
 		 * pending keyboard event, once per frame.
+		 *
+		 * Also forgets the focused and last focused entities when the bound
+		 * component registry is not the one of the previous frame, that is,
+		 * when the scene changed. A component registry must be bound (the
+		 * frame loop binds it).
 		 */
 		void prepare(void) override;
 
