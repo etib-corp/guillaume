@@ -28,11 +28,14 @@
 #include "guillaume/components/borders.hpp"
 #include "guillaume/components/bound.hpp"
 #include "guillaume/components/color.hpp"
+#include "guillaume/components/divider.hpp"
 #include "guillaume/components/glyph.hpp"
 #include "guillaume/components/layout.hpp"
+#include "guillaume/components/line.hpp"
 #include "guillaume/components/transform.hpp"
 #include "guillaume/systems/interaction_helpers.hpp"
 #include "guillaume/systems/style_helpers.hpp"
+#include "guillaume/systems/divider.hpp"
 #include "guillaume/systems/layout.hpp"
 #include "guillaume/theme.hpp"
 
@@ -226,6 +229,21 @@ namespace guillaume::systems
 						  bool hidden, bool showSupporting)
 		{
 			const bool accordion = item != nullptr && !item->children.empty();
+
+			// A divider row was built as long as the list was wide then:
+			// keep it as long as the list is wide now.
+			if (registry.hasComponent<components::Divider>(row.entity)) {
+				registry.getComponent<components::Divider>(row.entity)
+					.setLength(width);
+				if (registry.hasComponent<components::Transform>(row.entity)
+					&& registry.hasComponent<components::Bound>(row.entity)
+					&& registry.hasComponent<components::Color>(row.entity)
+					&& registry.hasComponent<components::Line>(row.entity)) {
+					// systems::Divider ran before this system: size the
+					// row now, so the list stacks it with its final bound.
+					Divider::apply(registry, row.entity);
+				}
+			}
 
 			if (isContainer(registry, row.view)) {
 				Ids rowChildren;
