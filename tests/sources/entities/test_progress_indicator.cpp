@@ -266,4 +266,42 @@ namespace guillaume::entities::tests
 			registry.hasComponent<components::Transform>(state.getFill()));
 	}
 
+	TEST_F(TestProgressIndicator, CustomSizesSurviveAVariantChange)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		ProgressIndicator::Builder builder(registry, entityRegistry);
+
+		auto progress =
+			builder.withWidth(300.0f).withSize(64.0f).makeProgressIndicator(
+				nullptr, ProgressIndicator::Variant::LinearDeterminate, 0.5f);
+		const auto &bound =
+			registry.getComponent<components::Bound>(progress->getIdentifier());
+		EXPECT_FLOAT_EQ(bound.getWidth(), 300.0f);
+
+		progress->setVariant(ProgressIndicator::Variant::CircularDeterminate);
+		EXPECT_FLOAT_EQ(bound.getWidth(), 64.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), 64.0f);
+
+		progress->setVariant(ProgressIndicator::Variant::LinearIndeterminate);
+		EXPECT_FLOAT_EQ(bound.getWidth(), 300.0f);
+	}
+
+	TEST_F(TestProgressIndicator, CircularBuilderWidthSurvivesAVariantChange)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer &entityRegistry = scratchEntityRegistry();
+		ProgressIndicator::Builder builder(registry, entityRegistry);
+
+		auto progress =
+			builder.withWidth(300.0f).withSize(64.0f).makeProgressIndicator(
+				nullptr, ProgressIndicator::Variant::CircularDeterminate, 0.5f);
+		const auto &bound =
+			registry.getComponent<components::Bound>(progress->getIdentifier());
+		EXPECT_FLOAT_EQ(bound.getWidth(), 64.0f);
+
+		progress->setVariant(ProgressIndicator::Variant::LinearDeterminate);
+		EXPECT_FLOAT_EQ(bound.getWidth(), 300.0f);
+	}
+
 }	 // namespace guillaume::entities::tests

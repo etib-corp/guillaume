@@ -181,6 +181,14 @@ namespace guillaume::entities
 
 		auto entity = ProgressIndicator::create(this->getComponentRegistry(),
 												_config, _variant, _value);
+
+		// The config only carries the size of the current shape: record
+		// both, so the other one survives a bar/ring variant change.
+		this->getComponentRegistry()
+			.getComponent<components::ProgressIndicator>(
+				entity->getIdentifier())
+			.setTrackLength(_width)
+			.setDiameter(_size);
 		return entity;
 	}
 
