@@ -154,6 +154,36 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(bound().getWidth(), 52.0f);
 	}
 
+	TEST_F(TestViewSystem, ANestedSizeChangeReachesTheRootInOneFrame)
+	{
+		// _second becomes a container around a deeper container, which
+		// holds a leaf: three levels below the view.
+		const ecs::Entity::Identifier middle { 5 };
+		const ecs::Entity::Identifier leaf { 6 };
+		_registry.addComponent<components::Layout>(_second).setChildren(
+			{ middle });
+		_registry.addComponent<components::Layout>(middle).setChildren(
+			{ leaf });
+		_registry.addComponent<components::Transform>(middle);
+		_registry.addComponent<components::Bound>(middle);
+		_registry.addComponent<components::Transform>(leaf);
+		_registry.addComponent<components::Bound>(leaf)
+			.setWidth(40.0f)
+			.setHeight(60.0f);
+
+		_system.update(_view);
+
+		// Width: 50 + 40 + spacing(8) + 2 * padding(16) = 130, without
+		// waiting one frame per level.
+		EXPECT_FLOAT_EQ(bound().getWidth(), 130.0f);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_second).getWidth(),
+			40.0f);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(middle).getWidth(),
+			40.0f);
+	}
+
 	TEST_F(TestViewSystem, AChildWithoutGeometryIsSkipped)
 	{
 		const ecs::Entity::Identifier missing { 4 };

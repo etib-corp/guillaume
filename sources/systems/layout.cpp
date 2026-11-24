@@ -64,6 +64,162 @@ namespace guillaume::systems
 					return padding + (crossRegion - childCross) / 2.0f;
 			}
 		}
+
+		/**
+		 * @brief Collect the children to arrange, with their measured size.
+		 *
+		 * Invalid identifiers and children without Transform or Bound are
+		 * skipped.
+		 */
+		std::vector<LayoutChild>
+			collectChildren(const ecs::ComponentRegistry &registry,
+							const std::vector<ecs::Entity::Identifier> &ids)
+		{
+			std::vector<LayoutChild> children;
+			children.reserve(ids.size());
+
+			for (const auto &childIdentifier: ids) {
+				if (childIdentifier == ecs::Entity::InvalidIdentifier
+					|| !registry.hasComponent<components::Transform>(
+						childIdentifier)
+					|| !registry.hasComponent<components::Bound>(
+						childIdentifier)) {
+					continue;
+				}
+
+				const auto &childBound =
+					registry.getComponent<components::Bound>(childIdentifier);
+				// A child may reserve room beyond what it draws (a checkbox
+				// and its label).
+				const float trailing =
+					registry.hasComponent<components::LayoutExtent>(
+						childIdentifier)
+					? registry
+						  .getComponent<components::LayoutExtent>(
+							  childIdentifier)
+						  .getTrailingWidth()
+					: 0.0f;
+				children.push_back(LayoutChild {
+					.identifier = childIdentifier,
+					.width		= childBound.getWidth() + trailing,
+					.height		= childBound.getHeight(),
+				});
+			}
+			return children;
+		}
+
+		/**
+		 * @brief Sizes of the content of a container along its axes.
+		 */
+		struct ContentMetrics {
+			float rawMain;		  ///< Sum of the children along the axis
+			float rawCross;		  ///< Largest child across the axis
+			float mainContent;	  ///< rawMain plus the gaps
+			float width;		  ///< Resolved width of the container
+			float height;		  ///< Resolved height of the container
+		};
+
+		/**
+		 * @brief Measure the content of a container and resolve its size:
+		 * the fixed size when one is set, otherwise the content plus twice
+		 * the padding.
+		 */
+		ContentMetrics measureContent(const components::Layout &layout,
+									  const std::vector<LayoutChild> &children)
+		{
+			const bool horizontal =
+				layout.getAxis() == components::Layout::Axis::Horizontal;
+
+			float rawMain  = 0.0f;
+			float rawCross = 0.0f;
+			for (const auto &child: children) {
+				rawMain += horizontal ? child.width : child.height;
+				rawCross =
+					std::max(rawCross, horizontal ? child.height : child.width);
+			}
+
+			const float spacing		= layout.getSpacing();
+			const float padding		= layout.getPadding();
+			const float gapsTotal	= children.size() > 1
+				  ? spacing * static_cast<float>(children.size() - 1)
+				  : 0.0f;
+			const float mainContent = rawMain + gapsTotal;
+
+			const float width  = layout.hasFixedWidth()
+				 ? layout.getFixedWidth()
+				 : (horizontal ? mainContent : rawCross) + 2.0f * padding;
+			const float height = layout.hasFixedHeight()
+				? layout.getFixedHeight()
+				: (horizontal ? rawCross : mainContent) + 2.0f * padding;
+
+			return ContentMetrics { rawMain, rawCross, mainContent, width,
+									height };
+		}
+
+		/**
+		 * @brief Deepest nesting resolveNestedSizes() follows. It only
+		 * guards against a container listing one of its ancestors.
+		 */
+		constexpr int MaxNestingDepth = 64;
+
+		/**
+		 * @brief Size the nested containers among @p ids, deepest first.
+		 *
+		 * The Layout phase visits parents before children, so without this
+		 * a container would read the Bound its nested containers computed
+		 * on the previous frame. Only sizes are written here; each nested
+		 * container places its own children when the phase reaches it.
+		 */
+		void resolveNestedSizes(ecs::ComponentRegistry &registry,
+								const std::vector<ecs::Entity::Identifier> &ids,
+								int depth)
+		{
+			if (depth >= MaxNestingDepth) {
+				return;
+			}
+			for (const auto &identifier: ids) {
+				if (identifier == ecs::Entity::InvalidIdentifier
+					|| !registry.hasComponent<components::Layout>(identifier)
+					|| !registry.hasComponent<components::Transform>(identifier)
+					|| !registry.hasComponent<components::Bound>(identifier)) {
+					continue;
+				}
+				const auto &layout =
+					registry.getComponent<components::Layout>(identifier);
+				resolveNestedSizes(registry, layout.getChildren(), depth + 1);
+				const auto metrics = measureContent(
+					layout, collectChildren(registry, layout.getChildren()));
+				registry.getComponent<components::Bound>(identifier)
+					.setWidth(metrics.width)
+					.setHeight(metrics.height);
+			}
+		}
+
+		/**
+		 * @brief Whether the parent of an entity arranges it as a layout
+		 * child, and so has already sized it and its nested containers in
+		 * this frame.
+		 */
+		bool isArrangedByParent(const ecs::ComponentRegistry &registry,
+								const ecs::Entity::Identifier &identifier)
+		{
+			if (!registry.hasComponent<components::Hierarchy>(identifier)) {
+				return false;
+			}
+			const auto parent =
+				registry.getComponent<components::Hierarchy>(identifier)
+					.getParentIdentifier();
+			if (parent == ecs::Entity::InvalidIdentifier
+				|| !registry.hasComponent<components::Layout>(parent)
+				|| !registry.hasComponent<components::Transform>(parent)
+				|| !registry.hasComponent<components::Bound>(parent)) {
+				return false;
+			}
+			const auto &siblings =
+				registry.getComponent<components::Layout>(parent).getChildren();
+			return std::find(siblings.begin(), siblings.end(), identifier)
+				!= siblings.end();
+		}
 	}	 // namespace
 
 	Layout::Layout(void)
@@ -79,6 +235,13 @@ namespace guillaume::systems
 		}
 
 		const auto &layout = getComponent<components::Layout>(entityIdentifier);
+
+		// Size the nested containers first, so a change deep in the tree
+		// reaches this container in the same frame. A container arranged by
+		// its parent was already handled when the parent was visited.
+		if (!isArrangedByParent(getComponentRegistry(), entityIdentifier)) {
+			resolveNestedSizes(getComponentRegistry(), layout.getChildren(), 0);
+		}
 
 		// Only the container's registered layout children are arranged; any
 		// child the container positions manually (a switch thumb, a slider
@@ -145,50 +308,14 @@ namespace guillaume::systems
 		const bool horizontal =
 			layout.getAxis() == components::Layout::Axis::Horizontal;
 
-		std::vector<LayoutChild> children;
-		children.reserve(childIdentifiers.size());
-
-		for (const auto &childIdentifier: childIdentifiers) {
-			if (childIdentifier == ecs::Entity::InvalidIdentifier
-				|| !registry.hasComponent<components::Transform>(
-					childIdentifier)
-				|| !registry.hasComponent<components::Bound>(childIdentifier)) {
-				continue;
-			}
-
-			const auto &childBound =
-				registry.getComponent<components::Bound>(childIdentifier);
-			// A child may reserve room beyond what it draws (a checkbox and
-			// its label).
-			const float trailing =
-				registry.hasComponent<components::LayoutExtent>(childIdentifier)
-				? registry
-					  .getComponent<components::LayoutExtent>(childIdentifier)
-					  .getTrailingWidth()
-				: 0.0f;
-			children.push_back(LayoutChild {
-				.identifier = childIdentifier,
-				.width		= childBound.getWidth() + trailing,
-				.height		= childBound.getHeight(),
-			});
-		}
-
-		float rawMain  = 0.0f;
-		float rawCross = 0.0f;
-
-		for (const auto &child: children) {
-			rawMain += horizontal ? child.width : child.height;
-			rawCross =
-				std::max(rawCross, horizontal ? child.height : child.width);
-		}
+		const auto children		= collectChildren(registry, childIdentifiers);
+		const auto metrics		= measureContent(layout, children);
+		const float rawMain		= metrics.rawMain;
+		const float mainContent = metrics.mainContent;
+		const float rawCross	= metrics.rawCross;
 
 		const float spacing = layout.getSpacing();
 		const float padding = layout.getPadding();
-
-		const float gapsTotal	= children.size() > 1
-			  ? spacing * static_cast<float>(children.size() - 1)
-			  : 0.0f;
-		const float mainContent = rawMain + gapsTotal;
 
 		const bool fixedWidth  = layout.hasFixedWidth();
 		const bool fixedHeight = layout.hasFixedHeight();
@@ -264,14 +391,7 @@ namespace guillaume::systems
 			cursor += childMain + gap;
 		}
 
-		const float width  = fixedWidth
-			 ? layout.getFixedWidth()
-			 : (horizontal ? mainContent : rawCross) + 2.0f * padding;
-		const float height = fixedHeight
-			? layout.getFixedHeight()
-			: (horizontal ? rawCross : mainContent) + 2.0f * padding;
-
-		parentBound.setWidth(width).setHeight(height);
+		parentBound.setWidth(metrics.width).setHeight(metrics.height);
 	}
 
 }	 // namespace guillaume::systems
