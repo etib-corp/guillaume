@@ -242,6 +242,23 @@ namespace guillaume::systems
 		const bool toggle	= button.isToggle();
 		const bool selected = button.isSelected();
 		const auto variant	= config.getVariant();
+
+		// A hidden button keeps its place but draws nothing.
+		if (!button.isVisible()) {
+			registry.getComponent<components::Color>(identifier)
+				.setColor(style::transparentColor());
+
+			registry.getComponent<components::Borders>(identifier)
+				.setColor(style::transparentColor())
+				.setWidth(1.0f);
+
+			if (icon) {
+				icon.setColor(style::transparentColor());
+			}
+
+			return;
+		}
+
 		if (disabled) {
 			registry.getComponent<components::Color>(identifier)
 				.setColor(

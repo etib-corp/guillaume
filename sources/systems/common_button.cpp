@@ -100,18 +100,39 @@ namespace guillaume::systems
 		const bool disabled	  = Button::isDisabled(registry, identifier);
 		const bool hovered	  = Button::isHovered(registry, identifier);
 		const bool pressed	  = Button::isPressed(registry, identifier);
+		const bool visible	  = button.isVisible();
 		const bool toggle	  = button.isToggle();
 		const bool selected	  = button.isSelected();
 		const auto colorStyle = config.getColorStyle();
 		// M3 elevated buttons rest at level 1 and lift to level 2 on hover;
 		// every other style, and any disabled button, is flat.
 		auto level = theme::ElevationLevel::Level0;
-		if (colorStyle == Color::Elevated && !disabled) {
+		if (colorStyle == Color::Elevated && !disabled && visible) {
 			level = (hovered && !pressed) ? theme::ElevationLevel::Level2
 										  : theme::ElevationLevel::Level1;
 		}
 		registry.getComponent<components::Elevation>(identifier)
 			.setElevationLevel(level);
+
+		// A hidden button keeps its place but draws nothing.
+		if (!visible) {
+			registry.getComponent<components::Color>(identifier)
+				.setColor(style::transparentColor());
+
+			registry.getComponent<components::Borders>(identifier)
+				.setColor(style::transparentColor())
+				.setWidth(1.0f);
+
+			if (icon) {
+				icon.setColor(style::transparentColor());
+			}
+
+			if (label) {
+				label.setColor(style::transparentColor());
+			}
+
+			return;
+		}
 
 		if (disabled) {
 			registry.getComponent<components::Color>(identifier)
@@ -193,10 +214,6 @@ namespace guillaume::systems
 			borders.setBorderRadius(radius);
 		}
 
-		if (!icon && !label) {
-			return;
-		}
-
 		const float fontHeight = iconSize;
 
 		if (icon) {
@@ -239,8 +256,9 @@ namespace guillaume::systems
 				  .getHeight()
 			: 0.0f;
 
-		const float gap			  = (!button.getIconGlyphName().empty()
-							 && !button.getLabelContent().empty())
+		// The gap separates two children that both take room, whatever the
+		// names stored in the component say.
+		const float gap			  = (iconWidth > 0.0f && labelWidth > 0.0f)
 					  ? button_style::getSpaceBetweenIconAndLabel(size)
 					  : 0.0f;
 		const float contentWidth  = iconWidth + gap + labelWidth;

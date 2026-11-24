@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string>
 
 #include "guillaume/components/animation.hpp"
 #include "guillaume/components/borders.hpp"
@@ -197,7 +198,10 @@ namespace guillaume::systems
 								schemeColor(SchemeColorRole::Error)),
 							opacity));
 
-		styleLabel(componentRegistry, label, badge.getLabel(),
+		// A dot shows no text, even when a label child was built earlier.
+		styleLabel(componentRegistry, label,
+				   badge.getVariant() == Variant::Dot ? std::string()
+													  : badge.getLabel(),
 				   size * components::Badge::LabelScale,
 				   faded(badge.getContentColor().value_or(
 							 schemeColor(SchemeColorRole::OnError)),

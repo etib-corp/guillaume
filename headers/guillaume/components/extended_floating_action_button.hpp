@@ -118,7 +118,7 @@ namespace guillaume::components
 		/**
 		 * @brief Choose the size step.
 		 * @param size The size; it sets the container height, the corner
-		 * radius and the icon font size (18, 24 or 36 dp).
+		 * radius and the icon font size (24, 24 or 36 dp).
 		 * @return This component, for chaining.
 		 */
 		ExtendedFloatingActionButton &setSize(Size size);

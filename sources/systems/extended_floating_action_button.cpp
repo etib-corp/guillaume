@@ -75,7 +75,7 @@ namespace guillaume::systems
 		const auto &config =
 			registry.getComponent<components::ExtendedFloatingActionButton>(
 				identifier);
-		return fab_style::getLabelFontSize(config.getSize());
+		return fab_style::getIconFontSize(config.getSize());
 	}
 
 	utility::graphic::Color32Bit ExtendedFloatingActionButton::contentColor(
@@ -222,7 +222,7 @@ namespace guillaume::systems
 		const bool extended	   = config.isExtended();
 		const float baseHeight =
 			customSize.value_or(fab_style::getContainerSize(size));
-		const float fontHeight = fab_style::getLabelFontSize(size);
+		const float fontHeight = fab_style::getIconFontSize(size);
 
 		registry.getComponent<components::Borders>(identifier)
 			.setBorderRadius(customSize.has_value()

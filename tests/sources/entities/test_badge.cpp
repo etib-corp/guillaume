@@ -208,4 +208,48 @@ namespace guillaume::entities::tests
 		EXPECT_FLOAT_EQ(badge->getOpacity(), 1.0f);
 	}
 
+	TEST_F(TestBadge, SetLabelBuildsAMissingLabelChild)
+	{
+		ecs::ComponentRegistry registry;
+		auto badge = makeBadge(registry, "", Badge::Variant::Large);
+		const auto &state =
+			registry.getComponent<components::Badge>(badge->getIdentifier());
+		ASSERT_EQ(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+
+		badge->setLabel("3");
+
+		ASSERT_NE(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(
+			registry.getComponent<components::Text>(state.getLabelEntity())
+				.getContent(),
+			"3");
+		const auto &children =
+			registry.getComponent<components::Layout>(badge->getIdentifier())
+				.getChildren();
+		ASSERT_EQ(children.size(), 1u);
+		EXPECT_EQ(children[0], state.getLabelEntity());
+	}
+
+	TEST_F(TestBadge, LeavingDotBuildsTheLabelAndDotEmptiesIt)
+	{
+		ecs::ComponentRegistry registry;
+		auto badge = makeBadge(registry, "7", Badge::Variant::Dot);
+		const auto &state =
+			registry.getComponent<components::Badge>(badge->getIdentifier());
+		ASSERT_EQ(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+
+		badge->setVariant(Badge::Variant::Large);
+
+		const auto label = state.getLabelEntity();
+		ASSERT_NE(label, ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(registry.getComponent<components::Text>(label).getContent(),
+				  "7");
+
+		badge->setVariant(Badge::Variant::Dot);
+
+		EXPECT_EQ(state.getLabelEntity(), label);
+		EXPECT_EQ(registry.getComponent<components::Text>(label).getContent(),
+				  "");
+	}
+
 }	 // namespace guillaume::entities::tests

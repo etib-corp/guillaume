@@ -269,11 +269,9 @@ namespace guillaume::entities
 		 *
 		 * A hidden button ignores press and release and is skipped by
 		 * keyboard traversal (its Accessibility is not focusable). Its
-		 * enabled state is kept. Painting nothing is up to the concrete
-		 * widget's system: systems::FloatingActionButton and
-		 * systems::ExtendedFloatingActionButton do it; systems::CommonButton
-		 * (Button) and systems::IconButton do not read this flag, so a
-		 * hidden Button or IconButton is still drawn.
+		 * enabled state is kept. The concrete widget's system paints
+		 * nothing for it (transparent container, outline, icon and label,
+		 * no shadow); the button keeps its size.
 		 *
 		 * @param visible False to hide the button.
 		 * @return This button, for chaining.

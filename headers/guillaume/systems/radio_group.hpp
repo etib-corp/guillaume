@@ -145,9 +145,10 @@ namespace guillaume::systems
 		 * simulate a click in a test.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The radio group entity.
-		 * @param index The zero-based index of the pressed option. The call
-		 * does nothing, and does not throw, when it is not smaller than
-		 * the number of radio buttons of the component.
+		 * @param index The zero-based index of the pressed option.
+		 * @throws std::out_of_range If `index` is not smaller than the
+		 * number of option labels of the component, as select does.
+		 * Nothing is changed in that case.
 		 */
 		static void press(ecs::ComponentRegistry &componentRegistry,
 						  const ecs::Entity::Identifier &entityIdentifier,

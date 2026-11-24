@@ -85,17 +85,17 @@ namespace guillaume::systems
 		 * - When one or more children are selected, the first one in
 		 *   `childIdentifiers` wins: the others are deselected and the group
 		 *   records the winner.
-		 * - When none is selected, the child the group last recorded is
-		 *   selected again if it still has a components::Selectable (it is
-		 *   not checked against `childIdentifiers`).
-		 * - Otherwise, a group that does not allow an empty selection
-		 *   selects its first selectable child; a group that allows it has
-		 *   its selection cleared.
+		 * - When none is selected and the group allows an empty selection
+		 *   (components::SelectionGroup::isEmptyAllowed), its selection is
+		 *   cleared.
+		 * - When none is selected and the group does not allow an empty
+		 *   selection, the child the group last recorded is selected again
+		 *   if it is still in `childIdentifiers` and still has a
+		 *   components::Selectable; otherwise the first selectable child
+		 *   is selected.
 		 *
-		 * Because of the second rule, deselecting the selected child does
-		 * not empty the group: the child is selected again on the next
-		 * call. To empty a group, call
-		 * components::SelectionGroup::clearSelection as well.
+		 * So deselecting the selected child empties a group that allows an
+		 * empty selection, and is undone in a group that does not.
 		 *
 		 * @param registry The registry holding the components.
 		 * @param groupIdentifier The entity holding the
@@ -125,8 +125,9 @@ namespace guillaume::systems
 		 * @param selectedIdentifier The child to select. With
 		 * `ecs::Entity::InvalidIdentifier`, or an identifier that is not a
 		 * selectable child, every child is deselected and reconcile() then
-		 * applies its "none selected" rules, which select the previously
-		 * recorded child again when it still exists.
+		 * applies its "none selected" rules: the group is emptied when it
+		 * allows an empty selection, otherwise the previously recorded
+		 * child is selected again.
 		 * @return The child selected after reconciliation, or
 		 * `ecs::Entity::InvalidIdentifier` when there is none.
 		 */

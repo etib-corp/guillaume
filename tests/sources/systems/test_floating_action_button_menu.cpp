@@ -183,4 +183,16 @@ namespace guillaume::systems::tests
 		}
 	}
 
+	TEST_F(TestFloatingActionButtonMenuSystem,
+		   ApplyToleratesATriggerWithoutAccessibility)
+	{
+		// The trigger already shows the menu icon, so apply() has nothing
+		// to hand to systems::Button, which does need the component.
+		_system.update(_entity);
+		_registry.removeComponent<components::Accessibility>(_trigger);
+
+		EXPECT_NO_THROW(_system.update(_entity));
+		EXPECT_NO_THROW(Menu::apply(_registry, _entity));
+	}
+
 }	 // namespace guillaume::systems::tests

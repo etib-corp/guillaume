@@ -293,9 +293,9 @@ namespace guillaume::entities
 		/**
 		 * @brief Change the text of the label. Restyles at once.
 		 *
-		 * The new text is also the accessibility label. It is drawn only
-		 * when the switch was built with a non-empty label: this function
-		 * does not create the label child.
+		 * The new text is also the accessibility label. A switch built
+		 * without a label gets its label child here, the first time the
+		 * label is not empty.
 		 * @param label The new label.
 		 * @return Reference to this switch for chaining.
 		 */
@@ -327,6 +327,16 @@ namespace guillaume::entities
 		 * layout child, since systems::Switch places them.
 		 */
 		void build(void);
+
+		/**
+		 * @brief Create the label child when the label is not empty and
+		 * the child does not exist yet, and record its identifier in
+		 * components::Switch.
+		 *
+		 * Does nothing before create() has handed the switch to a shared
+		 * pointer.
+		 */
+		void buildLabel(void);
 	};
 
 }	 // namespace guillaume::entities

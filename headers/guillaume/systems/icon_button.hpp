@@ -127,6 +127,8 @@ namespace guillaume::systems
 		/**
 		 * @brief First half of `apply`: write the colors.
 		 *
+		 * - Hidden (components::Button::isVisible is false): container,
+		 *   outline and icon are transparent.
 		 * - Disabled: the container takes the disabled container color for
 		 *   the Filled and Tonal variants and is transparent for the
 		 *   others; only the Outlined variant keeps a (disabled) outline;

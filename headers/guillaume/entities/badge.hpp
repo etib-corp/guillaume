@@ -65,10 +65,10 @@ namespace guillaume::entities
 	 * widget, label included, without registering it in an entity registry.
 	 *
 	 * Watch out:
-	 * - The label child is created only at construction, and only when the
-	 *   variant is not `Dot` and the label is not empty. A badge built
-	 *   without it never shows text: setLabel() and setVariant() update an
-	 *   existing label child but do not create one.
+	 * - The label child is created the first time the variant is not `Dot`
+	 *   and the label is not empty: at construction, or later in setLabel()
+	 *   or setVariant(). It is never removed: a `Dot` badge keeps it with
+	 *   an empty text.
 	 * - The height is the size of the variant (6, 16 or 20 dp) or the
 	 *   override of setSize(). The width is the height, or more when the
 	 *   label is wider: the label width plus 3 dp on each side.
@@ -192,7 +192,8 @@ namespace guillaume::entities
 		/**
 		 * @brief Change the size class of the badge. Resizes at once.
 		 *
-		 * It does not create or remove the label child.
+		 * Leaving `Dot` with a non-empty label creates the label child when
+		 * it is missing; switching to `Dot` empties its text.
 		 * @param variant `Dot` (6 dp), `Small` (16 dp) or `Large` (20 dp).
 		 * @return Reference to this badge for chaining.
 		 */
@@ -207,8 +208,8 @@ namespace guillaume::entities
 		/**
 		 * @brief Change the text shown in the badge. Restyles at once.
 		 *
-		 * The text only shows when the badge was built with a label child
-		 * (see the class description).
+		 * A badge built without a label child gets it here, when the
+		 * variant is not `Dot` and the label is not empty.
 		 * @param label The new label.
 		 * @return Reference to this badge for chaining.
 		 */
@@ -303,6 +304,15 @@ namespace guillaume::entities
 		 * registered in the badge itself, which owns it.
 		 */
 		void build(void);
+
+		/**
+		 * @brief Create the label child when the badge shows a label and
+		 * the child does not exist yet, and make it the layout child.
+		 *
+		 * Does nothing before create() has handed the badge to a shared
+		 * pointer.
+		 */
+		void buildLabel(void);
 	};
 
 }	 // namespace guillaume::entities

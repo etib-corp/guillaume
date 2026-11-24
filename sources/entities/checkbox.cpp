@@ -114,11 +114,12 @@ namespace guillaume::entities
 	{
 		getComponentRegistry()
 			.getComponent<components::Checkbox>(getIdentifier())
-			.setState(state)
 			.setVariant(variant)
 			.setLabel(label);
 		systems::Checkbox::install(getComponentRegistry(), getIdentifier());
-		systems::Checkbox::apply(getComponentRegistry(), getIdentifier());
+		// setState also writes the Selectable that isChecked() reads.
+		systems::Checkbox::setState(getComponentRegistry(), getIdentifier(),
+									state);
 	}
 
 	Checkbox &Checkbox::toggle(void)
@@ -199,6 +200,8 @@ namespace guillaume::entities
 			registry.getComponent<components::Checkbox>(getIdentifier());
 
 		checkbox.setLabel(label);
+		// A first label needs its text child.
+		buildLabel();
 		if (registry.hasComponent<components::Text>(
 				checkbox.getLabelEntity())) {
 			registry.getComponent<components::Text>(checkbox.getLabelEntity())
@@ -232,18 +235,34 @@ namespace guillaume::entities
 			children.push_back(checkIcon);
 		}
 
-		if (!checkbox.getLabel().empty()) {
-			const auto label =
-				buildText(registry, *this, shared_from_this(),
-						  checkbox.getLabel(), theme::TypeRole::BodyLarge,
-						  schemeColor(SchemeColorRole::OnSurface));
-			if (label != nullptr) {
-				checkbox.setLabelEntity(label->getIdentifier());
-			}
-		}
+		buildLabel();
 
 		setChildren(children);
 		systems::Checkbox::apply(registry, getIdentifier());
+	}
+
+	void Checkbox::buildLabel(void)
+	{
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
+		auto &registry = getComponentRegistry();
+		auto &checkbox =
+			registry.getComponent<components::Checkbox>(getIdentifier());
+
+		if (checkbox.getLabelEntity() != ecs::Entity::InvalidIdentifier) {
+			return;
+		}
+
+		const auto label =
+			buildText(registry, *this, shared_from_this(), checkbox.getLabel(),
+					  theme::TypeRole::BodyLarge,
+					  schemeColor(SchemeColorRole::OnSurface));
+		if (label != nullptr) {
+			checkbox.setLabelEntity(label->getIdentifier());
+		}
 	}
 
 }	 // namespace guillaume::entities

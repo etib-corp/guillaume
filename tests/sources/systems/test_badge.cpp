@@ -195,4 +195,24 @@ namespace guillaume::systems::tests
 		EXPECT_FALSE(_registry.hasChanged(_label));
 	}
 
+	TEST_F(TestBadgeSystem, SwitchingToDotEmptiesTheLabelChild)
+	{
+		_system.update(_entity);
+		ASSERT_EQ(_registry.getComponent<components::Text>(_label).getContent(),
+				  "9");
+
+		badge().setVariant(Variant::Dot);
+		_system.update(_entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Text>(_label).getContent(),
+				  "");
+
+		// Leaving Dot writes the label again.
+		badge().setVariant(Variant::Large);
+		_system.update(_entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Text>(_label).getContent(),
+				  "9");
+	}
+
 }	 // namespace guillaume::systems::tests

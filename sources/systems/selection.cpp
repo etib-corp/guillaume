@@ -22,6 +22,8 @@
 
 #include "guillaume/systems/selection.hpp"
 
+#include <algorithm>
+
 #include "guillaume/components/hierarchy.hpp"
 #include "guillaume/ecs/entity.hpp"
 
@@ -87,18 +89,21 @@ namespace guillaume::systems
 			return group.getSelected();
 		}
 
-		// No child is selected. Restore the previous selection when it is still
-		// part of the group, otherwise select the first selectable child when
-		// the group does not allow an empty selection.
-		const auto previous = group.getSelected();
-		if (previous != ecs::Entity::InvalidIdentifier
-			&& registry.hasComponent<components::Selectable>(previous)) {
-			registry.getComponent<components::Selectable>(previous).setSelected(
-				true);
-			return previous;
-		}
-
+		// No child is selected. A group that allows an empty selection stays
+		// empty. Otherwise restore the previous selection when it is still a
+		// selectable child of the group, or select the first selectable child.
 		if (!group.isEmptyAllowed()) {
+			const auto previous = group.getSelected();
+			if (previous != ecs::Entity::InvalidIdentifier
+				&& std::find(childIdentifiers.begin(), childIdentifiers.end(),
+							 previous)
+					!= childIdentifiers.end()
+				&& registry.hasComponent<components::Selectable>(previous)) {
+				registry.getComponent<components::Selectable>(previous)
+					.setSelected(true);
+				return previous;
+			}
+
 			for (const auto &childIdentifier: childIdentifiers) {
 				if (registry.hasComponent<components::Selectable>(
 						childIdentifier)) {
