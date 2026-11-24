@@ -301,6 +301,8 @@ namespace guillaume::systems
 
 		const auto parentPose  = parentTransform.getPose();
 		const auto orientation = parentPose.getOrientation();
+		const auto right	   = orientation.getRight();
+		const auto up		   = orientation.getUp();
 		const float originX	   = parentPose.getPosition().getX();
 		const float originY	   = parentPose.getPosition().getY();
 		const float originZ	   = parentPose.getPosition().getZ();
@@ -365,23 +367,19 @@ namespace guillaume::systems
 				crossOffset(layout.getCrossAxisAlignment(), padding,
 							crossRegion, childCross);
 
-			float childX = originX;
-			float childY = originY;
-
-			if (horizontal) {
-				childX = originX + cursor;
-				childY = originY - crossPosition;
-			} else {
-				childX = originX + crossPosition;
-				childY = originY - cursor;
-			}
+			// Offsets in the plane of the container (x to the right, y up),
+			// turned into world space along its right and up axes.
+			const float localX = horizontal ? cursor : crossPosition;
+			const float localY = horizontal ? -crossPosition : -cursor;
 
 			auto &childTransform =
 				registry.getComponent<components::Transform>(child.identifier);
 			auto childPose = childTransform.getPose();
 
-			const utility::graphic::PositionF childBasePosition(childX, childY,
-																originZ);
+			utility::graphic::PositionF childBasePosition(originX, originY,
+														  originZ);
+			childBasePosition.translate(
+				utility::graphic::PositionF(right * localX + up * localY));
 			const auto layeredPose =
 				applyLayerToPosition(childBasePosition, orientation, layer);
 

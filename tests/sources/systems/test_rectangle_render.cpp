@@ -106,8 +106,8 @@ namespace guillaume::systems::tests
 		{
 			for (std::size_t i = first; i < vertices.size(); i += step) {
 				const auto position = vertices[i].getPosition();
-				if (std::abs(position[0] - x) < 1e-4f
-					&& std::abs(position[1] - y) < 1e-4f) {
+				if (std::abs(position[0] - x) < 1e-3f
+					&& std::abs(position[1] - y) < 1e-3f) {
 					return true;
 				}
 			}
@@ -178,6 +178,28 @@ namespace guillaume::systems::tests
 		// The bottom-right corner is square: an exact outer vertex there.
 		EXPECT_TRUE(hasVertexAt(vertices, 100.0f + grow, -50.0f - grow, 0, 2));
 		EXPECT_FALSE(hasVertexAt(vertices, -grow, grow, 0, 2));
+	}
+
+	TEST_F(TestRectangleRender, RotatedRectangleKeepsItsTopLeftCorner)
+	{
+		const auto entity	 = createRectangle();
+		const float halfTurn = std::sqrt(0.5f);
+		_componentRegistry.getComponent<components::Transform>(entity).setPose(
+			utility::graphic::PoseF(
+				utility::graphic::PositionF(10.0f, 20.0f, 0.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, halfTurn,
+											   halfTurn)));
+
+		_system->update(entity);
+
+		const auto vertices =
+			lastRenderable()->getMeshes().front()->getVertices();
+		// A quarter turn: the 100 dp width runs along world +Y and the
+		// 50 dp height along world +X, from the top-left corner (10, 20).
+		EXPECT_TRUE(hasVertexAt(vertices, 10.0f, 20.0f));
+		EXPECT_TRUE(hasVertexAt(vertices, 10.0f, 120.0f));
+		EXPECT_TRUE(hasVertexAt(vertices, 60.0f, 120.0f));
+		EXPECT_TRUE(hasVertexAt(vertices, 60.0f, 20.0f));
 	}
 
 	TEST_F(TestRectangleRender, TransparentStrokeIsSkipped)

@@ -152,10 +152,8 @@ namespace guillaume::systems
 			return;
 		}
 
-		const utility::graphic::PositionF center(
-			pose.getPosition().x + bound.getWidth() / 2.0f,
-			pose.getPosition().y - bound.getHeight() / 2.0f,
-			pose.getPosition().z);
+		const utility::graphic::PositionF center = shape::pointInPlane(
+			pose, bound.getWidth() / 2.0f, -bound.getHeight() / 2.0f);
 
 		const float halfWidth  = bound.getWidth() / 2.0f;
 		const float halfHeight = bound.getHeight() / 2.0f;

@@ -57,6 +57,21 @@
 namespace guillaume::systems::shape
 {
 	/**
+	 * @brief Move from the origin of a pose within its own plane.
+	 *
+	 * Used to find the center of a bound from its top-left corner:
+	 * `pointInPlane(pose, width / 2, -height / 2)`. The offset follows the
+	 * right (X+) and up (Y+) axes of the orientation, so a rotated entity
+	 * is drawn around its own center.
+	 * @param pose Pose whose position is the origin of the plane.
+	 * @param x Offset along the right axis of the orientation, in dp.
+	 * @param y Offset along the up axis of the orientation, in dp.
+	 * @return The world position.
+	 */
+	utility::graphic::PositionF
+		pointInPlane(const utility::graphic::PoseF &pose, float x, float y);
+
+	/**
 	 * @brief Rotate a 3D point around the origin by a quaternion.
 	 * @param position The point to rotate.
 	 * @param orientation The rotation. It is normalized before use.

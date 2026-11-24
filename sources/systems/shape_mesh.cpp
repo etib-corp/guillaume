@@ -120,6 +120,17 @@ namespace guillaume::systems::shape
 								 arcSegments, true, epsilon);
 	}
 
+	utility::graphic::PositionF
+		pointInPlane(const utility::graphic::PoseF &pose, const float x,
+					 const float y)
+	{
+		const auto &orientation				 = pose.getOrientation();
+		utility::graphic::PositionF position = pose.getPosition();
+		position.translate(utility::graphic::PositionF(
+			orientation.getRight() * x + orientation.getUp() * y));
+		return position;
+	}
+
 	utility::graphic::PositionF rotatePositionByQuaternion(
 		const utility::graphic::PositionF &position,
 		const utility::graphic::OrientationF &orientation)

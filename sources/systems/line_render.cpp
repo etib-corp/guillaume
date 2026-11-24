@@ -78,10 +78,9 @@ namespace guillaume::systems
 		const utility::graphic::PositionF lift(
 			-pose.getOrientation().getForward() * StrokeLift);
 
-		const utility::graphic::PositionF center(
-			pose.getPosition().x + bound.getWidth() / 2.0f + lift[0],
-			pose.getPosition().y - centerY + lift[1],
-			pose.getPosition().z + lift[2]);
+		const utility::graphic::PositionF center =
+			shape::pointInPlane(pose, bound.getWidth() / 2.0f, -centerY)
+				.translated(lift);
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});

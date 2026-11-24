@@ -57,8 +57,9 @@ namespace guillaume::systems
 	 * Things to know:
 	 * - The picture fills the bound exactly: the aspect ratio of the
 	 *   texture is not preserved. Size the Bound accordingly.
-	 * - The quad is built along the world X and Y axes: the orientation of
-	 *   the Transform is not applied.
+	 * - The quad lies in the plane of the entity: it follows the
+	 *   orientation of the Transform, around the top-left corner given by
+	 *   its position.
 	 * - This is the last system registered, so within the Render phase
 	 *   images are uploaded after every other shape.
 	 *

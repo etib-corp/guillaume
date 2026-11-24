@@ -75,9 +75,10 @@ namespace guillaume::systems
 	 *   frame.
 	 * - The container's Bound is overwritten every frame: set a fixed width
 	 *   or height on components::Layout to impose a size.
-	 * - Children are offset along the world X and Y axes from the
-	 *   container's position; only the depth lift follows the container's
-	 *   orientation.
+	 * - Children are offset along the right and up axes of the container's
+	 *   orientation, and lifted along its forward axis, so a rotated
+	 *   container lays its children out in its own plane. The orientation
+	 *   of each child is left as it is.
 	 * - The widget systems are registered after this one because they place
 	 *   their own children from the bounds resolved here.
 	 *

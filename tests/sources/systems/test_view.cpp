@@ -21,6 +21,8 @@
  */
 #include "systems/test_view.hpp"
 
+#include <cmath>
+
 #include <guillaume/components/layout_extent.hpp>
 namespace guillaume::systems::tests
 {
@@ -182,6 +184,27 @@ namespace guillaume::systems::tests
 		EXPECT_FLOAT_EQ(
 			_registry.getComponent<components::Bound>(middle).getWidth(),
 			40.0f);
+	}
+
+	TEST_F(TestViewSystem, ARotatedViewLaysOutInItsOwnPlane)
+	{
+		const float halfTurn = std::sqrt(0.5f);
+		// A quarter turn around the view axis: right is world +Y and up is
+		// world -X.
+		_registry.getComponent<components::Transform>(_view).setPose(
+			utility::graphic::PoseF(
+				utility::graphic::PositionF(100.0f, 200.0f, -300.0f),
+				utility::graphic::OrientationF(0.0f, 0.0f, halfTurn,
+											   halfTurn)));
+
+		_system.update(_view);
+
+		// Same offsets as RowPlacesChildrenWithPaddingAndSpacing (16 along
+		// the row, 31 down), now along the axes of the view.
+		EXPECT_NEAR(offsetX(_first), 31.0f, 1e-3f);
+		EXPECT_NEAR(offsetY(_first), 16.0f, 1e-3f);
+		EXPECT_NEAR(offsetX(_second), 16.0f, 1e-3f);
+		EXPECT_NEAR(offsetY(_second), 74.0f, 1e-3f);
 	}
 
 	TEST_F(TestViewSystem, AChildWithoutGeometryIsSkipped)

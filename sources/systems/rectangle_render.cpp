@@ -92,10 +92,9 @@ namespace guillaume::systems
 			<< ", size: " << boundComponent.getWidth() << "x"
 			<< boundComponent.getHeight() << ", color: " << color;
 
-		const utility::graphic::PositionF center(
-			pose.getPosition().x + boundComponent.getWidth() / 2.0f,
-			pose.getPosition().y - boundComponent.getHeight() / 2.0f,
-			pose.getPosition().z);
+		const utility::graphic::PositionF center =
+			shape::pointInPlane(pose, boundComponent.getWidth() / 2.0f,
+								-boundComponent.getHeight() / 2.0f);
 
 		// Each corner keeps its own radius (a connected segmented button has
 		// two square and two rounded corners).

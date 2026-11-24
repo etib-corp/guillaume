@@ -119,10 +119,10 @@ namespace guillaume::systems
 		const float halfDepth = (localMax[2] - localMin[2]) * scale / 2.0f;
 		const auto towardViewer =
 			-pose.getOrientation().getForward() * (halfDepth + 1.0f);
-		const utility::graphic::PositionF center(
-			pose.getPosition().x + bound.getWidth() / 2.0f + towardViewer[0],
-			pose.getPosition().y - bound.getHeight() / 2.0f + towardViewer[1],
-			pose.getPosition().z + towardViewer[2]);
+		const utility::graphic::PositionF center =
+			shape::pointInPlane(pose, bound.getWidth() / 2.0f,
+								-bound.getHeight() / 2.0f)
+				.translated(utility::graphic::PositionF(towardViewer));
 
 		std::vector<utility::graphic::Mesh> meshes;
 		meshes.reserve(model->getMeshes().size());
