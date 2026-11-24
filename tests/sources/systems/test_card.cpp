@@ -297,6 +297,51 @@ namespace guillaume::systems::tests
 			"Other");
 	}
 
+	TEST_F(TestCardSystem, CoverAndSectionsFollowALaterWidthChange)
+	{
+		compose();
+		_system.update(_entity);
+
+		_registry.getComponent<components::Layout>(_entity).setFixedWidth(
+			320.0f);
+		_system.update(_entity);
+
+		const float inner = 320.0f - 2.0f * 16.0f;
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_cover).getWidth(),
+			inner);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_cover).getHeight(),
+			components::Card::CoverHeight);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Layout>(_titleSection)
+				.getFixedWidth(),
+			inner);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Layout>(_actionsSection)
+				.getFixedWidth(),
+			inner);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_titleSection).getWidth(),
+			inner);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_actionsSection)
+				.getWidth(),
+			inner);
+
+		// A card without a fixed width leaves them as they are.
+		_registry.getComponent<components::Layout>(_entity).clearFixedWidth();
+		_system.update(_entity);
+
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Bound>(_cover).getWidth(),
+			inner);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Layout>(_titleSection)
+				.getFixedWidth(),
+			inner);
+	}
+
 	TEST_F(TestCardSystem, ContentWidthIsTheFixedWidthMinusThePadding)
 	{
 		EXPECT_FLOAT_EQ(
