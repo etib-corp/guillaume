@@ -391,6 +391,15 @@ namespace guillaume::systems
 
 		if (showTrailing) {
 			glyphChild(componentRegistry, trailing, search.getTrailingGlyph());
+			// The glyph name is the accessibility label of the icon: it
+			// follows a later glyph, not only the installed one.
+			if (isValid(trailing)
+				&& componentRegistry.hasComponent<components::Accessibility>(
+					trailing)) {
+				componentRegistry
+					.getComponent<components::Accessibility>(trailing)
+					.setLabel(search.getTrailingGlyph());
+			}
 		}
 		colorChild(componentRegistry, trailing,
 				   showTrailing ? iconColor : transparentColor());
