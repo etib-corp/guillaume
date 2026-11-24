@@ -294,4 +294,90 @@ namespace guillaume::systems::tests
 			secondChild);
 	}
 
+	TEST_F(TestValueInteractions, SelectionCanBeEmptiedWhenEmptyAllowed)
+	{
+		const auto group	   = nextEntityId();
+		const auto firstChild  = nextEntityId();
+		const auto secondChild = nextEntityId();
+
+		_componentRegistry.addComponent<components::SelectionGroup>(group);
+		_componentRegistry.addComponent<components::Selectable>(firstChild);
+		_componentRegistry.addComponent<components::Selectable>(secondChild);
+		Selection::select(_componentRegistry, group,
+						  { firstChild, secondChild }, firstChild);
+
+		// Deselecting the selected child empties the group.
+		_componentRegistry.getComponent<components::Selectable>(firstChild)
+			.setSelected(false);
+		EXPECT_EQ(Selection::reconcile(_componentRegistry, group,
+									   { firstChild, secondChild }),
+				  ecs::Entity::InvalidIdentifier);
+		EXPECT_FALSE(
+			_componentRegistry.getComponent<components::Selectable>(firstChild)
+				.isSelected());
+		EXPECT_FALSE(
+			_componentRegistry.getComponent<components::SelectionGroup>(group)
+				.hasSelection());
+
+		// So does selecting no child.
+		Selection::select(_componentRegistry, group,
+						  { firstChild, secondChild }, secondChild);
+		EXPECT_EQ(Selection::select(_componentRegistry, group,
+									{ firstChild, secondChild },
+									ecs::Entity::InvalidIdentifier),
+				  ecs::Entity::InvalidIdentifier);
+		EXPECT_FALSE(
+			_componentRegistry.getComponent<components::Selectable>(secondChild)
+				.isSelected());
+	}
+
+	TEST_F(TestValueInteractions, SelectionRestoresPreviousWhenEmptyDisallowed)
+	{
+		const auto group	   = nextEntityId();
+		const auto firstChild  = nextEntityId();
+		const auto secondChild = nextEntityId();
+
+		_componentRegistry.addComponent<components::SelectionGroup>(group)
+			.setAllowEmpty(false);
+		_componentRegistry.addComponent<components::Selectable>(firstChild);
+		_componentRegistry.addComponent<components::Selectable>(secondChild);
+		Selection::select(_componentRegistry, group,
+						  { firstChild, secondChild }, secondChild);
+
+		_componentRegistry.getComponent<components::Selectable>(secondChild)
+			.setSelected(false);
+
+		EXPECT_EQ(Selection::reconcile(_componentRegistry, group,
+									   { firstChild, secondChild }),
+				  secondChild);
+		EXPECT_TRUE(
+			_componentRegistry.getComponent<components::Selectable>(secondChild)
+				.isSelected());
+	}
+
+	TEST_F(TestValueInteractions, SelectionIgnoresAPreviousChildThatLeft)
+	{
+		const auto group	   = nextEntityId();
+		const auto firstChild  = nextEntityId();
+		const auto secondChild = nextEntityId();
+
+		_componentRegistry.addComponent<components::SelectionGroup>(group)
+			.setAllowEmpty(false);
+		_componentRegistry.addComponent<components::Selectable>(firstChild);
+		_componentRegistry.addComponent<components::Selectable>(secondChild);
+		Selection::select(_componentRegistry, group,
+						  { firstChild, secondChild }, secondChild);
+
+		// The selected child leaves the group but keeps its Selectable.
+		_componentRegistry.getComponent<components::Selectable>(secondChild)
+			.setSelected(false);
+
+		EXPECT_EQ(
+			Selection::reconcile(_componentRegistry, group, { firstChild }),
+			firstChild);
+		EXPECT_FALSE(
+			_componentRegistry.getComponent<components::Selectable>(secondChild)
+				.isSelected());
+	}
+
 }	 // namespace guillaume::systems::tests

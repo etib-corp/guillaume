@@ -120,10 +120,11 @@ namespace guillaume::components
 	 * To change the selection, call systems::Selection::select() or select
 	 * the child's Selectable; setSelected() here only records the result.
 	 *
-	 * Watch out: when no child is selected but this component still names
-	 * one, the system selects that child again. Deselecting the selected
-	 * child alone is therefore undone on the next frame; call
-	 * clearSelection() as well to empty the group.
+	 * Watch out: in a group that does not allow an empty selection
+	 * (setAllowEmpty(false)), deselecting the selected child is undone on
+	 * the next frame: the system selects again the child this component
+	 * names. A group that allows an empty selection, the default, is
+	 * emptied instead.
 	 *
 	 * @see components::Selectable
 	 * @see systems::Selection
