@@ -9,6 +9,29 @@ Versions follow the calendar scheme described in
 
 ## [Unreleased]
 
+### Added
+
+- `LocalStorage::userDataDirectory()` works out the per-user data directory
+  of a platform from environment values, with `LocalStorage::Platform` and
+  `LocalStorage::EnvironmentReader`.
+
+### Changed
+
+- **Breaking:** `LocalStorage::defaultStoragePath()` is
+  `guillaume/local-storage.db` in the per-user data directory of the platform
+  (`%LOCALAPPDATA%`, `$XDG_DATA_HOME` or `~/.local/share`,
+  `~/Library/Application Support`), with the temporary directory as a
+  fallback. It used to be `.guillaume-local-storage.db` in the working
+  directory; see [docs/MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md).
+
+### Fixed
+
+- `LocalStorage::setItem()`, `removeItem()` and `getItem()` throw
+  `std::runtime_error` when SQLite fails to run the statement: a failed write
+  was silent and a failed read looked like a missing item.
+- `LocalStorage::getItem()` no longer keeps a read lock on the file after it
+  found an item, which made another connection's write time out.
+
 ## [2026.6.1] - 2026-11-14
 
 ### Added

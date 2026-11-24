@@ -15,8 +15,9 @@ ctest --test-dir build --output-on-failure
   Everything else is vendored under `third_party/`.
 - The library and its tests need no engine, window or GPU.
 - Run one group with `ctest --test-dir build -R <Name> --output-on-failure`.
-- The tests create `.guillaume-local-storage.db` in the working directory. It
-  is ignored by Git; do not commit it.
+- The tests keep their storage files in the temporary directory:
+  `tests/sources/test_environment.cpp` points the per-user data directory
+  there, so a default `LocalStorage` never touches the real one.
 - `-DBUILD_EXAMPLES=ON` also builds the examples. The evan example needs the
   Vulkan SDK and fetches evan; see the `run-gallery` skill.
 - `tests/package_consumer/` is expected to fail until `find_package` works

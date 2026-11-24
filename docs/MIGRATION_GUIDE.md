@@ -3,6 +3,26 @@
 This guide documents breaking API changes and how to update existing code,
 newest first. The first group is unreleased; the rest shipped up to 2026.3.1.
 
+## `LocalStorage` defaults to the per-user data directory
+
+**Before:** a `LocalStorage` built without a path, such as the one every
+`Application` owns, used `.guillaume-local-storage.db` in the working
+directory.
+
+**After:** it uses `guillaume/local-storage.db` in the per-user data directory
+of the platform: `%LOCALAPPDATA%` on Windows, `$XDG_DATA_HOME` or
+`~/.local/share` on Linux, `~/Library/Application Support` on macOS, and the
+temporary directory when the variable is not set. The file is shared by every
+guillaume application of the user.
+
+**Update:** items saved in the old file are not read any more. Move the file
+to the path returned by `LocalStorage::defaultStoragePath()` to keep them, and
+delete the `.guillaume-local-storage.db` left in build and install
+directories. A `LocalStorage` built with an explicit path is unchanged.
+
+`setItem()`, `getItem()` and `removeItem()` now throw `std::runtime_error`
+when SQLite fails; a failure used to be ignored.
+
 ## Entity `Director` classes are folded into their `Builder`
 
 **Before:** every entity had a `Builder` and a `Director`; presets were called
