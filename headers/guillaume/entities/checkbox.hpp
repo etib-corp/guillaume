@@ -76,11 +76,11 @@ namespace guillaume::entities
 	 * the SurfaceConfig of the box (pose, size).
 	 *
 	 * The checkbox owns its check glyph and label children: it is the
-	 * entity registry they are registered in. The label child is built only
-	 * when the label given at creation is not empty. The box is 18 dp wide
-	 * and answers input on a TouchTarget square centered on it. Its Color,
-	 * Borders and enabled state are written each frame from the state and
-	 * the variant, so values set by hand on them are overwritten.
+	 * entity registry they are registered in. The label child is built the
+	 * first time the label is not empty, at creation or in setLabel(). The box
+	 * is 18 dp wide and answers input on a TouchTarget square centered on it.
+	 * Its Color, Borders and enabled state are written each frame from the
+	 * state and the variant, so values set by hand on them are overwritten.
 	 * setState() does not call the value-change handler; a user activation
 	 * and toggle() do.
 	 *
@@ -252,8 +252,8 @@ namespace guillaume::entities
 		 * @brief Set the label text and the accessibility label. Restyles at
 		 * once.
 		 *
-		 * The text on screen changes only when the checkbox was created with
-		 * a label: no label child is built here.
+		 * A checkbox created without a label gets its label child here, the
+		 * first time the label is not empty.
 		 * @param label The new label text.
 		 * @return Reference to this checkbox for chaining.
 		 */
@@ -357,6 +357,16 @@ namespace guillaume::entities
 		 * `std::shared_ptr` and can be given as parent to its children.
 		 */
 		void build(void);
+
+		/**
+		 * @brief Create the label child when the label is not empty and
+		 * the child does not exist yet, and record its identifier in
+		 * components::Checkbox.
+		 *
+		 * Does nothing before create() has handed the checkbox to a
+		 * `std::shared_ptr`.
+		 */
+		void buildLabel(void);
 	};
 
 }	 // namespace guillaume::entities

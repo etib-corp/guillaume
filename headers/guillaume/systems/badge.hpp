@@ -97,7 +97,8 @@ namespace guillaume::systems
 		 * The badge is `sizeOf()` high. It is as wide as it is high, except
 		 * that a label wider than that grows it into a pill with
 		 * components::Badge::HorizontalPadding on each side. The label font
-		 * size is half the badge height. The colors default to the theme's
+		 * size is half the badge height; a `Dot` badge that has a label
+		 * child gets an empty text. The colors default to the theme's
 		 * error and onError roles.
 		 * @param componentRegistry The registry holding the components.
 		 * @param entityIdentifier The badge entity.

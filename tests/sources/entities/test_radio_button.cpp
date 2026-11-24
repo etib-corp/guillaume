@@ -300,4 +300,50 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(radio->getVariant(), RadioButton::Variant::Error);
 	}
 
+	TEST_F(TestRadioButton, GroupRejectsAnInitialValueThatIsNotAnOption)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		RadioGroup::Builder builder(registry, entityRegistry);
+
+		EXPECT_THROW(builder.withValue(2).makeRadioGroup(nullptr, { "A", "B" }),
+					 std::out_of_range);
+		EXPECT_THROW(RadioGroup::create(registry, SurfaceConfig(),
+										std::vector<std::string> { "A", "B" },
+										std::optional<std::size_t>(2),
+										std::function<void(std::size_t)>()),
+					 std::out_of_range);
+
+		// The last option is still a valid initial value.
+		auto group = RadioGroup::create(
+			registry, SurfaceConfig(), std::vector<std::string> { "A", "B" },
+			std::optional<std::size_t>(1), std::function<void(std::size_t)>());
+		EXPECT_EQ(group->getValue(), 1u);
+		EXPECT_TRUE(group->getOption(1)->isSelected());
+	}
+
+	TEST_F(TestRadioButton, SetLabelBuildsAMissingLabelChild)
+	{
+		ecs::ComponentRegistry registry;
+		auto radio		  = makeRadio(registry);
+		const auto &state = registry.getComponent<components::RadioButton>(
+			radio->getIdentifier());
+		ASSERT_EQ(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+
+		radio->setLabel("Option");
+
+		ASSERT_NE(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(
+			registry.getComponent<components::Text>(state.getLabelEntity())
+				.getContent(),
+			"Option");
+
+		// A second call reuses the child.
+		const auto label = state.getLabelEntity();
+		radio->setLabel("Other");
+		EXPECT_EQ(state.getLabelEntity(), label);
+		EXPECT_EQ(registry.getComponent<components::Text>(label).getContent(),
+				  "Other");
+	}
+
 }	 // namespace guillaume::entities::tests

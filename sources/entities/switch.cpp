@@ -239,6 +239,8 @@ namespace guillaume::entities
 			registry.getComponent<components::Switch>(getIdentifier());
 
 		config.setLabel(label);
+		// A first label needs its text child.
+		buildLabel();
 		if (registry.hasComponent<components::Text>(config.getLabelEntity())) {
 			registry.getComponent<components::Text>(config.getLabelEntity())
 				.setContent(label);
@@ -268,20 +270,36 @@ namespace guillaume::entities
 			}
 		}
 
-		if (!config.getLabel().empty()) {
-			const auto label =
-				buildText(registry, *this, shared_from_this(),
-						  config.getLabel(), theme::TypeRole::BodyLarge,
-						  schemeColor(SchemeColorRole::OnSurface));
-			if (label != nullptr) {
-				config.setLabelEntity(label->getIdentifier());
-			}
-		}
+		buildLabel();
 
 		// The thumb and the label are positioned by systems::Switch; neither
 		// is a layout child of the track.
 		setChildren({});
 		systems::Switch::apply(registry, getIdentifier());
+	}
+
+	void Switch::buildLabel(void)
+	{
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
+		auto &registry = getComponentRegistry();
+		auto &config =
+			registry.getComponent<components::Switch>(getIdentifier());
+
+		if (config.getLabelEntity() != ecs::Entity::InvalidIdentifier) {
+			return;
+		}
+
+		const auto label =
+			buildText(registry, *this, shared_from_this(), config.getLabel(),
+					  theme::TypeRole::BodyLarge,
+					  schemeColor(SchemeColorRole::OnSurface));
+		if (label != nullptr) {
+			config.setLabelEntity(label->getIdentifier());
+		}
 	}
 
 }	 // namespace guillaume::entities

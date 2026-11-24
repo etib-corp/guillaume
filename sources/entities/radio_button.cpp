@@ -192,6 +192,8 @@ namespace guillaume::entities
 			registry.getComponent<components::RadioButton>(getIdentifier());
 
 		radio.setLabel(label);
+		// A first label needs its text child.
+		buildLabel();
 		if (registry.hasComponent<components::Text>(radio.getLabelEntity())) {
 			registry.getComponent<components::Text>(radio.getLabelEntity())
 				.setContent(label);
@@ -226,20 +228,36 @@ namespace guillaume::entities
 		this->addEntity(dot);
 		radio.setDot(dot->getIdentifier());
 
-		if (!radio.getLabel().empty()) {
-			const auto label =
-				buildText(registry, *this, shared_from_this(), radio.getLabel(),
-						  theme::TypeRole::BodyLarge,
-						  schemeColor(SchemeColorRole::OnSurface));
-			if (label != nullptr) {
-				radio.setLabelEntity(label->getIdentifier());
-			}
-		}
+		buildLabel();
 
 		// The dot is centered and the label placed beside the ring by
 		// systems::RadioButton; neither is a layout child of the surface.
 		setChildren({});
 		systems::RadioButton::apply(registry, getIdentifier());
+	}
+
+	void RadioButton::buildLabel(void)
+	{
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
+		auto &registry = getComponentRegistry();
+		auto &radio =
+			registry.getComponent<components::RadioButton>(getIdentifier());
+
+		if (radio.getLabelEntity() != ecs::Entity::InvalidIdentifier) {
+			return;
+		}
+
+		const auto label =
+			buildText(registry, *this, shared_from_this(), radio.getLabel(),
+					  theme::TypeRole::BodyLarge,
+					  schemeColor(SchemeColorRole::OnSurface));
+		if (label != nullptr) {
+			radio.setLabelEntity(label->getIdentifier());
+		}
 	}
 
 }	 // namespace guillaume::entities

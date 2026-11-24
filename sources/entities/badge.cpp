@@ -111,6 +111,8 @@ namespace guillaume::entities
 		getComponentRegistry()
 			.getComponent<components::Badge>(getIdentifier())
 			.setVariant(variant);
+		// Leaving Dot with a label needs the text child.
+		buildLabel();
 		systems::Badge::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
@@ -127,6 +129,8 @@ namespace guillaume::entities
 		getComponentRegistry()
 			.getComponent<components::Badge>(getIdentifier())
 			.setLabel(label);
+		// A first label needs its text child.
+		buildLabel();
 		systems::Badge::apply(getComponentRegistry(), getIdentifier());
 		return *this;
 	}
@@ -193,10 +197,22 @@ namespace guillaume::entities
 
 	void Badge::build(void)
 	{
+		buildLabel();
+		systems::Badge::apply(getComponentRegistry(), getIdentifier());
+	}
+
+	void Badge::buildLabel(void)
+	{
+		// Children need the owning handle as their parent.
+		if (weak_from_this().expired()) {
+			return;
+		}
+
 		auto &registry = getComponentRegistry();
 		auto &badge = registry.getComponent<components::Badge>(getIdentifier());
 
-		if (systems::Badge::needsLabel(registry, getIdentifier())) {
+		if (badge.getLabelEntity() == ecs::Entity::InvalidIdentifier
+			&& systems::Badge::needsLabel(registry, getIdentifier())) {
 			const auto label =
 				buildText(registry, *this, shared_from_this(), badge.getLabel(),
 						  theme::TypeRole::LabelSmall,
@@ -207,8 +223,6 @@ namespace guillaume::entities
 				setChildren({ label });
 			}
 		}
-
-		systems::Badge::apply(registry, getIdentifier());
 	}
 
 }	 // namespace guillaume::entities

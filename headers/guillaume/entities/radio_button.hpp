@@ -72,10 +72,10 @@ namespace guillaume::entities
 	 * A radio button alone does not deselect the others: a press only
 	 * selects it. Use RadioGroup to keep one option selected among several.
 	 * The radio button owns its dot and label children: it is the entity
-	 * registry they are registered in. The label child is built only when
-	 * the label given at creation is not empty. The ring is 20 dp wide and
-	 * answers input on a TouchTarget square centered on it. Its Color and
-	 * enabled state are written each frame from the selection and the
+	 * registry they are registered in. The label child is built the first
+	 * time the label is not empty, at creation or in setLabel(). The ring is 20
+	 * dp wide and answers input on a TouchTarget square centered on it. Its
+	 * Color and enabled state are written each frame from the selection and the
 	 * variant, so values set by hand on them are overwritten. select() does
 	 * not call the press handler; only a user press does.
 	 *
@@ -220,8 +220,8 @@ namespace guillaume::entities
 		 * @brief Set the label text and the accessibility label. Restyles at
 		 * once.
 		 *
-		 * The text on screen changes only when the radio button was created
-		 * with a label: no label child is built here.
+		 * A radio button created without a label gets its label child here,
+		 * the first time the label is not empty.
 		 * @param label The new label text.
 		 * @return Reference to this radio button for chaining.
 		 */
@@ -308,6 +308,16 @@ namespace guillaume::entities
 		 * `std::shared_ptr` and can be given as parent to its children.
 		 */
 		void build(void);
+
+		/**
+		 * @brief Create the label child when the label is not empty and
+		 * the child does not exist yet, and record its identifier in
+		 * components::RadioButton.
+		 *
+		 * Does nothing before create() has handed the radio button to a
+		 * `std::shared_ptr`.
+		 */
+		void buildLabel(void);
 	};
 
 }	 // namespace guillaume::entities

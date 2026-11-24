@@ -261,4 +261,28 @@ namespace guillaume::entities::tests
 				  components::CheckedState::Checked);
 	}
 
+	TEST_F(TestSwitch, SetLabelBuildsAMissingLabelChild)
+	{
+		ecs::ComponentRegistry registry;
+		auto toggle = makeSwitch(registry);
+		const auto &state =
+			registry.getComponent<components::Switch>(toggle->getIdentifier());
+		ASSERT_EQ(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+
+		toggle->setLabel("Wi-Fi");
+
+		ASSERT_NE(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(
+			registry.getComponent<components::Text>(state.getLabelEntity())
+				.getContent(),
+			"Wi-Fi");
+
+		// A second call reuses the child.
+		const auto label = state.getLabelEntity();
+		toggle->setLabel("Bluetooth");
+		EXPECT_EQ(state.getLabelEntity(), label);
+		EXPECT_EQ(registry.getComponent<components::Text>(label).getContent(),
+				  "Bluetooth");
+	}
+
 }	 // namespace guillaume::entities::tests

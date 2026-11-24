@@ -259,4 +259,45 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(checkbox->getVariant(), Checkbox::Variant::Error);
 	}
 
+	TEST_F(TestCheckbox, InitialStateIsReportedByIsChecked)
+	{
+		ecs::ComponentRegistry registry;
+
+		auto checked = makeCheckbox(registry, Checkbox::State::Checked);
+		EXPECT_TRUE(checked->isChecked());
+		EXPECT_EQ(checked->getState(), Checkbox::State::Checked);
+
+		auto indeterminate =
+			makeCheckbox(registry, Checkbox::State::Indeterminate);
+		EXPECT_TRUE(indeterminate->isChecked());
+		EXPECT_EQ(indeterminate->getState(), Checkbox::State::Indeterminate);
+
+		auto unchecked = makeCheckbox(registry);
+		EXPECT_FALSE(unchecked->isChecked());
+	}
+
+	TEST_F(TestCheckbox, SetLabelBuildsAMissingLabelChild)
+	{
+		ecs::ComponentRegistry registry;
+		auto checkbox	  = makeCheckbox(registry);
+		const auto &state = registry.getComponent<components::Checkbox>(
+			checkbox->getIdentifier());
+		ASSERT_EQ(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+
+		checkbox->setLabel("Accept");
+
+		ASSERT_NE(state.getLabelEntity(), ecs::Entity::InvalidIdentifier);
+		EXPECT_EQ(
+			registry.getComponent<components::Text>(state.getLabelEntity())
+				.getContent(),
+			"Accept");
+
+		// A second call reuses the child.
+		const auto label = state.getLabelEntity();
+		checkbox->setLabel("Decline");
+		EXPECT_EQ(state.getLabelEntity(), label);
+		EXPECT_EQ(registry.getComponent<components::Text>(label).getContent(),
+				  "Decline");
+	}
+
 }	 // namespace guillaume::entities::tests
