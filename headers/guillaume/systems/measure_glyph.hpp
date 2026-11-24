@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -46,8 +47,9 @@ namespace guillaume::systems
 	 * @brief Key of the size cache of MeasureGlyph: everything a measured
 	 * icon size is looked up by.
 	 *
-	 * Two icons with equal keys share one measurement. The ordering
-	 * operator exists so the key can be used in the ordered map of
+	 * Two icons with equal keys share one measurement. The color of an icon
+	 * is not part of the key: it does not change the measured size. The
+	 * ordering operator exists so the key can be used in the ordered map of
 	 * utility::Cache.
 	 * @see MeasureGlyph
 	 */
@@ -56,14 +58,11 @@ namespace guillaume::systems
 		float fontSize;			  ///< Font size the icon was measured at
 		components::Glyph::Style
 			glyphStyle;	   ///< Style of the icon (outlined, rounded, sharp)
-		utility::graphic::Color32Bit
-			color;	  ///< Color of the icon. It does not change the size,
-					  ///< but two colors give two cache entries
 
 		/**
 		 * @brief Compare two keys field by field.
 		 * @param other The key to compare with.
-		 * @return True when name, font size, style and color are all equal.
+		 * @return True when name, font size and style are all equal.
 		 */
 		bool operator==(const MeasureGlyphCacheKey &other) const
 		{
@@ -74,9 +73,6 @@ namespace guillaume::systems
 				return false;
 			}
 			if (glyphStyle != other.glyphStyle) {
-				return false;
-			}
-			if (color != other.color) {
 				return false;
 			}
 			return true;
@@ -93,8 +89,7 @@ namespace guillaume::systems
 		}
 
 		/**
-		 * @brief Order two keys by name, then font size, then style, then
-		 * color.
+		 * @brief Order two keys by name, then font size, then style.
 		 * @param other The key to compare with.
 		 * @return True when this key sorts before @p other.
 		 */
@@ -106,13 +101,7 @@ namespace guillaume::systems
 			if (fontSize != other.fontSize) {
 				return fontSize < other.fontSize;
 			}
-			if (glyphStyle != other.glyphStyle) {
-				return glyphStyle < other.glyphStyle;
-			}
-			if (color != other.color) {
-				return color < other.color;
-			}
-			return false;
+			return glyphStyle < other.glyphStyle;
 		}
 	};
 
@@ -128,8 +117,8 @@ namespace guillaume::systems
 	 *
 	 * The measurement is asked to the engine
 	 * (utility::Engine::measureText) once per distinct
-	 * MeasureGlyphCacheKey and kept for the life of the system; later
-	 * frames only copy the cached size.
+	 * MeasureGlyphCacheKey and kept in a cache of at most MaxCacheEntries
+	 * sizes; later frames only copy the cached size.
 	 *
 	 * Things to know:
 	 * - The Bound of an icon entity is overwritten every frame.
@@ -140,6 +129,9 @@ namespace guillaume::systems
 	 *   Bound keeps its value.
 	 * - Every style is measured with the same font file (the outlined
 	 *   one).
+	 * - When the cache holds MaxCacheEntries sizes it is emptied before the
+	 *   next one is stored, so it cannot grow without bound; the icons
+	 *   still shown are measured again once.
 	 *
 	 * @see components::Glyph, systems::GlyphRender
 	 * @see MeasureGlyphCacheKey
@@ -163,6 +155,12 @@ namespace guillaume::systems
 		bool _hasFont { false };	///< Whether the icon font could be loaded
 
 		public:
+		/**
+		 * @brief Largest number of measured sizes kept. Storing one more
+		 * empties the cache first.
+		 */
+		static constexpr std::size_t MaxCacheEntries = 1024;
+
 		/**
 		 * @brief Create the system in the Measure phase and load the icon
 		 * font and its code point table.

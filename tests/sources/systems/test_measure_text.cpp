@@ -20,6 +20,8 @@
  SOFTWARE.
  */
 
+#include <cstddef>
+#include <string>
 #include <vector>
 
 #include <utility/graphic/text/text.hpp>
@@ -110,6 +112,49 @@ TEST_F(MeasureTextFixture, SkipsMeasurementWhenRequiredComponentIsMissing)
 	measureTextSystem.routine(componentRegistry, entityRegistry, traveler);
 
 	EXPECT_EQ(enginePtr->measureTextCallCount, 0);
+}
+
+TEST_F(MeasureTextFixture, ColorChangeDoesNotMeasureAgain)
+{
+	componentRegistry
+		.getComponent<guillaume::components::Text>(entityIdentifier)
+		.setContent("Same size")
+		.setFontSize(32);
+	enginePtr->textMeasurement = { 140.0f, 28.0f };
+	guillaume::ecs::LevelOrderTraveler traveler;
+
+	measureTextSystem.routine(componentRegistry, entityRegistry, traveler);
+	componentRegistry
+		.getComponent<guillaume::components::Color>(entityIdentifier)
+		.setColor(utility::graphic::Color32Bit(12, 34, 56, 255));
+	measureTextSystem.routine(componentRegistry, entityRegistry, traveler);
+
+	// The color does not change the size: one measurement, one entry.
+	EXPECT_EQ(enginePtr->measureTextCallCount, 1);
+	EXPECT_EQ(measureTextSystem.size(), 1U);
+}
+
+TEST_F(MeasureTextFixture, CacheStaysBoundedWhenTheContentKeepsChanging)
+{
+	const std::size_t limit = guillaume::systems::MeasureText::MaxCacheEntries;
+	enginePtr->textMeasurement = { 140.0f, 28.0f };
+	guillaume::ecs::LevelOrderTraveler traveler;
+
+	// A counter: a new string every frame.
+	for (std::size_t frame = 0; frame < limit + 10; ++frame) {
+		componentRegistry
+			.getComponent<guillaume::components::Text>(entityIdentifier)
+			.setContent(std::to_string(frame));
+		measureTextSystem.routine(componentRegistry, entityRegistry, traveler);
+		ASSERT_LE(measureTextSystem.size(), limit);
+	}
+
+	// The text is still measured after the cache was emptied.
+	const auto &bound =
+		componentRegistry.getComponent<guillaume::components::Bound>(
+			entityIdentifier);
+	EXPECT_EQ(bound.getWidth(), 140U);
+	EXPECT_EQ(measureTextSystem.size(), 10U);
 }
 
 namespace guillaume::systems::tests

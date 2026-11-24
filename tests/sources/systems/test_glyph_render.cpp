@@ -194,3 +194,45 @@ TEST_F(GlyphRenderFixture, MeasuresNothingWhenTheIconFontIsMissing)
 	EXPECT_FLOAT_EQ(bound.getWidth(), 12.0f);
 	EXPECT_FLOAT_EQ(bound.getHeight(), 34.0f);
 }
+
+TEST_F(GlyphRenderFixture, MeasureIgnoresTheColorOfTheIcon)
+{
+	guillaume::systems::MeasureGlyph measureGlyph { ressourceProvider,
+													*engine };
+	measureGlyph.bindComponentRegistry(componentRegistry);
+	engine->textMeasurement = { 24.0f, 24.0f };
+
+	measureGlyph.update(entityIdentifier);
+	componentRegistry
+		.getComponent<guillaume::components::Color>(entityIdentifier)
+		.setColor(utility::graphic::Color32Bit(12, 34, 56, 255));
+	measureGlyph.update(entityIdentifier);
+
+	measureGlyph.unbindComponentRegistry();
+
+	// The color does not change the size: one measurement, one entry.
+	EXPECT_EQ(engine->measureTextCallCount, 1);
+	EXPECT_EQ(measureGlyph.size(), 1U);
+}
+
+TEST_F(GlyphRenderFixture, MeasureCacheStaysBounded)
+{
+	const std::size_t limit = guillaume::systems::MeasureGlyph::MaxCacheEntries;
+	guillaume::systems::MeasureGlyph measureGlyph { ressourceProvider,
+													*engine };
+	measureGlyph.bindComponentRegistry(componentRegistry);
+	engine->textMeasurement = { 24.0f, 24.0f };
+
+	// An icon whose name changes every frame: a new cache key each time.
+	for (std::size_t frame = 0; frame < limit + 10; ++frame) {
+		componentRegistry
+			.getComponent<guillaume::components::Glyph>(entityIdentifier)
+			.setName("icon" + std::to_string(frame));
+		measureGlyph.update(entityIdentifier);
+		ASSERT_LE(measureGlyph.size(), limit);
+	}
+
+	measureGlyph.unbindComponentRegistry();
+
+	EXPECT_EQ(measureGlyph.size(), 10U);
+}
