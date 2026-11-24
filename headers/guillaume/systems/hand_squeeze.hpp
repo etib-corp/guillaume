@@ -35,10 +35,10 @@ namespace guillaume::systems
 	 *
 	 * Runs in the Event phase on entities that have a
 	 * components::HandSqueezeInteraction, a Transform and a Bound, and
-	 * takes one squeeze event per frame. It does not override
-	 * HandEventSystem::update, so it writes no component and calls no
-	 * handler: the squeeze interaction component is not driven by this
-	 * system.
+	 * takes one squeeze event per frame. The rule is that of
+	 * HandEventSystem::update: for the entity the hand ray of the event
+	 * hits, the state of the event is copied into the interaction
+	 * component and its event handler is called.
 	 *
 	 * @see components::HandSqueezeInteraction
 	 * @see systems::HandEventSystem

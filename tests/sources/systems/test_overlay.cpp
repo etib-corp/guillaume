@@ -87,6 +87,26 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(_overlaySystem->getDepth(), 0u);
 	}
 
+	// #176: one Escape dismisses one overlay, not one per frame.
+	TEST_F(TestOverlay, EscapeDismissesOnlyOneOverlay)
+	{
+		const auto first  = createOverlayEntity();
+		const auto second = createOverlayEntity();
+		_overlaySystem->show(first);
+		_overlaySystem->show(second);
+
+		auto key = std::make_shared<utility::event::KeyboardEvent>();
+		key->setScancode(utility::event::KeyboardEvent::ScanCode::Escape);
+		key->setIsDownEvent(true);
+		_eventBus.publish(key);
+
+		_overlaySystem->prepare();
+		_overlaySystem->prepare();
+
+		EXPECT_EQ(_overlaySystem->getDepth(), 1u);
+		EXPECT_EQ(_overlaySystem->getTop(), first);
+	}
+
 	TEST_F(TestOverlay, OutsideClickDismisses)
 	{
 		const auto entity = createOverlayEntity(0.0f, 0.0f, 100.0f, 50.0f);

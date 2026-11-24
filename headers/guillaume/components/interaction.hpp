@@ -91,9 +91,8 @@ namespace guillaume::components
 	 * HandPinchInteraction is `Interaction<utility::event::HandPinchEvent>`.
 	 * The system of the same input (systems::HandPinch, ...) runs in the Event
 	 * phase on the entities that have the component, a Transform and a Bound.
-	 * systems::HandPinch and systems::HandPoke call the handler stored in
-	 * InteractionBase; the other hand systems have no per-entity rule (see
-	 * each derived component).
+	 * It calls the handler stored in InteractionBase for the entity the
+	 * hand ray of the event hits (see each derived component).
 	 *
 	 * @code
 	 * auto &pinch =
@@ -102,7 +101,9 @@ namespace guillaume::components
 	 * @endcode
 	 *
 	 * The component also derives from `EventType`, so it has the fields of
-	 * that event, but no system of the library writes them: read the state
+	 * that event. systems::HandSqueeze, HandTrigger, HandThumbRest and
+	 * HandThumbStick copy into them the event that reached the entity;
+	 * systems::HandPinch and systems::HandPoke do not: read their state
 	 * from the accessors of the derived component instead
 	 * (HandPinchInteraction::isPinch, HandPokeInteraction::isPoke).
 	 *

@@ -33,8 +33,10 @@ namespace guillaume::components
 	 *
 	 * systems::HandSqueeze selects the entities that have this component, a
 	 * Transform and a Bound, and consumes one squeeze event per frame in the
-	 * Event phase. It has no per-entity rule: it neither writes this
-	 * component nor calls the handler set with setOnEventHandler().
+	 * Event phase. For the entity the hand ray of the event
+	 * hits, it copies the state of the event into this component (which
+	 * has the accessors of the event) and calls the handler set with
+	 * setOnEventHandler().
 	 *
 	 * @see systems::HandSqueeze, Interaction
 	 */

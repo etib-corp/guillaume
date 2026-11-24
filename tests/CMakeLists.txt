@@ -55,6 +55,7 @@ set(TEST_SOURCES
     sources/entities/test_icon_button.cpp
     sources/event/test_event_bus.cpp
     sources/event/test_event_handler.cpp
+    sources/event/test_event_manager.cpp
     sources/event/test_event_subscriber.cpp
     sources/systems/test_app_bar.cpp
     sources/systems/test_badge.cpp
@@ -91,6 +92,7 @@ set(TEST_SOURCES
     sources/systems/test_surface_render.cpp
     sources/systems/test_surface_tone.cpp
     sources/systems/test_interaction.cpp
+    sources/systems/test_input_events.cpp
     sources/systems/test_overlay.cpp
     sources/systems/test_keyboard_control.cpp
     sources/systems/test_measure_text.cpp

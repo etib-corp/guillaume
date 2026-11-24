@@ -48,7 +48,7 @@ namespace guillaume::systems
 
 	void HandMotion::update(const ecs::Entity::Identifier &entityIdentifier)
 	{
-		auto handMotionEvent = getLastEvent();
+		auto handMotionEvent = getRetainedEvent();
 		if (!handMotionEvent)
 			return;
 

@@ -334,7 +334,10 @@ namespace guillaume::entities
 				self, config.getText(), theme::TypeRole::BodyLarge,
 				schemeColor(SchemeColorRole::OnSurface));
 			text->setContent(config.getText());
-			registry.addComponent<components::Focus>(text->getIdentifier());
+			// The text-input systems only edit a focused text; the query
+			// is editable as long as it exists.
+			registry.addComponent<components::Focus>(text->getIdentifier())
+				.setFocused(true);
 			search().setTextEntity(text->getIdentifier());
 			built = true;
 		}

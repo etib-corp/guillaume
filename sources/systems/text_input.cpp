@@ -47,15 +47,18 @@ namespace guillaume::systems
 		if (!textInputEvent)
 			return;
 
-		auto &text			= getComponent<components::Text>(entityIdentifier);
-		std::string content = text.getContent();
-
-		const auto committedText = textInputEvent->getText();
-		if (!committedText.empty()) {
-			content += committedText;
+		// Only the entity that owns the focus is edited.
+		if (!getComponent<components::Focus>(entityIdentifier).isFocused()) {
+			return;
 		}
 
-		text.setContent(content);
+		const auto committedText = textInputEvent->getText();
+		if (committedText.empty()) {
+			return;
+		}
+
+		getComponent<components::Text>(entityIdentifier)
+			.insertString(committedText);
 	}
 
 }	 // namespace guillaume::systems

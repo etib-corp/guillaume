@@ -36,10 +36,10 @@ namespace guillaume::systems
 	 *
 	 * Runs in the Event phase on entities that have a
 	 * components::HandTriggerInteraction, a Transform and a Bound, and
-	 * takes one trigger event per frame. It does not override
-	 * HandEventSystem::update, so it writes no component and calls no
-	 * handler: the trigger interaction component is not driven by this
-	 * system.
+	 * takes one trigger event per frame. The rule is that of
+	 * HandEventSystem::update: for the entity the hand ray of the event
+	 * hits, the state of the event is copied into the interaction
+	 * component and its event handler is called.
 	 *
 	 * @see components::HandTriggerInteraction
 	 * @see systems::HandEventSystem

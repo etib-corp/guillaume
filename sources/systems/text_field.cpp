@@ -553,7 +553,9 @@ namespace guillaume::systems
 			componentRegistry.hasComponent<components::Focus>(input);
 
 		if (editing && !hasFocus) {
-			componentRegistry.addComponent<components::Focus>(input);
+			// The text-input systems only edit a focused text.
+			componentRegistry.addComponent<components::Focus>(input).setFocused(
+				true);
 		} else if (!editing && hasFocus) {
 			componentRegistry.removeComponent<components::Focus>(input);
 		}

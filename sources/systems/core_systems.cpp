@@ -113,8 +113,6 @@ namespace guillaume::systems
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::MouseButton>(eventBus, engine));
 		systemRegistry.registerNewSystem(
-			std::make_unique<systems::Drag>(eventBus));
-		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Scroll>(eventBus));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Selection>());
@@ -122,6 +120,10 @@ namespace guillaume::systems
 			std::make_unique<systems::HandMotion>(eventBus));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::HandButton>(eventBus));
+		// Drag reads the presses MouseButton and HandButton record: keep it
+		// after both, or a grab is seen one frame late.
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::Drag>(eventBus));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::HandPinch>(eventBus));
 		systemRegistry.registerNewSystem(

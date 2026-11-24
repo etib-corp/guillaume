@@ -38,9 +38,9 @@ namespace guillaume::systems
 	 * components::HandPokeInteraction, a Transform and a Bound. The hit
 	 * test and the handler call are those of systems::HandRaySystem; this
 	 * class only says that the result is written to the poking flag of the
-	 * component. An entity is therefore poked while the hand ray of the
-	 * current poke event hits it, and its event handler is called on every
-	 * frame that is true.
+	 * component. An entity is therefore poked on the frames that bring a
+	 * poke event whose hand ray hits it, and its event handler is called on
+	 * each of them; a frame without poke event clears the flag.
 	 *
 	 * systems::Focus and systems::StyleState read the flag later in the
 	 * same phase: a poke focuses an entity and shows it pressed.

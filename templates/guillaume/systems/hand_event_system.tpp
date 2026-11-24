@@ -54,9 +54,46 @@ namespace guillaume::systems
 
 	template<ecs::InheritFromComponent InteractionType,
 			 utility::event::InheritFromEvent EventType>
-	void HandEventSystem<InteractionType, EventType>::update(
-		const ecs::Entity::Identifier &)
+	bool HandEventSystem<InteractionType, EventType>::isHit(
+		const EventType &handEvent,
+		const ecs::Entity::Identifier &entityIdentifier)
 	{
+		auto &transform = this->template getComponent<components::Transform>(
+			entityIdentifier);
+		auto &bound =
+			this->template getComponent<components::Bound>(entityIdentifier);
+
+		const auto ray = utility::graphic::RayF(
+			utility::graphic::PositionF(handEvent.getPose().getPosition()),
+			handEvent.getPose().getOrientation().getForward());
+
+		return isInteractive(this->getComponentRegistry(), entityIdentifier)
+			&& hitTest(
+				ray, transform.getPose(), bound,
+				hitMargin(this->getComponentRegistry(), entityIdentifier));
+	}
+
+	template<ecs::InheritFromComponent InteractionType,
+			 utility::event::InheritFromEvent EventType>
+	void HandEventSystem<InteractionType, EventType>::update(
+		const ecs::Entity::Identifier &entityIdentifier)
+	{
+		auto handEvent = this->getLastEvent();
+		if (!handEvent || !isHit(*handEvent, entityIdentifier))
+			return;
+
+		auto &interaction =
+			this->template getComponent<InteractionType>(entityIdentifier);
+
+		// The component derives from the event type: give it the state of
+		// the event that reached the entity.
+		static_cast<EventType &>(interaction) = *handEvent;
+		interaction.setHasChanged(true);
+
+		const auto &handler = interaction.getOnEventHandler();
+		if (handler) {
+			handler();
+		}
 	}
 
 	template<ecs::InheritFromComponent InteractionType,
@@ -64,26 +101,18 @@ namespace guillaume::systems
 	void HandRaySystem<InteractionType, EventType>::update(
 		const ecs::Entity::Identifier &entityIdentifier)
 	{
-		auto handEvent = this->getLastEvent();
-		if (!handEvent)
-			return;
-
-		auto &transform = this->template getComponent<components::Transform>(
-			entityIdentifier);
-		auto &bound =
-			this->template getComponent<components::Bound>(entityIdentifier);
 		auto &interaction =
 			this->template getComponent<InteractionType>(entityIdentifier);
 
-		const auto ray = utility::graphic::RayF(
-			utility::graphic::PositionF(handEvent->getPose().getPosition()),
-			handEvent->getPose().getOrientation().getForward());
+		// The gesture is a one-shot event: on a frame without one, no
+		// entity is engaged any more.
+		auto handEvent = this->getLastEvent();
+		if (!handEvent) {
+			setEngaged(interaction, false);
+			return;
+		}
 
-		const bool isIntersecting =
-			isInteractive(this->getComponentRegistry(), entityIdentifier)
-			&& hitTest(
-				ray, transform.getPose(), bound,
-				hitMargin(this->getComponentRegistry(), entityIdentifier));
+		const bool isIntersecting = this->isHit(*handEvent, entityIdentifier);
 
 		setEngaged(interaction, isIntersecting);
 		if (isIntersecting) {

@@ -33,6 +33,7 @@
 #include "guillaume/components/mouse_button_interaction.hpp"
 #include "guillaume/components/transform.hpp"
 
+#include <utility/event/hand_motion_event.hpp>
 #include <utility/event/mouse_motion_event.hpp>
 
 namespace guillaume::systems
@@ -42,40 +43,47 @@ namespace guillaume::systems
 	 * @brief Turns "button held while the pointer moves" into a drag gesture.
 	 *
 	 * Runs in the Event phase on entities that have a
-	 * components::DragInteraction, Transform, Bound, MouseButtonInteraction
-	 * and HandButtonInteraction. An entity is grabbed while its left mouse
-	 * button or its hand button A is pressed (as recorded by
+	 * components::DragInteraction, a Transform and a Bound. An entity is
+	 * grabbed while the left mouse button of its MouseButtonInteraction or
+	 * the button A of its HandButtonInteraction is pressed (as recorded by
 	 * systems::MouseButton and systems::HandButton, registered before this
-	 * system) and it is not disabled. The system writes the dragging flag,
-	 * the last position and the delta of components::DragInteraction, and
-	 * calls its handlers:
+	 * system; an entity needs only one of the two components) and it is
+	 * not disabled. The system writes the dragging flag, the last position
+	 * and the delta of components::DragInteraction, and calls its
+	 * handlers:
 	 * - drag start, on the first frame the entity is grabbed;
-	 * - drag, on each following frame, with the pointer movement since the
-	 *   previous frame;
-	 * - drag end, when the button is released or the entity is disabled.
+	 * - drag, on each following frame that brings a motion event, with the
+	 *   pointer movement since the previous one;
+	 * - drag end, on the frame the button is released or the entity is
+	 *   disabled, whether the pointer moves or not.
+	 *
+	 * The pointer is the one that holds the entity:
+	 * - for a mouse grab, the position of the last mouse motion event, in
+	 *   view coordinates;
+	 * - for a hand grab, the point where the aim ray of the last hand
+	 *   motion event meets the plane of the entity, measured along the
+	 *   right and up axes of the entity.
 	 *
 	 * The system does not move the entity: the drag handler decides what
 	 * the movement does.
 	 *
-	 * @note Positions always come from the last mouse motion event, also
-	 * when the grab comes from the hand button. Nothing happens until a
-	 * first mouse motion event has been received.
+	 * @note A drag only starts once the position of its pointer is known,
+	 * that is after a first motion event of that pointer.
 	 *
 	 * @see components::DragInteraction
 	 * @see systems::MouseButton
 	 */
 	class Drag:
 		public ecs::SystemFiller<components::DragInteraction,
-								 components::Transform, components::Bound,
-								 components::MouseButtonInteraction,
-								 components::HandButtonInteraction>,
-		public event::EventManager<utility::event::MouseMotionEvent>
+								 components::Transform, components::Bound>,
+		public event::EventManager<utility::event::MouseMotionEvent>,
+		public event::EventManager<utility::event::HandMotionEvent>
 	{
 		public:
 		/**
 		 * @brief Create the system, in the Event phase, and subscribe it to
-		 * mouse motion events.
-		 * @param eventBus The event bus delivering the mouse motion events.
+		 * mouse motion and hand motion events.
+		 * @param eventBus The event bus delivering the motion events.
 		 */
 		Drag(event::EventBus &eventBus);
 
@@ -85,9 +93,10 @@ namespace guillaume::systems
 		~Drag(void);
 
 		/**
-		 * @brief Take the next pending mouse motion event, once per frame.
+		 * @brief Take the next pending mouse motion event and the next
+		 * pending hand motion event, once per frame.
 		 *
-		 * When none is pending, the previous event stays the current one.
+		 * When none is pending, the pointer keeps its last known position.
 		 */
 		void prepare(void) override;
 
