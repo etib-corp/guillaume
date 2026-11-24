@@ -356,4 +356,15 @@ namespace guillaume::systems::tests
 				  getActiveColor(SchemeColorRole::InverseOnSurface));
 	}
 
+	TEST_F(TestTooltipSystem, TitleIsMirroredOnTheChild)
+	{
+		_registry.addComponent<components::Text>(_title);
+		tooltip().setVariant(Variant::Rich).setTitle("Updated title");
+
+		_system.update(_entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Text>(_title).getContent(),
+				  "Updated title");
+	}
+
 }	 // namespace guillaume::systems::tests

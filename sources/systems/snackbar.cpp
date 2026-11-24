@@ -230,6 +230,14 @@ namespace guillaume::systems
 			componentRegistry.getComponent<components::Text>(message)
 				.setContent(snackbar.getMessage());
 		}
+		if (componentRegistry.hasComponent<components::Text>(action)) {
+			componentRegistry.getComponent<components::Text>(action).setContent(
+				snackbar.getAction());
+		}
+		if (componentRegistry.hasComponent<components::Accessibility>(action)) {
+			componentRegistry.getComponent<components::Accessibility>(action)
+				.setLabel(snackbar.getAction());
+		}
 		colorChild(componentRegistry, message,
 				   visible ? schemeColor(SchemeColorRole::InverseOnSurface)
 						   : transparentColor());

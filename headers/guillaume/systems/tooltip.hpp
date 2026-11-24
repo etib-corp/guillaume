@@ -44,8 +44,8 @@ namespace guillaume::systems
 	 *   components::Overlay, the label of components::Accessibility, the
 	 *   hover timers of components::Tooltip and, when it is shown,
 	 *   components::Transform.
-	 * - **Writes** on the children: the Text of the body and the Color of
-	 *   the title and body.
+	 * - **Writes** on the children: the Text and the Color of the title and
+	 *   body.
 	 *
 	 * The `visible` flag of components::Tooltip is the source of truth:
 	 * apply() copies it to the tooltip's components::Overlay. A hidden

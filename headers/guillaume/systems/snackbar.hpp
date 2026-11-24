@@ -45,7 +45,7 @@ namespace guillaume::systems
 	 *   components::Overlay, then the Transform and Bound of the children
 	 *   through systems::Layout::apply.
 	 * - **Writes** on the children: the Text and Color of the message and
-	 *   the Color of the action.
+	 *   the Text, Color and accessibility label of the action.
 	 *
 	 * The `visible` flag of components::Snackbar is the source of truth:
 	 * apply() copies it to the snackbar's components::Overlay. A hidden

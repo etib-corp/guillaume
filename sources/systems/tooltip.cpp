@@ -322,6 +322,10 @@ namespace guillaume::systems
 			.getComponent<components::Accessibility>(entityIdentifier)
 			.setLabel(tooltip.getText());
 
+		if (componentRegistry.hasComponent<components::Text>(title)) {
+			componentRegistry.getComponent<components::Text>(title).setContent(
+				tooltip.getTitle());
+		}
 		if (componentRegistry.hasComponent<components::Text>(text)) {
 			componentRegistry.getComponent<components::Text>(text).setContent(
 				tooltip.getText());
