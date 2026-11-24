@@ -100,13 +100,13 @@ namespace guillaume::systems
 		/**
 		 * @brief Get the font size of the icon for the configured size.
 		 *
-		 * In an extended FAB the icon uses the same font size as the label
-		 * (fab_style::getLabelFontSize), not the icon size of a regular
-		 * FAB. The widget class uses it to create the icon child at the
-		 * right size.
+		 * It is the icon size of a regular FAB of the same size
+		 * (fab_style::getIconFontSize); the label has its own type role.
+		 * The widget class uses it to create the icon child at the right
+		 * size.
 		 * @param registry The registry holding the components.
 		 * @param identifier The button entity.
-		 * @return The font size, in dp: 18 for Small, 24 for Medium, 36 for
+		 * @return The font size, in dp: 24 for Small and Medium, 36 for
 		 * Large.
 		 * @throws std::runtime_error If the configured size is not a valid
 		 * enumerator.
@@ -176,7 +176,7 @@ namespace guillaume::systems
 		 * gap when the icon measures something, the label, then 20 dp.
 		 * Otherwise the button is a square of that height with the icon
 		 * centered and the label hidden. The label gets the LabelLarge type
-		 * role; icon and label share one font size.
+		 * role; the icon gets the FAB icon size of the size setting.
 		 *
 		 * A button with neither an icon nor a label only gets its corner
 		 * radius: its components::Bound is left untouched.

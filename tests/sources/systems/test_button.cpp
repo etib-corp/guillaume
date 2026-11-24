@@ -278,4 +278,109 @@ namespace guillaume::systems::tests
 				  extended);
 	}
 
+	TEST_F(TestButtonSystem, HiddenCommonButtonIsTransparent)
+	{
+		_registry.addComponent<components::CommonButton>(_entity).setColorStyle(
+			components::CommonButton::Color::Elevated);
+		button().setVisible(false);
+		guillaume::systems::CommonButton::install(_registry, _entity);
+
+		guillaume::systems::CommonButton::apply(_registry, _entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Color>(_entity).getColor(),
+				  entities::transparentColor());
+		EXPECT_EQ(
+			_registry.getComponent<components::Borders>(_entity).getColor(),
+			entities::transparentColor());
+		EXPECT_EQ(_registry.getComponent<components::Color>(_icon).getColor(),
+				  entities::transparentColor());
+		EXPECT_EQ(_registry.getComponent<components::Color>(_label).getColor(),
+				  entities::transparentColor());
+		EXPECT_EQ(_registry.getComponent<components::Elevation>(_entity)
+					  .getElevationLevel(),
+				  theme::ElevationLevel::Level0);
+
+		// Showing it again brings the colors back.
+		button().setVisible(true);
+		SharedButton::restyle(_registry, _entity);
+		EXPECT_NE(_registry.getComponent<components::Color>(_label).getColor(),
+				  entities::transparentColor());
+	}
+
+	TEST_F(TestButtonSystem, HiddenIconButtonIsTransparent)
+	{
+		_registry.addComponent<components::IconButton>(_entity).setVariant(
+			components::IconButton::Variant::Filled);
+		button().setVisible(false);
+		guillaume::systems::IconButton::install(_registry, _entity);
+
+		guillaume::systems::IconButton::apply(_registry, _entity);
+
+		EXPECT_EQ(_registry.getComponent<components::Color>(_entity).getColor(),
+				  entities::transparentColor());
+		EXPECT_EQ(
+			_registry.getComponent<components::Borders>(_entity).getColor(),
+			entities::transparentColor());
+		EXPECT_EQ(_registry.getComponent<components::Color>(_icon).getColor(),
+				  entities::transparentColor());
+
+		button().setVisible(true);
+		SharedButton::restyle(_registry, _entity);
+		EXPECT_NE(_registry.getComponent<components::Color>(_entity).getColor(),
+				  entities::transparentColor());
+	}
+
+	TEST_F(TestButtonSystem, CommonButtonWithoutContentStillGetsItsBound)
+	{
+		_registry.addComponent<components::CommonButton>(_entity);
+		button()
+			.setIcon(ecs::Entity::InvalidIdentifier)
+			.setLabel(ecs::Entity::InvalidIdentifier);
+		guillaume::systems::CommonButton::install(_registry, _entity);
+
+		guillaume::systems::CommonButton::apply(_registry, _entity);
+
+		const auto &bound = _registry.getComponent<components::Bound>(_entity);
+		EXPECT_FLOAT_EQ(bound.getWidth(), components::CommonButton::MinWidth);
+		EXPECT_FLOAT_EQ(bound.getHeight(), components::CommonButton::MinHeight);
+	}
+
+	TEST_F(TestButtonSystem, CommonButtonGapNeedsBothChildren)
+	{
+		_registry.addComponent<components::CommonButton>(_entity);
+		// The label text is set but there is no label child.
+		button().setLabel(ecs::Entity::InvalidIdentifier);
+		guillaume::systems::CommonButton::install(_registry, _entity);
+
+		guillaume::systems::CommonButton::apply(_registry, _entity);
+
+		// No gap is reserved beside the lone icon: it is centered.
+		const float width =
+			_registry.getComponent<components::Bound>(_entity).getWidth();
+		EXPECT_FLOAT_EQ(offsetX(_icon), (width - 18.0f) / 2.0f);
+	}
+
+	TEST_F(TestButtonSystem, ExtendedFabIconUsesTheFabIconSize)
+	{
+		using Config = components::ExtendedFloatingActionButton;
+		_registry.addComponent<Config>(_entity).setSize(Config::Size::Small);
+		guillaume::systems::ExtendedFloatingActionButton::install(_registry,
+																  _entity);
+
+		guillaume::systems::ExtendedFloatingActionButton::apply(_registry,
+																_entity);
+
+		// M3: a 24 dp icon, not the 18 dp of the former label font size.
+		const float expected =
+			entities::fab_style::getIconFontSize(Config::Size::Small);
+		EXPECT_FLOAT_EQ(expected, 24.0f);
+		EXPECT_FLOAT_EQ(
+			_registry.getComponent<components::Glyph>(_icon).getFontSize(),
+			expected);
+		EXPECT_FLOAT_EQ(
+			guillaume::systems::ExtendedFloatingActionButton::iconFontSize(
+				_registry, _entity),
+			expected);
+	}
+
 }	 // namespace guillaume::systems::tests

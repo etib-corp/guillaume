@@ -83,7 +83,8 @@ namespace guillaume::systems::fab_style
 		 */
 		float iconFontSize(std::size_t size);
 		/**
-		 * @brief Font size of the label and icon of an extended FAB.
+		 * @brief Legacy font size of an extended FAB. No system reads it:
+		 * the label uses its type role and the icon uses iconFontSize.
 		 * @param size Index of the size: 0 Small, 1 Medium, 2 Large.
 		 * @return The font size, in dp.
 		 * @throws std::runtime_error If the index is out of range.
@@ -133,8 +134,8 @@ namespace guillaume::systems::fab_style
 	}
 
 	/**
-	 * @brief Font size of the icon of a regular FAB: 24 dp for Small and
-	 * Medium, 36 dp for Large.
+	 * @brief Font size of the icon of a FAB, regular or extended: 24 dp
+	 * for Small and Medium, 36 dp for Large.
 	 * @tparam SizeType The `Size` enumeration of the FAB component.
 	 * @param size The FAB size.
 	 * @return The font size, in dp.
@@ -146,8 +147,9 @@ namespace guillaume::systems::fab_style
 	}
 
 	/**
-	 * @brief Font size shared by the label and the icon of an extended FAB:
-	 * 18 dp for Small, 24 dp for Medium, 36 dp for Large.
+	 * @brief Legacy font size of an extended FAB: 18 dp for Small, 24 dp
+	 * for Medium, 36 dp for Large. No system reads it: the label uses its
+	 * type role and the icon uses getIconFontSize.
 	 * @tparam SizeType The `Size` enumeration of the FAB component.
 	 * @param size The FAB size.
 	 * @return The font size, in dp.

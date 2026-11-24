@@ -130,7 +130,9 @@ namespace guillaume::systems
 		 *
 		 * - Elevation: level 1 for an enabled Elevated button, level 2
 		 *   while it is hovered and not pressed; level 0 for every other
-		 *   style and for any disabled button.
+		 *   style and for any disabled or hidden button.
+		 * - Hidden (components::Button::isVisible is false): container,
+		 *   outline, icon and label are transparent.
 		 * - Disabled: container and outline take the disabled container
 		 *   color, icon and label the disabled content color.
 		 * - Enabled: container, outline and content colors come from
@@ -164,8 +166,10 @@ namespace guillaume::systems
 		 * - Placement: icon and label are centered as a group, the icon
 		 *   first unless components::Button asks for a trailing icon.
 		 *
-		 * A button with neither an icon nor a label only gets its corners:
-		 * its components::Bound is left untouched. The child bounds read
+		 * The gap between the icon and the label is only added when both
+		 * children exist and have a measured width. A button with neither
+		 * an icon nor a label still gets its corners, its minimum size and
+		 * its touch target. The child bounds read
 		 * here are those of the last Measure phase, so a label changed in
 		 * the same call is sized from its previous text until the next
 		 * frame.

@@ -321,9 +321,9 @@ namespace guillaume::components
 		/**
 		 * @brief Show or hide the button.
 		 *
-		 * A hidden button ignores press and release. Only the floating
-		 * action button systems also draw it transparent and without
-		 * shadow; the other variants keep drawing it.
+		 * A hidden button ignores press and release, and the system of
+		 * its variant draws it transparent and without shadow. It keeps
+		 * its size.
 		 * @param visible False to hide the button.
 		 * @return This component, for chaining.
 		 */
