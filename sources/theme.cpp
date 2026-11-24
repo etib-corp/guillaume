@@ -94,8 +94,7 @@ namespace guillaume
 		std::size_t schemeIndex(ThemeSchemeRole role)
 		{
 			const auto index = static_cast<std::size_t>(role);
-			if (index >= static_cast<std::size_t>(
-					ThemeSchemeRole::ThemeSchemeCount)) {
+			if (index >= static_cast<std::size_t>(ThemeSchemeRole::Count)) {
 				throw std::out_of_range("Theme: scheme role "
 										+ std::to_string(index)
 										+ " is not one of the theme's schemes");
@@ -108,8 +107,7 @@ namespace guillaume
 		std::size_t paletteIndex(ThemePaletteRole role)
 		{
 			const auto index = static_cast<std::size_t>(role);
-			if (index >= static_cast<std::size_t>(
-					ThemePaletteRole::ThemePaletteCount)) {
+			if (index >= static_cast<std::size_t>(ThemePaletteRole::Count)) {
 				throw std::out_of_range(
 					"Theme: palette role " + std::to_string(index)
 					+ " is not one of the theme's palettes");

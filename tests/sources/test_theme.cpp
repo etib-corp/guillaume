@@ -28,6 +28,7 @@
 #include <cstddef>
 #include <iterator>
 #include <stdexcept>
+#include <type_traits>
 
 namespace guillaume::tests
 {
@@ -35,6 +36,8 @@ namespace guillaume::tests
 	{
 		constexpr std::size_t roleCount =
 			static_cast<std::size_t>(SchemeColorRole::Count);
+		constexpr std::size_t schemeCount =
+			static_cast<std::size_t>(ThemeSchemeRole::Count);
 
 		bool isUnset(const ExtendedColor &color)
 		{
@@ -53,8 +56,7 @@ namespace guillaume::tests
 
 	TEST_F(TestTheme, EverySchemePopulatesEveryRole)
 	{
-		for (std::size_t scheme = 0; scheme < ThemeSchemeRole::ThemeSchemeCount;
-			 ++scheme) {
+		for (std::size_t scheme = 0; scheme < schemeCount; ++scheme) {
 			const Scheme &current =
 				defaultTheme.getScheme(static_cast<ThemeSchemeRole>(scheme));
 			for (std::size_t role = 0; role < roleCount; ++role) {
@@ -84,7 +86,7 @@ namespace guillaume::tests
 				EXPECT_FALSE(sameColor(
 					defaultTheme.getScheme(scheme).getColor(role).getColor(),
 					black))
-					<< "scheme " << scheme << " role "
+					<< "scheme " << static_cast<std::size_t>(scheme) << " role "
 					<< static_cast<std::size_t>(role);
 			}
 		}
@@ -130,8 +132,7 @@ namespace guillaume::tests
 
 	TEST_F(TestTheme, DisabledRolesDeriveFromOnSurface)
 	{
-		for (std::size_t scheme = 0; scheme < ThemeSchemeRole::ThemeSchemeCount;
-			 ++scheme) {
+		for (std::size_t scheme = 0; scheme < schemeCount; ++scheme) {
 			const Scheme &current =
 				defaultTheme.getScheme(static_cast<ThemeSchemeRole>(scheme));
 			const auto &onSurface =
@@ -190,8 +191,8 @@ namespace guillaume::tests
 	{
 		Theme theme;
 		const Theme &constTheme = theme;
-		for (ThemeSchemeRole role: { ThemeSchemeRole::ThemeSchemeCount,
-									 static_cast<ThemeSchemeRole>(100) }) {
+		for (ThemeSchemeRole role:
+			 { ThemeSchemeRole::Count, static_cast<ThemeSchemeRole>(100) }) {
 			EXPECT_THROW(theme.getScheme(role), std::out_of_range);
 			EXPECT_THROW(constTheme.getScheme(role), std::out_of_range);
 			EXPECT_THROW(theme.setScheme(role, Scheme()), std::out_of_range);
@@ -205,8 +206,8 @@ namespace guillaume::tests
 	{
 		Theme theme;
 		const Theme &constTheme = theme;
-		for (ThemePaletteRole role: { ThemePaletteRole::ThemePaletteCount,
-									  static_cast<ThemePaletteRole>(100) }) {
+		for (ThemePaletteRole role:
+			 { ThemePaletteRole::Count, static_cast<ThemePaletteRole>(100) }) {
 			EXPECT_THROW(theme.getPalette(role), std::out_of_range);
 			EXPECT_THROW(constTheme.getPalette(role), std::out_of_range);
 			EXPECT_THROW(theme.setPalette(role, Palette()), std::out_of_range);
@@ -221,7 +222,7 @@ namespace guillaume::tests
 		setActiveScheme(ThemeSchemeRole::Dark);
 		const auto dark =
 			getActiveScheme().getColor(SchemeColorRole::Surface).getColor();
-		EXPECT_THROW(setActiveScheme(ThemeSchemeRole::ThemeSchemeCount),
+		EXPECT_THROW(setActiveScheme(ThemeSchemeRole::Count),
 					 std::out_of_range);
 		EXPECT_THROW(setActiveScheme(static_cast<ThemeSchemeRole>(100)),
 					 std::out_of_range);
@@ -229,6 +230,16 @@ namespace guillaume::tests
 			getActiveScheme().getColor(SchemeColorRole::Surface).getColor(),
 			dark));
 		EXPECT_THROW(getActiveColor(SchemeColorRole::Count), std::out_of_range);
+	}
+
+	TEST_F(TestTheme, RoleEnumerationsAreScoped)
+	{
+		// A scoped enumeration does not convert implicitly to its
+		// underlying type.
+		EXPECT_FALSE((std::is_convertible_v<ThemeSchemeRole, std::size_t>));
+		EXPECT_FALSE((std::is_convertible_v<ThemePaletteRole, std::size_t>));
+		EXPECT_EQ(static_cast<std::size_t>(ThemeSchemeRole::Count), 6u);
+		EXPECT_EQ(static_cast<std::size_t>(ThemePaletteRole::Count), 5u);
 	}
 
 	TEST_F(TestTheme, SwitchingSchemeChangesResolvedColors)
