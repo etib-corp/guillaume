@@ -23,6 +23,7 @@
 #include "guillaume/systems/tooltip.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -55,6 +56,9 @@ namespace guillaume::systems
 
 		/// Height of a rich tooltip, in dp.
 		constexpr float RichHeight = 64.0f;
+
+		/// Duration of the ticker: so long that a frame never completes it.
+		constexpr float TickerDuration = std::numeric_limits<float>::max();
 
 		/**
 		 * @brief Set the color of a child, when the child exists.
@@ -101,20 +105,19 @@ namespace guillaume::systems
 			.setRole(components::AccessibilityRole::Text)
 			.setLiveRegion(components::LiveRegion::Polite);
 
-		// The animation is a one-second looping ticker: the progress it
-		// reports is turned back into the elapsed time.
+		// The animation is a ticker that never completes: each sample reads
+		// the time elapsed since the previous one, then rewinds it. Reading
+		// the elapsed time rather than the progress keeps a frame longer
+		// than the duration from being cut short when the animation wraps.
 		componentRegistry.getComponent<components::Animation>(identifier)
-			.setDuration(1.0f)
+			.setDuration(TickerDuration)
 			.setEasing(motion::Easing::Linear)
 			.setLooping(true)
-			.setOnSampleHandler([registry, identifier](float progress) {
-				auto &tooltip =
-					registry->getComponent<components::Tooltip>(identifier);
-				float delta = progress - tooltip.getLastProgress();
-				if (delta < 0.0f) {
-					delta += 1.0f;
-				}
-				tooltip.setLastProgress(progress);
+			.setOnSampleHandler([registry, identifier](float) {
+				auto &ticker =
+					registry->getComponent<components::Animation>(identifier);
+				const float delta = ticker.getElapsed();
+				ticker.setElapsed(0.0f);
 				advance(*registry, identifier, delta);
 			});
 
@@ -140,8 +143,9 @@ namespace guillaume::systems
 							const ecs::Entity::Identifier &entityIdentifier,
 							ecs::Entity::Identifier anchorIdentifier)
 	{
-		componentRegistry.getComponent<components::Tooltip>(entityIdentifier)
-			.setAnchor(anchorIdentifier)
+		auto &tooltip = componentRegistry.getComponent<components::Tooltip>(
+			entityIdentifier);
+		tooltip.setAnchor(anchorIdentifier)
 			.setHoverTime(0.0f)
 			.setLeaveTime(0.0f)
 			.setLastProgress(0.0f);
@@ -150,8 +154,12 @@ namespace guillaume::systems
 			entityIdentifier);
 		if (anchorIdentifier != ecs::Entity::InvalidIdentifier) {
 			ticker.play();
-		} else {
-			ticker.stop();
+			return;
+		}
+		ticker.stop();
+		// Without an anchor nothing would ever hide it again.
+		if (tooltip.isVisible()) {
+			hide(componentRegistry, entityIdentifier);
 		}
 	}
 

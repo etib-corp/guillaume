@@ -291,10 +291,9 @@ namespace guillaume::components
 		/**
 		 * @brief Store the progress the timer animation reported last.
 		 *
-		 * The timers are driven by a one-second looping animation; the
-		 * difference between two reported progresses is the time elapsed,
-		 * in seconds. Marks the component changed only when the value
-		 * differs.
+		 * systems::Tooltip no longer reads it: its ticker reports the
+		 * elapsed time directly. setAnchor() still resets it to 0. Marks
+		 * the component changed only when the value differs.
 		 * @param progress The progress, 0 to 1.
 		 * @return This component, for chaining.
 		 */
