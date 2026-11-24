@@ -192,4 +192,21 @@ namespace guillaume::entities::tests
 		EXPECT_EQ(image->getLoadState(), components::Image::LoadState::Pending);
 	}
 
+	TEST_F(TestImage, BuilderRejectsANonPositiveSize)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		entities::Image::Builder builder(registry, entityRegistry);
+
+		EXPECT_THROW(builder.withSize(0.0f, 10.0f), std::invalid_argument);
+		EXPECT_THROW(builder.withSize(10.0f, -1.0f), std::invalid_argument);
+
+		auto image =
+			builder.withSize(120.0f, 80.0f).makeImage(nullptr, "a.png");
+		const auto &bound =
+			registry.getComponent<components::Bound>(image->getIdentifier());
+		EXPECT_FLOAT_EQ(bound.getWidth(), 120.0f);
+		EXPECT_FLOAT_EQ(bound.getHeight(), 80.0f);
+	}
+
 }	 // namespace guillaume::entities::tests

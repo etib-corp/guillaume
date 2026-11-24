@@ -149,10 +149,10 @@ namespace guillaume::entities
 
 			/**
 			 * @brief Set the diameter of the Circular variant.
-			 * @param size The diameter, in dp; it must be positive, the
-			 * builder does not check it. Default: 48. The Linear variant
-			 * ignores it.
+			 * @param size The diameter, in dp. Default: 48. The Linear
+			 * variant ignores it.
 			 * @return This builder, for chaining.
+			 * @throws std::invalid_argument If @p size is not positive.
 			 */
 			Builder &withSize(float size);
 

@@ -28,6 +28,7 @@
 
 #include <cmath>
 #include <memory>
+#include <stdexcept>
 
 #include <guillaume/components/animation.hpp>
 #include <guillaume/components/arc.hpp>
@@ -302,6 +303,19 @@ namespace guillaume::entities::tests
 
 		progress->setVariant(ProgressIndicator::Variant::LinearDeterminate);
 		EXPECT_FLOAT_EQ(bound.getWidth(), 300.0f);
+	}
+
+	TEST_F(TestProgressIndicator, BuilderRejectsNonPositiveSizes)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		ProgressIndicator::Builder builder(registry, entityRegistry);
+
+		EXPECT_THROW(builder.withWidth(0.0f), std::invalid_argument);
+		EXPECT_THROW(builder.withWidth(-1.0f), std::invalid_argument);
+		EXPECT_THROW(builder.withSize(0.0f), std::invalid_argument);
+		EXPECT_THROW(builder.withSize(-1.0f), std::invalid_argument);
+		EXPECT_NO_THROW(builder.withWidth(120.0f).withSize(24.0f));
 	}
 
 }	 // namespace guillaume::entities::tests

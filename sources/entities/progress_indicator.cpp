@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 #include "guillaume/ecs/entity_filler.hpp"
@@ -236,12 +237,20 @@ namespace guillaume::entities
 	ProgressIndicator::Builder &
 		ProgressIndicator::Builder::withWidth(float width)
 	{
+		if (width <= 0.0f) {
+			throw std::invalid_argument(
+				"Progress indicator width must be positive");
+		}
 		_width = width;
 		return *this;
 	}
 
 	ProgressIndicator::Builder &ProgressIndicator::Builder::withSize(float size)
 	{
+		if (size <= 0.0f) {
+			throw std::invalid_argument(
+				"Progress indicator size must be positive");
+		}
 		_size = size;
 		return *this;
 	}

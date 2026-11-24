@@ -106,8 +106,7 @@ namespace guillaume::entities
 			 * @brief Build an image from the current configuration, without
 			 * registering it or giving it a parent.
 			 *
-			 * The size is applied only when both the width and the height
-			 * are positive.
+			 * The size is applied only when withSize() was called.
 			 * @return The new image.
 			 */
 			std::shared_ptr<Image> buildEntity(void) override;
@@ -138,12 +137,13 @@ namespace guillaume::entities
 			/**
 			 * @brief Set the displayed size.
 			 *
-			 * Unlike Image::setSize(), this never throws: the built image
-			 * keeps the Bound it was created with unless both values are
-			 * positive.
-			 * @param width The displayed width, in dp. 0 by default.
-			 * @param height The displayed height, in dp. 0 by default.
+			 * Checked like Image::setSize(). Without this call the built
+			 * image keeps the Bound it was created with.
+			 * @param width The displayed width, in dp. None by default.
+			 * @param height The displayed height, in dp. None by default.
 			 * @return Reference to this builder for chaining.
+			 * @throws std::invalid_argument If a dimension is zero or
+			 * negative.
 			 */
 			Builder &withSize(float width, float height);
 

@@ -64,6 +64,9 @@ namespace guillaume::entities
 
 	Image::Builder &Image::Builder::withSize(float width, float height)
 	{
+		if (width <= 0.0f || height <= 0.0f) {
+			throw std::invalid_argument("Image size must be positive");
+		}
 		_width	= width;
 		_height = height;
 		return *this;

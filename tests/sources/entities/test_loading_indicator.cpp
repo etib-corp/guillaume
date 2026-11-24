@@ -259,4 +259,18 @@ namespace guillaume::entities::tests
 		EXPECT_FLOAT_EQ(loading->getOpacity(), 1.0f);
 	}
 
+	TEST_F(TestLoadingIndicator, BuilderRejectsANonPositiveSize)
+	{
+		ecs::ComponentRegistry registry;
+		ecs::EntityRegistryContainer entityRegistry;
+		LoadingIndicator::Builder builder(registry, entityRegistry);
+
+		EXPECT_THROW(builder.withSize(0.0f), std::invalid_argument);
+		EXPECT_THROW(builder.withSize(-8.0f), std::invalid_argument);
+
+		auto loading = builder.withSize(24.0f).makeLoadingIndicator(
+			nullptr, LoadingIndicator::Variant::Circular);
+		EXPECT_FLOAT_EQ(loading->getSize(), 24.0f);
+	}
+
 }	 // namespace guillaume::entities::tests

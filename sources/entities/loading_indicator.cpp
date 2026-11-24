@@ -162,6 +162,10 @@ namespace guillaume::entities
 
 	LoadingIndicator::Builder &LoadingIndicator::Builder::withSize(float size)
 	{
+		if (size <= 0.0f) {
+			throw std::invalid_argument(
+				"Loading indicator size must be positive");
+		}
 		_size = size;
 		return *this;
 	}

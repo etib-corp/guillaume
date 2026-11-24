@@ -176,16 +176,18 @@ namespace guillaume::entities
 			/**
 			 * @brief Set the length of the bar of the linear variants.
 			 * @param width The length, in dp. Default: 200. The circular
-			 * variants ignore it.
+			 * variants ignore it; it is kept for a later setVariant().
 			 * @return This builder, for chaining.
+			 * @throws std::invalid_argument If @p width is not positive.
 			 */
 			Builder &withWidth(float width);
 
 			/**
 			 * @brief Set the diameter of the ring of the circular variants.
 			 * @param size The diameter, in dp. Default: 48. The linear
-			 * variants ignore it.
+			 * variants ignore it; it is kept for a later setVariant().
 			 * @return This builder, for chaining.
+			 * @throws std::invalid_argument If @p size is not positive.
 			 */
 			Builder &withSize(float size);
 
