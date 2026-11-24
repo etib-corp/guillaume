@@ -27,7 +27,7 @@
 namespace guillaume
 {
 	template<ecs::InheritFromEntity EntityType>
-		std::shared_ptr<EntityType> Scene::getRootEntity(const std::string &name)
+	std::shared_ptr<EntityType> Scene::getRootEntity(const std::string &name)
 	{
 		const auto it = _rootEntities.find(name);
 		if (it == _rootEntities.end()) {
@@ -36,12 +36,10 @@ namespace guillaume
 		return std::dynamic_pointer_cast<EntityType>(it->second);
 	}
 
-	template<typename NextScene>
-	void Scene::goToScene(void)
+	template<typename NextScene> void Scene::goToScene(void)
 	{
 		_nextSceneType = typeid(NextScene);
-		this->getLogger().info()
-			<< "Requested scene transition to: "
-			<< utility::demangle<NextScene>();
+		this->getLogger().info() << "Requested scene transition to: "
+								 << utility::demangle<NextScene>();
 	}
-}  // namespace guillaume
+}	 // namespace guillaume

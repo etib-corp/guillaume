@@ -69,8 +69,8 @@ namespace guillaume::systems
 
 		return isInteractive(this->getComponentRegistry(), entityIdentifier)
 			&& hitTest(
-				ray, transform.getPose(), bound,
-				hitMargin(this->getComponentRegistry(), entityIdentifier));
+				   ray, transform.getPose(), bound,
+				   hitMargin(this->getComponentRegistry(), entityIdentifier));
 	}
 
 	template<ecs::InheritFromComponent InteractionType,

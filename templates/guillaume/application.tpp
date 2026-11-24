@@ -24,7 +24,6 @@
 
 #include <functional>
 
-
 namespace guillaume
 {
 

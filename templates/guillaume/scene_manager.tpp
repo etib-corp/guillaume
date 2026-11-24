@@ -128,8 +128,8 @@ namespace guillaume
 	void SceneManager<DefaultSceneType, SceneTypes...>::addScene(void)
 	{
 		std::type_index typeIndex(typeid(SceneType));
-		_scenes[typeIndex] =
-			std::make_unique<SceneType>(_ressourceProvider, _localStorage, _sessionStorage);
+		_scenes[typeIndex] = std::make_unique<SceneType>(
+			_ressourceProvider, _localStorage, _sessionStorage);
 		this->getLogger().info()
 			<< "Registered scene type: " << utility::demangle<SceneType>();
 	}
