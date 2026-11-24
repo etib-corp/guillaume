@@ -56,9 +56,11 @@ namespace guillaume::systems
 	 *   to the descendants of that entity.
 	 * - The rectangle is axis-aligned: it is built from the X and Y of the
 	 *   position and ignores the orientation.
-	 * - This system is registered before systems::Layout, which runs in the
-	 *   same phase. It therefore reads the Transform and Bound as the
-	 *   previous frame left them.
+	 * - This system is registered after systems::Layout and the widget
+	 *   systems of the Layout phase, so it reads the Transform and Bound
+	 *   they resolved in the same frame.
+	 * - A disabled clip sets no scissor and its rectangle is reset to
+	 *   zeros.
 	 *
 	 * @see components::Clip
 	 */

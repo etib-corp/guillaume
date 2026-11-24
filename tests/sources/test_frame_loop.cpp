@@ -19,7 +19,10 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
+#include "guillaume/components/clip.hpp"
 #include "guillaume/components/hierarchy.hpp"
+#include "guillaume/components/layout.hpp"
+#include "guillaume/components/transform.hpp"
 #include "test_frame_loop.hpp"
 
 #include <guillaume/entities/app_bar.hpp>
@@ -158,6 +161,33 @@ namespace guillaume::tests
 		EXPECT_NO_THROW(runFrame());
 		// The render systems dropped the graphics of the removed rows.
 		EXPECT_GT(_engine.removeObjectCallCount, removedBefore);
+	}
+
+	TEST_F(TestFrameLoop, ClipReadsTheLayoutOfTheSameFrame)
+	{
+		auto parent = build<entities::View>();
+		auto child	= build<entities::View>();
+		_registry.getComponent<components::Transform>(parent->getIdentifier())
+			.setPose(utility::graphic::PoseF(
+				utility::graphic::PositionF(100.0f, 200.0f, 0.0f),
+				utility::graphic::OrientationF()));
+		_registry.getComponent<components::Layout>(parent->getIdentifier())
+			.setPadding(16.0f)
+			.setChildren({ child->getIdentifier() });
+		_registry.addComponent<components::Clip>(child->getIdentifier());
+		child->setSignature(
+			child->getSignature()
+			| ecs::Entity::getSignatureFromTypes<components::Clip>());
+
+		runPhases();
+
+		// systems::Layout placed the child at the padding of its parent in
+		// this frame, and systems::Clip resolved its rectangle from there.
+		const auto &rect =
+			_registry.getComponent<components::Clip>(child->getIdentifier())
+				.getRect();
+		EXPECT_FLOAT_EQ(rect.x, 116.0f);
+		EXPECT_FLOAT_EQ(rect.y, 184.0f);
 	}
 
 	TEST_F(TestFrameLoop, WidgetsWithContentSettleToo)

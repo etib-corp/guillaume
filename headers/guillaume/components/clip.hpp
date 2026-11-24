@@ -125,8 +125,8 @@ namespace guillaume::components
 
 		/**
 		 * @brief Get the rectangle computed by systems::Clip.
-		 * @return The rectangle of the last frame the clip was enabled; a
-		 * rectangle of zeros before the system ran once.
+		 * @return The rectangle of the last frame; a rectangle of zeros
+		 * before the system ran once or while the clip is disabled.
 		 */
 		const Rect &getRect(void) const;
 

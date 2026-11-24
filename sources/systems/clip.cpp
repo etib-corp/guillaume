@@ -60,6 +60,8 @@ namespace guillaume::systems
 
 		auto &clip = getComponent<components::Clip>(entityIdentifier);
 		if (!clip.isEnabled()) {
+			// Do not leave the rectangle of the last enabled frame behind.
+			clip.setRect(components::Clip::Rect {});
 			return;
 		}
 

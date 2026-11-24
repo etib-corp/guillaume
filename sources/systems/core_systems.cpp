@@ -158,8 +158,6 @@ namespace guillaume::systems
 			std::make_unique<systems::ElevationRender>(engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::ScrimRender>(engine));
-		systemRegistry.registerNewSystem(
-			std::make_unique<systems::Clip>(engine));
 		systemRegistry.registerNewSystem(std::make_unique<systems::Divider>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Backdrop>());
 		systemRegistry.registerNewSystem(std::make_unique<systems::Layout>());
@@ -208,6 +206,10 @@ namespace guillaume::systems
 			std::make_unique<systems::NavigationDrawerDestination>());
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::NavigationDrawer>());
+		// Clip reads the Transform and Bound the systems above resolve in
+		// the Layout phase: keep it after the last of them.
+		systemRegistry.registerNewSystem(
+			std::make_unique<systems::Clip>(engine));
 		systemRegistry.registerNewSystem(
 			std::make_unique<systems::Focus>(eventBus, engine));
 		systemRegistry.registerNewSystem(

@@ -262,6 +262,23 @@ namespace guillaume::systems::tests
 		EXPECT_EQ(_engineMock->setScissorCallCount, 0u);
 	}
 
+	TEST_F(TestSurfaceRender, DisablingAClipResetsItsRect)
+	{
+		const auto entity = createEntity<components::Clip>();
+
+		_clipSystem->update(entity);
+		_componentRegistry.getComponent<components::Clip>(entity).setEnabled(
+			false);
+		_clipSystem->update(entity);
+
+		const auto &rect =
+			_componentRegistry.getComponent<components::Clip>(entity).getRect();
+
+		EXPECT_FLOAT_EQ(rect.width, 0.0f);
+		EXPECT_FLOAT_EQ(rect.height, 0.0f);
+		EXPECT_EQ(_engineMock->setScissorCallCount, 1u);
+	}
+
 	TEST_F(TestSurfaceRender, ClipPrepareClearsScissor)
 	{
 		_clipSystem->prepare();
