@@ -269,4 +269,31 @@ namespace guillaume::systems::shape
 		float halfHeight, float radius, float width, int arcSegments,
 		const utility::graphic::Color32Bit &color);
 
+	/**
+	 * @brief Build the border of a rounded rectangle whose four corners each
+	 * have their own radius, as a band of constant width.
+	 *
+	 * Same band as the single-radius overload: it grows inwards, and the
+	 * radius of each inner corner is the outer one reduced by @p width
+	 * (never below zero).
+	 *
+	 * @param mesh The mesh to fill. It must be empty: indices start at 0.
+	 * @param center World position of the center of the rectangle.
+	 * @param orientation World orientation of the rectangle.
+	 * @param halfWidth Outer half width, in dp.
+	 * @param halfHeight Outer half height, in dp.
+	 * @param radii Outer corner radii, in dp. Each one is clamped between
+	 * zero and the smaller half extent.
+	 * @param width Width of the band, in dp. It is clamped to the smaller
+	 * half extent.
+	 * @param arcSegments Number of segments per corner. A value of zero or
+	 * less is treated as 1.
+	 * @param color Color given to every vertex.
+	 */
+	void buildRoundedStrokeMesh(
+		utility::graphic::Mesh &mesh, const utility::graphic::PositionF &center,
+		const utility::graphic::OrientationF &orientation, float halfWidth,
+		float halfHeight, const CornerRadii &radii, float width,
+		int arcSegments, const utility::graphic::Color32Bit &color);
+
 }	 // namespace guillaume::systems::shape

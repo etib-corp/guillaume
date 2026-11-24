@@ -47,9 +47,10 @@ namespace guillaume::systems
 	 *
 	 * The ring is `theme::FocusRing::Width` dp thick and starts
 	 * `theme::FocusRing::Offset` dp outside the bound, in the Secondary color
-	 * of the active scheme. When the entity has a components::Borders with a
-	 * radius, the ring follows it (the four radii are averaged); otherwise
-	 * its corners are square. It is lifted by RectangleRender::StrokeLift
+	 * of the active scheme. When the entity has a components::Borders, each
+	 * corner of the ring follows the matching corner radius (grown by the
+	 * offset and width); a square corner, or a missing Borders, gives a
+	 * square ring corner. It is lifted by RectangleRender::StrokeLift
 	 * towards the viewer.
 	 *
 	 * Registered after systems::Focus and systems::StyleState, which decide

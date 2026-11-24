@@ -26,107 +26,11 @@
 #include "guillaume/mesh_renderable.hpp"
 #include "guillaume/systems/shape_mesh.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <memory>
+#include <vector>
 
 namespace guillaume::systems
 {
-	float RectangleRender::extractAverageRadius(
-		const components::Borders &borders) const
-	{
-		return (borders.getTopLeftRadius() + borders.getTopRightRadius()
-				+ borders.getBottomRightRadius()
-				+ borders.getBottomLeftRadius())
-			/ 4.0f;
-	}
-
-	std::vector<utility::math::Vector2F>
-		RectangleRender::buildAxisAlignedRectVertices(
-			const float halfWidth, const float halfHeight) const
-	{
-		return {
-			utility::math::Vector2F({ -halfWidth, -halfHeight }),
-			utility::math::Vector2F({ halfWidth, -halfHeight }),
-			utility::math::Vector2F({ halfWidth, halfHeight }),
-			utility::math::Vector2F({ -halfWidth, halfHeight }),
-		};
-	}
-
-	void RectangleRender::appendRoundedCornerArc(
-		std::vector<utility::math::Vector2F> &localVertices,
-		const utility::math::Vector2F &arcCenter, const float startAngle,
-		const float endAngle, const float radius, const int arcSegments) const
-	{
-		for (int i = 0; i <= arcSegments; ++i) {
-			const float t =
-				static_cast<float>(i) / static_cast<float>(arcSegments);
-			const float angle = startAngle + (endAngle - startAngle) * t;
-			localVertices.push_back(
-				arcCenter
-				+ utility::math::Vector2F(
-					{ std::cos(angle) * radius, std::sin(angle) * radius }));
-		}
-	}
-
-	std::vector<utility::math::Vector2F>
-		RectangleRender::buildLocalRoundedRectVertices(
-			const float halfWidth, const float halfHeight, const float radius,
-			int arcSegments, const float epsilon) const
-	{
-		const float pi = std::acos(-1.0f);
-
-		if (arcSegments <= 0) {
-			arcSegments = 1;
-		}
-
-		const float cornerRadius =
-			std::max(0.0f, (std::min)({ radius, halfWidth, halfHeight }));
-
-		if (cornerRadius <= epsilon) {
-			return buildAxisAlignedRectVertices(halfWidth, halfHeight);
-		}
-
-		std::vector<utility::math::Vector2F> localVertices;
-		localVertices.reserve(static_cast<std::size_t>(4 * (arcSegments + 2)));
-
-		const utility::math::Vector2F topLeftCenter(
-			{ -halfWidth + cornerRadius, -halfHeight + cornerRadius });
-		const utility::math::Vector2F topRightCenter(
-			{ halfWidth - cornerRadius, -halfHeight + cornerRadius });
-		const utility::math::Vector2F bottomRightCenter(
-			{ halfWidth - cornerRadius, halfHeight - cornerRadius });
-		const utility::math::Vector2F bottomLeftCenter(
-			{ -halfWidth + cornerRadius, halfHeight - cornerRadius });
-
-		appendRoundedCornerArc(localVertices, topRightCenter, -pi / 2.0f, 0.0f,
-							   cornerRadius, arcSegments);
-		appendRoundedCornerArc(localVertices, bottomRightCenter, 0.0f,
-							   pi / 2.0f, cornerRadius, arcSegments);
-		appendRoundedCornerArc(localVertices, bottomLeftCenter, pi / 2.0f, pi,
-							   cornerRadius, arcSegments);
-		appendRoundedCornerArc(localVertices, topLeftCenter, pi,
-							   3.0f * pi / 2.0f, cornerRadius, arcSegments);
-
-		return localVertices;
-	}
-
-	std::vector<utility::graphic::PositionF>
-		RectangleRender::buildRoundedRectVertices(
-			const utility::graphic::PositionF &center,
-			const utility::graphic::OrientationF &orientation,
-			const utility::math::Vector2F &scale,
-			const utility::graphic::SizeF &size, float radius, int arcSegments,
-			float epsilon)
-	{
-		const float halfWidth  = (size.getWidth() / 2.0f) * std::abs(scale[0]);
-		const float halfHeight = (size.getHeight() / 2.0f) * std::abs(scale[1]);
-		const auto localVertices = buildLocalRoundedRectVertices(
-			halfWidth, halfHeight, radius, arcSegments, epsilon);
-		return shape::transformToWorldVertices(localVertices, center,
-											   orientation);
-	}
-
 	RectangleRender::RectangleRender(utility::Engine &engine)
 		: ecs::SystemFiller<components::Transform, components::Bound,
 							components::Color, components::Borders>(
@@ -193,10 +97,14 @@ namespace guillaume::systems
 			pose.getPosition().y - boundComponent.getHeight() / 2.0f,
 			pose.getPosition().z);
 
-		const auto roundedVertices = buildRoundedRectVertices(
-			center, pose.getOrientation(),
-			utility::math::Vector2F({ 1.0f, 1.0f }), boundComponent,
-			extractAverageRadius(bordersComponent), 16, 0.001f);
+		// Each corner keeps its own radius (a connected segmented button has
+		// two square and two rounded corners).
+		const shape::CornerRadii radii = shape::cornerRadiiOf(bordersComponent);
+		const auto roundedVertices	   = shape::transformToWorldVertices(
+			shape::buildRoundedRectOutline(boundComponent.getWidth() / 2.0f,
+											   boundComponent.getHeight() / 2.0f,
+											   radii, ArcSegments, 0.001f),
+			center, pose.getOrientation());
 
 		utility::graphic::Mesh mesh(std::vector<utility::graphic::VertexF> {},
 									std::vector<uint32_t> {});
@@ -219,9 +127,9 @@ namespace guillaume::systems
 											center[1] + strokeCenter[1],
 											center[2] + strokeCenter[2]),
 				pose.getOrientation(), boundComponent.getWidth() / 2.0f,
-				boundComponent.getHeight() / 2.0f,
-				extractAverageRadius(bordersComponent),
-				bordersComponent.getWidth(), 16, bordersComponent.getColor());
+				boundComponent.getHeight() / 2.0f, radii,
+				bordersComponent.getWidth(), ArcSegments,
+				bordersComponent.getColor());
 			if (!stroke.getVertices().empty()) {
 				meshes.push_back(stroke);
 			}

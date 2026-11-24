@@ -362,48 +362,47 @@ namespace guillaume::systems::shape
 		const float width, int arcSegments,
 		const utility::graphic::Color32Bit &color)
 	{
+		buildRoundedStrokeMesh(mesh, center, orientation, halfWidth, halfHeight,
+							   CornerRadii { radius, radius, radius, radius },
+							   width, arcSegments, color);
+	}
+
+	void buildRoundedStrokeMesh(
+		utility::graphic::Mesh &mesh, const utility::graphic::PositionF &center,
+		const utility::graphic::OrientationF &orientation,
+		const float halfWidth, const float halfHeight, const CornerRadii &radii,
+		const float width, int arcSegments,
+		const utility::graphic::Color32Bit &color)
+	{
 		if (isInvisible(color)) {
 			return;
 		}
 
-		const float pi = std::acos(-1.0f);
 		if (arcSegments <= 0) {
 			arcSegments = 1;
 		}
 
 		const float stroke = (std::min)({ width, halfWidth, halfHeight });
-		const float outerRadius =
-			std::max(0.0f, (std::min)({ radius, halfWidth, halfHeight }));
-		const float innerHalfWidth	= halfWidth - stroke;
-		const float innerHalfHeight = halfHeight - stroke;
-		const float innerRadius		= std::max(0.0f, outerRadius - stroke);
+		const CornerRadii outerRadii = clampRadii(radii, halfWidth, halfHeight);
+		const float innerHalfWidth	 = halfWidth - stroke;
+		const float innerHalfHeight	 = halfHeight - stroke;
+		const CornerRadii innerRadii {
+			std::max(0.0f, outerRadii.topLeft - stroke),
+			std::max(0.0f, outerRadii.topRight - stroke),
+			std::max(0.0f, outerRadii.bottomRight - stroke),
+			std::max(0.0f, outerRadii.bottomLeft - stroke)
+		};
 
 		// Both loops always sample every corner arc (a zero radius collapses
 		// an arc onto its corner), so outer and inner vertices pair up 1:1.
-		const auto buildLoop = [&](float hw, float hh, float r) {
-			std::vector<utility::math::Vector2F> loop;
-			loop.reserve(static_cast<std::size_t>(4 * (arcSegments + 1)));
-			const auto appendArc = [&](float cx, float cy, float start,
-									   float end) {
-				for (int i = 0; i <= arcSegments; ++i) {
-					const float t =
-						static_cast<float>(i) / static_cast<float>(arcSegments);
-					const float angle = start + (end - start) * t;
-					loop.push_back(
-						utility::math::Vector2F({ cx + std::cos(angle) * r,
-												  cy + std::sin(angle) * r }));
-				}
-			};
-			appendArc(hw - r, -hh + r, -pi / 2.0f, 0.0f);
-			appendArc(hw - r, hh - r, 0.0f, pi / 2.0f);
-			appendArc(-hw + r, hh - r, pi / 2.0f, pi);
-			appendArc(-hw + r, -hh + r, pi, 3.0f * pi / 2.0f);
-			return transformToWorldVertices(loop, center, orientation);
-		};
-
-		const auto outer = buildLoop(halfWidth, halfHeight, outerRadius);
-		const auto inner =
-			buildLoop(innerHalfWidth, innerHalfHeight, innerRadius);
+		const auto outer = transformToWorldVertices(
+			sampleRoundedRect(halfWidth, halfHeight, outerRadii, arcSegments,
+							  false, 0.0f),
+			center, orientation);
+		const auto inner = transformToWorldVertices(
+			sampleRoundedRect(innerHalfWidth, innerHalfHeight, innerRadii,
+							  arcSegments, false, 0.0f),
+			center, orientation);
 
 		for (std::size_t i = 0; i < outer.size(); ++i) {
 			mesh.addVertex(createVertex(outer[i], color));

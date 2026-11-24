@@ -68,21 +68,25 @@ namespace guillaume::systems
 			getComponent<components::Transform>(entityIdentifier).getPose();
 		const auto &bound = getComponent<components::Bound>(entityIdentifier);
 
-		float radius = 0.0f;
+		shape::CornerRadii radii;
 		if (hasComponent<components::Borders>(entityIdentifier)) {
-			const auto &borders =
-				getComponent<components::Borders>(entityIdentifier);
-			radius = (borders.getTopLeftRadius() + borders.getTopRightRadius()
-					  + borders.getBottomRightRadius()
-					  + borders.getBottomLeftRadius())
-				/ 4.0f;
+			radii = shape::cornerRadiiOf(
+				getComponent<components::Borders>(entityIdentifier));
 		}
 
 		constexpr float grow =
 			theme::FocusRing::Offset + theme::FocusRing::Width;
-		const float halfWidth	= bound.getWidth() / 2.0f + grow;
-		const float halfHeight	= bound.getHeight() / 2.0f + grow;
-		const float outerRadius = radius > 0.0f ? radius + grow : 0.0f;
+		const float halfWidth  = bound.getWidth() / 2.0f + grow;
+		const float halfHeight = bound.getHeight() / 2.0f + grow;
+		// Each rounded corner grows with the ring; a square one stays
+		// square.
+		const auto growRadius = [grow](float radius) {
+			return radius > 0.0f ? radius + grow : 0.0f;
+		};
+		const shape::CornerRadii outerRadii { growRadius(radii.topLeft),
+											  growRadius(radii.topRight),
+											  growRadius(radii.bottomRight),
+											  growRadius(radii.bottomLeft) };
 
 		const utility::graphic::PositionF lift(
 			-pose.getOrientation().getForward() * RectangleRender::StrokeLift);
@@ -95,7 +99,7 @@ namespace guillaume::systems
 									std::vector<uint32_t> {});
 		shape::buildRoundedStrokeMesh(
 			mesh, center, pose.getOrientation(), halfWidth, halfHeight,
-			outerRadius, theme::FocusRing::Width, 16,
+			outerRadii, theme::FocusRing::Width, 16,
 			getActiveColor(SchemeColorRole::Secondary));
 
 		// A transparent shape adds no geometry: submit nothing, so the

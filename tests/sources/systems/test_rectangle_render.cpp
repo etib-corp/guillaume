@@ -23,6 +23,8 @@
 #include "systems/test_rectangle_render.hpp"
 
 #include <cmath>
+#include <cstddef>
+#include <vector>
 
 #include "guillaume/components/style_state.hpp"
 #include "guillaume/systems/focus_ring_render.hpp"
@@ -94,6 +96,88 @@ namespace guillaume::systems::tests
 		// corner is inset by the width on both axes.
 		EXPECT_NEAR(std::abs(outer[0] - inner[0]), 3.0f, 1e-4f);
 		EXPECT_NEAR(std::abs(outer[1] - inner[1]), 3.0f, 1e-4f);
+	}
+
+	namespace
+	{
+		bool hasVertexAt(const std::vector<utility::graphic::VertexF> &vertices,
+						 float x, float y, std::size_t first = 0,
+						 std::size_t step = 1)
+		{
+			for (std::size_t i = first; i < vertices.size(); i += step) {
+				const auto position = vertices[i].getPosition();
+				if (std::abs(position[0] - x) < 1e-4f
+					&& std::abs(position[1] - y) < 1e-4f) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}	 // namespace
+
+	TEST_F(TestRectangleRender, FillKeepsEachCornerRadius)
+	{
+		const auto entity = createRectangle();
+		_componentRegistry.getComponent<components::Borders>(entity)
+			.setTopLeftRadius(20.0f);
+
+		_system->update(entity);
+
+		const auto fill		= lastRenderable()->getMeshes()[0];
+		const auto vertices = fill->getVertices();
+		// Center, one rounded corner (16 + 1 samples) and three square ones.
+		EXPECT_EQ(vertices.size(), 1u + 17u + 3u);
+		// The rectangle spans x 0..100 and y 0..-50: the three square
+		// corners are exact, the rounded top-left one is cut.
+		EXPECT_TRUE(hasVertexAt(vertices, 100.0f, 0.0f));
+		EXPECT_TRUE(hasVertexAt(vertices, 100.0f, -50.0f));
+		EXPECT_TRUE(hasVertexAt(vertices, 0.0f, -50.0f));
+		EXPECT_FALSE(hasVertexAt(vertices, 0.0f, 0.0f));
+		EXPECT_TRUE(hasVertexAt(vertices, 20.0f, 0.0f));
+		EXPECT_TRUE(hasVertexAt(vertices, 0.0f, -20.0f));
+	}
+
+	TEST_F(TestRectangleRender, StrokeKeepsEachCornerRadius)
+	{
+		const auto entity = createRectangle();
+		_componentRegistry.getComponent<components::Borders>(entity)
+			.setTopLeftRadius(20.0f)
+			.setColor(utility::graphic::Color32Bit(255, 0, 0, 255))
+			.setWidth(2.0f);
+
+		_system->update(entity);
+
+		ASSERT_EQ(lastRenderable()->getMeshes().size(), 2u);
+		const auto stroke	= lastRenderable()->getMeshes()[1];
+		const auto vertices = stroke->getVertices();
+		// Outer vertices are the even ones.
+		EXPECT_TRUE(hasVertexAt(vertices, 100.0f, -50.0f, 0, 2));
+		EXPECT_TRUE(hasVertexAt(vertices, 0.0f, -50.0f, 0, 2));
+		EXPECT_FALSE(hasVertexAt(vertices, 0.0f, 0.0f, 0, 2));
+		EXPECT_TRUE(hasVertexAt(vertices, 20.0f, 0.0f, 0, 2));
+	}
+
+	TEST_F(TestRectangleRender, FocusRingKeepsEachCornerRadius)
+	{
+		const auto entity = createRectangle();
+		_componentRegistry.addComponent<components::StyleState>(entity)
+			.setFocused(true);
+		_componentRegistry.getComponent<components::Borders>(entity)
+			.setTopLeftRadius(20.0f);
+
+		FocusRingRender ring(*_engine);
+		ring.bindComponentRegistry(_componentRegistry);
+		ring.prepare();
+		ring.update(entity);
+		ring.cleanup();
+		ring.unbindComponentRegistry();
+
+		const auto vertices =
+			lastRenderable()->getMeshes().front()->getVertices();
+		const float grow = theme::FocusRing::Offset + theme::FocusRing::Width;
+		// The bottom-right corner is square: an exact outer vertex there.
+		EXPECT_TRUE(hasVertexAt(vertices, 100.0f + grow, -50.0f - grow, 0, 2));
+		EXPECT_FALSE(hasVertexAt(vertices, -grow, grow, 0, 2));
 	}
 
 	TEST_F(TestRectangleRender, TransparentStrokeIsSkipped)
