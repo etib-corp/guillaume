@@ -6,7 +6,6 @@
 
 set(GUILLAUME_SOURCES
     sources/application.cpp
-    sources/component_registry.cpp
     sources/components/accessibility.cpp
     sources/components/animation.cpp
     sources/components/app_bar.cpp
