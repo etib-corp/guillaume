@@ -117,33 +117,33 @@ namespace guillaume
 	 *
 	 * setActiveScheme() chooses which one the widgets read; it starts as
 	 * `Light`.
-	 * @note The enumeration is unscoped: `Dark` and `ThemeSchemeRole::Dark`
-	 * both name the same value.
+	 * @note The enumeration is scoped: write `ThemeSchemeRole::Dark`, and
+	 * `static_cast<std::size_t>(role)` to use a scheme as a number.
 	 */
-	enum ThemeSchemeRole : size_t {
+	enum class ThemeSchemeRole : std::size_t {
 		Light,					///< Light scheme, standard contrast
 		LightMediumContrast,	///< Light scheme, medium contrast
 		LightHighContrast,		///< Light scheme, high contrast
 		Dark,					///< Dark scheme, standard contrast
 		DarkMediumContrast,		///< Dark scheme, medium contrast
 		DarkHighContrast,		///< Dark scheme, high contrast
-		ThemeSchemeCount		///< Number of schemes; not a scheme
+		Count					///< Number of schemes; not a scheme
 	};
 
 	/**
 	 * @brief The five tonal palettes a Theme holds, one per color family.
 	 *
 	 * The palettes are the raw material the scheme colors are picked from.
-	 * @note The enumeration is unscoped: `Neutral` and
-	 * `ThemePaletteRole::Neutral` both name the same value.
+	 * @note The enumeration is scoped: write `ThemePaletteRole::Neutral`,
+	 * and `static_cast<std::size_t>(role)` to use a palette as a number.
 	 */
-	enum ThemePaletteRole : size_t {
-		Primary,			 ///< Tones of the primary accent color
-		Secondary,			 ///< Tones of the secondary accent color
-		Tertiary,			 ///< Tones of the tertiary accent color
-		Neutral,			 ///< Greys used for surfaces and text
-		NeutralVariant,		 ///< Tinted greys used for outlines and variants
-		ThemePaletteCount	 ///< Number of palettes; not a palette
+	enum class ThemePaletteRole : std::size_t {
+		Primary,		   ///< Tones of the primary accent color
+		Secondary,		   ///< Tones of the secondary accent color
+		Tertiary,		   ///< Tones of the tertiary accent color
+		Neutral,		   ///< Greys used for surfaces and text
+		NeutralVariant,	   ///< Tinted greys used for outlines and variants
+		Count			   ///< Number of palettes; not a palette
 	};
 
 	/**
@@ -270,6 +270,8 @@ namespace guillaume
 		 * @brief Convert a role to its index in the color array.
 		 * @param role The role to convert.
 		 * @return The position of the role in the enumeration.
+		 * @throws std::out_of_range When @p role is `SchemeColorRole::Count`
+		 * or any other value that is not a role.
 		 */
 		static constexpr std::size_t toIndex(SchemeColorRole role);
 
@@ -297,27 +299,30 @@ namespace guillaume
 
 		/**
 		 * @brief Get the color of a role, with its name and description.
-		 * @param role The role to look up. Must not be
-		 * `SchemeColorRole::Count`.
+		 * @param role The role to look up.
 		 * @return The color of that role; call `getColor()` on it for the
 		 * value to draw with.
+		 * @throws std::out_of_range When @p role is `SchemeColorRole::Count`
+		 * or any other value that is not a role.
 		 */
 		const ExtendedColor &getColor(SchemeColorRole role) const;
 
 		/**
 		 * @brief Get the color of a role, to modify it in place.
-		 * @param role The role to look up. Must not be
-		 * `SchemeColorRole::Count`.
+		 * @param role The role to look up.
 		 * @return Mutable reference to the color of that role.
+		 * @throws std::out_of_range When @p role is `SchemeColorRole::Count`
+		 * or any other value that is not a role.
 		 */
 		ExtendedColor &getColor(SchemeColorRole role);
 
 		/**
 		 * @brief Replace the color of a role, with its name and
 		 * description.
-		 * @param role The role to change. Must not be
-		 * `SchemeColorRole::Count`.
+		 * @param role The role to change.
 		 * @param color The new color and its documentation.
+		 * @throws std::out_of_range When @p role is `SchemeColorRole::Count`
+		 * or any other value that is not a role; the scheme is unchanged.
 		 */
 		void setColor(SchemeColorRole role, const ExtendedColor &color);
 
@@ -326,13 +331,14 @@ namespace guillaume
 		 *
 		 * The name, the description and the harmonized flag of the role are
 		 * replaced too, by the arguments or their defaults.
-		 * @param role The role to change. Must not be
-		 * `SchemeColorRole::Count`.
+		 * @param role The role to change.
 		 * @param color The new color, 8 bits per RGBA channel.
 		 * @param name The name of the color; empty by default.
 		 * @param description What the color is for; empty by default.
 		 * @param harmonized True when the color was shifted toward the
 		 * theme's source color.
+		 * @throws std::out_of_range When @p role is `SchemeColorRole::Count`
+		 * or any other value that is not a role; the scheme is unchanged.
 		 */
 		void setColor(SchemeColorRole role,
 					  const utility::graphic::Color32Bit &color,
@@ -342,12 +348,12 @@ namespace guillaume
 
 		/**
 		 * @brief Get every color of the scheme.
-		 * @return The array of colors, indexed by SchemeColorRole.
-		 * @note The return type is deduced and the function is defined in
-		 * `theme.cpp`, so it can only be called from that file. Use
-		 * getColor() elsewhere.
+		 * @return The array of colors, indexed by SchemeColorRole: the
+		 * color of a role is at `static_cast<std::size_t>(role)`.
 		 */
-		const auto &getColors(void) const;
+		const std::array<ExtendedColor,
+						 static_cast<std::size_t>(SchemeColorRole::Count)> &
+			getColors(void) const;
 	};
 
 	/**
@@ -536,9 +542,9 @@ namespace guillaume
 		private:
 		std::string _name;			 ///< Name of the theme, for documentation
 		std::string _description;	 ///< What the theme is; may be empty
-		std::array<Scheme, ThemeSchemeRole::ThemeSchemeCount>
+		std::array<Scheme, static_cast<std::size_t>(ThemeSchemeRole::Count)>
 			_schemes;	 ///< The six color schemes, indexed by ThemeSchemeRole
-		std::array<Palette, ThemePaletteRole::ThemePaletteCount>
+		std::array<Palette, static_cast<std::size_t>(ThemePaletteRole::Count)>
 			_palettes;	  ///< The five palettes, indexed by ThemePaletteRole
 		theme::Typescale _typescale;	///< Text styles, one per TypeRole
 		theme::ShapeScale _shapes;		///< Corner radii, one per ShapeRole
@@ -594,47 +600,57 @@ namespace guillaume
 
 		/**
 		 * @brief Get one of the six color schemes.
-		 * @param role Which scheme. Must not be `ThemeSchemeCount`.
+		 * @param role Which scheme.
 		 * @return The scheme, read-only.
+		 * @throws std::out_of_range When @p role is `ThemeSchemeRole::Count`
+		 * or any other value that is not a scheme.
 		 */
 		const Scheme &getScheme(ThemeSchemeRole role) const;
 
 		/**
 		 * @brief Get one of the six color schemes, to change its colors in
 		 * place.
-		 * @param role Which scheme. Must not be `ThemeSchemeCount`.
+		 * @param role Which scheme.
 		 * @return Mutable reference to the scheme.
+		 * @throws std::out_of_range When @p role is `ThemeSchemeRole::Count`
+		 * or any other value that is not a scheme.
 		 */
 		Scheme &getScheme(ThemeSchemeRole role);
 
 		/**
 		 * @brief Get one of the five tonal palettes.
-		 * @param role Which palette. Must not be `ThemePaletteCount`.
+		 * @param role Which palette.
 		 * @return The palette, read-only.
+		 * @throws std::out_of_range When @p role is `ThemePaletteRole::Count`
+		 * or any other value that is not a palette.
 		 */
 		const Palette &getPalette(ThemePaletteRole role) const;
 
 		/**
 		 * @brief Get one of the five tonal palettes, to change its tones in
 		 * place.
-		 * @param role Which palette. Must not be `ThemePaletteCount`.
+		 * @param role Which palette.
 		 * @return Mutable reference to the palette.
+		 * @throws std::out_of_range When @p role is `ThemePaletteRole::Count`
+		 * or any other value that is not a palette.
 		 */
 		Palette &getPalette(ThemePaletteRole role);
 
 		/**
 		 * @brief Replace one of the six color schemes as a whole.
-		 * @param role Which scheme to replace. Must not be
-		 * `ThemeSchemeCount`.
+		 * @param role Which scheme to replace.
 		 * @param scheme The scheme to copy in.
+		 * @throws std::out_of_range When @p role is `ThemeSchemeRole::Count`
+		 * or any other value that is not a scheme; the theme is unchanged.
 		 */
 		void setScheme(ThemeSchemeRole role, const Scheme &scheme);
 
 		/**
 		 * @brief Replace one of the five tonal palettes as a whole.
-		 * @param role Which palette to replace. Must not be
-		 * `ThemePaletteCount`.
+		 * @param role Which palette to replace.
 		 * @param palette The palette to copy in.
+		 * @throws std::out_of_range When @p role is `ThemePaletteRole::Count`
+		 * or any other value that is not a palette; the theme is unchanged.
 		 */
 		void setPalette(ThemePaletteRole role, const Palette &palette);
 
@@ -760,9 +776,10 @@ namespace guillaume
 	 *
 	 * This is the call widgets and systems use for every color:
 	 * `getActiveColor(SchemeColorRole::OnSurface)`.
-	 * @param role The role to resolve. Must not be
-	 * `SchemeColorRole::Count`.
+	 * @param role The role to resolve.
 	 * @return The color, 8 bits per RGBA channel, by value.
+	 * @throws std::out_of_range When @p role is `SchemeColorRole::Count`
+	 * or any other value that is not a role.
 	 */
 	utility::graphic::Color32Bit getActiveColor(SchemeColorRole role);
 
@@ -773,7 +790,9 @@ namespace guillaume
 	 * The choice is program-wide, starts as `Light`, and is kept when the
 	 * active theme is replaced. As with setActiveTheme(), widgets that
 	 * already exist keep their colors until they are restyled.
-	 * @param role The scheme to use. Must not be `ThemeSchemeCount`.
+	 * @param role The scheme to use.
+	 * @throws std::out_of_range When @p role is `ThemeSchemeRole::Count` or
+	 * any other value that is not a scheme; the scheme in use is unchanged.
 	 */
 	void setActiveScheme(ThemeSchemeRole role);
 

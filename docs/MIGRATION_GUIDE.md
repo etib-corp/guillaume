@@ -3,6 +3,48 @@
 This guide documents breaking API changes and how to update existing code,
 newest first. The first group is unreleased; the rest shipped up to 2026.3.1.
 
+## `ThemeSchemeRole` and `ThemePaletteRole` are scoped enums
+
+**Before:** `enum ThemeSchemeRole : size_t` and `enum ThemePaletteRole :
+size_t`. Their enumerators were also visible unqualified in `guillaume`
+(`Dark`, `Neutral`, ...), converted implicitly to an integer, and the
+counts were named `ThemeSchemeCount` and `ThemePaletteCount`.
+
+**After:** `enum class ThemeSchemeRole : std::size_t` and `enum class
+ThemePaletteRole : std::size_t`. The counts are `ThemeSchemeRole::Count` and
+`ThemePaletteRole::Count`, like `SchemeColorRole::Count`.
+
+**Update:** qualify the enumerators, rename the counts, and cast where a
+role is used as a number:
+
+```cpp
+// Before
+setActiveScheme(Dark);
+for (std::size_t i = 0; i < ThemeSchemeCount; ++i)
+    theme.getScheme(static_cast<ThemeSchemeRole>(i));
+
+// After
+setActiveScheme(ThemeSchemeRole::Dark);
+for (std::size_t i = 0;
+     i < static_cast<std::size_t>(ThemeSchemeRole::Count); ++i)
+    theme.getScheme(static_cast<ThemeSchemeRole>(i));
+```
+
+Code that already wrote `ThemeSchemeRole::Dark` or
+`ThemePaletteRole::Neutral` compiles unchanged.
+
+## Theme role lookups validate the role
+
+**Before:** `Scheme::getColor()` / `setColor()`, `Theme::getScheme()` /
+`setScheme()` / `getPalette()` / `setPalette()` and `setActiveScheme()`
+indexed without a check; a `Count` enumerator or a cast integer out of
+range was undefined behaviour.
+
+**After:** they throw `std::out_of_range` and change nothing.
+`getActiveColor()` throws the same way through `Scheme::getColor()`.
+
+**Update:** No change required for valid roles.
+
 ## `RadioGroup` rejects an index that names no option everywhere
 
 **Before:** only `RadioGroup::setValue()` / `systems::RadioGroup::select()`
