@@ -30,8 +30,8 @@
 namespace guillaume::entities
 {
 
-	Text::Text::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
-								 ecs::EntityRegistry &entityRegistry)
+	Text::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+						   ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<Text>(componentRegistry, entityRegistry)
 	{
 		reset();

@@ -29,8 +29,8 @@
 namespace guillaume::entities
 {
 
-	Icon::Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
-								 ecs::EntityRegistry &entityRegistry)
+	Icon::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+						   ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<Icon>(componentRegistry, entityRegistry)
 	{
 		reset();

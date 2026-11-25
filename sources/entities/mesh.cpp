@@ -28,8 +28,8 @@
 namespace guillaume::entities
 {
 
-	Mesh::Mesh::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
-								 ecs::EntityRegistry &entityRegistry)
+	Mesh::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+						   ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<Mesh>(componentRegistry, entityRegistry)
 	{
 		reset();

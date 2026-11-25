@@ -31,6 +31,9 @@ one `Scene` type:
 ```cpp
 #include <utility/engine.hpp>
 
+#include <utility/ressource_provider.hpp>
+#include <utility/system_io/default_system_io.hpp>
+
 #include <guillaume/application.hpp>
 #include <guillaume/scene.hpp>
 
@@ -43,7 +46,8 @@ class MyScene : public guillaume::Scene {
 };
 
 int main() {
-    auto resources = std::make_shared<utility::RessourceProvider>(...);
+    utility::DefaultSystemIO systemIo;
+    auto resources = std::make_shared<utility::RessourceProvider>(systemIo);
     guillaume::Application<MyScene> app(resources,
                                         std::make_unique<MyEngine>());
     return app.run();
