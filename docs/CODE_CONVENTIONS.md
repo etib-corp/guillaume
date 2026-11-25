@@ -7,7 +7,9 @@ readable, and maintainable code.
 
 - Use clear and descriptive names.
 - Formatting is defined by `.clang-format` (tabs, 80 columns) and is not a
-  matter of taste: run `./scripts/run-clang-format.sh` before committing.
+  matter of taste: run `./scripts/run-clang-format.sh` before committing. It
+  formats `*.cpp`, `*.hpp` and `*.tpp`, and requires clang-format 21 (the
+  version is pinned in `scripts/clang-format-version.sh`).
 - Prefer small, focused functions over large monolithic blocks.
 - Avoid duplicated logic (DRY principle).
 - Document every public declaration (see "Documenting Code"); inside

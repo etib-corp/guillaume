@@ -26,16 +26,17 @@
 
 namespace guillaume::ecs
 {
-	template<InheritFromEntityBuilder BuilderType> void
-		EntityBuilderManager::addBuilder(ComponentRegistry &componentRegistry,
-										 EntityRegistry &entityRegistry)
+	template<InheritFromEntityBuilder BuilderType>
+	void EntityBuilderManager::addBuilder(ComponentRegistry &componentRegistry,
+										  EntityRegistry &entityRegistry)
 	{
 		std::type_index typeIndex(typeid(BuilderType));
 		if (_builders.find(typeIndex) != _builders.end()) {
 			throw std::runtime_error(
 				"Builder for this entity type already exists");
 		}
-		_builders[typeIndex] = std::make_unique<BuilderType>(componentRegistry, entityRegistry);
+		_builders[typeIndex] =
+			std::make_unique<BuilderType>(componentRegistry, entityRegistry);
 	}
 
 	template<InheritFromEntityBuilder BuilderType>

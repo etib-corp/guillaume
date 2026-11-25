@@ -29,8 +29,14 @@ ctest --test-dir build --output-on-failure
 ./scripts/run-clang-format.sh
 ```
 
-Use the clang-format version CI installs (`.github/workflows/format.yml`):
-another version formats differently.
+It formats `*.cpp`, `*.hpp` and `*.tpp`, and skips hidden directories,
+`build/`, `cmake_build/` and `third_party/`.
+
+The script requires clang-format 21, the major version CI installs; another
+version formats differently. The version is pinned in
+`scripts/clang-format-version.sh`. If clang-format is not on `PATH`, set
+`CLANG_FORMAT=/path/to/clang-format`. `CLANG_FORMAT_ALLOW_VERSION_MISMATCH=1`
+runs with another version, but CI may then reject the result.
 
 ## Report
 
