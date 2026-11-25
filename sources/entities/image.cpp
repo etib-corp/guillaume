@@ -29,8 +29,8 @@
 namespace guillaume::entities
 {
 
-	Image::Image::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
-								   ecs::EntityRegistry &entityRegistry)
+	Image::Builder::Builder(ecs::ComponentRegistry &componentRegistry,
+							ecs::EntityRegistry &entityRegistry)
 		: EntityBuilderBase<Image>(componentRegistry, entityRegistry)
 	{
 		reset();
